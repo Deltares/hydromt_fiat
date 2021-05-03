@@ -14,6 +14,8 @@ import hydromt
 from hydromt.models.model_api import Model
 from hydromt import gis_utils
 
+from . import DATADIR
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,10 +24,17 @@ class FiatModel(Model):
 
     # FIXME
     _NAME = "fiat"
-    _CONF = "fiat.ini"  # TODO can we replace excel with txt based ini, yaml or toml file? 
-    _GEOMS = {"gauges": "obs"} # FIXME Mapping from hydromt names to model specific names
-    _MAPS = {"elevtn": "dem"}  # FIXME Mapping from hydromt names to model specific names
+    _CONF = (
+        "fiat.ini"  # TODO can we replace excel with txt based ini, yaml or toml file?
+    )
+    _GEOMS = {
+        "gauges": "obs"
+    }  # FIXME Mapping from hydromt names to model specific names
+    _MAPS = {
+        "elevtn": "dem"
+    }  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = []  # TODO add any FIAT subfolders
+    _DATADIR = DATADIR
 
     def __init__(
         self,
@@ -46,8 +55,8 @@ class FiatModel(Model):
         )
 
     ## components
-    ## NOTE: this is a simple example for setting up basemaps and gauges for SFINCS, 
-    # it shows a general base component and how to document it. 
+    ## NOTE: this is a simple example for setting up basemaps and gauges for SFINCS,
+    # it shows a general base component and how to document it.
     ## FIXME: replace with FIAT relevant methods
     def setup_basemaps(self, region, res=1000, crs="utm", basemaps_fn="merit_hydro"):
         """Define model region and setup dem model layers.
