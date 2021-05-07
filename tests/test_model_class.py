@@ -31,11 +31,14 @@ def test_model_build(tmpdir):
     # compare results with model from examples folder
     model = "fiat"
     root = str(tmpdir.join(model))
-    config = join(EXAMPLEDIR, "model_build.ini")
-    region = "{'bbox': [11.70, 45.35, 12.95, 46.70]}"
+    config = join(EXAMPLEDIR, "build_fiat.ini")
+    clone_file = join(EXAMPLEDIR, "hazard", "RP_2.tif")
+    region = str({"grid": clone_file})
+    ## TODO join with deltares data and create artifacts
+    temp_yml = join(EXAMPLEDIR, "data_catalog.yml")
     # Build model
     r = CliRunner().invoke(
-        hydromt_cli, ["build", model, root, region, "-i", config, "-vv"]
+        hydromt_cli, ["build", model, root, region, "-i", config, "-vv", "-d", temp_yml]
     )
     assert r.exit_code == 0
 
@@ -70,7 +73,7 @@ def test_model_build(tmpdir):
             ), f"geom columns {name}"
             assert geom0.crs == geom1.crs, f"geom crs {name}"
             assert np.all(geom0.geometry == geom1.geometry), f"geom {name}"
-    # check config
+    # check config after updating roots to compare abs paths
     if mod0._config:
-        # flatten
+        mod0.set_root(mod1.root)
         assert mod0._config == mod1._config, f"config mismatch"
