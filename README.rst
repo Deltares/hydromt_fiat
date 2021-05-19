@@ -1,24 +1,60 @@
-hydroMT-fiat: fiat plugin for hydroMT
-#####################################
+hydroMT-fiat: FIAT plugin for hydroMT
+#########################################
+
+.. image:: https://codecov.io/gh/Deltares/hydromt_fiat/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/Deltares/hydromt_fiat
+
+.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
+    :target: https://deltares.github.io/hydromt_fiat/latest
+    :alt: Latest developers docs
+
+.. image:: https://img.shields.io/badge/docs-stable-brightgreen.svg
+    :target: https://deltares.github.io/hydromt_fiat/stable
+    :alt: Stable docs last release
+
+.. image:: https://pypip.in/v/hydromt_fiat/badge.png
+    :target: https://pypi.org/project/hydromt_fiat/
+    :alt: Latest PyPI version
+
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/Deltares/hydromt_fiat/main?urlpath=lab/tree/examples
+
 
 hydroMT_ is a python package, developed by Deltares, to build and analysis hydro models.
 It provides a generic model api with attributes to access the model schematization,
 (dynamic) forcing data, results and states. This plugin provides an implementation 
-for the fiat model.
+for the FIAT_ model.
 
 
 .. _hydromt: https://deltares.github.io/hydromt
+.. _FIAT: https://storymaps.arcgis.com/stories/687a256881b94bf6ad20677543bb8cf2
 
 
 Installation
 ------------
 
-FIXME installation guide
+hydroMT-fiat will soon be availble from pypi and conda-forge (in progress).
+
+To install hydromt_fiat using pip do:
+
+.. code-block:: console
+
+  pip install hydromt_fiat
+
+We recommend installing a hydromt-fiat environment including the hydromt_fiat package
+based on the environment.yml file. This environment will install all package dependencies 
+including the core of hydroMT_.
+
+.. code-block:: console
+
+  conda env create -f binder/environment.yml
+  conda activate hydromt-fiat
+  pip install hydromt_fiat
 
 Documentation
 -------------
 
-Learn more about hydroMT in its `online documentation <https://deltares.github.io/hydromt_fiat/>`_
+Learn more about the hydroMT_fiat plugin in its `online documentation <https://deltares.github.io/hydromt_fiat/>`_
 
 Contributing
 ------------

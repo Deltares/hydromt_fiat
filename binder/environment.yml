@@ -9,16 +9,15 @@ dependencies:
   - black
   - bottleneck
   - cartopy # to run examples
-  - dask=2021.4  #  Attribute "collection_annotations" in v2021.5 related to https://github.com/dask/dask/pull/7309
+  - dask=2021.4
   - descartes # to run examples
   - entrypoints
   - flit>=3.2
   - gdal>=3.1
   - geopandas
-  - jupyterlab  # to run examples
+  - jupyterlab # to run examples
   - netcdf4
   - matplotlib # to run examples
-  - nbsphinx  # docs
   - numba
   - numpy
   - openpyxl
@@ -26,15 +25,10 @@ dependencies:
   - pip
   - pyflwdir>=0.4.7
   - pygeos>=0.8
-  - pytest # tests
-  - pytest-cov # tests
-  - pytest-benchmark # tests
   - python>=3.7
   - rasterio
   - requests
   - scipy
-  - sphinx # docs
-  - sphinx_rtd_theme # docs
   - xarray
   - zarr
   - pip:
