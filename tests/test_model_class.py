@@ -40,10 +40,14 @@ def test_model_build(tmpdir, model):
     logger = logging.getLogger(__name__)
     _model = _models[model]
     # root = str(tmpdir.join(model))
-    root = join(EXAMPLEDIR, _model["example"]) # TODO: Update the example folder after the implementation is finished!
+    root = join(
+        EXAMPLEDIR, _model["example"]
+    )  # TODO: Update the example folder after the implementation is finished!
 
     # Initialize model.
-    yml = join(EXAMPLEDIR, "data_catalog.yml")  # TODO: Join with deltares data and create artifacts!
+    yml = join(
+        EXAMPLEDIR, "data_catalog.yml"
+    )  # TODO: Join with deltares data and create artifacts!
     mod1 = MODELS.get(model)(root=root, mode="w", logger=logger, data_libs=yml)
 
     # Build model.
