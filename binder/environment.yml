@@ -1,0 +1,36 @@
+name: hydromt-fiat
+
+channels:
+  - conda-forge
+
+dependencies:
+  - affine
+  - click
+  - black
+  - bottleneck
+  - cartopy # to run examples
+  - dask=2021.4
+  - descartes # to run examples
+  - entrypoints
+  - flit>=3.2
+  - gdal>=3.1
+  - geopandas
+  - jupyterlab # to run examples
+  - netcdf4
+  - matplotlib # to run examples
+  - numba
+  - numpy
+  - openpyxl
+  - pandas
+  - pip
+  - pyflwdir>=0.4.7
+  - pygeos>=0.8
+  - python>=3.7
+  - rasterio
+  - requests
+  - scipy
+  - xarray
+  - zarr
+  - pip:
+    - hydromt>=0.4.1
+
