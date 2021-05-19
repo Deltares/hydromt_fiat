@@ -39,10 +39,8 @@ def test_model_class(model):
 def test_model_build(tmpdir, model):
     logger = logging.getLogger(__name__)
     _model = _models[model]
-    # root = str(tmpdir.join(model))
-    root = join(
-        EXAMPLEDIR, _model["example"]
-    )  # TODO: Update the example folder after the implementation is finished!
+    root = str(tmpdir.join(model))
+    # root = join(EXAMPLEDIR, _model["example"])  # TODO: Update the example folder after the implementation is finished!
 
     # Initialize model.
     yml = join(

@@ -281,6 +281,7 @@ class FiatModel(Model):
             "use": 1,
             "category": "Buildings Value",
             "max_damage": 1,
+            "bu": 0,
             "function": df_id,
             "map": 1,
             "scale_factor": 1,
@@ -514,11 +515,11 @@ class FiatModel(Model):
             )
         )
 
-        # Determine the indexes of the reference year (2019) and the forecast year
+        # Determine the indexes of the reference year (2019) and the forecast year.
         ref_year_idx = list(annual_gdp_per_cap_data).index(2019)
         forecast_year_idx = list(annual_gdp_per_cap_data).index(self.config["year"])
 
-        # Calculate the GDP growth factor and correct the potential damage value
+        # Calculate the correction factor.
         correction_factor = (
             annual_gdp_per_cap_data[forecast_year_idx]
             / annual_gdp_per_cap_data[ref_year_idx]
@@ -593,9 +594,10 @@ class FiatModel(Model):
 
         # Read the general information.
         general_config = {
+            "country": ws["B1"].value,
             "case": ws["B2"].value,
-            "country": ws["B3"].value,
-            "hazard_type": ws["B5"].value,
+            "hazard_type": ws["B3"].value,
+            "unit": ws["B5"].value,
             "scenario": ws["J1"].value,
             "year": ws["J2"].value,
             "vulnerability": ws["J3"].value,
@@ -630,6 +632,7 @@ class FiatModel(Model):
                 "use": ws[f"A{row}"].value,
                 "category": ws[f"B{row}"].value,
                 "max_damage": ws[f"C{row}"].value,
+                "bu": ws[f"D{row}"].value,
                 "function": ws[f"F{row}"].value,
                 "map": ws[f"H{row}"].value,
                 "scale_factor": ws[f"I{row}"].value,
@@ -653,9 +656,10 @@ class FiatModel(Model):
 
         # Store the general information.
         general_config = {
+            "B1": "country",
             "B2": "case",
-            "B3": "country",
-            "B5": "hazard_type",
+            "B3": "hazard_type",
+            "B5": "unit",
             "J1": "scenario",
             "J2": "year",
             "J3": "vulnerability",
@@ -698,6 +702,7 @@ class FiatModel(Model):
             ws[f"A{row}"] = int(exp_layer.get("use", 0))
             ws[f"B{row}"] = str(exp_layer.get("category", ""))
             ws[f"C{row}"] = float(exp_layer.get("max_damage", 0))
+            ws[f"D{row}"] = float(exp_layer.get("bu", 0))
             ws[f"F{row}"] = str(exp_layer.get("function", ""))
             ws[f"H{row}"] = int(exp_layer.get("map", 1))
             ws[f"I{row}"] = float(exp_layer.get("scale_factor", 1))
