@@ -165,27 +165,28 @@ def get_area_grid(ds):
 
     Returns
     -------
-    da_out : xarray.DataArray
+    da_area : xarray.DataArray
         xarray.DataArray containing the area in [m2] of the reference grid.
     """
-
     if ds.raster.crs.is_geographic:
         area = gis_utils.reggrid_area(
             ds.raster.ycoords.values, ds.raster.xcoords.values
         )
+        da_area = xr.DataArray(
+            data=area.astype("float32"), coords=ds.raster.coords, dims=ds.raster.dims
+        )
 
     elif ds.raster.crs.is_projected:
-        xres = abs(ds.raster.res[0]) * ds.raster.crs.linear_units_factor[1]
-        yres = abs(ds.raster.res[1]) * ds.raster.crs.linear_units_factor[1]
-        area = np.full_like(ds, fill_value=1) * xres * yres
+        da = ds[list(ds.data_vars)[0]] if isinstance(ds, xr.Dataset) else ds
+        xres = abs(da.raster.res[0]) * da.raster.crs.linear_units_factor[1]
+        yres = abs(da.raster.res[1]) * da.raster.crs.linear_units_factor[1]
+        da_area = xr.full_like(da, fill_value=1, dtype=np.float32) * xres * yres
 
-    da_out = xr.DataArray(
-        data=area.astype("float32"), coords=ds.raster.coords, dims=ds.raster.dims
-    )
-    da_out.raster.set_nodata(0)
-    da_out.raster.set_crs(ds.raster.crs)
+    da_area.raster.set_nodata(0)
+    da_area.raster.set_crs(ds.raster.crs)
+    da_area.attrs.update(unit="m2")
 
-    return da_out
+    return da_area.rename("area")
 
 
 def get_density_grid(ds):
