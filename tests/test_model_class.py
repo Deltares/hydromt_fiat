@@ -93,4 +93,5 @@ def test_model_build(tmpdir, case):
     # Compare model configs.
     if mod0._config:
         mod0.set_root(mod1.root)
+        mod1.set_root(mod1.root)
         assert mod0._config == mod1._config, f"config mismatch"
