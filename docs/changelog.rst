@@ -8,6 +8,9 @@ The format is based on `Keep a Changelog`_, and this project adheres to
 [Unreleased]
 ------------
 
+v0.0.1 (20 May 2021)
+--------------------
+
 Initial realese of hydromt_fiat
 
 Added
