@@ -541,7 +541,7 @@ class FiatModel(Model):
         return correction_factor
 
     # Overwrite the model_api methods for root and config.
-    def set_root(self, root, mode="w"):
+    def set_root(self, root=None, mode="w"):
         """Initialized the model root.
         In read mode it checks if the root exists.
         In write mode in creates the required model folder structure.
@@ -553,8 +553,9 @@ class FiatModel(Model):
         mode: {"r", "r+", "w"}, optional
             Read/write-only mode for model files.
         """
-
         # Do super method and update absolute paths in config.
+        if root is None and self.root is not None:
+            root = self.root
         super().set_root(root=root, mode=mode)
         if self._write and root is not None:
             root = abspath(root)
@@ -839,6 +840,9 @@ class FiatModel(Model):
         if not self._write:
             # start fresh in read-only mode
             self._staticgeoms = dict()
+        region_fn = join(self.root, "region.GeoJSON")
+        if isfile(region_fn):
+            self.set_staticgeoms(gpd.read_file(region_fn), "region")
         return self._staticgeoms
 
     def write_staticgeoms(self):
