@@ -1,66 +1,79 @@
-"""Test fiat model class against hydromt.models.model_api"""
+"""Test FIAT plugin model class against hydromt.models.model_api"""
 
-import pytest
-from os.path import join, dirname, abspath
-import numpy as np
-import pdb
-from click.testing import CliRunner
-
-import hydromt
-from hydromt.models import MODELS
 from hydromt.cli.cli_utils import parse_config
-from hydromt.cli.main import main as hydromt_cli
+from hydromt_fiat import FiatModel
+from os.path import join, dirname, abspath
+import logging
+import numpy as np
+import pytest
 
-TESTDATADIR = join(dirname(abspath(__file__)), "data")
 EXAMPLEDIR = join(dirname(abspath(__file__)), "..", "examples")
 
+_cases = {
+    "fiat_flood": {
+        "region_grid": join("data", "flood_hand", "hand_050cm_rp02.tif"),
+        "example": "fiat_flood",
+        "ini": "fiat_flood.ini",
+    },
+}
 
-def test_model_class():
-    # read model in examples folder
-    root = join(EXAMPLEDIR, "fiat_test")
-    mod = MODELS.get("fiat")(root=root, mode="r")
+
+@pytest.mark.parametrize("case", list(_cases.keys()))
+def test_model_class(case):
+    # Read model in examples folder.
+    root = join(EXAMPLEDIR, _cases[case]["example"])
+    mod = FiatModel(root=root, mode="r")
     mod.read()
-    # run test_model_api() method
+
+    # Run test_model_api() method.
     non_compliant_list = mod.test_model_api()
     assert len(non_compliant_list) == 0
-    # pass
 
 
-def test_model_build(tmpdir):
-    # test build method
-    # compare results with model from examples folder
-    model = "fiat"
-    root = str(tmpdir.join(model))
-    config = join(EXAMPLEDIR, "build_fiat.ini")
-    clone_file = join(EXAMPLEDIR, "hazard", "RP_2.tif")
-    region = str({"grid": clone_file})
-    ## TODO join with deltares data and create artifacts
-    temp_yml = join(EXAMPLEDIR, "data_catalog.yml")
-    # Build model
-    r = CliRunner().invoke(
-        hydromt_cli, ["build", model, root, region, "-i", config, "-vv", "-d", temp_yml]
-    )
-    assert r.exit_code == 0
+@pytest.mark.parametrize("case", list(_cases.keys()))
+def test_model_build(tmpdir, case):
+    logger = logging.getLogger(__name__)
+    _case = _cases[case]
+    root = str(tmpdir.join(case))
 
-    # Compare with model from examples folder
-    root0 = join(EXAMPLEDIR, "fiat_test")
-    mod0 = MODELS.get(model)(root=root0, mode="r")
+    # Build model.
+    region = {"grid": join(EXAMPLEDIR, _case["region_grid"])}
+    opt = parse_config(join(EXAMPLEDIR, _case["ini"]))
+    kwargs = opt.pop("global", {})  # pas global section to model init
+    mod1 = FiatModel(root=root, mode="w", logger=logger, **kwargs)
+    mod1.build(region=region, opt=opt)
+
+    # Check if model is api compliant.
+    non_compliant_list = mod1.test_model_api()
+    assert len(non_compliant_list) == 0
+
+    # Read the created model together with the model from the examples folder.
+    root0 = join(EXAMPLEDIR, _case["example"])
+    mod0 = FiatModel(root=root0, mode="r")
     mod0.read()
-    mod1 = MODELS.get(model)(root=root, mode="r")
+    mod1 = FiatModel(root=root, mode="r")
     mod1.read()
-    # check maps
-    invalid_maps = []
+
+    # Compare model maps.
+    invalid_maps = {}
     if len(mod0._staticmaps) > 0:
         maps = mod0.staticmaps.raster.vars
-        assert np.all(mod0.crs == mod1.crs), f"map crs {name}"
+        assert np.all(mod0.crs == mod1.crs), f"map crs staticmaps"
         for name in maps:
             map0 = mod0.staticmaps[name].fillna(0)
             map1 = mod1.staticmaps[name].fillna(0)
             if not np.allclose(map0, map1):
+                notclose = ~np.isclose(map0, map1)
+                xy = map0.raster.idx_to_xy(np.where(notclose.ravel())[0])
+                ncells = int(np.sum(notclose))
+                diff = (map0 - map1).values[notclose].mean()
+                xys = ", ".join([f"({x:.6f}, {y:.6f})" for x, y in zip(*xy)])
+                invalid_maps[name] = f"diff: {diff:.4f} ({ncells:d} cells: [{xys}])"
                 invalid_maps.append(name)
-    invalid_map_str = ", ".join(invalid_maps)
-    assert len(invalid_maps) == 0, f"invalid maps: {invalid_map_str}"
-    # check geoms
+
+    assert len(invalid_maps) == 0, f"invalid maps: {invalid_maps}"
+
+    # Compare model geometries.
     if mod0._staticgeoms:
         for name in mod0.staticgeoms:
             geom0 = mod0.staticgeoms[name]
@@ -73,7 +86,9 @@ def test_model_build(tmpdir):
             ), f"geom columns {name}"
             assert geom0.crs == geom1.crs, f"geom crs {name}"
             assert np.all(geom0.geometry == geom1.geometry), f"geom {name}"
-    # check config after updating roots to compare abs paths
+
+    # Compare model configs.
     if mod0._config:
         mod0.set_root(mod1.root)
+        mod1.set_root(mod1.root)
         assert mod0._config == mod1._config, f"config mismatch"

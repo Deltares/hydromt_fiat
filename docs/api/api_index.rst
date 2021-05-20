@@ -27,7 +27,7 @@ Build components
    fiat.FiatModel.setup_basemaps
    fiat.FiatModel.setup_hazard
    fiat.FiatModel.setup_exposure_buildings
-
+   fiat.FiatModel.scale_exposure
 
 Attributes
 ----------

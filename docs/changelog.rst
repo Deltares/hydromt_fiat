@@ -19,6 +19,7 @@ Added
 - copy vulnerability tables
 - setup_hazard
 - setup_exposure_buildings
+- scale_exposure
 
 
 - buildings workflows

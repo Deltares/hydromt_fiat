@@ -4,13 +4,15 @@ Installation
 User install
 ------------
 
+#TODO update if hydromt_fiat on conda-forge
+
 The hydromt_fiat plugin is currently only available from PyPi.
 We are working on a release from conda-forge. 
 
 If you haven't installed the `hydroMT core package <https://github.com/Deltares/hydromt>`_ 
 we recommend installing it from conda-forge to get all dependencies and then install the plugin. 
 
-To install hydromt and the toml package using conda-forge do:
+To install hydromt using conda-forge do:
 
 .. code-block:: console
 
