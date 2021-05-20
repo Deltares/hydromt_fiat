@@ -1,7 +1,6 @@
 from hydromt import gis_utils, raster
 import logging
 import numpy as np
-from numpy.core.numeric import array_equal
 import xarray as xr
 
 logger = logging.getLogger(__name__)
@@ -166,7 +165,7 @@ def get_area_grid(ds):
 
     Returns
     -------
-    area : xarray.DataArray
+    da_area : xarray.DataArray
         xarray.DataArray containing the area in [m2] of the reference grid.
     """
     if ds.raster.crs.is_geographic:
