@@ -184,8 +184,9 @@ def get_area_grid(ds):
 
     da_area.raster.set_nodata(0)
     da_area.raster.set_crs(ds.raster.crs)
+    da_area.attrs.update(unit='m2')
 
-    return da_area
+    return da_area.rename('area')
 
 
 def get_density_grid(ds):
