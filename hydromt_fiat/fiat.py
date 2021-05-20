@@ -1,6 +1,5 @@
 """Implement fiat model class"""
 
-
 from ast import literal_eval
 from hydromt.models.model_api import Model
 from openpyxl import load_workbook
@@ -161,6 +160,7 @@ class FiatModel(Model):
             if self.staticmaps and not self.staticmaps.raster.identical_grid(ds):
                 raise ValueError("The hazard maps should have identical grids.")
 
+            # Correct (if necessary) the grid orientation from the lower to the upper left corner.
             if ds.raster.res[1] > 0:
                 ds.reindex({ds.raster.y_dim: list(reversed(ds.raster.ycoords))})
 

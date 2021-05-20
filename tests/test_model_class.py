@@ -1,6 +1,5 @@
 """Test FIAT plugin model class against hydromt.models.model_api"""
 
-
 from hydromt.cli.cli_utils import parse_config
 from hydromt_fiat import FiatModel
 from os.path import join, dirname, abspath
@@ -8,9 +7,7 @@ import logging
 import numpy as np
 import pytest
 
-
 EXAMPLEDIR = join(dirname(abspath(__file__)), "..", "examples")
-
 
 _cases = {
     "fiat_flood": {

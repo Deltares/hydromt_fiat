@@ -1,8 +1,7 @@
+from hydromt import gis_utils, raster
 import logging
 import numpy as np
 import xarray as xr
-from hydromt import gis_utils, raster
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,27 +29,28 @@ def create_population_per_building_map(
         xarray.DataSet containing .
     """
 
+    logger.debug("Creating the population per building map.")
+
     # Correct the buildings and population maps.
     da_bld = da_bld.where(da_bld <= 0, other=1)
     da_pop = da_pop.where(da_pop != da_pop.raster.nodata, other=0)
     da_bld.raster.set_nodata(nodata=0)
     da_pop.raster.set_nodata(nodata=0)
 
-    # Get area and density grids.
+    # Get the area and density grids.
     da_like_area = get_area_grid(ds_like)
     da_bld_density = get_density_grid(da_bld).rename("bld_density")
     da_pop_density = get_density_grid(da_pop).rename("pop_density")
     da_bld_density.raster.set_nodata(nodata=0)
     da_pop_density.raster.set_nodata(nodata=0)
 
-    # Get (average) grid resolutions in meters.
+    # Get the (average) grid resolutions in meters.
     da_bld_res = get_grid_resolution(da_bld)
     da_pop_res = get_grid_resolution(da_pop)
     ds_like_res = get_grid_resolution(ds_like)
 
-    # downscaling exposure maps
+    # Creating the population per building map.
     if da_bld_res > ds_like_res or da_pop_res > ds_like_res:
-        logger.debug("Downscaling exposure maps to hazard resolution.")
         if da_pop_res > da_bld_res:
             da_low_res = da_pop
             da_high_res = da_bld
@@ -58,7 +58,7 @@ def create_population_per_building_map(
             da_low_res = da_bld
             da_high_res = da_pop
 
-        # get area map
+        # Get the area grid.
         da_bld_area = get_area_grid(da_bld).rename("bld_area")
 
         # Create an index grid that connects the population and buildings maps.
@@ -72,8 +72,7 @@ def create_population_per_building_map(
         da_idx[x_dim] = da_high_res.raster.xcoords
         da_idx[y_dim] = da_high_res.raster.ycoords
 
-        # # Create a population per buildings density map.
-        # use pandas as xarray groupby sum is slow, see https://github.com/pydata/xarray/issues/4473
+        # Create a population per buildings density map.
         df_sum = (
             xr.merge([da_bld, da_bld_area, da_idx])
             .stack(yx=(y_dim, x_dim))  # flatten to make dataframe
@@ -81,7 +80,7 @@ def create_population_per_building_map(
             .to_dataframe()
             .groupby("index")
             .sum()
-        )
+        )  # TODO: Replace with xarray groupby sum after issue is solved (see https://github.com/pydata/xarray/issues/4473)!
 
         if da_pop_res > da_bld_res:
             ar_bld_count = np.full_like(da_pop, fill_value=0)
@@ -109,6 +108,9 @@ def create_population_per_building_map(
         )
 
         # Reproject the density maps to the hazard projection.
+        logger.debug(
+            "Upscaling the population per building map to the hazard resolution."
+        )
         da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
         da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
         da_pop_bld_density = da_pop_bld_density.raster.reproject_like(
@@ -124,8 +126,10 @@ def create_population_per_building_map(
         da_pop_bld_count.raster.set_nodata(nodata=0)
 
     elif da_bld_res < ds_like_res and da_pop_res < ds_like_res:
-        logger.debug("Upscaling exposure maps to hazard resolution.")
         # Reproject the density maps to the hazard projection.
+        logger.debug(
+            "Downscaling the population per building map to the hazard resolution."
+        )
         da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
         da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
 
