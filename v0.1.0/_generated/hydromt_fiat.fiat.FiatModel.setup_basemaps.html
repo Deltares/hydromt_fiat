@@ -105,6 +105,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">hydromt_fiat.fiat.FiatModel.setup_basemaps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html">hydromt_fiat.fiat.FiatModel.setup_hazard</a></li>
 <li class="toctree-l3"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html">hydromt_fiat.fiat.FiatModel.setup_exposure_buildings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.scale_exposure.html">hydromt_fiat.fiat.FiatModel.scale_exposure</a></li>
 </ul>
 </li>
 </ul>
@@ -214,15 +215,15 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="hydromt_fiat.fiat.FiatModel.setup_basemaps">
 <span class="sig-prename descclassname"><span class="pre">FiatModel.</span></span><span class="sig-name descname"><span class="pre">setup_basemaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FiatModel.setup_basemaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.fiat.FiatModel.setup_basemaps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define model region.</p>
-<p>Adds model layers:</p>
+<dd><p>Define the model region.</p>
+<p>Adds model layer:</p>
 <ul class="simple">
 <li><p><strong>region</strong> geom: model region</p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>region</strong> (<em>dict</em>) – Dictionary describing region of interest, e.g. {‘bbox’: [xmin, ymin, xmax, ymax]}
-See <code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_region()</span></code> for all options</p>
+<dd class="field-odd"><p><strong>region</strong> (<em>dict</em>) – Dictionary describing region of interest, e.g. {‘bbox’: [xmin, ymin, xmax, ymax]}.
+See <code class="xref py py-meth docutils literal notranslate"><span class="pre">parse_region()</span></code> for all options.</p>
 </dd>
 </dl>
 </dd></dl>

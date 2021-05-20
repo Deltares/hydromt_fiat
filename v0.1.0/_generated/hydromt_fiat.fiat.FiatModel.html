@@ -217,11 +217,11 @@
 <h1>hydromt_fiat.fiat.FiatModel<a class="headerlink" href="#hydromt-fiat-fiat-fiatmodel" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="hydromt_fiat.fiat.FiatModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.fiat.</span></span><span class="sig-name descname"><span class="pre">FiatModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">root=None</span></em>, <em class="sig-param"><span class="pre">mode='w'</span></em>, <em class="sig-param"><span class="pre">config_fn=None</span></em>, <em class="sig-param"><span class="pre">data_libs=None</span></em>, <em class="sig-param"><span class="pre">logger=&lt;Logger</span> <span class="pre">hydromt_fiat.fiat</span> <span class="pre">(WARNING)&gt;</span></em>, <em class="sig-param"><span class="pre">deltares_data=False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FiatModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.fiat.FiatModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>General and basic API for the FIAT model in HydroMT</p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.fiat.</span></span><span class="sig-name descname"><span class="pre">FiatModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">root</span></em>, <em class="sig-param"><span class="pre">mode='w'</span></em>, <em class="sig-param"><span class="pre">config_fn=None</span></em>, <em class="sig-param"><span class="pre">data_libs=None</span></em>, <em class="sig-param"><span class="pre">logger=&lt;Logger</span> <span class="pre">hydromt_fiat.fiat</span> <span class="pre">(WARNING)&gt;</span></em>, <em class="sig-param"><span class="pre">deltares_data=False</span></em>, <em class="sig-param"><span class="pre">artifact_data=False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FiatModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.fiat.FiatModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>General and basic API for the FIAT model in hydroMT.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="hydromt_fiat.fiat.FiatModel.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">root=None</span></em>, <em class="sig-param"><span class="pre">mode='w'</span></em>, <em class="sig-param"><span class="pre">config_fn=None</span></em>, <em class="sig-param"><span class="pre">data_libs=None</span></em>, <em class="sig-param"><span class="pre">logger=&lt;Logger</span> <span class="pre">hydromt_fiat.fiat</span> <span class="pre">(WARNING)&gt;</span></em>, <em class="sig-param"><span class="pre">deltares_data=False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FiatModel.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.fiat.FiatModel.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">root</span></em>, <em class="sig-param"><span class="pre">mode='w'</span></em>, <em class="sig-param"><span class="pre">config_fn=None</span></em>, <em class="sig-param"><span class="pre">data_libs=None</span></em>, <em class="sig-param"><span class="pre">logger=&lt;Logger</span> <span class="pre">hydromt_fiat.fiat</span> <span class="pre">(WARNING)&gt;</span></em>, <em class="sig-param"><span class="pre">deltares_data=False</span></em>, <em class="sig-param"><span class="pre">artifact_data=False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FiatModel.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.fiat.FiatModel.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
 </dd></dl>
 
@@ -232,7 +232,7 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#hydromt_fiat.fiat.FiatModel.__init__" title="hydromt_fiat.fiat.FiatModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([root, mode, config_fn, data_libs, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hydromt_fiat.fiat.FiatModel.__init__" title="hydromt_fiat.fiat.FiatModel.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(root[, mode, config_fn, data_libs, …])</p></td>
 <td><p>Initialize self.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.build.html#hydromt_fiat.fiat.FiatModel.build" title="hydromt_fiat.fiat.FiatModel.build"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code></a>(region[, res, write, opt])</p></td>
@@ -248,60 +248,60 @@
 <td><p>Parse config from file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_forcing.html#hydromt_fiat.fiat.FiatModel.read_forcing" title="hydromt_fiat.fiat.FiatModel.read_forcing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_forcing</span></code></a>()</p></td>
-<td><p>Read forcing at &lt;root/?/&gt; and parse to dict of xr.DataArray</p></td>
+<td><p>Read forcing at &lt;root/?/&gt; and parse to dict of xr.DataArray.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_results</span></code>()</p></td>
-<td><p>Read results at &lt;root/?/&gt; and parse to dict of xr.DataArray</p></td>
+<td><p>Read results at &lt;root/?/&gt; and parse to dict of xr.DataArray.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_states</span></code>()</p></td>
-<td><p>Read states at &lt;root/?/&gt; and parse to dict of xr.DataArray</p></td>
+<td><p>Read states at &lt;root/?/&gt; and parse to dict of xr.DataArray.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_staticgeoms.html#hydromt_fiat.fiat.FiatModel.read_staticgeoms" title="hydromt_fiat.fiat.FiatModel.read_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_staticgeoms</span></code></a>()</p></td>
-<td><p>Read staticgeoms at &lt;root/?/&gt; and parse to dict of geopandas</p></td>
+<td><p>Read staticgeoms at &lt;root/?/&gt; and parse to dict of GeoPandas.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_staticmaps.html#hydromt_fiat.fiat.FiatModel.read_staticmaps" title="hydromt_fiat.fiat.FiatModel.read_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_staticmaps</span></code></a>()</p></td>
-<td><p>Read staticmaps at &lt;root/?/&gt; and parse to xarray Dataset</p></td>
+<td><p>Read staticmaps at &lt;root/?/&gt; and parse to xarray Dataset.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_config.html#hydromt_fiat.fiat.FiatModel.set_config" title="hydromt_fiat.fiat.FiatModel.set_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_config</span></code></a>(*args)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.scale_exposure.html#hydromt_fiat.fiat.FiatModel.scale_exposure" title="hydromt_fiat.fiat.FiatModel.scale_exposure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_exposure</span></code></a>(scenario, year)</p></td>
+<td><p>Scale the exposure to the forecast year, using the shared socioeconomic pathway (SSP) projections for population and GDP growth.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_config.html#hydromt_fiat.fiat.FiatModel.set_config" title="hydromt_fiat.fiat.FiatModel.set_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_config</span></code></a>(*args)</p></td>
 <td><p>Update the config dictionary at key(s) with values.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_crs</span></code>(crs)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_crs</span></code>(crs)</p></td>
 <td><p>Embed coordinate reference system staticmaps metadata.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_forcing.html#hydromt_fiat.fiat.FiatModel.set_forcing" title="hydromt_fiat.fiat.FiatModel.set_forcing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_forcing</span></code></a>(data[, name])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_forcing.html#hydromt_fiat.fiat.FiatModel.set_forcing" title="hydromt_fiat.fiat.FiatModel.set_forcing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_forcing</span></code></a>(data[, name])</p></td>
 <td><p>Add data to forcing attribute which is a dictionary of xarray.DataArray.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_results</span></code>(data[, name])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_results</span></code>(data[, name])</p></td>
 <td><p>Add data to results attribute which is a dictionary of xarray.DataArray.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root" title="hydromt_fiat.fiat.FiatModel.set_root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_root</span></code></a>(root[, mode])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root" title="hydromt_fiat.fiat.FiatModel.set_root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_root</span></code></a>([root, mode])</p></td>
 <td><p>Initialized the model root.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_states</span></code>(data[, name])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_states</span></code>(data[, name])</p></td>
 <td><p>Add data to states attribute which is a dictionary of xarray.DataArray.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_staticgeoms.html#hydromt_fiat.fiat.FiatModel.set_staticgeoms" title="hydromt_fiat.fiat.FiatModel.set_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_staticgeoms</span></code></a>(geom, name)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_staticgeoms.html#hydromt_fiat.fiat.FiatModel.set_staticgeoms" title="hydromt_fiat.fiat.FiatModel.set_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_staticgeoms</span></code></a>(geom, name)</p></td>
 <td><p>Add geom to staticmaps</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_staticmaps.html#hydromt_fiat.fiat.FiatModel.set_staticmaps" title="hydromt_fiat.fiat.FiatModel.set_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_staticmaps</span></code></a>(data[, name])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_staticmaps.html#hydromt_fiat.fiat.FiatModel.set_staticmaps" title="hydromt_fiat.fiat.FiatModel.set_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_staticmaps</span></code></a>(data[, name])</p></td>
 <td><p>Add data to staticmaps.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_basemaps.html#hydromt_fiat.fiat.FiatModel.setup_basemaps" title="hydromt_fiat.fiat.FiatModel.setup_basemaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_basemaps</span></code></a>(region, **kwargs)</p></td>
-<td><p>Define model region.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_basemaps.html#hydromt_fiat.fiat.FiatModel.setup_basemaps" title="hydromt_fiat.fiat.FiatModel.setup_basemaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_basemaps</span></code></a>(region, **kwargs)</p></td>
+<td><p>Define the model region.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config" title="hydromt_fiat.fiat.FiatModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**cfdict)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config" title="hydromt_fiat.fiat.FiatModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**cfdict)</p></td>
 <td><p>Update config with a dictionary</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings" title="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_buildings</span></code></a>(pop_fn, bld_fn[, unit])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings" title="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_buildings</span></code></a>([bld_fn, pop_fn, …])</p></td>
+<td><p>Add a buildings value exposure map to the FIAT model schematization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_roads</span></code>(exposure_fn, category, unit)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_raster</span></code>(exposure_fn, category, …)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_vector</span></code>(exposure_fn, category, …)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard" title="hydromt_fiat.fiat.FiatModel.setup_hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_hazard</span></code></a>(map_fn[, return_period, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard" title="hydromt_fiat.fiat.FiatModel.setup_hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_hazard</span></code></a>(map_fn[, return_period, variable])</p></td>
 <td><p>Add a hazard map to the FIAT model schematization.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_model_api</span></code>()</p></td>
@@ -317,19 +317,19 @@
 <td><p>Write config to &lt;root/config_fn&gt;</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_forcing.html#hydromt_fiat.fiat.FiatModel.write_forcing" title="hydromt_fiat.fiat.FiatModel.write_forcing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_forcing</span></code></a>()</p></td>
-<td><p>write forcing at &lt;root/?/&gt; in model ready format</p></td>
+<td><p>write forcing at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_results</span></code>()</p></td>
-<td><p>write results at &lt;root/?/&gt; in model ready format</p></td>
+<td><p>write results at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_states</span></code>()</p></td>
-<td><p>write states at &lt;root/?/&gt; in model ready format</p></td>
+<td><p>write states at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_staticgeoms.html#hydromt_fiat.fiat.FiatModel.write_staticgeoms" title="hydromt_fiat.fiat.FiatModel.write_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code></a>()</p></td>
-<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format</p></td>
+<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_staticmaps.html#hydromt_fiat.fiat.FiatModel.write_staticmaps" title="hydromt_fiat.fiat.FiatModel.write_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code></a>([compress])</p></td>
-<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format</p></td>
+<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 </tbody>
 </table>
