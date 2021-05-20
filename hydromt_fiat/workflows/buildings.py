@@ -1,9 +1,7 @@
 import logging
 import numpy as np
-import pandas as pd
-import sys
 import xarray as xr
-from hydromt import gis_utils, io, raster
+from hydromt import gis_utils, raster
 
 
 logger = logging.getLogger(__name__)
@@ -13,6 +11,7 @@ def create_population_per_building_map(
     da_bld,
     da_pop,
     ds_like=None,
+    logger=logger,
 ):
     """Create a population per built-up grid cell layer.
 
@@ -38,11 +37,9 @@ def create_population_per_building_map(
     da_pop.raster.set_nodata(nodata=0)
 
     # Get area and density grids.
-    da_bld_area = get_area_grid(da_bld).rename("bld_area")
-    da_pop_area = get_area_grid(da_pop).rename("bld_area")
+    da_like_area = get_area_grid(ds_like)
     da_bld_density = get_density_grid(da_bld).rename("bld_density")
     da_pop_density = get_density_grid(da_pop).rename("pop_density")
-    da_bld_area.raster.set_nodata(nodata=0)
     da_bld_density.raster.set_nodata(nodata=0)
     da_pop_density.raster.set_nodata(nodata=0)
 
@@ -51,13 +48,18 @@ def create_population_per_building_map(
     da_pop_res = get_grid_resolution(da_pop)
     ds_like_res = get_grid_resolution(ds_like)
 
+    # downscaling exposure maps
     if da_bld_res > ds_like_res or da_pop_res > ds_like_res:
+        logger.debug("Downscaling exposure maps to hazard resolution.")
         if da_pop_res > da_bld_res:
             da_low_res = da_pop
             da_high_res = da_bld
         else:
             da_low_res = da_bld
             da_high_res = da_pop
+
+        # get area map
+        da_bld_area = get_area_grid(da_bld).rename("bld_area")
 
         # Create an index grid that connects the population and buildings maps.
         da_idx = da_low_res.raster.nearest_index(
@@ -66,16 +68,26 @@ def create_population_per_building_map(
             dst_width=da_high_res.raster.width,
             dst_height=da_high_res.raster.height,
         ).rename("index")
-        da_idx[da_high_res.raster.x_dim] = da_high_res.raster.xcoords
-        da_idx[da_high_res.raster.y_dim] = da_high_res.raster.ycoords
+        x_dim, y_dim = da_high_res.raster.x_dim, da_high_res.raster.y_dim
+        da_idx[x_dim] = da_high_res.raster.xcoords
+        da_idx[y_dim] = da_high_res.raster.ycoords
 
-        # Create a population per buildings density map.
-        ds_sum = xr.merge([da_bld, da_bld_area, da_idx]).groupby("index").sum()
+        # # Create a population per buildings density map.
+        # use pandas as xarray groupby sum is slow, see https://github.com/pydata/xarray/issues/4473
+        df_sum = (
+            xr.merge([da_bld, da_bld_area, da_idx])
+            .stack(yx=(y_dim, x_dim))  # flatten to make dataframe
+            .reset_coords(drop=True)
+            .to_dataframe()
+            .groupby("index")
+            .sum()
+        )
+
         if da_pop_res > da_bld_res:
             ar_bld_count = np.full_like(da_pop, fill_value=0)
             ar_area_count = np.full_like(da_pop, fill_value=0)
-            ar_bld_count.flat[[ds_sum.index]] = ds_sum["bld"]
-            ar_area_count.flat[[ds_sum.index]] = ds_sum["bld_area"]
+            ar_bld_count.flat[[df_sum.index]] = df_sum["bld"]
+            ar_area_count.flat[[df_sum.index]] = df_sum["bld_area"]
             ar_pop_bld_density = np.where(
                 ar_bld_count != 0, (da_pop_density * ar_area_count) / ar_bld_count, 0
             )
@@ -83,17 +95,16 @@ def create_population_per_building_map(
         else:
             ar_pop_count = np.full_like(da_bld, fill_value=0)
             ar_area_count = np.full_like(da_bld, fill_value=0)
-            ar_pop_count.flat[[ds_sum.index]] = ds_sum["pop"]
-            ar_area_count.flat[[ds_sum.index]] = ds_sum["pop_area"]
+            ar_pop_count.flat[[df_sum.index]] = df_sum["pop"]
+            ar_area_count.flat[[df_sum.index]] = df_sum["pop_area"]
             ar_pop_bld_density = np.where(
-                ar_pop_count != 0, ar_pop_count / (da_bld_density * ar_area_count), 0
+                da_bld_density != 0, ar_pop_count / (da_bld_density * ar_area_count), 0
             )
 
-        da_pop_bld_density = raster.full_like(da_low_res, nodata=0)
-        da_pop_bld_density = da_pop_bld_density.raster.from_numpy(
+        da_pop_bld_density = raster.RasterDataArray.from_numpy(
             data=ar_pop_bld_density,
-            transform=da_pop_bld_density.raster.transform,
-            crs=da_pop_bld_density.raster.crs,
+            transform=da_low_res.raster.transform,
+            crs=da_low_res.raster.crs,
             nodata=0,
         )
 
@@ -105,22 +116,23 @@ def create_population_per_building_map(
         )
 
         # Create the population, buildings and population per building count maps.
-        da_bld_count = da_bld_density * get_area_grid(da_bld_density)
-        da_pop_count = da_pop_density * get_area_grid(da_pop_density)
+        da_bld_count = da_bld_density * da_like_area
+        da_pop_count = da_pop_density * da_like_area
         da_pop_bld_count = da_pop_bld_density * da_bld_count
         da_bld_count.raster.set_nodata(nodata=0)
         da_pop_count.raster.set_nodata(nodata=0)
         da_pop_bld_count.raster.set_nodata(nodata=0)
 
     elif da_bld_res < ds_like_res and da_pop_res < ds_like_res:
+        logger.debug("Upscaling exposure maps to hazard resolution.")
         # Reproject the density maps to the hazard projection.
         da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
         da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
 
         # Create the population, buildings and population per building count maps.
-        da_bld_count = da_bld_density * get_area_grid(da_bld_density)
-        da_pop_count = da_pop_density * get_area_grid(da_pop_density)
-        da_pop_bld_count = xr.where(da_bld_count != 0, da_pop_count, 0)
+        da_bld_count = da_bld_density * da_like_area
+        da_pop_count = da_pop_density * da_like_area
+        da_pop_bld_count = da_pop_count.where(da_bld_count == 0, 0)
         da_bld_count.raster.set_nodata(nodata=0)
         da_pop_count.raster.set_nodata(nodata=0)
         da_pop_bld_count.raster.set_nodata(nodata=0)
@@ -166,6 +178,8 @@ def get_area_grid(ds):
     da_out = xr.DataArray(
         data=area.astype("float32"), coords=ds.raster.coords, dims=ds.raster.dims
     )
+    da_out.raster.set_nodata(0)
+    da_out.raster.set_crs(ds.raster.crs)
 
     return da_out
 

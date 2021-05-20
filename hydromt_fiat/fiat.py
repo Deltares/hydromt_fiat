@@ -2,26 +2,24 @@
 
 
 from ast import literal_eval
-from hydromt import gis_utils
 from hydromt.models.model_api import Model
-from itertools import cycle
 from openpyxl import load_workbook
 from os.path import abspath, basename, dirname, isfile, join
 from pathlib import Path
-from rasterio.warp import transform_bounds
 from shapely.geometry import box
 from shutil import copy
 from typing import Dict, List, Optional, Set, Tuple
-from . import workflows, DATADIR
 import geopandas as gpd
 import glob
 import hydromt
 import logging
 import numpy as np
 import pandas as pd
-import pyproj
 import xarray as xr
 
+from . import workflows, DATADIR
+
+__all__ = ["FiatModel"]
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +42,7 @@ class FiatModel(Model):
         data_libs=None,
         logger=logger,
         deltares_data=False,
+        artifact_data=False,
     ):
         # Check if the root parameter exists.
         if not isinstance(root, (str, Path)):
@@ -55,6 +54,7 @@ class FiatModel(Model):
             config_fn=config_fn,
             data_libs=data_libs,
             deltares_data=deltares_data,
+            artifact_data=artifact_data,
             logger=logger,
         )
 
@@ -161,8 +161,8 @@ class FiatModel(Model):
             if self.staticmaps and not self.staticmaps.raster.identical_grid(ds):
                 raise ValueError("The hazard maps should have identical grids.")
 
-            # TODO: Add check that controls if the origin of the hazard file is correctly positioned (top-left corner)!
-            # TODO: If not correctly defined, correct automatically (da.reindex(lat=list(reversed(da.lat))))!
+            if ds.raster.res[1] > 0:
+                ds.reindex({ds.raster.y_dim: list(reversed(ds.raster.ycoords))})
 
             # Rename the hazard map and add to staticmaps.
             hazard_type = self.get_config("hazard_type", fallback="flooding")
@@ -214,7 +214,6 @@ class FiatModel(Model):
         pop_fn=None,
         country=None,
         unit="USD",
-        **kwargs,
     ):
         """Add a buildings value exposure map to the FIAT model schematization.
 
@@ -236,17 +235,24 @@ class FiatModel(Model):
         if bld_fn and pop_fn:
             # Clip the building footprint map from the global dataset and store as a xarray.DataArray.
             da_bld = self.data_catalog.get_rasterdataset(
-                bld_fn, geom=self.region, buffer=4, **kwargs
+                bld_fn,
+                geom=self.region,
+                buffer=4,
             ).rename("bld")
 
             # Clip the population map from the global dataset and store as a xarray.DataArray.
             da_pop = self.data_catalog.get_rasterdataset(
-                pop_fn, geom=self.region, buffer=4, **kwargs
+                pop_fn,
+                geom=self.region,
+                buffer=4,
             ).rename("pop")
 
             # Create the population, buildings and population per building count maps and store as a xarray.DataSet.
             ds_count = workflows.create_population_per_building_map(
-                da_bld, da_pop, ds_like=self.staticmaps
+                da_bld,
+                da_pop,
+                ds_like=self.staticmaps,
+                logger=self.logger,
             )
 
             # Add the exposure count maps to staticmaps.
@@ -257,10 +263,14 @@ class FiatModel(Model):
         # Create the buildings value map.
         if "population_buildings_count" in self.staticmaps.data_vars:
             # Get the associated country tag (alpha-3 code).
-            self._get_country_tag(country)
+            tag = self._get_country_tag(country)
 
             # Get the associated vulnerability (damage function id and maximum damage value).
             df_id, max_damage = self._get_vulnerability()
+            self.logger.debug(
+                "Scaling building value with max damage: "
+                f"{max_damage:.2f} {unit:s} (country = {tag:s})."
+            )
 
             # Create a building value map.
             ds_bld_value = self.staticmaps["population_buildings_count"] * max_damage
@@ -348,7 +358,7 @@ class FiatModel(Model):
             self.set_config(f"exp_{row - 6}", exp_layer)
 
     def _get_country_tag(self, country):
-        """ Return the country tag for a country name input. """
+        """Return the country tag for a country name input."""
 
         # Get the country tag from the country name.
         if country or "country" in self.config:
@@ -377,7 +387,8 @@ class FiatModel(Model):
             if not tag in df_config["Alpha-3"].tolist():
                 tag = self._get_nearest_country()
                 self.logger.debug(
-                    f"The country tag (related to the country name) is not valid. The country tag of the nearest country is used instead."
+                    "The country tag (related to the country name) is not valid."
+                    "The country tag of the nearest country is used instead."
                 )
 
         else:
@@ -386,9 +397,10 @@ class FiatModel(Model):
 
         # Set the country tag.
         self.set_config("country", tag)
+        return tag
 
     def _get_nearest_country(self):
-        """ Return the country tag of the nearest country. """
+        """Return the country tag of the nearest country."""
 
         # Read the global exposure configuration.
         df_config = pd.read_excel(
@@ -400,7 +412,7 @@ class FiatModel(Model):
         pass
 
     def _get_vulnerability(self):
-        """ Return the damage function id and the maximum damage number. """
+        """Return the damage function id and the maximum damage number."""
 
         # Read the global exposure configuration.
         df_config = pd.read_excel(
@@ -515,6 +527,7 @@ class FiatModel(Model):
             )
         )
 
+        # FIXME: why is the reference factor fixe to 2019?!
         # Determine the indexes of the reference year (2019) and the forecast year.
         ref_year_idx = list(annual_gdp_per_cap_data).index(2019)
         forecast_year_idx = list(annual_gdp_per_cap_data).index(self.config["year"])
@@ -547,32 +560,29 @@ class FiatModel(Model):
             root = abspath(root)
 
             # Set the general information.
-            self.set_config(
-                "vulnerability", join(root, "vulnerability")
-            )  # TODO: Comment to disable absolute paths!
-            self.set_config(
-                "exposure", join(root, "exposure")
-            )  # TODO: Comment to disable absolute paths!
-            self.set_config(
-                "output", join(root, "output")
-            )  # TODO: Comment to disable absolute paths!
-            # self.set_config("vulnerability", "vulnerability") # TODO: Uncomment to enable relative paths with respect to the root!
-            # self.set_config("exposure", "exposure") # TODO: Uncomment to enable relative paths with respect to the root!
-            # self.set_config("output", "output") # TODO: Uncomment to enable relative paths with respect to the root!
-
+            # TODO: Comment to disable absolute paths!
+            self.set_config("vulnerability", join(root, "vulnerability"))
+            self.set_config("exposure", join(root, "exposure"))
+            self.set_config("output", join(root, "output"))
+            # TODO: Uncomment to enable relative paths with respect to the root!
+            # self.set_config("vulnerability", "vulnerability")
+            # self.set_config("exposure", "exposure")
+            # self.set_config("output", "output")
             # Set the hazard information.
             hazard_maps = self.get_config("hazard")
             if isinstance(hazard_maps, dict):
+                # TODO: Comment to disable absolute paths!
                 hazard_maps = {
                     k: join(root, "hazard", basename(v)) for k, v in hazard_maps.items()
-                }  # TODO: Comment to disable absolute paths!
-                # hazard_maps = {k: join("hazard", basename(v)) for k, v in hazard_maps.items()} # TODO: Uncomment to enable relative paths with respect to the root!
+                }
+                # TODO: Uncomment to enable relative paths with respect to the root!
+                # hazard_maps = {k: join("hazard", basename(v)) for k, v in hazard_maps.items()}
                 self.set_config("hazard", hazard_maps)
             elif isinstance(hazard_maps, str):
-                self.set_config(
-                    "hazard", join(root, "hazard", basename(hazard_maps))
-                )  # TODO: Comment to disable absolute paths!
-                # self.set_config("hazard", join("hazard", basename(hazard_maps))) # TODO: Uncomment to enable relative paths with respect to the root!
+                # TODO: Comment to disable absolute paths!
+                self.set_config("hazard", join(root, "hazard", basename(hazard_maps)))
+                # TODO: Uncomment to enable relative paths with respect to the root!
+                # self.set_config("hazard", join("hazard", basename(hazard_maps)))
 
             # Set the exposure information.
             for row in range(7, 99):
@@ -678,16 +688,16 @@ class FiatModel(Model):
             with open(join(dirname(fn), "risk.csv"), "w") as f:
                 f.write(f"{rpmin}, {rpmax}\n")
                 for rp in sorted(hazard_maps.keys()):
-                    map_fn = abspath(
-                        hazard_maps[rp]
-                    )  # TODO: Comment to disable absolute paths!
-                    # map_fn = hazard_maps[rp]  # TODO: Uncomment to enable relative paths with respect to the root!
+                    # TODO: Comment to disable absolute paths!
+                    map_fn = abspath(hazard_maps[rp])
+                    # TODO: Uncomment to enable relative paths with respect to the root!
+                    # map_fn = hazard_maps[rp]
                     f.write(f"{map_fn:s}, {rp}\n")
 
-            ws["B4"] = join(
-                self.root, "risk.csv"
-            )  # TODO: Comment to disable absolute paths!
-            # ws["B4"] = "risk.csv"  # TODO: Uncomment to enable relative paths with respect to the root!
+            # TODO: Comment to disable absolute paths!
+            ws["B4"] = join(self.root, "risk.csv")
+            # TODO: Uncomment to enable relative paths with respect to the root!
+            # ws["B4"] = "risk.csv"
         elif isinstance(hazard_maps, str):
             ws["B4"] = abspath(hazard_maps)  # TODO: Comment to disable absolute paths!
             # ws["B4"] = hazard_maps  # TODO: Uncomment to enable relative paths with respect to the root!
@@ -792,10 +802,10 @@ class FiatModel(Model):
         # Read the exposure maps.
         exp_root = self.get_config("exposure")
         if exp_root is not None:
-            fns = glob.glob(
-                join(exp_root, "*.tif")
-            )  # TODO: Comment to disable absolute paths!
-            # fns = glob.glob(join(self.root, exp_root, "*.tif"))  # TODO: Uncomment to enable relative paths with respect to the root!
+            # TODO: Comment to disable absolute paths!
+            fns = glob.glob(join(exp_root, "*.tif"))
+            # TODO: Uncomment to enable relative paths with respect to the root!
+            # fns = glob.glob(join(self.root, exp_root, "*.tif"))
             if len(fns) == 0:
                 logger.warning(f"Could not find any expsure maps in {exp_root}.")
             else:
@@ -820,7 +830,8 @@ class FiatModel(Model):
             self.staticmaps[exposure_maps].raster.to_mapstack(
                 exp_root, compress=compress
             )  # TODO: Comment to disable absolute paths!
-            # self.staticmaps[exposure_maps].raster.to_mapstack(join(self.root, exp_root), compress=compress) # TODO: Uncomment to enable relative paths with respect to the root!
+            # TODO: Uncomment to enable relative paths with respect to the root!
+            # self.staticmaps[exposure_maps].raster.to_mapstack(join(self.root, exp_root), compress=compress)
 
     def read_staticgeoms(self):
         """Read staticgeoms at <root/?/> and parse to dict of GeoPandas."""
