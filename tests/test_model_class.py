@@ -1,33 +1,31 @@
 """Test FIAT plugin model class against hydromt.models.model_api"""
 
 
-from hydromt.models import MODELS
 from hydromt.cli.cli_utils import parse_config
+from hydromt_fiat import FiatModel
 from os.path import join, dirname, abspath
 import logging
 import numpy as np
 import pytest
 
 
-TESTDATADIR = join(dirname(abspath(__file__)), "data")
 EXAMPLEDIR = join(dirname(abspath(__file__)), "..", "examples")
 
 
-_models = {
-    "fiat": {
-        "example": join("results", "fiat_test"),
-        "ini": "build_fiat.ini",
+_cases = {
+    "fiat_flood": {
+        "region_grid": join("data", "flood_hand", "hand_050cm_rp02.tif"),
+        "example": "fiat_flood",
+        "ini": "fiat_flood.ini",
     },
 }
 
 
-@pytest.mark.parametrize("model", list(_models.keys()))
-def test_model_class(model):
-    _model = _models[model]
-
+@pytest.mark.parametrize("case", list(_cases.keys()))
+def test_model_class(case):
     # Read model in examples folder.
-    root = join(EXAMPLEDIR, _model["example"])
-    mod = MODELS.get(model)(root=root, mode="r")
+    root = join(EXAMPLEDIR, _cases[case]["example"])
+    mod = FiatModel(root=root, mode="r")
     mod.read()
 
     # Run test_model_api() method.
@@ -35,23 +33,17 @@ def test_model_class(model):
     assert len(non_compliant_list) == 0
 
 
-@pytest.mark.parametrize("model", list(_models.keys()))
-def test_model_build(tmpdir, model):
+@pytest.mark.parametrize("case", list(_cases.keys()))
+def test_model_build(tmpdir, case):
     logger = logging.getLogger(__name__)
-    _model = _models[model]
-    root = str(tmpdir.join(model))
-    # root = join(EXAMPLEDIR, _model["example"])  # TODO: Update the example folder after the implementation is finished!
-
-    # Initialize model.
-    yml = join(
-        EXAMPLEDIR, "data_catalog.yml"
-    )  # TODO: Join with deltares data and create artifacts!
-    mod1 = MODELS.get(model)(root=root, mode="w", logger=logger, data_libs=yml)
+    _case = _cases[case]
+    root = str(tmpdir.join(case))
 
     # Build model.
-    region = {"grid": join(EXAMPLEDIR, "data", "hazard", "RP_2.tif")}
-    config = join(EXAMPLEDIR, _model["ini"])
-    opt = parse_config(config)
+    region = {"grid": join(EXAMPLEDIR, _case["region_grid"])}
+    opt = parse_config(join(EXAMPLEDIR, _case["ini"]))
+    kwargs = opt.pop("global", {})  # pas global section to model init
+    mod1 = FiatModel(root=root, mode="w", logger=logger, **kwargs)
     mod1.build(region=region, opt=opt)
 
     # Check if model is api compliant.
@@ -59,10 +51,10 @@ def test_model_build(tmpdir, model):
     assert len(non_compliant_list) == 0
 
     # Read the created model together with the model from the examples folder.
-    root0 = join(EXAMPLEDIR, _model["example"])
-    mod0 = MODELS.get(model)(root=root0, mode="r")
+    root0 = join(EXAMPLEDIR, _case["example"])
+    mod0 = FiatModel(root=root0, mode="r")
     mod0.read()
-    mod1 = MODELS.get(model)(root=root, mode="r")
+    mod1 = FiatModel(root=root, mode="r")
     mod1.read()
 
     # Compare model maps.
