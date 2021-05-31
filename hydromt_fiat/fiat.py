@@ -84,7 +84,7 @@ class FiatModel(Model):
             geom = region["geom"]
         else:
             raise ValueError(
-                f"Unknown region kind {kind} for FIAT, expected one of ['file', 'bbox', 'geom']."
+                f"Unknown region kind {kind} for FIAT, expected one of ['bbox', 'grid', 'geom']."
             )
 
         # Set the model region geometry (to be accessed through the shortcut self.region).
@@ -268,8 +268,8 @@ class FiatModel(Model):
             # Get the associated vulnerability (damage function id and maximum damage value).
             df_id, max_damage = self._get_vulnerability()
             self.logger.debug(
-                "Scaling building value with max damage: "
-                f"{max_damage:.2f} {unit:s} (country = {tag:s})."
+                "Calculating building values with maximum damage: "
+                f"{max_damage:.2f} {unit:s}/person (country = {tag:s})."
             )
 
             # Create a building value map.
