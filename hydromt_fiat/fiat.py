@@ -162,7 +162,7 @@ class FiatModel(Model):
 
             # Correct (if necessary) the grid orientation from the lower to the upper left corner.
             if ds.raster.res[1] > 0:
-                ds.reindex({ds.raster.y_dim: list(reversed(ds.raster.ycoords))})
+                ds = ds.reindex({ds.raster.y_dim: list(reversed(ds.raster.ycoords))})
 
             # Rename the hazard map and add to staticmaps.
             hazard_type = self.get_config("hazard_type", fallback="flooding")
