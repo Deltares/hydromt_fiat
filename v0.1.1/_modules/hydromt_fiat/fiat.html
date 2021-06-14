@@ -1,0 +1,1109 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>hydromt_fiat.fiat &mdash; hydromt_fiat  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/theme_overrides.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> hydromt_fiat
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/fiat.html">FIAT model components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide/fiat_flood.html">Setting up a flood damage model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">References &amp; Help</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/api_index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">What’s new</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hydromt_fiat</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>hydromt_fiat.fiat</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for hydromt_fiat.fiat</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Implement fiat model class&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
+<span class="kn">from</span> <span class="nn">hydromt.models.model_api</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">openpyxl</span> <span class="kn">import</span> <span class="n">load_workbook</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">isfile</span><span class="p">,</span> <span class="n">join</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">hydromt</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">workflows</span><span class="p">,</span> <span class="n">DATADIR</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FiatModel&quot;</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="FiatModel"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel">[docs]</a><span class="k">class</span> <span class="nc">FiatModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;General and basic API for the FIAT model in hydroMT.&quot;&quot;&quot;</span>
+
+    <span class="n">_NAME</span> <span class="o">=</span> <span class="s2">&quot;fiat&quot;</span>
+    <span class="n">_CONF</span> <span class="o">=</span> <span class="s2">&quot;fiat_configuration.xlsx&quot;</span>
+    <span class="n">_GEOMS</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># FIXME Mapping from hydromt names to model specific names</span>
+    <span class="n">_MAPS</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># FIXME Mapping from hydromt names to model specific names</span>
+    <span class="n">_FOLDERS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;vulnerability&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">]</span>
+    <span class="n">_DATADIR</span> <span class="o">=</span> <span class="n">DATADIR</span>
+
+<div class="viewcode-block" id="FiatModel.__init__"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">root</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
+        <span class="n">config_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">data_libs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+        <span class="n">deltares_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">artifact_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Check if the root parameter exists.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The &#39;root&#39; parameter should be a of str or Path.&quot;</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">config_fn</span><span class="o">=</span><span class="n">config_fn</span><span class="p">,</span>
+            <span class="n">data_libs</span><span class="o">=</span><span class="n">data_libs</span><span class="p">,</span>
+            <span class="n">deltares_data</span><span class="o">=</span><span class="n">deltares_data</span><span class="p">,</span>
+            <span class="n">artifact_data</span><span class="o">=</span><span class="n">artifact_data</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="FiatModel.setup_basemaps"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_basemaps.html#hydromt_fiat.fiat.FiatModel.setup_basemaps">[docs]</a>    <span class="k">def</span> <span class="nf">setup_basemaps</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Define the model region.</span>
+
+<span class="sd">        Adds model layer:</span>
+
+<span class="sd">        * **region** geom: model region</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: dict</span>
+<span class="sd">            Dictionary describing region of interest, e.g. {&#39;bbox&#39;: [xmin, ymin, xmax, ymax]}.</span>
+<span class="sd">            See :py:meth:`~hydromt.workflows.parse_region()` for all options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">kind</span><span class="p">,</span> <span class="n">region</span> <span class="o">=</span> <span class="n">hydromt</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">parse_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;bbox&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">region</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">])],</span> <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="s2">&quot;grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">box</span>
+        <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;geom&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="s2">&quot;geom&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown region kind </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> for FIAT, expected one of [&#39;bbox&#39;, &#39;grid&#39;, &#39;geom&#39;].&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Set the model region geometry (to be accessed through the shortcut self.region).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_staticgeoms</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FiatModel.setup_hazard"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard">[docs]</a>    <span class="k">def</span> <span class="nf">setup_hazard</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">map_fn</span><span class="p">,</span>
+        <span class="n">return_period</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a hazard map to the FIAT model schematization.</span>
+
+<span class="sd">        Adds model layer:</span>
+
+<span class="sd">        * **hazard** map(s): A hazard map with the nomenclature &lt;hazard_type&gt;_rp&lt;return_period&gt;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        map_fn: (list of) str, Path</span>
+<span class="sd">            Path to hazard raster file.</span>
+<span class="sd">        return_period: (list of) int, float, optional</span>
+<span class="sd">            Return period in years, required for a risk calculation. The default is None.</span>
+<span class="sd">        variable: str</span>
+<span class="sd">            Name of variable in dataset, required when reading NetCDF data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Check the input parameters.</span>
+        <span class="n">rp_lst</span><span class="p">,</span> <span class="n">var_lst</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">fn_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">map_fn</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">map_fn</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">))</span> <span class="k">else</span> <span class="n">map_fn</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">))):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The &#39;map_fn&#39; parameter should be a of str or Path.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rp_lst</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">[</span><span class="n">return_period</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">return_period</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+                <span class="k">else</span> <span class="n">return_period</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rp_lst</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The &#39;return_period&#39; parameter should be a float or int, received a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">return_period</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rp_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">rp_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_lst</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
+                    <span class="s2">&quot;The length of &#39;return_period&#39; parameter should match with the &#39;map_fn&#39; or &#39;variable&#39; parameters.&quot;</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">var_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">variable</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">var_lst</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The &#39;variable&#39; parameter should be a str, received a </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span><span class="si">}</span><span class="s2"> instead.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="n">var_lst</span><span class="p">)</span>
+
+        <span class="c1"># Get a (clipped) Dataset of hazard maps (also for a single hazard map input).</span>
+        <span class="n">rp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">variable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;The &#39;variable&#39; parameter is required when reading netcdf data.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">driver</span><span class="o">=</span><span class="s2">&quot;netcdf&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_lst</span><span class="p">):</span>
+                <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="n">var_lst</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fn_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">rp_lst</span><span class="p">):</span>
+                <span class="n">rp</span> <span class="o">=</span> <span class="n">rp_lst</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
+                <span class="n">fn</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">single_var_as_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">identical_grid</span><span class="p">(</span><span class="n">ds</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The hazard maps should have identical grids.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Correct (if necessary) the grid orientation from the lower to the upper left corner.</span>
+            <span class="k">if</span> <span class="n">ds</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">reindex</span><span class="p">({</span><span class="n">ds</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">y_dim</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">ycoords</span><span class="p">))})</span>
+
+            <span class="c1"># Rename the hazard map and add to staticmaps.</span>
+            <span class="n">hazard_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard_type&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="s2">&quot;flooding&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+                <span class="n">da</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+                <span class="c1"># Get the return period per input parameter.</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rp_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">var_lst</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">):</span>
+                    <span class="n">rp</span> <span class="o">=</span> <span class="n">rp_lst</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+                <span class="c1"># Get (if possible) the return period from dataset names if the input parameter is None.</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># Get the numeric part (including &quot;.&quot;) after &quot;rp&quot; (if in name).</span>
+                        <span class="n">fstrip</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">in</span> <span class="s2">&quot;0123456789.&quot;</span>
+                        <span class="n">rps</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">fstrip</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;rp&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+                        <span class="n">rp</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">rps</span><span class="p">)</span>
+                        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rp</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AssertionError</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Could not derive the return periods for hazard map: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+
+                <span class="c1"># Rename the hazard file name.</span>
+                <span class="n">rp_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;rp</span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">rp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">out_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">hazard_type</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rp_str</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">hazard_fn</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_name</span><span class="si">}</span><span class="s2">.tif&quot;</span>
+                <span class="p">)</span>  <span class="c1"># TODO: Comment to disable absolute paths!</span>
+                <span class="c1"># hazard_fn = join(&quot;hazard&quot;, f&quot;{out_name}.tif&quot;) # TODO: Uncomment to enable relative paths with respect to root!</span>
+
+                <span class="c1"># Add the hazard map to staticmaps.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">out_name</span><span class="p">)</span>
+
+                <span class="c1"># Update the config with filepath.</span>
+                <span class="k">if</span> <span class="n">rp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">post</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(rp </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">hazard_fn</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">post</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">hazard_fn</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="n">hazard_type</span><span class="si">}</span><span class="s2"> hazard layer: </span><span class="si">{</span><span class="n">out_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">post</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span></div>
+
+<div class="viewcode-block" id="FiatModel.setup_exposure_buildings"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings">[docs]</a>    <span class="k">def</span> <span class="nf">setup_exposure_buildings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">bld_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pop_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">country</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;USD&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a buildings value exposure map to the FIAT model schematization.</span>
+
+<span class="sd">        Adds model layer:</span>
+
+<span class="sd">        * **exposure** map: An exposure map with the nomenclature &lt;exposure_type&gt;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        bld_fn: str</span>
+<span class="sd">            Nametag of the global building footprints dataset (raster file).</span>
+<span class="sd">        pop_fn: str</span>
+<span class="sd">            Nametag of the global population dataset (raster file).</span>
+<span class="sd">        country: str, optional</span>
+<span class="sd">            Country name or tag in which the hazard region is location. Required to derive the damage function and</span>
+<span class="sd">            potential damage values associated to the hazard region.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">bld_fn</span> <span class="ow">and</span> <span class="n">pop_fn</span><span class="p">:</span>
+            <span class="c1"># Clip the building footprint map from the global dataset and store as a xarray.DataArray.</span>
+            <span class="n">da_bld</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
+                <span class="n">bld_fn</span><span class="p">,</span>
+                <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">buffer</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;bld&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Clip the population map from the global dataset and store as a xarray.DataArray.</span>
+            <span class="n">da_pop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
+                <span class="n">pop_fn</span><span class="p">,</span>
+                <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">buffer</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;pop&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Create the population, buildings and population per building count maps and store as a xarray.DataSet.</span>
+            <span class="n">ds_count</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">create_population_per_building_map</span><span class="p">(</span>
+                <span class="n">da_bld</span><span class="p">,</span>
+                <span class="n">da_pop</span><span class="p">,</span>
+                <span class="n">ds_like</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">,</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Add the exposure count maps to staticmaps.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">ds_count</span><span class="p">[</span><span class="s2">&quot;bld&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;buildings_count&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">ds_count</span><span class="p">[</span><span class="s2">&quot;pop&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;population_count&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">ds_count</span><span class="p">[</span><span class="s2">&quot;pop_bld&quot;</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;population_buildings_count&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Create the buildings value map.</span>
+        <span class="k">if</span> <span class="s2">&quot;population_buildings_count&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="o">.</span><span class="n">data_vars</span><span class="p">:</span>
+            <span class="c1"># Get the associated country tag (alpha-3 code).</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_country_tag</span><span class="p">(</span><span class="n">country</span><span class="p">)</span>
+
+            <span class="c1"># Get the associated vulnerability (damage function id and maximum damage value).</span>
+            <span class="n">df_id</span><span class="p">,</span> <span class="n">max_damage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_vulnerability</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;Calculating building values with maximum damage: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">max_damage</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">:</span><span class="s2">s</span><span class="si">}</span><span class="s2">/person (country = </span><span class="si">{</span><span class="n">tag</span><span class="si">:</span><span class="s2">s</span><span class="si">}</span><span class="s2">).&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Create a building value map.</span>
+            <span class="n">ds_bld_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">[</span><span class="s2">&quot;population_buildings_count&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">max_damage</span>
+            <span class="n">ds_bld_value</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">set_nodata</span><span class="p">(</span><span class="n">nodata</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">ds_bld_value</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;bld_value&quot;</span>
+
+            <span class="c1"># Add the buildings value map to staticmaps.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">ds_bld_value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;buildings_value&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Check if the buildings value map has correctly been generated.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The buildings value exposure layer is not correctly generated.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Add the buildings value map to the config.</span>
+        <span class="n">exp_layer</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="s2">&quot;Buildings Value&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;max_damage&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;bu&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="n">df_id</span><span class="p">,</span>
+            <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;raster&quot;</span><span class="p">:</span> <span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="s2">&quot;buildings_value.tif&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="n">unit</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">lyrs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;exp_&quot;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">lyrs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">lyrs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">][</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Buildings Value&quot;</span><span class="p">:</span>
+                    <span class="n">lyr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lyr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">lyrs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lyr</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">lyr</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exp_layer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added exposure layer: Buildings Value&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">setup_exposure_roads</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">exposure_fn</span><span class="p">,</span>
+        <span class="n">category</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># TODO general method to set exposure layer</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="FiatModel.scale_exposure"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.scale_exposure.html#hydromt_fiat.fiat.FiatModel.scale_exposure">[docs]</a>    <span class="k">def</span> <span class="nf">scale_exposure</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">scenario</span><span class="p">,</span>
+        <span class="n">year</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scale the exposure to the forecast year, using the shared socioeconomic pathway (SSP) projections for</span>
+<span class="sd">        population and GDP growth.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        scenario: str</span>
+<span class="sd">            Nametag of the shared socioeconomic pathway (SSP), required for a forecast calculation.</span>
+<span class="sd">        year: int</span>
+<span class="sd">            The forecast year to which the exposure data is scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Set the scenario and year config parameters.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;scenario&quot;</span><span class="p">,</span> <span class="n">scenario</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">year</span><span class="p">)</span>
+
+        <span class="c1"># Determine the scale factor.</span>
+        <span class="n">pop_correction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_population_correction_factor</span><span class="p">()</span>
+        <span class="n">gdp_correction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_gdp_correction_factor</span><span class="p">()</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">pop_correction</span> <span class="o">*</span> <span class="n">gdp_correction</span>
+
+        <span class="c1"># Set the scale factor.</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">99</span><span class="p">):</span>
+            <span class="n">exp_layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span> <span class="o">-</span> <span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_layer</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">exp_layer</span><span class="p">[</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale_factor</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span> <span class="o">-</span> <span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exp_layer</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_country_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">country</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the country tag for a country name input.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Get the country tag from the country name.</span>
+        <span class="k">if</span> <span class="n">country</span> <span class="ow">or</span> <span class="s2">&quot;country&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">country</span><span class="p">:</span>
+                <span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Read the global exposure configuration.</span>
+            <span class="n">df_config</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;global_configuration.xlsx&quot;</span><span class="p">),</span>
+                <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Buildings&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Extract the country tag.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">country</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">df_config</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                        <span class="n">df_config</span><span class="p">[</span><span class="s2">&quot;Country_Name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">country</span><span class="p">,</span> <span class="s2">&quot;Alpha-3&quot;</span>
+                    <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">country</span> <span class="ow">in</span> <span class="n">df_config</span><span class="p">[</span><span class="s2">&quot;Country_Name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="n">country</span>
+
+            <span class="c1"># If the country tag is not valid, get the country tag from nearest country.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">df_config</span><span class="p">[</span><span class="s2">&quot;Alpha-3&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nearest_country</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;The country tag (related to the country name) is not valid.&quot;</span>
+                    <span class="s2">&quot;The country tag of the nearest country is used instead.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If the country parameter is None, get the country tag from nearest country.</span>
+            <span class="n">country</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_nearest_country</span><span class="p">()</span>
+
+        <span class="c1"># Set the country tag.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;country&quot;</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tag</span>
+
+    <span class="k">def</span> <span class="nf">_get_nearest_country</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the country tag of the nearest country.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Read the global exposure configuration.</span>
+        <span class="n">df_config</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;global_configuration.xlsx&quot;</span><span class="p">),</span>
+            <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Buildings&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># TODO: Lookup country from shapefile!</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_get_vulnerability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the damage function id and the maximum damage number.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Read the global exposure configuration.</span>
+        <span class="n">df_config</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;global_configuration.xlsx&quot;</span><span class="p">),</span>
+            <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Buildings&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get the damage function id.</span>
+        <span class="n">df_id</span> <span class="o">=</span> <span class="n">df_config</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">df_config</span><span class="p">[</span><span class="s2">&quot;Alpha-3&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">],</span>
+            <span class="sa">f</span><span class="s2">&quot;Damage_Function_ID_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;hazard_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Get the maximum damage value.</span>
+        <span class="n">max_damage</span> <span class="o">=</span> <span class="n">df_config</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">df_config</span><span class="p">[</span><span class="s2">&quot;Alpha-3&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">],</span>
+            <span class="sa">f</span><span class="s2">&quot;Max_Damage_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;hazard_type&#39;</span><span class="p">]</span><span class="o">.</span> <span class="n">capitalize</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">df_id</span><span class="p">,</span> <span class="n">max_damage</span>
+
+    <span class="k">def</span> <span class="nf">_get_population_correction_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+
+        <span class="c1"># Read the global SSP data.</span>
+        <span class="n">df_pop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;growth_scenarios&quot;</span><span class="p">,</span> <span class="s2">&quot;global_pop.xlsx&quot;</span><span class="p">),</span>
+            <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Extract the national data.</span>
+        <span class="n">pop_data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_pop</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">df_pop</span><span class="p">[</span><span class="s2">&quot;Region&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">])</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_pop</span><span class="p">[</span><span class="s2">&quot;Scenario&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;scenario&quot;</span><span class="p">])</span>
+            <span class="p">]</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># In case multiple data sources are available, use the averaged values.</span>
+        <span class="n">pop_data</span> <span class="o">=</span> <span class="n">pop_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Interpolate (linear) the data to obtain annual results.</span>
+        <span class="n">annual_pop_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">pop_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">pop_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">interp_pop_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                <span class="n">annual_pop_data</span><span class="p">,</span>
+                <span class="n">pop_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">pop_data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Determine the indexes of the reference year (GHS 2015) and the forecast year.</span>
+        <span class="n">ref_year_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">annual_pop_data</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">2015</span><span class="p">)</span>
+        <span class="n">forecast_year_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">annual_pop_data</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Calculate the correction factor.</span>
+        <span class="n">pop_correction</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">interp_pop_data</span><span class="p">[</span><span class="n">forecast_year_idx</span><span class="p">]</span> <span class="o">/</span> <span class="n">interp_pop_data</span><span class="p">[</span><span class="n">ref_year_idx</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pop_correction</span>
+
+    <span class="k">def</span> <span class="nf">_get_gdp_correction_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+
+        <span class="c1"># Read the global SSP data.</span>
+        <span class="n">df_pop</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;growth_scenarios&quot;</span><span class="p">,</span> <span class="s2">&quot;global_pop.xlsx&quot;</span><span class="p">),</span>
+            <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_gdp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;growth_scenarios&quot;</span><span class="p">,</span> <span class="s2">&quot;global_gdp(ppp).xlsx&quot;</span><span class="p">),</span>
+            <span class="n">sheet_name</span><span class="o">=</span><span class="s2">&quot;Data&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Extract the national data.</span>
+        <span class="n">pop_data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_pop</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">df_pop</span><span class="p">[</span><span class="s2">&quot;Region&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">])</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_pop</span><span class="p">[</span><span class="s2">&quot;Scenario&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;scenario&quot;</span><span class="p">])</span>
+            <span class="p">]</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">gdp_data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_gdp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="p">(</span><span class="n">df_gdp</span><span class="p">[</span><span class="s2">&quot;Region&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;country&quot;</span><span class="p">])</span>
+                <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_gdp</span><span class="p">[</span><span class="s2">&quot;Scenario&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;scenario&quot;</span><span class="p">])</span>
+            <span class="p">]</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># In case multiple data sources are available, use the averaged values.</span>
+        <span class="n">pop_data</span> <span class="o">=</span> <span class="n">pop_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">gdp_data</span> <span class="o">=</span> <span class="n">gdp_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Determine the GDP(PPP) per capita and interpolate (linear) the data to obtain annual results.</span>
+        <span class="n">gdp_ppp_data</span> <span class="o">=</span> <span class="n">gdp_data</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="n">pop_data</span>
+        <span class="n">annual_gdp_per_cap_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">gdp_ppp_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">gdp_ppp_data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">interp_gdp_per_cap_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+                <span class="n">annual_gdp_per_cap_data</span><span class="p">,</span>
+                <span class="n">gdp_ppp_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">gdp_ppp_data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># FIXME: why is the reference factor fixe to 2019?!</span>
+        <span class="c1"># Determine the indexes of the reference year (2019) and the forecast year.</span>
+        <span class="n">ref_year_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">annual_gdp_per_cap_data</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="mi">2019</span><span class="p">)</span>
+        <span class="n">forecast_year_idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">annual_gdp_per_cap_data</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Calculate the correction factor.</span>
+        <span class="n">correction_factor</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">annual_gdp_per_cap_data</span><span class="p">[</span><span class="n">forecast_year_idx</span><span class="p">]</span>
+            <span class="o">/</span> <span class="n">annual_gdp_per_cap_data</span><span class="p">[</span><span class="n">ref_year_idx</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">correction_factor</span>
+
+    <span class="c1"># Overwrite the model_api methods for root and config.</span>
+<div class="viewcode-block" id="FiatModel.set_root"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root">[docs]</a>    <span class="k">def</span> <span class="nf">set_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialized the model root.</span>
+<span class="sd">        In read mode it checks if the root exists.</span>
+<span class="sd">        In write mode in creates the required model folder structure.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        root: str, optional</span>
+<span class="sd">            Path to model root.</span>
+<span class="sd">        mode: {&quot;r&quot;, &quot;r+&quot;, &quot;w&quot;}, optional</span>
+<span class="sd">            Read/write-only mode for model files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Do super method and update absolute paths in config.</span>
+        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_root</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="ow">and</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">root</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+
+            <span class="c1"># Set the general information.</span>
+            <span class="c1"># TODO: Comment to disable absolute paths!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability&quot;</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;vulnerability&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;exposure&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">))</span>
+            <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="c1"># self.set_config(&quot;vulnerability&quot;, &quot;vulnerability&quot;)</span>
+            <span class="c1"># self.set_config(&quot;exposure&quot;, &quot;exposure&quot;)</span>
+            <span class="c1"># self.set_config(&quot;output&quot;, &quot;output&quot;)</span>
+            <span class="c1"># Set the hazard information.</span>
+            <span class="n">hazard_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="c1"># TODO: Comment to disable absolute paths!</span>
+                <span class="n">hazard_maps</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">hazard_maps</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+                <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+                <span class="c1"># hazard_maps = {k: join(&quot;hazard&quot;, basename(v)) for k, v in hazard_maps.items()}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">hazard_maps</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># TODO: Comment to disable absolute paths!</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">basename</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">)))</span>
+                <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+                <span class="c1"># self.set_config(&quot;hazard&quot;, join(&quot;hazard&quot;, basename(hazard_maps)))</span>
+
+            <span class="c1"># Set the exposure information.</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">99</span><span class="p">):</span>
+                <span class="n">exp_layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span> <span class="o">-</span> <span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="p">{})</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_layer</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+                <span class="n">exp_layer</span><span class="p">[</span><span class="s2">&quot;raster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">],</span> <span class="n">basename</span><span class="p">(</span><span class="n">exp_layer</span><span class="p">[</span><span class="s2">&quot;raster&quot;</span><span class="p">])</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span> <span class="o">-</span> <span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exp_layer</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_configread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse fiat_configuration.xlsx and risk.csv to dict.&quot;&quot;&quot;</span>
+
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">fn</span><span class="p">)</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s2">&quot;Input&quot;</span><span class="p">]</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># Read the general information.</span>
+        <span class="n">general_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;case&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;hazard_type&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B3&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B5&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;scenario&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;J1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;J2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;vulnerability&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;J3&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;exposure&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;J4&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;J5&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">general_config</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">general_config</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">general_config</span><span class="p">)</span>
+
+        <span class="c1"># Read the hazard information.</span>
+        <span class="n">hazard_fn</span> <span class="o">=</span> <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B4&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="n">hazard_fn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">hazard_fn</span><span class="p">)</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;.csv&quot;</span><span class="p">:</span>
+                <span class="n">hazard_maps</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="s2">&quot;risk.csv&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                        <span class="n">map_fn</span><span class="p">,</span> <span class="n">rp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+                        <span class="c1"># Strip white spaces and parse rp to int or float with literal_eval.</span>
+                        <span class="n">hazard_maps</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">rp</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span> <span class="n">map_fn</span><span class="o">.</span><span class="n">strip</span><span class="p">()})</span>
+
+                <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;hazard&quot;</span><span class="p">:</span> <span class="n">hazard_maps</span><span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;hazard&quot;</span><span class="p">:</span> <span class="n">hazard_fn</span><span class="p">})</span>
+
+        <span class="c1"># Read the exposure information.</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">99</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;A</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">exp_layer</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;use&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;A</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;category&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;B</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;max_damage&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;bu&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;D</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;F</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;map&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;H</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;scale_factor&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;raster&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;J</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;K</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="s2">&quot;landuse&quot;</span><span class="p">:</span> <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;L</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">exp_layer</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">exp_layer</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span><span class="o">-</span><span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">exp_layer</span><span class="p">})</span>
+
+        <span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">config</span>
+
+    <span class="k">def</span> <span class="nf">_configwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write config to fiat_configuration.xlsx and risk.csv&quot;&quot;&quot;</span>
+
+        <span class="c1"># Load the template.</span>
+        <span class="n">fn_temp</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_NAME</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_CONF</span><span class="p">)</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">load_workbook</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">fn_temp</span><span class="p">)</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s2">&quot;Input&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Store the general information.</span>
+        <span class="n">general_config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;B1&quot;</span><span class="p">:</span> <span class="s2">&quot;country&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;B2&quot;</span><span class="p">:</span> <span class="s2">&quot;case&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;B3&quot;</span><span class="p">:</span> <span class="s2">&quot;hazard_type&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;B5&quot;</span><span class="p">:</span> <span class="s2">&quot;unit&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;J1&quot;</span><span class="p">:</span> <span class="s2">&quot;scenario&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;J2&quot;</span><span class="p">:</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;J3&quot;</span><span class="p">:</span> <span class="s2">&quot;vulnerability&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;J4&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;J5&quot;</span><span class="p">:</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">loc</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">general_config</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ws</span><span class="p">[</span><span class="n">loc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># Store the hazard information.</span>
+        <span class="n">hazard_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">rpmin</span><span class="p">,</span> <span class="n">rpmax</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">hazard_maps</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">hazard_maps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="s2">&quot;risk.csv&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rpmin</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rpmax</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">rp</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">hazard_maps</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                    <span class="c1"># TODO: Comment to disable absolute paths!</span>
+                    <span class="n">map_fn</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">[</span><span class="n">rp</span><span class="p">])</span>
+                    <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+                    <span class="c1"># map_fn = hazard_maps[rp]</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">map_fn</span><span class="si">:</span><span class="s2">s</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># TODO: Comment to disable absolute paths!</span>
+            <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;risk.csv&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="c1"># ws[&quot;B4&quot;] = &quot;risk.csv&quot;</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">ws</span><span class="p">[</span><span class="s2">&quot;B4&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">)</span>  <span class="c1"># TODO: Comment to disable absolute paths!</span>
+            <span class="c1"># ws[&quot;B4&quot;] = hazard_maps  # TODO: Uncomment to enable relative paths with respect to the root!</span>
+
+        <span class="c1"># Store the exposure information.</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">99</span><span class="p">):</span>
+            <span class="n">exp_layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exp_</span><span class="si">{</span><span class="n">row</span><span class="o">-</span><span class="mi">6</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_layer</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1"># Write with fallback options.</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;A</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;use&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;B</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_damage&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;D</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bu&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;F</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;H</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;map&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale_factor&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;J</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;raster&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;K</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;unit&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">ws</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;L</span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;landuse&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+
+            <span class="c1"># Copy the damage function file.</span>
+
+            <span class="c1"># TODO: Comment to disable absolute paths!</span>
+            <span class="n">copy</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_DATADIR</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+                    <span class="s2">&quot;damage_functions&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard_type&quot;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;unit&quot;</span><span class="p">],</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;function&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;vulnerability&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exp_layer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;function&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+            <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="c1"># copy(</span>
+            <span class="c1">#     Path(self._DATADIR).joinpath(</span>
+            <span class="c1">#         &quot;damage_functions&quot;, self.config[&quot;hazard_type&quot;], self.config[&quot;unit&quot;],</span>
+            <span class="c1">#         f&quot;{exp_layer.get(&#39;function&#39;, &#39;&#39;)}.csv&quot;</span>
+            <span class="c1">#     ),</span>
+            <span class="c1">#     Path(self.root).joinpath(self.config[&quot;vulnerability&quot;], f&quot;{exp_layer.get(&#39;function&#39;, &#39;&#39;)}.csv&quot;)</span>
+            <span class="c1"># )</span>
+
+        <span class="c1"># Write to file.</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">## I/O</span>
+<div class="viewcode-block" id="FiatModel.read"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method to read the complete model schematization and configuration from file.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading model data from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_staticmaps</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_staticgeoms</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FiatModel.write"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Method to write the complete model schematization and configuration to file.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing model data to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># if in r, r+ mode, only write updated components</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot write in read-only mode&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>  <span class="c1"># try to read default if not yet set</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticmaps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_staticmaps</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_staticgeoms</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forcing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_forcing</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="FiatModel.read_staticmaps"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_staticmaps.html#hydromt_fiat.fiat.FiatModel.read_staticmaps">[docs]</a>    <span class="k">def</span> <span class="nf">read_staticmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read staticmaps at &lt;root/?/&gt; and parse to xarray Dataset.&quot;&quot;&quot;</span>
+
+        <span class="c1"># to read gdal raster files use: hydromt.open_mfraster()</span>
+        <span class="c1"># to read netcdf use: xarray.open_dataset()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+            <span class="c1"># start fresh in read-only mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_staticmaps</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
+
+        <span class="c1"># Read the hazard maps.</span>
+        <span class="n">hazard_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
+        <span class="n">fn_lst</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">fn_lst</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">hazard_maps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">fn_lst</span> <span class="o">=</span> <span class="p">[</span><span class="n">hazard_maps</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fn_lst</span><span class="p">:</span>
+            <span class="c1"># fn = join(self.root, fn)  # TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">basename</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">isfile</span><span class="p">(</span><span class="n">fn</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find hazard map at </span><span class="si">{</span><span class="n">fn</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">hydromt</span><span class="o">.</span><span class="n">open_raster</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Read the exposure maps.</span>
+        <span class="n">exp_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exp_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># TODO: Comment to disable absolute paths!</span>
+            <span class="n">fns</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">exp_root</span><span class="p">,</span> <span class="s2">&quot;*.tif&quot;</span><span class="p">))</span>
+            <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="c1"># fns = glob.glob(join(self.root, exp_root, &quot;*.tif&quot;))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find any expsure maps in </span><span class="si">{</span><span class="n">exp_root</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span><span class="n">hydromt</span><span class="o">.</span><span class="n">open_mfraster</span><span class="p">(</span><span class="n">fns</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FiatModel.write_staticmaps"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_staticmaps.html#hydromt_fiat.fiat.FiatModel.write_staticmaps">[docs]</a>    <span class="k">def</span> <span class="nf">write_staticmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s2">&quot;lzw&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write staticmaps at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+
+        <span class="c1"># to write to gdal raster files use: self.staticmaps.raster.to_mapstack()</span>
+        <span class="c1"># to write to netcdf use: self.staticmaps.to_netcdf()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model opened in read-only mode.&quot;</span><span class="p">)</span>
+        <span class="n">hazard_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard_type&quot;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="s2">&quot;flooding&quot;</span><span class="p">)</span>
+        <span class="n">hazard_maps</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="n">hazard_type</span> <span class="ow">in</span> <span class="n">n</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">[</span><span class="n">hazard_maps</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">to_mapstack</span><span class="p">(</span>
+                <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;hazard&quot;</span><span class="p">),</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span>
+            <span class="p">)</span>
+        <span class="n">exposure_maps</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="n">hazard_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">n</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_maps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">exp_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">[</span><span class="n">exposure_maps</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">to_mapstack</span><span class="p">(</span>
+                <span class="n">exp_root</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span>
+            <span class="p">)</span>  <span class="c1"># TODO: Comment to disable absolute paths!</span></div>
+            <span class="c1"># TODO: Uncomment to enable relative paths with respect to the root!</span>
+            <span class="c1"># self.staticmaps[exposure_maps].raster.to_mapstack(join(self.root, exp_root), compress=compress)</span>
+
+<div class="viewcode-block" id="FiatModel.read_staticgeoms"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_staticgeoms.html#hydromt_fiat.fiat.FiatModel.read_staticgeoms">[docs]</a>    <span class="k">def</span> <span class="nf">read_staticgeoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read staticgeoms at &lt;root/?/&gt; and parse to dict of GeoPandas.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+            <span class="c1"># start fresh in read-only mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">region_fn</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;region.GeoJSON&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">isfile</span><span class="p">(</span><span class="n">region_fn</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_staticgeoms</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region_fn</span><span class="p">),</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span></div>
+
+<div class="viewcode-block" id="FiatModel.write_staticgeoms"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_staticgeoms.html#hydromt_fiat.fiat.FiatModel.write_staticgeoms">[docs]</a>    <span class="k">def</span> <span class="nf">write_staticgeoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write staticmaps at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model opened in read-only mode&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">),</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;GeoJSON&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FiatModel.read_forcing"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_forcing.html#hydromt_fiat.fiat.FiatModel.read_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">read_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read forcing at &lt;root/?/&gt; and parse to dict of xr.DataArray.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forcing</span></div>
+        <span class="c1"># raise NotImplementedError()</span>
+
+<div class="viewcode-block" id="FiatModel.write_forcing"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_forcing.html#hydromt_fiat.fiat.FiatModel.write_forcing">[docs]</a>    <span class="k">def</span> <span class="nf">write_forcing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;write forcing at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+        <span class="c1"># raise NotImplementedError()</span>
+
+    <span class="k">def</span> <span class="nf">read_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read states at &lt;root/?/&gt; and parse to dict of xr.DataArray.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_states</span>
+        <span class="c1"># raise NotImplementedError()</span>
+
+    <span class="k">def</span> <span class="nf">write_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;write states at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+
+        <span class="k">pass</span>
+        <span class="c1"># raise NotImplementedError()</span>
+
+    <span class="k">def</span> <span class="nf">read_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read results at &lt;root/?/&gt; and parse to dict of xr.DataArray.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_results</span>
+        <span class="c1"># raise NotImplementedError()</span>
+
+    <span class="k">def</span> <span class="nf">write_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;write results at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+        <span class="c1"># raise NotImplementedError()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright Deltares.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
