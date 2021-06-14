@@ -8,25 +8,25 @@ The format is based on `Keep a Changelog`_, and this project adheres to
 [Unreleased]
 ------------
 
-Initial realese of hydromt_fiat
+v0.0.1 (20 May 2021)
+--------------------
+
+Initial release of hydromt_fiat
 
 Added
 ^^^^^
 
-- FiatModel Class with:
-- read/write fiat_configuration.xls
-- read/write hazard and exposure layers
-- copy vulnerability tables
-- setup_hazard
-- setup_exposure_buildings
-- scale_exposure
-
-
-- buildings workflows
+* FiatModel Class with:
+* read/write fiat_configuration.xls
+* read/write hazard and exposure layers
+* copy vulnerability tables
+* setup_hazard
+* setup_exposure_buildings
+* scale_exposure
+* buildings workflows
 
 Changed
 ^^^^^^^
-
 
 
 Documentation
