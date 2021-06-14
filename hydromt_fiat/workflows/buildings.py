@@ -136,7 +136,7 @@ def create_population_per_building_map(
         # Create the population, buildings and population per building count maps.
         da_bld_count = da_bld_density * da_like_area
         da_pop_count = da_pop_density * da_like_area
-        da_pop_bld_count = da_pop_count.where(da_bld_count == 0, 0)
+        da_pop_bld_count = da_pop_count.where(da_bld_count != 0, 0)
         da_bld_count.raster.set_nodata(nodata=0)
         da_pop_count.raster.set_nodata(nodata=0)
         da_pop_bld_count.raster.set_nodata(nodata=0)
