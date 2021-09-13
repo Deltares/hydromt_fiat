@@ -1,4 +1,4 @@
-name: hydromt-fiat
+name: hydromt-fiat-dev
 
 channels:
   - conda-forge
@@ -15,6 +15,7 @@ dependencies:
   - flit>=3.2
   - gdal>=3.1
   - geopandas
+  - hydromt
   - jupyterlab  # to run examples
   - netcdf4
   - matplotlib # to run examples
@@ -37,6 +38,3 @@ dependencies:
   - sphinx_rtd_theme # docs
   - xarray
   - zarr
-  - pip:
-    - hydromt>=0.4.1
-

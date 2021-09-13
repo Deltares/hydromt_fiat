@@ -1,15 +1,14 @@
 """Implement fiat model class"""
 
 from ast import literal_eval
+from configparser import ConfigParser
+from hydromt.cli.cli_utils import parse_config
 from hydromt.models.model_api import Model
-from openpyxl import load_workbook
-from os.path import abspath, basename, dirname, isfile, join
+from os.path import join
 from pathlib import Path
 from shapely.geometry import box
 from shutil import copy
-from typing import Dict, List, Optional, Set, Tuple
 import geopandas as gpd
-import glob
 import hydromt
 import logging
 import numpy as np
@@ -27,15 +26,15 @@ class FiatModel(Model):
     """General and basic API for the FIAT model in hydroMT."""
 
     _NAME = "fiat"
-    _CONF = "fiat_configuration.xlsx"
+    _CONF = "fiat_configuration.ini"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
-    _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
+    _FOLDERS = ["hazard", "exposure", "susceptibility", "output"]
     _DATADIR = DATADIR
 
     def __init__(
         self,
-        root,
+        root=None,
         mode="w",
         config_fn=None,
         data_libs=None,
@@ -43,10 +42,6 @@ class FiatModel(Model):
         deltares_data=False,
         artifact_data=False,
     ):
-        # Check if the root parameter exists.
-        if not isinstance(root, (str, Path)):
-            raise ValueError("The 'root' parameter should be a of str or Path.")
-
         super().__init__(
             root=root,
             mode=mode,
@@ -57,22 +52,23 @@ class FiatModel(Model):
             logger=logger,
         )
 
+    """ MODEL METHODS """
+
     def setup_basemaps(
         self,
         region,
         **kwargs,
     ):
-        """Define the model region.
+        """Define the model domain that is used to clip the raster layers.
 
         Adds model layer:
 
-        * **region** geom: model region
+        * **region** geom: A geometry with the nomenclature 'region'.
 
         Parameters
         ----------
         region: dict
-            Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}.
-            See :py:meth:`~hydromt.workflows.parse_region()` for all options.
+            Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.
         """
 
         kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
@@ -93,151 +89,238 @@ class FiatModel(Model):
     def setup_hazard(
         self,
         map_fn,
-        return_period=None,
-        variable=None,
+        map_type,
+        chunks='auto',
+        rp=None,
+        crs=None,
+        nodata=None,
+        var=None,
         **kwargs,
     ):
         """Add a hazard map to the FIAT model schematization.
 
         Adds model layer:
 
-        * **hazard** map(s): A hazard map with the nomenclature <hazard_type>_rp<return_period>.
+        * **hazard** map(s): A raster map with the nomenclature <file_name>.
 
         Parameters
         ----------
         map_fn: (list of) str, Path
-            Path to hazard raster file.
-        return_period: (list of) int, float, optional
-            Return period in years, required for a risk calculation. The default is None.
-        variable: str
-            Name of variable in dataset, required when reading NetCDF data.
+            Absolute or relative (with respect to the configuration file or hazard directory) path to the hazard file.
+        map_type: (list of) str
+            Description of the hazard type.
+        rp: (list of) int, float, optional
+            Return period in years, required for a risk calculation.
+        crs: (list of) int, str, optional
+            Coordinate reference system of the hazard file.
+        nodata: (list of) int, float, optional
+            Value that is assigned as nodata.
+        var: (list of) str, optional
+            Hazard variable name in NetCDF input files.
+        chunks: (list of) int, optional
+            Chunk sizes along each dimension used to load the hazard file into a dask array. The default is value 'auto'.
         """
 
-        # Check the input parameters.
-        rp_lst, var_lst = [], []
-        fn_lst = [map_fn] if isinstance(map_fn, (str, Path)) else map_fn
-        if not (isinstance(fn_lst, list) and isinstance(fn_lst[0], (str, Path))):
-            raise TypeError(f"The 'map_fn' parameter should be a of str or Path.")
-        if return_period is not None:
-            rp_lst = (
-                [return_period]
-                if isinstance(return_period, (int, float))
-                else return_period
-            )
-            if not isinstance(rp_lst, list):
-                raise TypeError(
-                    f"The 'return_period' parameter should be a float or int, received a {type(return_period)} instead."
-                )
-            if not (len(rp_lst) == len(fn_lst) or len(rp_lst) == len(var_lst)):
+        # Check the hazard input parameter types.
+        map_fn_lst = [map_fn] if isinstance(map_fn, (str, Path)) else map_fn
+        map_type_lst = [map_type] if isinstance(map_type, (str, Path)) else map_type
+        self.check_param_type(map_fn_lst, name="map_fn", types=(str, Path))
+        self.check_param_type(map_type_lst, name="map_type", types=str)
+        if chunks != "auto":
+            chunks_lst = [chunks] if isinstance(chunks, (int, dict)) else chunks
+            self.check_param_type(chunks_lst, name="chunks", types=(int, dict))
+            if not len(chunks_lst) == 1 or not len(chunks_lst) == len(map_fn_lst):
                 raise IndexError(
-                    "The length of 'return_period' parameter should match with the 'map_fn' or 'variable' parameters."
+                    "The number of 'chunks' parameters should match with the number of "
+                    "'map_fn' parameters."
                 )
-        if variable is not None:
-            var_lst = [variable] if isinstance(variable, str) else variable
-            if not isinstance(var_lst, list):
-                raise TypeError(
-                    f"The 'variable' parameter should be a str, received a {type(variable)} instead."
+        if rp is not None:
+            rp_lst = [rp] if isinstance(rp, (int, float)) else rp
+            self.check_param_type(rp_lst, name="rp", types=(float, int))
+            if not len(rp_lst) == len(map_fn_lst):
+                raise IndexError(
+                    "The number of 'rp' parameters should match with the number of "
+                    "'map_fn' parameters."
                 )
-            if len(fn_lst) == 1:
-                kwargs.update(variables=var_lst)
+        if crs is not None:
+            crs_lst = [str(crs)] if isinstance(crs, (int, str)) else crs
+            self.check_param_type(crs_lst, name="crs", types=(int, str))
+        if nodata is not None:
+            nodata_lst = [nodata] if isinstance(nodata, (float, int)) else nodata
+            self.check_param_type(nodata_lst, name="nodata", types=(float, int))
+        if var is not None:
+            var_lst = [var] if isinstance(var, str) else var
+            self.check_param_type(var_lst, name="var", types=str)
 
-        # Get a (clipped) Dataset of hazard maps (also for a single hazard map input).
-        rp = None
-        for i, fn in enumerate(fn_lst):
-            if str(fn).endswith(".nc"):
-                if variable is None:
-                    raise ValueError(
-                        "The 'variable' parameter is required when reading netcdf data."
-                    )
-                kwargs.update(driver="netcdf")
-            if len(fn_lst) == len(var_lst):
-                kwargs.update(variables=[var_lst[i]])
-            if len(fn_lst) == len(rp_lst):
-                rp = rp_lst[i]
-            ds = self.data_catalog.get_rasterdataset(
-                fn, geom=self.region, single_var_as_array=False, **kwargs
+        # Check if the hazard input files exist.
+        self.check_file_exist(map_fn_lst, name="map_fn")
+
+        # Read the hazard map(s) and add to config and staticmaps.
+        for idx, da_map_fn in enumerate(map_fn_lst):
+            da_name = da_map_fn.stem
+            da_type = self.get_param(
+                map_type_lst, map_fn_lst, "hazard", da_name, idx, "map type"
             )
-            if self.staticmaps and not self.staticmaps.raster.identical_grid(ds):
-                raise ValueError("The hazard maps should have identical grids.")
+
+            # Get the local hazard map.
+            kwargs.update(chunks=chunks if chunks == "auto" else chunks_lst[idx])
+            if da_map_fn.suffix == ".nc":
+                if var is None:
+                    raise ValueError(
+                        "The 'var' parameter is required when reading NetCDF data."
+                    )
+                kwargs.update(variables=self.get_param(
+                    var_lst, map_fn_lst, "hazard", da_name, idx, "NetCDF variable"
+                ))
+            da = self.data_catalog.get_rasterdataset(
+                da_map_fn, geom=self.region, **kwargs
+            )
+
+            # Set (if necessary) the coordinate reference system.
+            if crs is not None and not da.raster.crs.is_epsg_code:
+                da_crs = self.get_param(
+                    crs_lst, map_fn_lst, "hazard", da_name, idx,
+                    "coordinate reference system",
+                )
+                da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
+                da.raster.set_crs(da_crs_str)
+            elif crs is None and not da.raster.crs.is_epsg_code:
+                raise ValueError(
+                    "The hazard map has no coordinate reference system assigned."
+                )
+
+            # Set (if necessary) and mask the nodata value.
+            if nodata is not None:
+                da_nodata = self.get_param(
+                    nodata_lst, map_fn_lst, "hazard", da_name, idx, "nodata"
+                )
+                da.raster.set_nodata(nodata=da_nodata)
+            elif nodata is None and da.raster.nodata is None:
+                raise ValueError(
+                    "The hazard map has no nodata value assigned."
+                )
 
             # Correct (if necessary) the grid orientation from the lower to the upper left corner.
-            if ds.raster.res[1] > 0:
-                ds = ds.reindex({ds.raster.y_dim: list(reversed(ds.raster.ycoords))})
+            if da.raster.res[1] > 0:
+                da = da.reindex({da.raster.y_dim: list(reversed(da.raster.ycoords))})
 
-            # Rename the hazard map and add to staticmaps.
-            hazard_type = self.get_config("hazard_type", fallback="flooding")
-            for j, name in enumerate(ds.data_vars):
-                da = ds[name]
-
-                # Get the return period per input parameter.
-                if len(rp_lst) == len(var_lst) == len(ds.data_vars):
-                    rp = rp_lst[j]
-
-                # Get (if possible) the return period from dataset names if the input parameter is None.
-                elif len(ds.data_vars) > 1:
-                    try:
-                        # Get the numeric part (including ".") after "rp" (if in name).
-                        fstrip = lambda x: x in "0123456789."
-                        rps = "".join(filter(fstrip, name.lower().split("rp")[-1]))
-                        rp = literal_eval(rps)
-                        assert isinstance(rp, (int, float))
-                    except (ValueError, AssertionError):
-                        raise ValueError(
-                            f"Could not derive the return periods for hazard map: {name}."
-                        )
-
-                # Rename the hazard file name.
-                rp_str = f"rp{rp}" if rp is not None else ""
-                out_name = f"{hazard_type}_{rp_str}"
-                hazard_fn = join(
-                    self.root, "hazard", f"{out_name}.tif"
-                )  # TODO: Comment to disable absolute paths!
-                # hazard_fn = join("hazard", f"{out_name}.tif") # TODO: Uncomment to enable relative paths with respect to root!
-
-                # Add the hazard map to staticmaps.
-                self.set_staticmaps(da, out_name)
-
-                # Update the config with filepath.
-                if rp is not None:
-                    post = f"(rp {rp})"
-                    self.set_config("hazard", rp, hazard_fn)
-                else:
-                    post = ""
-                    self.set_config("hazard", hazard_fn)
-                self.logger.debug(
-                    f"Added {hazard_type} hazard layer: {out_name} {post}"
+            # Check if the obtained hazard map is identical.
+            if self.staticmaps and not self.staticmaps.raster.identical_grid(da):
+                raise ValueError(
+                    "The hazard maps should have identical grids."
                 )
 
-    def setup_exposure_buildings(
+            # Get the return period input parameter.
+            da_rp = self.get_param(rp_lst, map_fn_lst, "hazard", da_name, idx,
+                                   "return period") if "rp_lst" in locals() else None
+            if self.get_config("risk_output") and da_rp is None:
+
+                # Get (if possible) the return period from dataset names if the input parameter is None.
+                if "rp" in da_name.lower():
+                    fstrip = lambda x: x in "0123456789."
+                    rp_str = "".join(
+                        filter(fstrip, da_name.lower().split("rp")[-1])
+                    ).lstrip("0")
+                    try:
+                        assert isinstance(literal_eval(rp_str) if rp_str else None,
+                                          (int, float))
+                        da_rp = literal_eval(rp_str)
+                    except AssertionError:
+                        raise ValueError(
+                            f"Could not derive the return period for hazard map: {da_name}."
+                        )
+                else:
+                    raise ValueError(
+                        "The hazard map must contain a return period in order to conduct a risk calculation."
+                    )
+
+            # Add the hazard map to config and staticmaps.
+            hazard_type = self.get_config("hazard_type", fallback="flooding")
+            self.check_uniqueness(
+                "hazard",
+                da_type,
+                da_name,
+                {
+                    "usage": True,
+                    "map_fn": da_map_fn,
+                    "map_type": da_type,
+                    "rp": da_rp,
+                    "crs": da.raster.crs,
+                    "nodata": da.raster.nodata,
+                    "var": None if "var_lst" not in locals() else var_lst[idx],
+                    "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
+                },
+                file_type="hazard",
+                filename=da_name,
+            )
+            self.set_config(
+                "hazard",
+                da_type,
+                da_name,
+                {
+                    "usage": "True",
+                    "map_fn": da_map_fn,
+                    "map_type": da_type,
+                    "rp": da_rp,
+                    "crs": da.raster.crs,
+                    "nodata": da.raster.nodata,
+                    "var": None if "var_lst" not in locals() else var_lst[idx],
+                    "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
+                },
+            )
+            self.set_staticmaps(da, da_name)
+            post = f"(rp {da_rp})" if rp is not None and self.get_config(
+                "risk_output") else ""
+            self.logger.info(
+                f"Added {hazard_type} hazard map: {da_name} {post}"
+            )
+
+    def setup_buildings_value(
         self,
-        bld_fn=None,
-        pop_fn=None,
-        country=None,
+        bld_fn="wsf_bld_2015",
+        pop_fn="ghs_pop_2015",
+        chunks="auto",
         unit="USD",
+        scale_factor=1,
+        weight_factor=1,
+        function_fn=None,
+        country=None,
+        **kwargs,
+
     ):
         """Add a buildings value exposure map to the FIAT model schematization.
 
         Adds model layer:
 
-        * **exposure** map: An exposure map with the nomenclature <exposure_type>.
+        * **exposure** map: A raster map with the nomenclature 'buildings_value'.
 
         Parameters
         ----------
         bld_fn: str
-            Nametag of the global building footprints dataset (raster file).
+            Name tag of or absolute or relative (with respect to the configuration file) path to the building footprint file. The default value is 'wsf_bld_2015'.
         pop_fn: str
-            Nametag of the global population dataset (raster file).
-        country: str, optional
-            Country name or tag in which the hazard region is location. Required to derive the damage function and
-            potential damage values associated to the hazard region.
+            Name tag of or absolute or relative (with respect to the configuration file) path to the population count file. The default value is 'ghs_pop_2015'.
+        chunks: int, optional
+            Chunk sizes along each dimension used to load the building footprint and population count files into a dask arrays. The default value is 'auto'.
+        function_fn: dict, optional
+            Absolute or relative (with respect to the configuration file or susceptibility directory) path to the susceptibility file. The default value is the JCR continental susceptibilty function (https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) related to the country parameter.
+        scale_factor: int, float, optional
+            Scaling factor of the exposure values. The default value is 1.
+        weight_factor: int, float, optional
+            Weight factor of the exposure values in the total damage and risk results. The default value is 1.
         """
 
         if bld_fn and pop_fn:
+            kwargs.update(chunks=chunks)
+
+            # TODO: Make sure that the kwargs of layers in the .ylm can be overwritten!
+
             # Clip the building footprint map from the global dataset and store as a xarray.DataArray.
             da_bld = self.data_catalog.get_rasterdataset(
                 bld_fn,
                 geom=self.region,
                 buffer=4,
+                **kwargs,
             ).rename("bld")
 
             # Clip the population map from the global dataset and store as a xarray.DataArray.
@@ -245,7 +328,10 @@ class FiatModel(Model):
                 pop_fn,
                 geom=self.region,
                 buffer=4,
+                **kwargs,
             ).rename("pop")
+
+            # TODO: Make sure that the create_population_per_building_map is memory proof!
 
             # Create the population, buildings and population per building count maps and store as a xarray.DataSet.
             ds_count = workflows.create_population_per_building_map(
@@ -260,16 +346,32 @@ class FiatModel(Model):
             self.set_staticmaps(ds_count["pop"], name="population_count")
             self.set_staticmaps(ds_count["pop_bld"], name="population_buildings_count")
 
-        # Create the buildings value map.
         if "population_buildings_count" in self.staticmaps.data_vars:
             # Get the associated country tag (alpha-3 code).
-            tag = self._get_country_tag(country)
+            tag = self.get_country_tag(country)
 
-            # Get the associated vulnerability (damage function id and maximum damage value).
-            df_id, max_damage = self._get_vulnerability()
+            # Get the associated susceptibility information (function id and maximum damage value).
+            sf_id, max_damage = self.get_susceptibility_function()
             self.logger.debug(
                 "Calculating building values with maximum damage: "
                 f"{max_damage:.2f} {unit:s}/person (country = {tag:s})."
+            )
+
+            # Copy the susceptibility function file to the susceptibility folder.
+            if not function_fn:
+                sf_path = Path(self._DATADIR).joinpath(
+                    "damage_functions",
+                    self.get_config("hazard_type"),
+                    self.get_config("hazard_unit"),
+                    f"{sf_id}.csv",
+                )
+            else:
+                self.check_file_exist([function_fn], name="sf_path")
+                sf_path = list(function_fn.values())[0]
+
+            copy(
+                sf_path,
+                Path(self.get_config("susceptibility_dp")).joinpath(sf_path.name),
             )
 
             # Create a building value map.
@@ -277,42 +379,56 @@ class FiatModel(Model):
             ds_bld_value.raster.set_nodata(nodata=0)
             ds_bld_value.name = "bld_value"
 
-            # Add the buildings value map to staticmaps.
-            self.set_staticmaps(ds_bld_value, name="buildings_value")
-
         # Check if the buildings value map has correctly been generated.
         else:
             raise ValueError(
                 "The buildings value exposure layer is not correctly generated."
             )
 
-        # Add the buildings value map to the config.
-        exp_layer = {
-            "use": 1,
-            "category": "Buildings Value",
-            "max_damage": 1,
-            "bu": 0,
-            "function": df_id,
-            "map": 1,
-            "scale_factor": 1,
-            "raster": join(
-                self.get_config("exposure", fallback=""), "buildings_value.tif"
-            ),
-            "unit": unit,
-        }
-
-        lyrs = [int(key.split("_")[1]) for key in self.config if key.startswith("exp_")]
-        if lyrs:
-            for i in lyrs:
-                if self.config[f"exp_{i}"]["category"] == "Buildings Value":
-                    lyr = int(i)
-                else:
-                    lyr = max(lyrs) + 1
-        else:
-            lyr = 1
-
-        self.set_config(f"exp_{lyr}", exp_layer)
-        self.logger.debug(f"Added exposure layer: Buildings Value")
+        # Add the buildings value map to config and staticmaps.
+        map_name = "buildings_value"
+        self.check_uniqueness(
+            "exposure",
+            map_name,
+            {
+                "usage": True,
+                "map_fn": self.get_config("exposure_dp").joinpath("buildings_value.tif"),
+                "category": map_name,
+                "subcategory": None,
+                "unit": unit,
+                "crs": ds_bld_value.raster.crs,
+                "nodata": ds_bld_value.raster.nodata,
+                "chunks": chunks,
+                "function_fn": {"water_depth" if not function_fn else list(function_fn.keys())[0]: sf_path.name},
+                "comp_alg": "max",
+                "scale_factor": scale_factor,
+                "weight_factor": weight_factor,
+            },
+            file_type="exposure",
+            filename=map_name,
+        )
+        self.set_config(
+            "exposure",
+            map_name,
+            {
+                "usage": True,
+                "map_fn": self.get_config("exposure_dp").joinpath("buildings_value.tif"),
+                "category": map_name,
+                "subcategory": None,
+                "unit": unit,
+                "crs": ds_bld_value.raster.crs,
+                "nodata": ds_bld_value.raster.nodata,
+                "chunks": chunks,
+                "function_fn": {"water_depth" if not function_fn else list(function_fn.keys())[0]: sf_path.name},
+                "comp_alg": "max",
+                "scale_factor": scale_factor,
+                "weight_factor": weight_factor,
+            },
+        )
+        self.set_staticmaps(ds_bld_value, map_name)
+        self.logger.info(
+            "Added exposure map: buildings value"
+        )
 
     def setup_exposure_roads(
         self,
@@ -327,16 +443,18 @@ class FiatModel(Model):
         self,
         scenario,
         year,
+        ref_year=2015,
     ):
-        """Scale the exposure to the forecast year, using the shared socioeconomic pathway (SSP) projections for
-        population and GDP growth.
+        """Scale the exposure to the forecast year, using the shared socioeconomic pathway (SSP) projections for population and GDP growth.
 
         Parameters
         ----------
         scenario: str
-            Nametag of the shared socioeconomic pathway (SSP), required for a forecast calculation.
+            Name tag of the shared socioeconomic pathway (SSP), required for a forecast calculation.
         year: int
             The forecast year to which the exposure data is scaled.
+        ref_year: int, optional
+            The reference year from which the population originates. The default value is 2015 (related to the default 'ghs_pop_2015' population layer).
         """
 
         # Set the scenario and year config parameters.
@@ -344,20 +462,22 @@ class FiatModel(Model):
         self.set_config("year", year)
 
         # Determine the scale factor.
-        pop_correction = self._get_population_correction_factor()
-        gdp_correction = self._get_gdp_correction_factor()
+        pop_correction = self.get_population_correction_factor(ref_year)
+        gdp_correction = self.get_gdp_correction_factor()
         scale_factor = pop_correction * gdp_correction
 
         # Set the scale factor.
-        for row in range(7, 99):
-            exp_layer = self.get_config(f"exp_{row - 6}", fallback={})
-            if not exp_layer:
-                break
+        for exposure_fn in self.get_config("exposure"):
+            self.set_config(
+                "exposure",
+                exposure_fn,
+                "scale_factor",
+                scale_factor,
+            )
 
-            exp_layer["scale_factor"] = scale_factor
-            self.set_config(f"exp_{row - 6}", exp_layer)
+    """ SUPPORT FUNCTIONS """
 
-    def _get_country_tag(self, country):
+    def get_country_tag(self, country):
         """Return the country tag for a country name input."""
 
         # Get the country tag from the country name.
@@ -376,8 +496,7 @@ class FiatModel(Model):
                 tag = (
                     df_config.loc[
                         df_config["Country_Name"] == country, "Alpha-3"
-                    ].values[0]
-                    if country in df_config["Country_Name"].tolist()
+                    ].values[0] if country in df_config["Country_Name"].tolist()
                     else None
                 )
             else:
@@ -385,101 +504,17 @@ class FiatModel(Model):
 
             # If the country tag is not valid, get the country tag from nearest country.
             if not tag in df_config["Alpha-3"].tolist():
-                tag = self._get_nearest_country()
+                tag = self.get_nearest_country()
                 self.logger.debug(
                     "The country tag (related to the country name) is not valid."
                     "The country tag of the nearest country is used instead."
                 )
 
-        else:
-            # If the country parameter is None, get the country tag from nearest country.
-            country = self._get_nearest_country()
-
         # Set the country tag.
         self.set_config("country", tag)
         return tag
 
-    def _get_nearest_country(self):
-        """Return the country tag of the nearest country."""
-
-        # Read the global exposure configuration.
-        df_config = pd.read_excel(
-            Path(self._DATADIR).joinpath("global_configuration.xlsx"),
-            sheet_name="Buildings",
-        )
-
-        # TODO: Lookup country from shapefile!
-        pass
-
-    def _get_vulnerability(self):
-        """Return the damage function id and the maximum damage number."""
-
-        # Read the global exposure configuration.
-        df_config = pd.read_excel(
-            Path(self._DATADIR).joinpath("global_configuration.xlsx"),
-            sheet_name="Buildings",
-        )
-
-        # Get the damage function id.
-        df_id = df_config.loc[
-            df_config["Alpha-3"] == self.config["country"],
-            f"Damage_Function_ID_{self.config['hazard_type'].capitalize()}",
-        ].values[0]
-
-        # Get the maximum damage value.
-        max_damage = df_config.loc[
-            df_config["Alpha-3"] == self.config["country"],
-            f"Max_Damage_{self.config['hazard_type']. capitalize()}",
-        ].values[0]
-
-        return df_id, max_damage
-
-    def _get_population_correction_factor(self):
-        """ """
-
-        # Read the global SSP data.
-        df_pop = pd.read_excel(
-            Path(self._DATADIR).joinpath("growth_scenarios", "global_pop.xlsx"),
-            sheet_name="Data",
-        )
-
-        # Extract the national data.
-        pop_data = (
-            df_pop.loc[
-                (df_pop["Region"] == self.config["country"])
-                & (df_pop["Scenario"] == self.config["scenario"])
-            ]
-            .reset_index(drop=True)
-            .iloc[:, 5:-1]
-        )
-
-        # In case multiple data sources are available, use the averaged values.
-        pop_data = pop_data.mean(axis=0)
-
-        # Interpolate (linear) the data to obtain annual results.
-        annual_pop_data = np.array(
-            range(int(pop_data.index[0]), int(pop_data.index[-1]) + 1, 1)
-        )
-        interp_pop_data = list(
-            np.interp(
-                annual_pop_data,
-                pop_data.index.astype(int).values,
-                pop_data.values.astype(float),
-            )
-        )
-
-        # Determine the indexes of the reference year (GHS 2015) and the forecast year.
-        ref_year_idx = list(annual_pop_data).index(2015)
-        forecast_year_idx = list(annual_pop_data).index(self.config["year"])
-
-        # Calculate the correction factor.
-        pop_correction = (
-            interp_pop_data[forecast_year_idx] / interp_pop_data[ref_year_idx]
-        )
-
-        return pop_correction
-
-    def _get_gdp_correction_factor(self):
+    def get_gdp_correction_factor(self):
         """ """
 
         # Read the global SSP data.
@@ -527,20 +562,183 @@ class FiatModel(Model):
             )
         )
 
-        # FIXME: why is the reference factor fixe to 2019?!
         # Determine the indexes of the reference year (2019) and the forecast year.
         ref_year_idx = list(annual_gdp_per_cap_data).index(2019)
         forecast_year_idx = list(annual_gdp_per_cap_data).index(self.config["year"])
 
         # Calculate the correction factor.
         correction_factor = (
-            annual_gdp_per_cap_data[forecast_year_idx]
-            / annual_gdp_per_cap_data[ref_year_idx]
+            annual_gdp_per_cap_data[forecast_year_idx] / annual_gdp_per_cap_data[ref_year_idx]
         )
 
         return correction_factor
 
-    # Overwrite the model_api methods for root and config.
+    def get_nearest_country(self):
+        """Return the country tag of the nearest country."""
+
+        # Read the global exposure configuration.
+        df_config = pd.read_excel(
+            Path(self._DATADIR).joinpath("global_configuration.xlsx"),
+            sheet_name="Buildings",
+        )
+
+        # TODO: Lookup country from shapefile!
+        pass
+
+    def get_param(self, param_lst, map_fn_lst, file_type, filename, i, param_name):
+        """ """
+
+        if len(param_lst) == 1:
+            return param_lst[0]
+        elif len(param_lst) != 1 and len(map_fn_lst) == len(param_lst):
+            return param_lst[i]
+        elif len(param_lst) != 1 and len(map_fn_lst) != len(param_lst):
+            raise IndexError(
+                f"Could not derive the {param_name} parameter for {file_type} "
+                f"map: {filename}."
+            )
+
+    def get_population_correction_factor(self, ref_year):
+        """ """
+
+        # Read the global SSP data.
+        df_pop = pd.read_excel(
+            Path(self._DATADIR).joinpath("growth_scenarios", "global_pop.xlsx"),
+            sheet_name="Data",
+        )
+
+        # Extract the national data.
+        pop_data = (
+            df_pop.loc[
+                (df_pop["Region"] == self.config["country"])
+                & (df_pop["Scenario"] == self.config["scenario"])
+            ]
+            .reset_index(drop=True)
+            .iloc[:, 5:-1]
+        )
+
+        # In case multiple data sources are available, use the averaged values.
+        pop_data = pop_data.mean(axis=0)
+
+        # Interpolate (linear) the data to obtain annual results.
+        annual_pop_data = np.array(
+            range(int(pop_data.index[0]), int(pop_data.index[-1]) + 1, 1)
+        )
+        interp_pop_data = list(
+            np.interp(
+                annual_pop_data,
+                pop_data.index.astype(int).values,
+                pop_data.values.astype(float),
+            )
+        )
+
+        # Determine the indexes of the reference year (2015) and the forecast year.
+
+        # TODO: Check if the population map is the default layer (ghs_pop_2015), otherwise give warning that the reference does not relate to the layer!
+
+        ref_year_idx = list(annual_pop_data).index(ref_year)
+        forecast_year_idx = list(annual_pop_data).index(self.config["year"])
+
+        # Calculate the correction factor.
+        pop_correction = (
+            interp_pop_data[forecast_year_idx] / interp_pop_data[ref_year_idx]
+        )
+
+        return pop_correction
+
+    def get_susceptibility_function(self):
+        """Return the susceptibility function id and the maximum damage number."""
+
+        # Read the global exposure configuration.
+        df_config = pd.read_excel(
+            Path(self._DATADIR).joinpath("global_configuration.xlsx"),
+            sheet_name="Buildings",
+        )
+
+        # Get the function id.
+        sf_id = df_config.loc[
+            df_config["Alpha-3"] == self.config["country"],
+            f"Damage_Function_ID_{self.config['hazard_type'].capitalize()}",
+        ].values[0]
+
+        # Get the maximum damage value.
+        max_damage = df_config.loc[
+            df_config["Alpha-3"] == self.config["country"],
+            f"Max_Damage_{self.config['hazard_type']. capitalize()}",
+        ].values[0]
+
+        return sf_id, max_damage
+
+    def read(self):
+        """Method to read the complete model schematization and configuration from file."""
+
+        self.logger.info(f"Reading model data from {self.root}")
+        self.read_config()
+        self.read_staticmaps()
+        self.read_staticgeoms()
+
+    def read_forcing(self):
+        """Read forcing at <root/?/> and parse to dict of xr.DataArray."""
+
+        return self._forcing
+        # raise NotImplementedError()
+
+    def read_results(self):
+        """Read results at <root/?/> and parse to dict of xr.DataArray."""
+
+        return self._results
+        # raise NotImplementedError()
+
+    def read_states(self):
+        """Read states at <root/?/> and parse to dict of xr.DataArray."""
+
+        return self._states
+        # raise NotImplementedError()
+
+    def read_staticgeoms(self):
+        """Read staticgeoms at <root/?/> and parse to dict of GeoPandas."""
+
+        if not self._write:
+            self._staticgeoms = dict()
+        region_fn = Path(self.root).joinpath("region.GeoJSON")
+        if region_fn.is_file():
+            self.set_staticgeoms(gpd.read_file(region_fn), "region")
+
+        return self._staticgeoms
+
+    def read_staticmaps(self):
+        """Read staticmaps at <root/?/> and parse to xarray Dataset."""
+
+        if not self._write:
+            self._staticmaps = xr.Dataset()
+
+        # Read the hazard maps.
+        for hazard_fn in [
+            j["map_fn"] for i in self.get_config("hazard") for j in
+            self.get_config("hazard", i).values()
+        ]:
+            if not hazard_fn.is_file():
+                raise ValueError(
+                    f"Could not find the hazard map: {hazard_fn}."
+                )
+            else:
+                self.set_staticmaps(
+                    hydromt.open_raster(hazard_fn),
+                    name=hazard_fn.stem,
+                )
+
+        # Read the exposure maps.
+        for exposure_fn in [i["map_fn"] for i in self.get_config("exposure").values()]:
+            if not exposure_fn.is_file():
+                raise ValueError(
+                    f"Could not find the exposure map: {hazard_fn}."
+                )
+            else:
+                self.set_staticmaps(
+                    hydromt.open_raster(exposure_fn),
+                    name=exposure_fn.stem,
+                )
+
     def set_root(self, root=None, mode="w"):
         """Initialized the model root.
         In read mode it checks if the root exists.
@@ -553,210 +751,43 @@ class FiatModel(Model):
         mode: {"r", "r+", "w"}, optional
             Read/write-only mode for model files.
         """
+
         # Do super method and update absolute paths in config.
-        if root is None and self.root is not None:
-            root = self.root
+        if root is None:
+            root = Path(self._config_fn).parent
         super().set_root(root=root, mode=mode)
         if self._write and root is not None:
-            root = abspath(root)
+            self._root = Path(root)
 
             # Set the general information.
-            # TODO: Comment to disable absolute paths!
-            self.set_config("vulnerability", join(root, "vulnerability"))
-            self.set_config("exposure", join(root, "exposure"))
-            self.set_config("output", join(root, "output"))
-            # TODO: Uncomment to enable relative paths with respect to the root!
-            # self.set_config("vulnerability", "vulnerability")
-            # self.set_config("exposure", "exposure")
-            # self.set_config("output", "output")
+            self.set_config("hazard_dp", self.root.joinpath("hazard"))
+            self.set_config("exposure_dp", self.root.joinpath("exposure"))
+            self.set_config("susceptibility_dp", self.root.joinpath("susceptibility"))
+            self.set_config("output_dp", self.root.joinpath("output"))
+
             # Set the hazard information.
-            hazard_maps = self.get_config("hazard")
-            if isinstance(hazard_maps, dict):
-                # TODO: Comment to disable absolute paths!
-                hazard_maps = {
-                    k: join(root, "hazard", basename(v)) for k, v in hazard_maps.items()
-                }
-                # TODO: Uncomment to enable relative paths with respect to the root!
-                # hazard_maps = {k: join("hazard", basename(v)) for k, v in hazard_maps.items()}
-                self.set_config("hazard", hazard_maps)
-            elif isinstance(hazard_maps, str):
-                # TODO: Comment to disable absolute paths!
-                self.set_config("hazard", join(root, "hazard", basename(hazard_maps)))
-                # TODO: Uncomment to enable relative paths with respect to the root!
-                # self.set_config("hazard", join("hazard", basename(hazard_maps)))
-
-            # Set the exposure information.
-            for row in range(7, 99):
-                exp_layer = self.get_config(f"exp_{row - 6}", fallback={})
-                if not exp_layer:
-                    break
-
-                exp_layer["raster"] = join(
-                    self.config["exposure"], basename(exp_layer["raster"])
-                )
-                self.set_config(f"exp_{row - 6}", exp_layer)
-
-    def _configread(self, fn):
-        """Parse fiat_configuration.xlsx and risk.csv to dict."""
-
-        wb = load_workbook(filename=fn)
-        ws = wb["Input"]
-        config = dict()
-
-        # Read the general information.
-        general_config = {
-            "country": ws["B1"].value,
-            "case": ws["B2"].value,
-            "hazard_type": ws["B3"].value,
-            "unit": ws["B5"].value,
-            "scenario": ws["J1"].value,
-            "year": ws["J2"].value,
-            "vulnerability": ws["J3"].value,
-            "exposure": ws["J4"].value,
-            "output": ws["J5"].value,
-        }
-        general_config = {k: v for k, v in general_config.items() if v is not None}
-        config.update(general_config)
-
-        # Read the hazard information.
-        hazard_fn = ws["B4"].value
-        if hazard_fn:
-            if Path(hazard_fn).suffix == ".csv":
-                hazard_maps = {}
-                with open(join(dirname(fn), "risk.csv"), "r") as f:
-                    lines = f.readlines()
-                    for line in lines[1:]:
-                        map_fn, rp = line.strip("\n").split(",", maxsplit=2)
-
-                        # Strip white spaces and parse rp to int or float with literal_eval.
-                        hazard_maps.update({literal_eval(rp.strip()): map_fn.strip()})
-
-                config.update({"hazard": hazard_maps})
-            else:
-                config.update({"hazard": hazard_fn})
-
-        # Read the exposure information.
-        for row in range(7, 99):
-            if ws[f"A{row}"].value is None:
-                break
-            exp_layer = {
-                "use": ws[f"A{row}"].value,
-                "category": ws[f"B{row}"].value,
-                "max_damage": ws[f"C{row}"].value,
-                "bu": ws[f"D{row}"].value,
-                "function": ws[f"F{row}"].value,
-                "map": ws[f"H{row}"].value,
-                "scale_factor": ws[f"I{row}"].value,
-                "raster": ws[f"J{row}"].value,
-                "unit": ws[f"K{row}"].value,
-                "landuse": ws[f"L{row}"].value,
-            }
-            exp_layer = {k: v for k, v in exp_layer.items() if v is not None}
-            config.update({f"exp_{row-6}": exp_layer})
-
-        wb.close()
-        return config
-
-    def _configwrite(self, fn):
-        """Write config to fiat_configuration.xlsx and risk.csv"""
-
-        # Load the template.
-        fn_temp = join(self._DATADIR, self._NAME, self._CONF)
-        wb = load_workbook(filename=fn_temp)
-        ws = wb["Input"]
-
-        # Store the general information.
-        general_config = {
-            "B1": "country",
-            "B2": "case",
-            "B3": "hazard_type",
-            "B5": "unit",
-            "J1": "scenario",
-            "J2": "year",
-            "J3": "vulnerability",
-            "J4": "exposure",
-            "J5": "output",
-        }
-        for loc, key in general_config.items():
-            value = self.get_config(key)
-            if value is not None:
-                ws[loc] = str(value)
-
-        # Store the hazard information.
-        hazard_maps = self.get_config("hazard")
-        if isinstance(hazard_maps, dict):
-            rpmin, rpmax = min(hazard_maps.keys()), max(hazard_maps.keys())
-            with open(join(dirname(fn), "risk.csv"), "w") as f:
-                f.write(f"{rpmin}, {rpmax}\n")
-                for rp in sorted(hazard_maps.keys()):
-                    # TODO: Comment to disable absolute paths!
-                    map_fn = abspath(hazard_maps[rp])
-                    # TODO: Uncomment to enable relative paths with respect to the root!
-                    # map_fn = hazard_maps[rp]
-                    f.write(f"{map_fn:s}, {rp}\n")
-
-            # TODO: Comment to disable absolute paths!
-            ws["B4"] = join(self.root, "risk.csv")
-            # TODO: Uncomment to enable relative paths with respect to the root!
-            # ws["B4"] = "risk.csv"
-        elif isinstance(hazard_maps, str):
-            ws["B4"] = abspath(hazard_maps)  # TODO: Comment to disable absolute paths!
-            # ws["B4"] = hazard_maps  # TODO: Uncomment to enable relative paths with respect to the root!
-
-        # Store the exposure information.
-        for row in range(7, 99):
-            exp_layer = self.get_config(f"exp_{row-6}", fallback={})
-            if not exp_layer:
-                break
-
-            # Write with fallback options.
-            ws[f"A{row}"] = int(exp_layer.get("use", 0))
-            ws[f"B{row}"] = str(exp_layer.get("category", ""))
-            ws[f"C{row}"] = float(exp_layer.get("max_damage", 0))
-            ws[f"D{row}"] = float(exp_layer.get("bu", 0))
-            ws[f"F{row}"] = str(exp_layer.get("function", ""))
-            ws[f"H{row}"] = int(exp_layer.get("map", 1))
-            ws[f"I{row}"] = float(exp_layer.get("scale_factor", 1))
-            ws[f"J{row}"] = str(exp_layer.get("raster", ""))
-            ws[f"K{row}"] = str(exp_layer.get("unit", ""))
-            ws[f"L{row}"] = str(exp_layer.get("landuse", ""))
-
-            # Copy the damage function file.
-
-            # TODO: Comment to disable absolute paths!
-            copy(
-                Path(self._DATADIR).joinpath(
-                    "damage_functions",
-                    self.config["hazard_type"],
-                    self.config["unit"],
-                    f"{exp_layer.get('function', '')}.csv",
-                ),
-                Path(self.config["vulnerability"]).joinpath(
-                    f"{exp_layer.get('function', '')}.csv"
-                ),
-            )
-
-            # TODO: Uncomment to enable relative paths with respect to the root!
-            # copy(
-            #     Path(self._DATADIR).joinpath(
-            #         "damage_functions", self.config["hazard_type"], self.config["unit"],
-            #         f"{exp_layer.get('function', '')}.csv"
-            #     ),
-            #     Path(self.root).joinpath(self.config["vulnerability"], f"{exp_layer.get('function', '')}.csv")
-            # )
-
-        # Write to file.
-        wb.save(fn)
-        wb.close()
-
-    ## I/O
-    def read(self):
-        """Method to read the complete model schematization and configuration from file."""
-
-        self.logger.info(f"Reading model data from {self.root}")
-        self.read_config()
-        self.read_staticmaps()
-        self.read_staticgeoms()
+            if self.get_config("hazard"):
+                for hazard_type, hazard_scenario in self.get_config("hazard").items():
+                    for hazard_fn in hazard_scenario:
+                        hazard_scenario[hazard_fn]["map_fn"] = self.root.joinpath(
+                            hazard_scenario[hazard_fn]["map_fn"].name,
+                        )
+                        self.set_config(
+                            "hazard",
+                            hazard_type,
+                            hazard_fn,
+                            hazard_scenario[hazard_fn],
+                        )
+            if self.get_config("exposure"):
+                for exposure_fn in self.get_config("exposure"):
+                    self.set_config(
+                        "exposure",
+                        exposure_fn,
+                        "map_fn",
+                        self.root.joinpath(
+                            self.get_config("exposure", exposure_fn, "map_fn").name,
+                        ),
+                    )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
@@ -775,75 +806,23 @@ class FiatModel(Model):
         if self._forcing:
             self.write_forcing()
 
-    def read_staticmaps(self):
-        """Read staticmaps at <root/?/> and parse to xarray Dataset."""
+    def write_forcing(self):
+        """write forcing at <root/?/> in model ready format."""
 
-        # to read gdal raster files use: hydromt.open_mfraster()
-        # to read netcdf use: xarray.open_dataset()
-        if not self._write:
-            # start fresh in read-only mode
-            self._staticmaps = xr.Dataset()
+        pass
+        # raise NotImplementedError()
 
-        # Read the hazard maps.
-        hazard_maps = self.get_config("hazard")
-        fn_lst = []
-        if isinstance(hazard_maps, dict):
-            fn_lst = list(hazard_maps.values())
-        elif isinstance(hazard_maps, str):
-            fn_lst = [hazard_maps]
+    def write_results(self):
+        """write results at <root/?/> in model ready format."""
 
-        for fn in fn_lst:
-            # fn = join(self.root, fn)  # TODO: Uncomment to enable relative paths with respect to the root!
-            name = basename(fn).rsplit(".", maxsplit=2)[0]
-            if not isfile(fn):
-                logger.warning(f"Could not find hazard map at {fn}.")
-            else:
-                self.set_staticmaps(hydromt.open_raster(fn), name=name)
+        pass
+        # raise NotImplementedError()
 
-        # Read the exposure maps.
-        exp_root = self.get_config("exposure")
-        if exp_root is not None:
-            # TODO: Comment to disable absolute paths!
-            fns = glob.glob(join(exp_root, "*.tif"))
-            # TODO: Uncomment to enable relative paths with respect to the root!
-            # fns = glob.glob(join(self.root, exp_root, "*.tif"))
-            if len(fns) == 0:
-                logger.warning(f"Could not find any expsure maps in {exp_root}.")
-            else:
-                self.set_staticmaps(hydromt.open_mfraster(fns))
+    def write_states(self):
+        """write states at <root/?/> in model ready format."""
 
-    def write_staticmaps(self, compress="lzw"):
-        """Write staticmaps at <root/?/> in model ready format."""
-
-        # to write to gdal raster files use: self.staticmaps.raster.to_mapstack()
-        # to write to netcdf use: self.staticmaps.to_netcdf()
-        if not self._write:
-            raise IOError("Model opened in read-only mode.")
-        hazard_type = self.get_config("hazard_type", fallback="flooding")
-        hazard_maps = [n for n in self.staticmaps.data_vars if hazard_type in n]
-        if len(hazard_maps) > 0:
-            self.staticmaps[hazard_maps].raster.to_mapstack(
-                join(self.root, "hazard"), compress=compress
-            )
-        exposure_maps = [n for n in self.staticmaps.data_vars if hazard_type not in n]
-        if len(exposure_maps) > 0:
-            exp_root = self.get_config("exposure")
-            self.staticmaps[exposure_maps].raster.to_mapstack(
-                exp_root, compress=compress
-            )  # TODO: Comment to disable absolute paths!
-            # TODO: Uncomment to enable relative paths with respect to the root!
-            # self.staticmaps[exposure_maps].raster.to_mapstack(join(self.root, exp_root), compress=compress)
-
-    def read_staticgeoms(self):
-        """Read staticgeoms at <root/?/> and parse to dict of GeoPandas."""
-
-        if not self._write:
-            # start fresh in read-only mode
-            self._staticgeoms = dict()
-        region_fn = join(self.root, "region.GeoJSON")
-        if isfile(region_fn):
-            self.set_staticgeoms(gpd.read_file(region_fn), "region")
-        return self._staticgeoms
+        pass
+        # raise NotImplementedError()
 
     def write_staticgeoms(self):
         """Write staticmaps at <root/?/> in model ready format."""
@@ -854,37 +833,230 @@ class FiatModel(Model):
             for name, gdf in self._staticgeoms.items():
                 gdf.to_file(join(self.root, f"{name}.geojson"), driver="GeoJSON")
 
-    def read_forcing(self):
-        """Read forcing at <root/?/> and parse to dict of xr.DataArray."""
+    def write_staticmaps(self, compress="lzw"):
+        """Write staticmaps at <root/?/> in model ready format."""
 
-        return self._forcing
-        # raise NotImplementedError()
+        # to write to gdal raster files use: self.staticmaps.raster.to_mapstack()
+        # to write to netcdf use: self.staticmaps.to_netcdf()
+        if not self._write:
+            raise IOError("Model opened in read-only mode.")
+        hazard_maps = [
+            j for i in self.get_config("hazard") for j in self.get_config("hazard", i)
+        ]
+        if len(hazard_maps) > 0:
+            self.staticmaps[hazard_maps].raster.to_mapstack(
+                self.get_config("hazard_dp"), compress=compress
+            )
+        exposure_maps = [
+            i for i in self.staticmaps.data_vars if i not in hazard_maps
+        ]
+        if len(exposure_maps) > 0:
+            self.staticmaps[exposure_maps].raster.to_mapstack(
+                self.get_config("exposure_dp"), compress=compress
+            )
 
-    def write_forcing(self):
-        """write forcing at <root/?/> in model ready format."""
-        pass
-        # raise NotImplementedError()
+    def _configread(self, fn):
+        """Parse fiat_configuration.ini to dict."""
 
-    def read_states(self):
-        """Read states at <root/?/> and parse to dict of xr.DataArray."""
+        # Read and parse the fiat_configuration.ini.
+        opt = parse_config(fn)
 
-        return self._states
-        # raise NotImplementedError()
+        # Store the general information.
+        config = opt["setup_config"]
 
-    def write_states(self):
-        """write states at <root/?/> in model ready format."""
+        # Store the hazard information.
+        config["hazard"] = {}
+        for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
+            hazard_dict.update({
+                "map_fn": config["hazard_dp"].joinpath(hazard_dict["map_fn"])
+            })
+            if not hazard_dict["map_type"] in config["hazard"].keys():
+                config["hazard"][hazard_dict["map_type"]] = {
+                    hazard_dict["map_fn"].stem: hazard_dict,
+                }
+            else:
+                config["hazard"][hazard_dict["map_type"]].update({
+                    hazard_dict["map_fn"].stem: hazard_dict,
+                })
 
-        pass
-        # raise NotImplementedError()
+        # Store the exposure information.
+        config["exposure"] = {}
+        for exposure_dict in [opt[key] for key in opt.keys() if "exposure" in key]:
+            exposure_dict.update({
+                "map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])
+            })
+            config["exposure"].update({
+                exposure_dict["map_fn"].stem: exposure_dict,
+            })
 
-    def read_results(self):
-        """Read results at <root/?/> and parse to dict of xr.DataArray."""
+        return config
 
-        return self._results
-        # raise NotImplementedError()
+    def _configwrite(self, fn):
+        """Write config to fiat_configuration.ini"""
 
-    def write_results(self):
-        """write results at <root/?/> in model ready format."""
+        parser = ConfigParser()
 
-        pass
-        # raise NotImplementedError()
+        # Store the general information.
+        parser["setup_config"] = {
+            "case": str(self.config.get("case")),
+            "strategy": str(self.config.get("strategy")),
+            "scenario": str(self.config.get("scenario")),
+            "year": str(self.config.get("year")),
+            "hazard_type": str(self.config.get("hazard_type")),
+            "output_unit": str(self.config.get("output_unit")),
+            "hazard_dp": str(self.config.get("hazard_dp").name),
+            "exposure_dp": str(self.config.get("exposure_dp").name),
+            "susceptibility_dp": str(self.config.get("susceptibility_dp").name),
+            "output_dp": str(self.config.get("output_dp").name),
+            "category_output": str(self.config.get("category_output")),
+            "total_output": str(self.config.get("total_output")),
+            "risk_output": str(self.config.get("risk_output")),
+            "map_output": str(self.config.get("map_output")),
+        }
+
+        # Store the hazard information.
+        for idx, hazard_scenario in enumerate([
+            (i, j) for i in self.get_config("hazard") for j in
+            self.get_config("hazard", i)
+        ]):
+            section_name = f"setup_hazard{idx + 1}"
+            parser.add_section(section_name)
+            for key in self.get_config("hazard", hazard_scenario[0], hazard_scenario[1]):
+                if key == "map_fn":
+                    parser.set(
+                        section_name,
+                        key,
+                        str(self.get_config(
+                            "hazard",
+                            hazard_scenario[0],
+                            hazard_scenario[1],
+                            key,
+                        ).name),
+                    )
+                else:
+                    parser.set(
+                        section_name,
+                        key,
+                        str(self.get_config(
+                            "hazard",
+                            hazard_scenario[0],
+                            hazard_scenario[1],
+                            key,
+                        )),
+                    )
+
+        # Store the exposure information.
+        for idx, exposure_fn in enumerate(self.get_config("exposure")):
+            section_name = f"setup_exposure{idx + 1}"
+            parser.add_section(section_name)
+            for key in self.get_config("exposure", exposure_fn):
+                if key == "map_fn":
+                    parser.set(
+                        section_name,
+                        key,
+                        str(self.get_config("exposure", exposure_fn, key).name),
+                    )
+                else:
+                    parser.set(
+                        section_name,
+                        key,
+                        str(self.get_config("exposure", exposure_fn, key)),
+                    )
+
+        # Save the configuration file.
+        with open(self.root.joinpath(self._CONF), 'w') as config:
+            parser.write(config)
+
+    """ CONTROL FUNCTIONS """
+
+    def check_dir_exist(self, dir, name=None):
+        """ """
+
+        if not isinstance(dir, Path):
+            raise TypeError(
+                f"The directory indicated by the '{name}' parameter does not exist."
+            )
+
+    def check_file_exist(self, param_lst, name=None, input_dir=None):
+        """ """
+
+        for param_idx, param in enumerate(param_lst):
+            if isinstance(param, dict):
+                fn_lst = list(param.values())
+            else:
+                fn_lst = [param]
+            for fn_idx, fn in enumerate(fn_lst):
+                if not Path(fn).is_file():
+                    if self.root.joinpath(fn).is_file():
+                        if isinstance(param, dict):
+                            param_lst[param_idx][list(param.keys())[fn_idx]] = self.root.joinpath(fn)
+                        else:
+                            param_lst[param_idx] = self.root.joinpath(fn)
+                    if input_dir is not None:
+                        if self.get_config(input_dir).joinpath(fn).is_file():
+                            if isinstance(param, dict):
+                                param_lst[param_idx][list(param.keys())[fn_idx]] = self.get_config(input_dir).joinpath(fn)
+                            else:
+                                param_lst[param_idx] = self.get_config(input_dir).joinpath(fn)
+                else:
+                    if isinstance(param, dict):
+                        param_lst[param_idx][list(param.keys())[fn_idx]] = Path(fn)
+                    else:
+                        param_lst[param_idx] = Path(fn)
+                try:
+                    if isinstance(param, dict):
+                        assert isinstance(param_lst[param_idx][list(param.keys())[fn_idx]], Path) == True
+                    else:
+                        assert isinstance(param_lst[param_idx], Path) == True
+                except AssertionError:
+                    if input_dir is None:
+                        raise TypeError(
+                            f"The file indicated by the '{name}' parameter does not"
+                            f" exist in the directory '{self.root}'."
+                        )
+                    else:
+                        raise TypeError(
+                            f"The file indicated by the '{name}' parameter does not"
+                            f" exist in either of the directories '{self.root}' or "
+                            f"'{self.get_config(input_dir)}'."
+                        )
+
+    def check_param_type(self, param, name=None, types=None):
+        """ """
+
+        if not isinstance(param, list):
+            raise TypeError(
+                f"The '{name}_lst' parameter should be a of {list}, received a "
+                f"{type(param)} instead."
+            )
+        for i in param:
+            if not isinstance(i, types):
+                if isinstance(types, tuple):
+                    types = " or ".join([str(j) for j in types])
+                else:
+                    types = types
+                raise TypeError(
+                    f"The '{name}' parameter should be a of {types}, received a "
+                    f"{type(i)} instead."
+                )
+
+    def check_uniqueness(self, *args, file_type=None, filename=None):
+        """ """
+
+        args = list(args)
+        if len(args) == 1 and '.' in args[0]:
+            args = args[0].split('.') + args[1:]
+        branch = args.pop(-1)
+        for key in args[::-1]:
+            branch = {key: branch}
+
+        if self.get_config(args[0], args[1]):
+            for key in self.staticmaps.data_vars:
+                if filename == key:
+                    raise ValueError(
+                        f'The filenames of the {file_type} maps should be unique.'
+                    )
+                if self.get_config(args[0], args[1], key) == list(branch[args[0]][args[1]].values())[0]:
+                    raise ValueError(
+                        f"Each model input layers must be unique."
+                    )

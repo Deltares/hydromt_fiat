@@ -90,7 +90,6 @@ def create_population_per_building_map(
             ar_pop_bld_density = np.where(
                 ar_bld_count != 0, (da_pop_density * ar_area_count) / ar_bld_count, 0
             )
-
         else:
             ar_pop_count = np.full_like(da_bld, fill_value=0)
             ar_area_count = np.full_like(da_bld, fill_value=0)
@@ -99,7 +98,6 @@ def create_population_per_building_map(
             ar_pop_bld_density = np.where(
                 da_bld_density != 0, ar_pop_count / (da_bld_density * ar_area_count), 0
             )
-
         da_pop_bld_density = raster.RasterDataArray.from_numpy(
             data=ar_pop_bld_density,
             transform=da_low_res.raster.transform,
@@ -109,7 +107,7 @@ def create_population_per_building_map(
 
         # Reproject the density maps to the hazard projection.
         logger.debug(
-            "Upscaling the population per building map to the hazard resolution."
+            "Downscaling the population per building map to the hazard resolution."
         )
         da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
         da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
@@ -128,7 +126,7 @@ def create_population_per_building_map(
     elif da_bld_res < ds_like_res and da_pop_res < ds_like_res:
         # Reproject the density maps to the hazard projection.
         logger.debug(
-            "Downscaling the population per building map to the hazard resolution."
+            "Upscaling the population per building map to the hazard resolution."
         )
         da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
         da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
