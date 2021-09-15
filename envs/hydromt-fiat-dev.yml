@@ -22,7 +22,7 @@ dependencies:
   - nbsphinx  # docs
   - numba
   - numpy
-  - openpyxl
+  - openpyxln
   - pandas
   - pip
   - pyflwdir>=0.4.7
@@ -37,4 +37,5 @@ dependencies:
   - sphinx # docs
   - sphinx_rtd_theme # docs
   - xarray
+  - xlsxwriter
   - zarr
