@@ -357,7 +357,7 @@ class FiatModel(Model):
                 f"{max_damage:.2f} {unit:s}/person (country = {tag:s})."
             )
 
-            # Copy the susceptibility function file to the susceptibility folder.
+            # Copy the susceptibility function file to the susceptibility folder. # TODO: Move the copy part to self._configwrite (otherwise issues occur after reading the model)!
             if not function_fn:
                 sf_path = Path(self._DATADIR).joinpath(
                     "damage_functions",
@@ -430,7 +430,7 @@ class FiatModel(Model):
             "Added exposure map: buildings value"
         )
 
-    def setup_exposure_roads(
+    def setup_roads_value(
         self,
         exposure_fn,
         category,
@@ -568,7 +568,7 @@ class FiatModel(Model):
 
         # Calculate the correction factor.
         correction_factor = (
-            annual_gdp_per_cap_data[forecast_year_idx] / annual_gdp_per_cap_data[ref_year_idx]
+            interp_gdp_per_cap_data[forecast_year_idx] / interp_gdp_per_cap_data[ref_year_idx]
         )
 
         return correction_factor
@@ -902,6 +902,7 @@ class FiatModel(Model):
             "strategy": str(self.config.get("strategy")),
             "scenario": str(self.config.get("scenario")),
             "year": str(self.config.get("year")),
+            "country": str(self.get_config("country")),
             "hazard_type": str(self.config.get("hazard_type")),
             "output_unit": str(self.config.get("output_unit")),
             "hazard_dp": str(self.config.get("hazard_dp").name),
