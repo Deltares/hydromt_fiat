@@ -27,9 +27,12 @@ jobs:
       - name: Setup environment
         uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: envs/hydromt-fiat.yml
           python-version: "3.9"
-          activate-environment: hydromt-fiat
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          channel-priority: true
+          environment-file: envs/hydromt-fiat-dev.yml
+          activate-environment: hydromt-fiat-dev
 
       - name: Install hydromt-fiat
         run: flit install
