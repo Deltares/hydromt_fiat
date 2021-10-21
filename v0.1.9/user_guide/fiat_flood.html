@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setting up a flood damage model &mdash; hydromt_fiat  documentation</title>
+      <link rel="stylesheet" href="../_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API reference" href="../api/api_index.html" />
+    <link rel="prev" title="hydromt_fiat.fiat.FiatModel.scale_exposure" href="../_generated/hydromt_fiat.fiat.FiatModel.scale_exposure.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> hydromt_fiat
+          </a>
+              <div class="version">
+                0.1.9
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fiat.html">FIAT model components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setting up a flood damage model</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References &amp; Help</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/api_index.html">API reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">What’s new</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">hydromt_fiat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Setting up a flood damage model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user_guide/fiat_flood.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="setting-up-a-flood-damage-model">
+<span id="fiat-flooding"></span><h1>Setting up a flood damage model<a class="headerlink" href="#setting-up-a-flood-damage-model" title="Permalink to this headline"></a></h1>
+<p>To build a <strong>flood damage model</strong>  from an existing hazard layer,
+the model <a class="reference external" href="https://deltares.github.io/hydromt/latest/user_guide/cli.html#region-options">region</a> is defined by a the grid of that hazard map.
+see example below.</p>
+<p>A typical workflow to setup a flood damage model schematization is privided in the
+<a class="reference download internal" download="" href="../_downloads/3148bc1657e92a626c805d15f5f15a4f/fiat_flood.ini"><code class="xref download docutils literal notranslate"><span class="pre">fiat_flood.ini</span></code></a> and shown below.
+Each section corresponds to one of the model <a class="reference internal" href="fiat.html#components"><span class="std std-ref">Model components</span></a> and the <cite>[global]</cite> section can be used to pass
+aditional arguments to the <code class="xref py py-class docutils literal notranslate"><span class="pre">FiatModel</span></code>. initialization.
+An example is provided in <a class="reference internal" href="../examples/index.html#examples"><span class="std std-ref">Examples</span></a> section.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">hydromt build fiat /path/to/model_root &quot;{&#39;grid&#39;: /path/to/hazard}&quot; -i fiat_flood.ini -vv</span>
+</pre></div>
+</div>
+<div class="highlight-Ini notranslate"><div class="highlight"><pre><span></span><span class="k">[global]</span>
+<span class="na">artifact_data</span> <span class="o">=</span> <span class="s">True            </span>						<span class="c1"># use latest artifact data</span>
+
+<span class="k">[setup_config]</span>
+<span class="na">case</span> <span class="o">=</span> <span class="s">baseline                 </span>						<span class="c1"># name of case</span>
+<span class="na">strategy</span> <span class="o">=</span> <span class="s">base</span>									<span class="c1"># name of strategy (optional)</span>
+<span class="na">scenario</span> <span class="o">=</span> <span class="s">base</span>									<span class="c1"># name of scenario (optional)</span>
+<span class="na">year</span> <span class="o">=</span> <span class="s">2021</span>									<span class="c1"># case year (optional)</span>
+<span class="na">country</span> <span class="o">=</span> <span class="s">Italy                 </span>						<span class="c1"># country name or ISO3 tag, see hydromt_fiat/data/global_configuration.xlsx for options</span>
+<span class="na">hazard_type</span> <span class="o">=</span> <span class="s">flooding          </span>						<span class="c1"># description of the hazard type (for now only &#39;flooding&#39;)</span>
+<span class="na">hazard_unit</span> <span class="o">=</span> <span class="s">m                       </span>						<span class="c1"># unit of the hazard map values (&#39;m&#39; or &#39;ft&#39;)</span>
+<span class="na">output_unit</span> <span class="o">=</span> <span class="s">USD</span>								<span class="c1"># unit in which the damage (and risk) numbers are expressed</span>
+<span class="na">category_output</span> <span class="o">=</span> <span class="s">True</span>								<span class="c1"># indicator that specifies whether the results per category should be included in the output (default is True)</span>
+<span class="na">total_output</span> <span class="o">=</span> <span class="s">True</span>								<span class="c1"># indicator that specifies whether the total results should be included in the output (default is True)</span>
+<span class="na">risk_output</span> <span class="o">=</span> <span class="s">True</span>								<span class="c1"># indicator that specifies whether a risk calculation has to be conducted (default is True)</span>
+<span class="na">map_output</span> <span class="o">=</span> <span class="s">True</span>								<span class="c1"># indicator that specifies whether the result maps should be included in the output (default is True)</span>
+
+<span class="k">[setup_hazard1]</span>
+<span class="na">map_fn</span> <span class="o">=</span> <span class="s">data/flood_hand/hand_050cm_rp02.tif    </span>				<span class="c1"># absolute or relative (with respect to the configuration.ini) path to the hazard file</span>
+<span class="na">map_type</span> <span class="o">=</span> <span class="s">water_depth</span>								<span class="c1"># description of the hazard file type</span>
+<span class="na">rp</span> <span class="o">=</span> <span class="s">2              </span>								<span class="c1"># hazard return period in years, required for a risk calculation (optional)</span>
+<span class="na">crs</span> <span class="o">=</span> <span class="s">3452</span>									<span class="c1"># coordinate reference system of the hazard file (optional)</span>
+<span class="na">nodata</span> <span class="o">=</span> <span class="s">-9999</span>									<span class="c1"># value that is assigned as nodata (optional)</span>
+<span class="na">var</span> <span class="o">=</span> <span class="s">None</span>									<span class="c1"># hazard variable name in NetCDF input files (optional)</span>
+<span class="na">chunks</span> <span class="o">=</span> <span class="s">100</span>									<span class="c1"># chunk sizes along each dimension used to load the hazard file into a dask array (default is &#39;auto&#39;) (optional)</span>
+
+<span class="k">[setup_hazard2]</span>
+<span class="na">map_fn</span> <span class="o">=</span> <span class="s">data/flood_hand/hand_150cm_rp50.tif    </span>				<span class="c1"># absolute or relative (with respect to the configuration.ini) path to the hazard file</span>
+<span class="na">map_type</span> <span class="o">=</span> <span class="s">water_depth</span>								<span class="c1"># description of the hazard file type</span>
+<span class="na">rp</span> <span class="o">=</span> <span class="s">50</span>										<span class="c1"># hazard return period in years, required for a risk calculation (optional)</span>
+<span class="na">crs</span> <span class="o">=</span> <span class="s">3452</span>									<span class="c1"># coordinate reference system of the hazard file (optional)</span>
+<span class="na">nodata</span> <span class="o">=</span> <span class="s">-9999</span>									<span class="c1"># value that is assigned as nodata (optional)</span>
+<span class="na">var</span> <span class="o">=</span> <span class="s">None</span>									<span class="c1"># hazard variable name in NetCDF input files (optional)</span>
+<span class="na">chunks</span> <span class="o">=</span> <span class="s">100</span>									<span class="c1"># chunk sizes along each dimension used to load the hazard file into a dask array (default is &#39;auto&#39;) (optional)</span>
+
+<span class="na">[setup_buildings_value]  </span>
+<span class="na">bld_fn</span> <span class="o">=</span> <span class="s">guf_bld_2012           </span>						<span class="c1"># name tag of or absolute or relative (with respect to the configuration file) path to the building footprint file (default is &#39;wsf_bld_2015&#39;)</span>
+<span class="na">pop_fn</span> <span class="o">=</span> <span class="s">ghs_pop_2015_54009     </span>						<span class="c1"># name tag of or absolute or relative (with respect to the configuration file) path to the population count file (default is &#39;ghs_pop_2015&#39;)</span>
+<span class="na">chunks</span> <span class="o">=</span> <span class="s">100</span>									<span class="c1"># chunk sizes along each dimension used to load the building footprint and population count files into a dask arrays (default is &#39;auto&#39;) (optional)</span>
+<span class="na">function_fn</span> <span class="o">=</span> <span class="s">None</span>								<span class="c1"># absolute or relative (with respect to the configuration file or susceptibility_dp) path to the susceptibility file (default is the JCR continental susceptibilty function (https://publications.jrc.ec.europa.eu/repository/handle/JRC105688) related to the country parameter) (optional)</span>
+<span class="na">scale_factor</span> <span class="o">=</span> <span class="s">1</span>								<span class="c1"># scaling factor of the exposure values (default is 1) (optional)</span>
+<span class="na">weight_factor</span> <span class="o">=</span> <span class="s">1</span>								<span class="c1"># weight factor of the exposure values in the total damage and risk results (default is 1) (optional)</span>
+
+<span class="c1"># Alternatives to conduct a risk calculation (triggered by a multiple hazard input):</span>
+<span class="c1"># [setup_hazard]</span>
+<span class="c1"># map_fn = [hazard/RP_2.tif, hazard/RP_100.tif]					# TODO: Not properly working yet, input is &#39;[.., ..]&#39; instead of [&#39;..&#39;, &#39;..&#39;]</span>
+<span class="c1"># rp = [2, 100]									# TODO: Not properly working yet, input is not parseble.</span>
+
+<span class="c1"># Alternative to derive rp from filename:</span>
+<span class="c1"># [setup_hazard1]</span>
+<span class="c1"># map_fn = hazard/RP_*.tif</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../_generated/hydromt_fiat.fiat.FiatModel.scale_exposure.html" class="btn btn-neutral float-left" title="hydromt_fiat.fiat.FiatModel.scale_exposure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api/api_index.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Deltares.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
