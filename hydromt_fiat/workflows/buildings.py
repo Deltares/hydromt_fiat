@@ -41,8 +41,6 @@ def create_population_per_building_map(
     da_like_area = get_area_grid(ds_like)
     da_bld_density = get_density_grid(da_bld).rename("bld_density")
     da_pop_density = get_density_grid(da_pop).rename("pop_density")
-    da_bld_density.raster.set_nodata(nodata=0)
-    da_pop_density.raster.set_nodata(nodata=0)
 
     # Get the (average) grid resolutions in meters.
     da_bld_res = get_grid_resolution(da_bld)
@@ -90,7 +88,6 @@ def create_population_per_building_map(
             ar_pop_bld_density = np.where(
                 ar_bld_count != 0, (da_pop_density * ar_area_count) / ar_bld_count, 0
             )
-
         else:
             ar_pop_count = np.full_like(da_bld, fill_value=0)
             ar_area_count = np.full_like(da_bld, fill_value=0)
@@ -99,51 +96,45 @@ def create_population_per_building_map(
             ar_pop_bld_density = np.where(
                 da_bld_density != 0, ar_pop_count / (da_bld_density * ar_area_count), 0
             )
-
         da_pop_bld_density = raster.RasterDataArray.from_numpy(
             data=ar_pop_bld_density,
             transform=da_low_res.raster.transform,
             crs=da_low_res.raster.crs,
-            nodata=0,
         )
 
-        # Reproject the density maps to the hazard projection.
+        # Reproject the buildings, population and population per building density maps to the hazard projection.
         logger.debug(
-            "Upscaling the population per building map to the hazard resolution."
+            "Upscaling the building, population and population per building map to the hazard resolution."
         )
-        da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
-        da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
+        da_bld_count = da_bld.raster.reproject_like(ds_like, method="sum")
+        da_pop_count = (
+            da_pop_density.raster.reproject_like(ds_like, method="average")
+            * da_like_area
+        )
         da_pop_bld_density = da_pop_bld_density.raster.reproject_like(
             ds_like, method="average"
         )
 
-        # Create the population, buildings and population per building count maps.
-        da_bld_count = da_bld_density * da_like_area
-        da_pop_count = da_pop_density * da_like_area
-        da_pop_bld_count = da_pop_bld_density * da_bld_count
-        da_bld_count.raster.set_nodata(nodata=0)
-        da_pop_count.raster.set_nodata(nodata=0)
-        da_pop_bld_count.raster.set_nodata(nodata=0)
+        # Create the population per building count maps.
+        da_pop_bld_count = da_bld_count.where(
+            da_bld_count == 0, other=da_pop_bld_density * da_bld_count
+        )
 
     elif da_bld_res < ds_like_res and da_pop_res < ds_like_res:
-        # Reproject the density maps to the hazard projection.
+        # Reproject the buildings and population maps to the hazard projection.
         logger.debug(
-            "Downscaling the population per building map to the hazard resolution."
+            "Downscaling the building and population maps to the hazard resolution."
         )
-        da_bld_density = da_bld_density.raster.reproject_like(ds_like, method="average")
-        da_pop_density = da_pop_density.raster.reproject_like(ds_like, method="average")
+        da_bld_count = da_bld.raster.reproject_like(ds_like, method="sum")
+        da_pop_count = da_pop.raster.reproject_like(ds_like, method="sum")
 
-        # Create the population, buildings and population per building count maps.
-        da_bld_count = da_bld_density * da_like_area
-        da_pop_count = da_pop_density * da_like_area
-        da_pop_bld_count = da_pop_count.where(da_bld_count != 0, 0)
-        da_bld_count.raster.set_nodata(nodata=0)
-        da_pop_count.raster.set_nodata(nodata=0)
-        da_pop_bld_count.raster.set_nodata(nodata=0)
-
-    # TODO: Add warning to log in case of extreme population per building values (caused by large resolution differences)!
+        # Create the population per building count maps.
+        da_pop_bld_count = da_bld_count.where(da_bld_count == 0, other=da_pop_count)
 
     # Merge the output DataArrays into a DataSet.
+    da_bld_count.raster.set_nodata(nodata=0)
+    da_pop_count.raster.set_nodata(nodata=0)
+    da_pop_bld_count.raster.set_nodata(nodata=0)
     ds_count = xr.merge(
         [
             da_bld_count.rename("bld"),

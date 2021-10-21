@@ -2,8 +2,8 @@
 
 from os.path import dirname, join, abspath
 
-
-__version__ = "0.1.2"
+# NOTE version number without "v"
+__version__ = "0.1.9"
 
 DATADIR = join(dirname(abspath(__file__)), "data")
 

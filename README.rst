@@ -12,7 +12,7 @@ hydroMT-fiat: FIAT plugin for hydroMT
     :target: https://deltares.github.io/hydromt_fiat/stable
     :alt: Stable docs last release
 
-.. image:: https://pypip.in/v/hydromt_fiat/badge.png
+.. image:: https://badge.fury.io/py/hydromt_fiat.svg
     :target: https://pypi.org/project/hydromt_fiat/
     :alt: Latest PyPI version
 
