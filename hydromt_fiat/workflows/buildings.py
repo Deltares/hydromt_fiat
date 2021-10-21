@@ -107,9 +107,10 @@ def create_population_per_building_map(
             "Upscaling the building, population and population per building map to the hazard resolution."
         )
         da_bld_count = da_bld.raster.reproject_like(ds_like, method="sum")
-        da_pop_count = da_pop_density.raster.reproject_like(
-            ds_like, method="average"
-        ) * da_like_area
+        da_pop_count = (
+            da_pop_density.raster.reproject_like(ds_like, method="average")
+            * da_like_area
+        )
         da_pop_bld_density = da_pop_bld_density.raster.reproject_like(
             ds_like, method="average"
         )
@@ -128,9 +129,7 @@ def create_population_per_building_map(
         da_pop_count = da_pop.raster.reproject_like(ds_like, method="sum")
 
         # Create the population per building count maps.
-        da_pop_bld_count = da_bld_count.where(
-            da_bld_count == 0, other=da_pop_count
-        )
+        da_pop_bld_count = da_bld_count.where(da_bld_count == 0, other=da_pop_count)
 
     # Merge the output DataArrays into a DataSet.
     da_bld_count.raster.set_nodata(nodata=0)

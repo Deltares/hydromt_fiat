@@ -90,7 +90,7 @@ class FiatModel(Model):
         self,
         map_fn,
         map_type,
-        chunks='auto',
+        chunks="auto",
         rp=None,
         crs=None,
         nodata=None,
@@ -169,9 +169,11 @@ class FiatModel(Model):
                     raise ValueError(
                         "The 'var' parameter is required when reading NetCDF data."
                     )
-                kwargs.update(variables=self.get_param(
-                    var_lst, map_fn_lst, "hazard", da_name, idx, "NetCDF variable"
-                ))
+                kwargs.update(
+                    variables=self.get_param(
+                        var_lst, map_fn_lst, "hazard", da_name, idx, "NetCDF variable"
+                    )
+                )
             da = self.data_catalog.get_rasterdataset(
                 da_map_fn, geom=self.region, **kwargs
             )
@@ -179,7 +181,11 @@ class FiatModel(Model):
             # Set (if necessary) the coordinate reference system.
             if crs is not None and not da.raster.crs.is_epsg_code:
                 da_crs = self.get_param(
-                    crs_lst, map_fn_lst, "hazard", da_name, idx,
+                    crs_lst,
+                    map_fn_lst,
+                    "hazard",
+                    da_name,
+                    idx,
                     "coordinate reference system",
                 )
                 da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
@@ -196,9 +202,7 @@ class FiatModel(Model):
                 )
                 da.raster.set_nodata(nodata=da_nodata)
             elif nodata is None and da.raster.nodata is None:
-                raise ValueError(
-                    "The hazard map has no nodata value assigned."
-                )
+                raise ValueError("The hazard map has no nodata value assigned.")
 
             # Correct (if necessary) the grid orientation from the lower to the upper left corner.
             if da.raster.res[1] > 0:
@@ -206,13 +210,16 @@ class FiatModel(Model):
 
             # Check if the obtained hazard map is identical.
             if self.staticmaps and not self.staticmaps.raster.identical_grid(da):
-                raise ValueError(
-                    "The hazard maps should have identical grids."
-                )
+                raise ValueError("The hazard maps should have identical grids.")
 
             # Get the return period input parameter.
-            da_rp = self.get_param(rp_lst, map_fn_lst, "hazard", da_name, idx,
-                                   "return period") if "rp_lst" in locals() else None
+            da_rp = (
+                self.get_param(
+                    rp_lst, map_fn_lst, "hazard", da_name, idx, "return period"
+                )
+                if "rp_lst" in locals()
+                else None
+            )
             if self.get_config("risk_output") and da_rp is None:
 
                 # Get (if possible) the return period from dataset names if the input parameter is None.
@@ -222,8 +229,9 @@ class FiatModel(Model):
                         filter(fstrip, da_name.lower().split("rp")[-1])
                     ).lstrip("0")
                     try:
-                        assert isinstance(literal_eval(rp_str) if rp_str else None,
-                                          (int, float))
+                        assert isinstance(
+                            literal_eval(rp_str) if rp_str else None, (int, float)
+                        )
                         da_rp = literal_eval(rp_str)
                     except AssertionError:
                         raise ValueError(
@@ -269,11 +277,12 @@ class FiatModel(Model):
                 },
             )
             self.set_staticmaps(da, da_name)
-            post = f"(rp {da_rp})" if rp is not None and self.get_config(
-                "risk_output") else ""
-            self.logger.info(
-                f"Added {hazard_type} hazard map: {da_name} {post}"
+            post = (
+                f"(rp {da_rp})"
+                if rp is not None and self.get_config("risk_output")
+                else ""
             )
+            self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
 
     def setup_buildings_value(
         self,
@@ -286,7 +295,6 @@ class FiatModel(Model):
         function_fn=None,
         country=None,
         **kwargs,
-
     ):
         """Add a buildings value exposure map to the FIAT model schematization.
 
@@ -392,14 +400,20 @@ class FiatModel(Model):
             map_name,
             {
                 "usage": True,
-                "map_fn": self.get_config("exposure_dp").joinpath("buildings_value.tif"),
+                "map_fn": self.get_config("exposure_dp").joinpath(
+                    "buildings_value.tif"
+                ),
                 "category": map_name,
                 "subcategory": None,
                 "unit": unit,
                 "crs": ds_bld_value.raster.crs,
                 "nodata": ds_bld_value.raster.nodata,
                 "chunks": chunks,
-                "function_fn": {"water_depth" if not function_fn else list(function_fn.keys())[0]: sf_path.name},
+                "function_fn": {
+                    "water_depth"
+                    if not function_fn
+                    else list(function_fn.keys())[0]: sf_path.name
+                },
                 "comp_alg": "max",
                 "scale_factor": scale_factor,
                 "weight_factor": weight_factor,
@@ -412,23 +426,27 @@ class FiatModel(Model):
             map_name,
             {
                 "usage": True,
-                "map_fn": self.get_config("exposure_dp").joinpath("buildings_value.tif"),
+                "map_fn": self.get_config("exposure_dp").joinpath(
+                    "buildings_value.tif"
+                ),
                 "category": map_name,
                 "subcategory": None,
                 "unit": unit,
                 "crs": ds_bld_value.raster.crs,
                 "nodata": ds_bld_value.raster.nodata,
                 "chunks": chunks,
-                "function_fn": {"water_depth" if not function_fn else list(function_fn.keys())[0]: sf_path.name},
+                "function_fn": {
+                    "water_depth"
+                    if not function_fn
+                    else list(function_fn.keys())[0]: sf_path.name
+                },
                 "comp_alg": "max",
                 "scale_factor": scale_factor,
                 "weight_factor": weight_factor,
             },
         )
         self.set_staticmaps(ds_bld_value, map_name)
-        self.logger.info(
-            "Added exposure map: buildings value"
-        )
+        self.logger.info("Added exposure map: buildings value")
 
     def setup_roads_value(
         self,
@@ -496,7 +514,8 @@ class FiatModel(Model):
                 tag = (
                     df_config.loc[
                         df_config["Country_Name"] == country, "Alpha-3"
-                    ].values[0] if country in df_config["Country_Name"].tolist()
+                    ].values[0]
+                    if country in df_config["Country_Name"].tolist()
                     else None
                 )
             else:
@@ -568,7 +587,8 @@ class FiatModel(Model):
 
         # Calculate the correction factor.
         correction_factor = (
-            interp_gdp_per_cap_data[forecast_year_idx] / interp_gdp_per_cap_data[ref_year_idx]
+            interp_gdp_per_cap_data[forecast_year_idx]
+            / interp_gdp_per_cap_data[ref_year_idx]
         )
 
         return correction_factor
@@ -714,13 +734,12 @@ class FiatModel(Model):
 
         # Read the hazard maps.
         for hazard_fn in [
-            j["map_fn"] for i in self.get_config("hazard") for j in
-            self.get_config("hazard", i).values()
+            j["map_fn"]
+            for i in self.get_config("hazard")
+            for j in self.get_config("hazard", i).values()
         ]:
             if not hazard_fn.is_file():
-                raise ValueError(
-                    f"Could not find the hazard map: {hazard_fn}."
-                )
+                raise ValueError(f"Could not find the hazard map: {hazard_fn}.")
             else:
                 self.set_staticmaps(
                     hydromt.open_raster(hazard_fn),
@@ -730,9 +749,7 @@ class FiatModel(Model):
         # Read the exposure maps.
         for exposure_fn in [i["map_fn"] for i in self.get_config("exposure").values()]:
             if not exposure_fn.is_file():
-                raise ValueError(
-                    f"Could not find the exposure map: {hazard_fn}."
-                )
+                raise ValueError(f"Could not find the exposure map: {hazard_fn}.")
             else:
                 self.set_staticmaps(
                     hydromt.open_raster(exposure_fn),
@@ -847,9 +864,7 @@ class FiatModel(Model):
             self.staticmaps[hazard_maps].raster.to_mapstack(
                 self.get_config("hazard_dp"), compress=compress
             )
-        exposure_maps = [
-            i for i in self.staticmaps.data_vars if i not in hazard_maps
-        ]
+        exposure_maps = [i for i in self.staticmaps.data_vars if i not in hazard_maps]
         if len(exposure_maps) > 0:
             self.staticmaps[exposure_maps].raster.to_mapstack(
                 self.get_config("exposure_dp"), compress=compress
@@ -867,27 +882,31 @@ class FiatModel(Model):
         # Store the hazard information.
         config["hazard"] = {}
         for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
-            hazard_dict.update({
-                "map_fn": config["hazard_dp"].joinpath(hazard_dict["map_fn"])
-            })
+            hazard_dict.update(
+                {"map_fn": config["hazard_dp"].joinpath(hazard_dict["map_fn"])}
+            )
             if not hazard_dict["map_type"] in config["hazard"].keys():
                 config["hazard"][hazard_dict["map_type"]] = {
                     hazard_dict["map_fn"].stem: hazard_dict,
                 }
             else:
-                config["hazard"][hazard_dict["map_type"]].update({
-                    hazard_dict["map_fn"].stem: hazard_dict,
-                })
+                config["hazard"][hazard_dict["map_type"]].update(
+                    {
+                        hazard_dict["map_fn"].stem: hazard_dict,
+                    }
+                )
 
         # Store the exposure information.
         config["exposure"] = {}
         for exposure_dict in [opt[key] for key in opt.keys() if "exposure" in key]:
-            exposure_dict.update({
-                "map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])
-            })
-            config["exposure"].update({
-                exposure_dict["map_fn"].stem: exposure_dict,
-            })
+            exposure_dict.update(
+                {"map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])}
+            )
+            config["exposure"].update(
+                {
+                    exposure_dict["map_fn"].stem: exposure_dict,
+                }
+            )
 
         return config
 
@@ -916,34 +935,43 @@ class FiatModel(Model):
         }
 
         # Store the hazard information.
-        for idx, hazard_scenario in enumerate([
-            (i, j) for i in self.get_config("hazard") for j in
-            self.get_config("hazard", i)
-        ]):
+        for idx, hazard_scenario in enumerate(
+            [
+                (i, j)
+                for i in self.get_config("hazard")
+                for j in self.get_config("hazard", i)
+            ]
+        ):
             section_name = f"setup_hazard{idx + 1}"
             parser.add_section(section_name)
-            for key in self.get_config("hazard", hazard_scenario[0], hazard_scenario[1]):
+            for key in self.get_config(
+                "hazard", hazard_scenario[0], hazard_scenario[1]
+            ):
                 if key == "map_fn":
                     parser.set(
                         section_name,
                         key,
-                        str(self.get_config(
-                            "hazard",
-                            hazard_scenario[0],
-                            hazard_scenario[1],
-                            key,
-                        ).name),
+                        str(
+                            self.get_config(
+                                "hazard",
+                                hazard_scenario[0],
+                                hazard_scenario[1],
+                                key,
+                            ).name
+                        ),
                     )
                 else:
                     parser.set(
                         section_name,
                         key,
-                        str(self.get_config(
-                            "hazard",
-                            hazard_scenario[0],
-                            hazard_scenario[1],
-                            key,
-                        )),
+                        str(
+                            self.get_config(
+                                "hazard",
+                                hazard_scenario[0],
+                                hazard_scenario[1],
+                                key,
+                            )
+                        ),
                     )
 
         # Store the exposure information.
@@ -965,7 +993,7 @@ class FiatModel(Model):
                     )
 
         # Save the configuration file.
-        with open(self.root.joinpath(self._CONF), 'w') as config:
+        with open(self.root.joinpath(self._CONF), "w") as config:
             parser.write(config)
 
     """ CONTROL FUNCTIONS """
@@ -990,15 +1018,21 @@ class FiatModel(Model):
                 if not Path(fn).is_file():
                     if self.root.joinpath(fn).is_file():
                         if isinstance(param, dict):
-                            param_lst[param_idx][list(param.keys())[fn_idx]] = self.root.joinpath(fn)
+                            param_lst[param_idx][
+                                list(param.keys())[fn_idx]
+                            ] = self.root.joinpath(fn)
                         else:
                             param_lst[param_idx] = self.root.joinpath(fn)
                     if input_dir is not None:
                         if self.get_config(input_dir).joinpath(fn).is_file():
                             if isinstance(param, dict):
-                                param_lst[param_idx][list(param.keys())[fn_idx]] = self.get_config(input_dir).joinpath(fn)
+                                param_lst[param_idx][
+                                    list(param.keys())[fn_idx]
+                                ] = self.get_config(input_dir).joinpath(fn)
                             else:
-                                param_lst[param_idx] = self.get_config(input_dir).joinpath(fn)
+                                param_lst[param_idx] = self.get_config(
+                                    input_dir
+                                ).joinpath(fn)
                 else:
                     if isinstance(param, dict):
                         param_lst[param_idx][list(param.keys())[fn_idx]] = Path(fn)
@@ -1006,9 +1040,11 @@ class FiatModel(Model):
                         param_lst[param_idx] = Path(fn)
                 try:
                     if isinstance(param, dict):
-                        assert isinstance(param_lst[param_idx][list(param.keys())[fn_idx]], Path) == True
+                        assert isinstance(
+                            param_lst[param_idx][list(param.keys())[fn_idx]], Path
+                        )
                     else:
-                        assert isinstance(param_lst[param_idx], Path) == True
+                        assert isinstance(param_lst[param_idx], Path)
                 except AssertionError:
                     if input_dir is None:
                         raise TypeError(
@@ -1045,8 +1081,8 @@ class FiatModel(Model):
         """ """
 
         args = list(args)
-        if len(args) == 1 and '.' in args[0]:
-            args = args[0].split('.') + args[1:]
+        if len(args) == 1 and "." in args[0]:
+            args = args[0].split(".") + args[1:]
         branch = args.pop(-1)
         for key in args[::-1]:
             branch = {key: branch}
@@ -1055,9 +1091,10 @@ class FiatModel(Model):
             for key in self.staticmaps.data_vars:
                 if filename == key:
                     raise ValueError(
-                        f'The filenames of the {file_type} maps should be unique.'
+                        f"The filenames of the {file_type} maps should be unique."
                     )
-                if self.get_config(args[0], args[1], key) == list(branch[args[0]][args[1]].values())[0]:
-                    raise ValueError(
-                        f"Each model input layers must be unique."
-                    )
+                if (
+                    self.get_config(args[0], args[1], key)
+                    == list(branch[args[0]][args[1]].values())[0]
+                ):
+                    raise ValueError(f"Each model input layers must be unique.")

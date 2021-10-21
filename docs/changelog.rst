@@ -5,8 +5,19 @@ All notable changes to this project will be documented in this page.
 The format is based on `Keep a Changelog`_, and this project adheres to
 `Semantic Versioning`_.
 
-[Unreleased]
-------------
+v0.1.9 (21 October 2021)
+------------------------
+
+This version is compatible with new FIAT raster (xarray) version
+
+Added
+^^^^^
+- scaling functions for economic and population growth
+
+Fixed
+^^^^^
+- bugfix resampling in buildings workflow
+
 
 v0.0.1 (20 May 2021)
 --------------------
