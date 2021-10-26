@@ -364,8 +364,6 @@ class FiatModel(Model):
                 "Calculating building values with maximum damage: "
                 f"{max_damage:.2f} {unit:s}/person (country = {tag:s})."
             )
-
-            # Copy the susceptibility function file to the susceptibility folder. # TODO: Move the copy part to self._configwrite (otherwise issues occur after reading the model)!
             if not function_fn:
                 sf_path = Path(self._DATADIR).joinpath(
                     "damage_functions",
@@ -376,11 +374,6 @@ class FiatModel(Model):
             else:
                 self.check_file_exist([function_fn], name="sf_path")
                 sf_path = list(function_fn.values())[0]
-
-            copy(
-                sf_path,
-                Path(self.get_config("susceptibility_dp")).joinpath(sf_path.name),
-            )
 
             # Create a building value map.
             ds_bld_value = self.staticmaps["population_buildings_count"] * max_damage
@@ -412,7 +405,7 @@ class FiatModel(Model):
                 "function_fn": {
                     "water_depth"
                     if not function_fn
-                    else list(function_fn.keys())[0]: sf_path.name
+                    else list(function_fn.keys())[0]: sf_path
                 },
                 "comp_alg": "max",
                 "scale_factor": scale_factor,
@@ -438,7 +431,7 @@ class FiatModel(Model):
                 "function_fn": {
                     "water_depth"
                     if not function_fn
-                    else list(function_fn.keys())[0]: sf_path.name
+                    else list(function_fn.keys())[0]: sf_path
                 },
                 "comp_alg": "max",
                 "scale_factor": scale_factor,
@@ -944,32 +937,32 @@ class FiatModel(Model):
         ):
             section_name = f"setup_hazard{idx + 1}"
             parser.add_section(section_name)
-            for key in self.get_config(
+            for hazard_key in self.get_config(
                 "hazard", hazard_scenario[0], hazard_scenario[1]
             ):
-                if key == "map_fn":
+                if hazard_key == "map_fn":
                     parser.set(
                         section_name,
-                        key,
+                        hazard_key,
                         str(
                             self.get_config(
                                 "hazard",
                                 hazard_scenario[0],
                                 hazard_scenario[1],
-                                key,
+                                hazard_key,
                             ).name
                         ),
                     )
                 else:
                     parser.set(
                         section_name,
-                        key,
+                        hazard_key,
                         str(
                             self.get_config(
                                 "hazard",
                                 hazard_scenario[0],
                                 hazard_scenario[1],
-                                key,
+                                hazard_key,
                             )
                         ),
                     )
@@ -978,18 +971,44 @@ class FiatModel(Model):
         for idx, exposure_fn in enumerate(self.get_config("exposure")):
             section_name = f"setup_exposure{idx + 1}"
             parser.add_section(section_name)
-            for key in self.get_config("exposure", exposure_fn):
-                if key == "map_fn":
+            for exposure_key in self.get_config("exposure", exposure_fn):
+                if exposure_key == "map_fn":
                     parser.set(
                         section_name,
-                        key,
-                        str(self.get_config("exposure", exposure_fn, key).name),
+                        exposure_key,
+                        str(self.get_config("exposure", exposure_fn, exposure_key).name),
                     )
+                elif exposure_key == "function_fn":
+                    parser.set(
+                        section_name,
+                        exposure_key,
+                        str({
+                            i: j.name for i, j in self.get_config(
+                                "exposure",
+                                exposure_fn,
+                                exposure_key,
+                            ).items()
+                        }),
+                    )
+                    for function_key in self.get_config(
+                            "exposure",
+                            exposure_fn,
+                            exposure_key,
+                    ):
+                        sf_path = self.get_config(
+                            "exposure",
+                            exposure_fn,
+                            exposure_key,
+                        )[function_key]
+                        copy(
+                            sf_path,
+                            self.get_config("susceptibility_dp").joinpath(sf_path.name),
+                        )
                 else:
                     parser.set(
                         section_name,
-                        key,
-                        str(self.get_config("exposure", exposure_fn, key)),
+                        exposure_key,
+                        str(self.get_config("exposure", exposure_fn, exposure_key)),
                     )
 
         # Save the configuration file.
