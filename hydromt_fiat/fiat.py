@@ -779,9 +779,9 @@ class FiatModel(Model):
             if self.get_config("hazard"):
                 for hazard_type, hazard_scenario in self.get_config("hazard").items():
                     for hazard_fn in hazard_scenario:
-                        hazard_scenario[hazard_fn]["map_fn"] = self.root.joinpath(
-                            hazard_scenario[hazard_fn]["map_fn"].name,
-                        )
+                        hazard_scenario[hazard_fn]["map_fn"] = self.get_config(
+                            "hazard_dp"
+                        ).joinpath(hazard_scenario[hazard_fn]["map_fn"].name)
                         self.set_config(
                             "hazard",
                             hazard_type,
@@ -794,7 +794,7 @@ class FiatModel(Model):
                         "exposure",
                         exposure_fn,
                         "map_fn",
-                        self.root.joinpath(
+                        self.get_config("exposure_dp").joinpath(
                             self.get_config("exposure", exposure_fn, "map_fn").name,
                         ),
                     )
@@ -804,7 +804,7 @@ class FiatModel(Model):
                         "function_fn",
                     ).values():
                         if not self.get_config("susceptibility_dp").joinpath(
-                                sf_path.name,
+                            sf_path.name,
                         ).is_file():
                             copy(
                                 sf_path,
@@ -817,8 +817,8 @@ class FiatModel(Model):
                         exposure_fn,
                         "function_fn",
                         {
-                            i: self.root.joinpath(j.name) for i, j in
-                            self.get_config(
+                            i: self.get_config("susceptibility_dp").joinpath(j.name)
+                            for i, j in self.get_config(
                                 "exposure",
                                 exposure_fn,
                                 "function_fn",
