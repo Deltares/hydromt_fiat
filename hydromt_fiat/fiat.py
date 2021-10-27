@@ -798,6 +798,19 @@ class FiatModel(Model):
                             self.get_config("exposure", exposure_fn, "map_fn").name,
                         ),
                     )
+                    self.set_config(
+                        "exposure",
+                        exposure_fn,
+                        "function_fn",
+                        {
+                            i: self.root.joinpath(j.name) for i, j in
+                            self.get_config(
+                                "exposure",
+                                exposure_fn,
+                                "function_fn",
+                            ).items()
+                        },
+                    )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
@@ -894,6 +907,12 @@ class FiatModel(Model):
         for exposure_dict in [opt[key] for key in opt.keys() if "exposure" in key]:
             exposure_dict.update(
                 {"map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])}
+            )
+            exposure_dict.update(
+                {"function_fn": {
+                    i: config["susceptibility_dp"].joinpath(j) for i, j in
+                    exposure_dict["function_fn"].items()
+                }}
             )
             config["exposure"].update(
                 {
