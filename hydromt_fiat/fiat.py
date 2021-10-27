@@ -798,6 +798,20 @@ class FiatModel(Model):
                             self.get_config("exposure", exposure_fn, "map_fn").name,
                         ),
                     )
+                    for sf_path in self.get_config(
+                        "exposure",
+                        exposure_fn,
+                        "function_fn",
+                    ).values():
+                        if not self.get_config("susceptibility_dp").joinpath(
+                                sf_path.name,
+                        ).is_file():
+                            copy(
+                                sf_path,
+                                self.get_config("susceptibility_dp").joinpath(
+                                    sf_path.name,
+                                ),
+                            )
                     self.set_config(
                         "exposure",
                         exposure_fn,
@@ -1019,10 +1033,13 @@ class FiatModel(Model):
                             exposure_fn,
                             exposure_key,
                         )[function_key]
-                        copy(
-                            sf_path,
-                            self.get_config("susceptibility_dp").joinpath(sf_path.name),
-                        )
+                        if not sf_path.is_file():
+                            copy(
+                                sf_path,
+                                self.get_config("susceptibility_dp").joinpath(
+                                    sf_path.name,
+                                ),
+                            )
                 else:
                     parser.set(
                         section_name,
