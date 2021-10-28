@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this page.
 The format is based on `Keep a Changelog`_, and this project adheres to
 `Semantic Versioning`_.
 
+v0.2.0 (28 October 2021)
+------------------------
+
+This version is compatible with new FIAT raster (xarray) version
+
+Fixed
+^^^^^
+- bugfix copying of damage function replaced from setup_buildings_value function to the _configwrite and set_root functions
+
+
 v0.1.9 (21 October 2021)
 ------------------------
 
