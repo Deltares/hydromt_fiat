@@ -803,9 +803,13 @@ class FiatModel(Model):
                         exposure_fn,
                         "function_fn",
                     ).values():
-                        if not self.get_config("susceptibility_dp").joinpath(
-                            sf_path.name,
-                        ).is_file():
+                        if (
+                            not self.get_config("susceptibility_dp")
+                            .joinpath(
+                                sf_path.name,
+                            )
+                            .is_file()
+                        ):
                             copy(
                                 sf_path,
                                 self.get_config("susceptibility_dp").joinpath(
@@ -923,10 +927,12 @@ class FiatModel(Model):
                 {"map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])}
             )
             exposure_dict.update(
-                {"function_fn": {
-                    i: config["susceptibility_dp"].joinpath(j) for i, j in
-                    exposure_dict["function_fn"].items()
-                }}
+                {
+                    "function_fn": {
+                        i: config["susceptibility_dp"].joinpath(j)
+                        for i, j in exposure_dict["function_fn"].items()
+                    }
+                }
             )
             config["exposure"].update(
                 {
@@ -1009,33 +1015,42 @@ class FiatModel(Model):
                     parser.set(
                         section_name,
                         exposure_key,
-                        str(self.get_config("exposure", exposure_fn, exposure_key).name),
+                        str(
+                            self.get_config("exposure", exposure_fn, exposure_key).name
+                        ),
                     )
                 elif exposure_key == "function_fn":
                     parser.set(
                         section_name,
                         exposure_key,
-                        str({
-                            i: j.name for i, j in self.get_config(
-                                "exposure",
-                                exposure_fn,
-                                exposure_key,
-                            ).items()
-                        }),
+                        str(
+                            {
+                                i: j.name
+                                for i, j in self.get_config(
+                                    "exposure",
+                                    exposure_fn,
+                                    exposure_key,
+                                ).items()
+                            }
+                        ),
                     )
                     for function_key in self.get_config(
-                            "exposure",
-                            exposure_fn,
-                            exposure_key,
+                        "exposure",
+                        exposure_fn,
+                        exposure_key,
                     ):
                         sf_path = self.get_config(
                             "exposure",
                             exposure_fn,
                             exposure_key,
                         )[function_key]
-                        if not self.get_config("susceptibility_dp").joinpath(
+                        if (
+                            not self.get_config("susceptibility_dp")
+                            .joinpath(
                                 sf_path.name,
-                        ).is_file():
+                            )
+                            .is_file()
+                        ):
                             copy(
                                 sf_path,
                                 self.get_config("susceptibility_dp").joinpath(
