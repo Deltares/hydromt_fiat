@@ -30,13 +30,11 @@ def create_population_per_building_map(
     """
 
     logger.debug("Creating the population per building map.")
-
     # Correct the buildings and population maps.
     da_bld = da_bld.where(da_bld <= 0, other=1)
     da_pop = da_pop.where(da_pop != da_pop.raster.nodata, other=0)
     da_bld.raster.set_nodata(nodata=0)
     da_pop.raster.set_nodata(nodata=0)
-
     # Get the area and density grids.
     da_like_area = get_area_grid(ds_like)
     da_bld_density = get_density_grid(da_bld).rename("bld_density")
@@ -130,6 +128,9 @@ def create_population_per_building_map(
 
         # Create the population per building count maps.
         da_pop_bld_count = da_bld_count.where(da_bld_count == 0, other=da_pop_count)
+
+    # Correction!!
+    da_pop_bld_count = da_pop_bld_count*np.sum(da_pop_count)/np.sum(da_pop_bld_count)
 
     # Merge the output DataArrays into a DataSet.
     da_bld_count.raster.set_nodata(nodata=0)
