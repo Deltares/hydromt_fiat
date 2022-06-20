@@ -14,8 +14,14 @@ import logging
 import numpy as np
 import pandas as pd
 import xarray as xr
+from typing import Union
+
 
 from . import workflows, DATADIR
+RasterDatasetSource = Union[str, Path]
+GeoDatasetSource = Union[str, Path]
+GeoDataframeSource = Union[str, Path]
+
 
 __all__ = ["FiatModel"]
 
@@ -88,7 +94,7 @@ class FiatModel(Model):
 
     def setup_hazard(
         self,
-        map_fn,
+        map_fn: RasterDatasetSource,
         map_type,
         chunks="auto",
         rp=None,
@@ -286,8 +292,8 @@ class FiatModel(Model):
 
     def setup_buildings_value(
         self,
-        bld_fn="wsf_bld_2015",
-        pop_fn="ghs_pop_2015",
+        bld_fn: RasterDatasetSource = "wsf_bld_2015",
+        pop_fn: RasterDatasetSource ="ghs_pop_2015",
         chunks="auto",
         unit="USD",
         scale_factor=1,
