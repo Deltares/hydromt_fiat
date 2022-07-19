@@ -40,7 +40,8 @@ test = [
 ]
 doc = [
 	"sphinx",
-	"sphinx_rtd_theme",
+	"sphinx_design",
+	"pydata-sphinx-theme",
 	"black",
 ]
 

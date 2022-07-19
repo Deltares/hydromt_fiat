@@ -18,20 +18,40 @@
 #
 import os
 import sys
+import shutil
 import hydromt  ## to avoid ciruclar dependency
 import hydromt_fiat
+from distutils.dir_util import copy_tree
+
 
 here = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(here, "..")))
 
+
+def remove_dir_content(path: str) -> None:
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
+
 # -- Project information -----------------------------------------------------
 
-project = "hydromt_fiat"
+project = "HydroMT FIAT"
 copyright = "Deltares"
 author = "Laurens Leunge, Dirk Eilander"
 
 # The short version which is displayed
 version = hydromt_fiat.__version__
+
+# # -- Copy notebooks to include in docs -------
+if os.path.isdir("_examples"):
+    remove_dir_content("_examples")
+os.makedirs("_examples")
+copy_tree("../examples", "_examples")
 
 # -- General configuration ------------------------------------------------
 
@@ -43,12 +63,14 @@ version = hydromt_fiat.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.githubpages",
+    "sphinx.ext.intersphinx",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
@@ -89,7 +111,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 autoclass_content = "both"
 
@@ -103,7 +125,28 @@ autoclass_content = "both"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-html_context = {}
+html_css_files = ["theme-deltares.css"]
+html_theme_options = {
+    "show_nav_level": 2,
+    "navbar_align": "content",
+    "logo": {
+        "text": "HydroMT FIAT",
+    },
+    "icon_links": [
+        {
+            "name": "Deltares",
+            "url": "https://deltares.nl/en/",
+            "icon": "_static/deltares-white.svg",
+            "type": "local",
+        },
+    ],
+    "external_links": [
+        {
+            "name": "HydroMT core",
+            "url": "https://deltares.github.io/hydromt/latest/index.html",
+        },
+    ],
+}
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

@@ -1,19 +1,16 @@
 .. currentmodule:: hydromt_fiat
 
+.. _api_reference:
+
 =============
 API reference
 =============
-
-.. _api_model:
-
-FIAT model class
-================
 
 Initialize
 ----------
 
 .. autosummary::
-   :toctree: ../_generated/
+   :toctree: _generated/
 
    fiat.FiatModel
 
@@ -21,7 +18,7 @@ Build components
 ----------------
 
 .. autosummary::
-   :toctree: ../_generated/
+   :toctree: _generated/
 
    fiat.FiatModel.setup_config
    fiat.FiatModel.setup_basemaps
@@ -33,7 +30,7 @@ Attributes
 ----------
 
 .. autosummary::
-   :toctree: ../_generated/
+   :toctree: _generated/
 
    fiat.FiatModel.region
    fiat.FiatModel.crs
@@ -47,7 +44,7 @@ High level methods
 ------------------
 
 .. autosummary::
-   :toctree: ../_generated/
+   :toctree: _generated/
 
    fiat.FiatModel.read
    fiat.FiatModel.write
@@ -58,7 +55,7 @@ General methods
 ---------------
 
 .. autosummary::
-   :toctree: ../_generated/
+   :toctree: _generated/
 
    fiat.FiatModel.setup_config
    fiat.FiatModel.get_config
