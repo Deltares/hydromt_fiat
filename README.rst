@@ -1,78 +1,71 @@
-hydroMT-fiat: FIAT plugin for hydroMT
-#########################################
+.. _readme:
 
-.. image:: https://codecov.io/gh/Deltares/hydromt_fiat/branch/main/graph/badge.svg
-    :target: https://codecov.io/gh/Deltares/hydromt_fiat
+# TODO fill in page (see HydrMT and HydroMT-Wflow docs)
 
-.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
-    :target: https://deltares.github.io/hydromt_fiat/latest
-    :alt: Latest developers docs
+# TODO add conda_forge icon when available
 
-.. image:: https://img.shields.io/badge/docs-stable-brightgreen.svg
-    :target: https://deltares.github.io/hydromt_fiat/stable
-    :alt: Stable docs last release
+# TODO add doi icon to Zenodo when available
 
-.. image:: https://badge.fury.io/py/hydromt_fiat.svg
-    :target: https://pypi.org/project/hydromt_fiat/
-    :alt: Latest PyPI version
+=====================================
+HydroMT-FIAT: FIAT plugin for HydroMT
+=====================================
 
-.. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/Deltares/hydromt_fiat/main?urlpath=lab/tree/examples
+|pypi| |docs_latest| |docs_stable| |codecov| |license| |binder|
 
+What is the HydroMT-FIAT plugin
+-------------------------------
 
 hydroMT_ is a python package, developed by Deltares, to build and analysis hydro models.
 It provides a generic model api with attributes to access the model schematization,
-(dynamic) forcing data, results and states. This plugin provides an implementation 
-for the FIAT_ model.
+(dynamic) forcing data, results and states. This plugin provides an implementation
+for the FIAT_ flood impact assessment tool.
+
+Why HydroMT-FIAT?
+-----------------
+
+How to use HydroMT-FIAT?
+------------------------
+
+How to cite?
+------------
+
+How to contribute?
+------------------
+
+If you find any issues in the code or documentation feel free to leave an issue on the `github issue tracker. <https://github.com/Deltares/hydromt_wflow/issues>`_
+You can find information about how to contribute to the HydroMT project at our `contributing page. <https://deltares.github.io/hydromt/latest/dev/contributing>`_
+
+HydroMT seeks active contribution from the (hydro) geoscientific community.
+So far, it has been developed and tested with a range of `Deltares <https://www.deltares.nl/en/>`_ models, but
+we believe it is applicable to a much wider set of geoscientific models and are
+happy to discuss how it can be implemented for your model.
+
+.. |codecov| image:: https://codecov.io/gh/Deltares/hydromt_fiat/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/Deltares/hydromt_fiat
+
+.. |docs_latest| image:: https://img.shields.io/badge/docs-latest-brightgreen.svg
+    :target: https://deltares.github.io/hydromt_fiat/latest
+    :alt: Latest developers docs
+
+.. |docs_stable| image:: https://img.shields.io/badge/docs-stable-brightgreen.svg
+    :target: https://deltares.github.io/hydromt_fiat/stable
+    :alt: Stable docs last release
+
+.. |pypi| image:: https://badge.fury.io/py/hydromt_fiat.svg
+    :target: https://pypi.org/project/hydromt_fiat/
+    :alt: Latest PyPI version
+
+.. |binder| image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/Deltares/hydromt_fiat/main?urlpath=lab/tree/examples
+
+.. |license| image:: https://img.shields.io/github/license/Deltares/hydromt_fiat
+    :alt: License
+    :target: https://github.com/Deltares/hydromt_fiat/blob/main/LICENSE
 
 
 .. _hydromt: https://deltares.github.io/hydromt
 .. _FIAT: https://storymaps.arcgis.com/stories/687a256881b94bf6ad20677543bb8cf2
 
 
-Installation
-------------
 
-hydroMT-fiat will soon be availble from pypi and conda-forge (in progress).
 
-To install hydromt_fiat using pip do:
-
-.. code-block:: console
-
-  pip install hydromt_fiat
-
-We recommend installing a hydromt-fiat environment including the hydromt_fiat package
-based on the environment.yml file. This environment will install all package dependencies 
-including the core of hydroMT_.
-
-.. code-block:: console
-
-  conda env create -f binder/environment.yml
-  conda activate hydromt-fiat
-  pip install hydromt_fiat
-
-Documentation
--------------
-
-Learn more about the hydroMT_fiat plugin in its `online documentation <https://deltares.github.io/hydromt_fiat/>`_
-
-Contributing
-------------
-
-You can find information about contributing to hydroMT at our `Contributing page <https://deltares.github.io/hydromt_fiat/latest/contributing.html>`_.
-
-License
--------
-
-Copyright (c) 2021, Deltares
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General 
-Public License as published by the Free Software Foundation, either version 3 of the License, or (at your 
-option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the 
-implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
-for more details.
-
-You should have received a copy of the GNU General Public License along with this program. If not, 
-see <https://www.gnu.org/licenses/>.

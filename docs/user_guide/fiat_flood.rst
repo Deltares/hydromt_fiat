@@ -10,7 +10,7 @@ see example below.
 
 A typical workflow to setup a flood damage model schematization is privided in the
 :download:`fiat_flood.ini <../_examples/fiat_flood.ini>` and shown below. 
-Each section corresponds to one of the model :ref:`components` and the `[global]` section can be used to pass
+Each section corresponds to one of the model :ref:`methods` and the `[global]` section can be used to pass
 aditional arguments to the :py:class:`~hydromt.models.fiat.FiatModel`. initialization.
 An example is provided in :ref:`examples` section.
 

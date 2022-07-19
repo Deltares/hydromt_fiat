@@ -35,7 +35,9 @@ dependencies:
   - requests
   - scipy
   - sphinx # docs
-  - sphinx_rtd_theme # docs
+  - pydata-sphinx-theme # docs
   - xarray
   - xlsxwriter
   - zarr
+  - pip:
+    - sphinx_design  # docs
