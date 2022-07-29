@@ -131,7 +131,6 @@ html_theme_options = {
     "show_nav_level": 2,
     "navbar_align": "content",
     "use_edit_page_button": True,
-
     "icon_links": [
         {
             "name": "GitHub",
@@ -152,7 +151,6 @@ html_theme_options = {
             "url": "https://deltares.github.io/hydromt/latest/index.html",
         },
     ],
-
     "logo": {
         "text": "HydroMT FIAT",
     },
