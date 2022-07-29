@@ -112,6 +112,7 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
+html_logo = "_static/hydromt-logo.jpg"
 autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 autoclass_content = "both"
 
@@ -129,14 +130,19 @@ html_css_files = ["theme-deltares.css"]
 html_theme_options = {
     "show_nav_level": 2,
     "navbar_align": "content",
-    "logo": {
-        "text": "HydroMT FIAT",
-    },
+    "use_edit_page_button": True,
+
     "icon_links": [
         {
+            "name": "GitHub",
+            "url": "https://github.com/Deltares/hydromt_fiat",  # required
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+            "type": "url",
+        },
+        {
             "name": "Deltares",
-            "url": "https://deltares.nl/en/",
-            "icon": "_static/deltares-white.svg",
+            "url": "https://www.deltares.nl/en/",
+            "icon": "_static/deltares-blue.svg",
             "type": "local",
         },
     ],
@@ -146,7 +152,31 @@ html_theme_options = {
             "url": "https://deltares.github.io/hydromt/latest/index.html",
         },
     ],
+
+    "logo": {
+        "text": "HydroMT FIAT",
+    },
+    "navbar_end": ["navbar-icon-links"],  # remove dark mode switch
 }
+
+html_context = {
+    "github_url": "https://github.com",  # or your GitHub Enterprise interprise
+    "github_user": "Deltares",
+    "github_repo": "hydromt_fiat",
+    "github_version": "main",  # FIXME
+    "doc_path": "docs",
+    "default_mode": "light",
+}
+
+remove_from_toctrees = ["_generated/*"]
+
+# no sidebar in api section
+# html_sidebars = {
+#   "api": [],
+#   "_generated/*": []
+
+
+# }
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
