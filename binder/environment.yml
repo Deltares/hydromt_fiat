@@ -9,12 +9,13 @@ dependencies:
   - black
   - bottleneck
   - cartopy # to run examples
-  - dask=2021.4
+  - dask
   - descartes # to run examples
   - entrypoints
   - flit>=3.2
   - gdal>=3.1
   - geopandas
+  - hydromt>=0.4.1
   - jupyterlab # to run examples
   - netcdf4
   - matplotlib # to run examples
@@ -31,6 +32,4 @@ dependencies:
   - scipy
   - xarray
   - zarr
-  - pip:
-    - hydromt>=0.4.1
 

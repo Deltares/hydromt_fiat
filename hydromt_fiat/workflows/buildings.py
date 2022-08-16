@@ -70,9 +70,14 @@ def create_population_per_building_map(
 
         # Create a population per buildings density map.
         df_sum = (
-            xr.merge([da_bld, da_bld_area, da_idx])
+            xr.merge(
+                [
+                    da_bld.reset_coords(drop=True),
+                    da_bld_area.reset_coords(drop=True),
+                    da_idx.reset_coords(drop=True),
+                ]
+            )
             .stack(yx=(y_dim, x_dim))  # flatten to make dataframe
-            .reset_coords(drop=True)
             .to_dataframe()
             .groupby("index")
             .sum()
@@ -130,7 +135,9 @@ def create_population_per_building_map(
         da_pop_bld_count = da_bld_count.where(da_bld_count == 0, other=da_pop_count)
 
     # Correction!!
-    da_pop_bld_count = da_pop_bld_count*np.sum(da_pop_count)/np.sum(da_pop_bld_count)
+    da_pop_bld_count = (
+        da_pop_bld_count * np.sum(da_pop_count) / np.sum(da_pop_bld_count)
+    )
 
     # Merge the output DataArrays into a DataSet.
     da_bld_count.raster.set_nodata(nodata=0)
