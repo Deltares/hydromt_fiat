@@ -69,7 +69,6 @@ def test_model_build(tmpdir, case):
                 diff = (map0 - map1).values[notclose].mean()
                 xys = ", ".join([f"({x:.6f}, {y:.6f})" for x, y in zip(*xy)])
                 invalid_maps[name] = f"diff: {diff:.4f} ({ncells:d} cells: [{xys}])"
-                invalid_maps.append(name)
 
     assert len(invalid_maps) == 0, f"invalid maps: {invalid_maps}"
 
