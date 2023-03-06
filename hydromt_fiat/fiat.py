@@ -84,7 +84,7 @@ class FiatModel(Model):
             )
 
         # Set the model region geometry (to be accessed through the shortcut self.region).
-        self.set_staticgeoms(geom, "region")
+        self.set_geoms(geom, "region")
 
     def setup_hazard(
         self,
