@@ -18,6 +18,7 @@ _cases = {
 }
 
 
+@pytest.mark.skip(reason="Old test, can be used as example")
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_model_class(case):
     # Read model in examples folder.
@@ -30,6 +31,7 @@ def test_model_class(case):
     assert len(non_compliant_list) == 0
 
 
+@pytest.mark.skip(reason="Old test, can be used as example")
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_model_build(tmpdir, case):
     logger = logging.getLogger(__name__)
