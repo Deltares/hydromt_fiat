@@ -1,5 +1,5 @@
+from hydromt_fiat.workflows.exposure import Exposure
 from hydromt import gis_utils, raster
-from hydromt_fiat.fiat import FiatModel
 import logging
 import numpy as np
 import pandas as pd
@@ -9,27 +9,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 ### TO BE UPDATED ###
-class ExposureRaster(FiatModel):
-    def __init__(
-        self,
-        root=None,
-        mode="w",
-        config_fn=None,
-        data_libs=None,
-        logger=logger,
-        deltares_data=False,
-        artifact_data=False,
-    ):
-        super().__init__(
-            root=root,
-            mode=mode,
-            config_fn=config_fn,
-            data_libs=data_libs,
-            deltares_data=deltares_data,
-            artifact_data=artifact_data,
-            logger=logger,
-        )
-    
+class ExposureRaster(Exposure):
     def setup_buildings_value(
         self,
         bld_fn="wsf_bld_2015",
@@ -222,44 +202,43 @@ class ExposureRaster(FiatModel):
                 "scale_factor",
                 scale_factor,
             )
-        
+
         def get_country_tag(self, country):
-        """Return the country tag for a country name input."""
+            """Return the country tag for a country name input."""
+            # Get the country tag from the country name.
+            if country or "country" in self.config:
+                if not country:
+                    country = self.config["country"]
 
-        # Get the country tag from the country name.
-        if country or "country" in self.config:
-            if not country:
-                country = self.config["country"]
-
-            # Read the global exposure configuration.
-            df_config = pd.read_excel(
-                Path(self._DATADIR).joinpath("global_configuration.xlsx"),
-                sheet_name="Buildings",
-            )
-
-            # Extract the country tag.
-            if len(country) > 3:
-                tag = (
-                    df_config.loc[
-                        df_config["Country_Name"] == country, "Alpha-3"
-                    ].values[0]
-                    if country in df_config["Country_Name"].tolist()
-                    else None
-                )
-            else:
-                tag = country
-
-            # If the country tag is not valid, get the country tag from nearest country.
-            if not tag in df_config["Alpha-3"].tolist():
-                tag = self.get_nearest_country()
-                self.logger.debug(
-                    "The country tag (related to the country name) is not valid."
-                    "The country tag of the nearest country is used instead."
+                # Read the global exposure configuration.
+                df_config = pd.read_excel(
+                    Path(self._DATADIR).joinpath("global_configuration.xlsx"),
+                    sheet_name="Buildings",
                 )
 
-        # Set the country tag.
-        self.set_config("country", tag)
-        return tag
+                # Extract the country tag.
+                if len(country) > 3:
+                    tag = (
+                        df_config.loc[
+                            df_config["Country_Name"] == country, "Alpha-3"
+                        ].values[0]
+                        if country in df_config["Country_Name"].tolist()
+                        else None
+                    )
+                else:
+                    tag = country
+
+                # If the country tag is not valid, get the country tag from nearest country.
+                if tag not in df_config["Alpha-3"].tolist():
+                    tag = self.get_nearest_country()
+                    self.logger.debug(
+                        "The country tag (related to the country name) is not valid."
+                        "The country tag of the nearest country is used instead."
+                    )
+
+            # Set the country tag.
+            self.set_config("country", tag)
+            return tag
 
     def get_gdp_correction_factor(self):
         """ """
@@ -325,7 +304,7 @@ class ExposureRaster(FiatModel):
         """Return the country tag of the nearest country."""
 
         # Read the global exposure configuration.
-        df_config = pd.read_excel(
+        pd.read_excel(
             Path(self._DATADIR).joinpath("global_configuration.xlsx"),
             sheet_name="Buildings",
         )
