@@ -1,19 +1,16 @@
 """Implement fiat model class"""
 
 from hydromt.models.model_api import Model
-from pathlib import Path
-from shapely.geometry import box
-from shutil import copy
-import geopandas as gpd
-import hydromt
+from hydromt_fiat.reader import Reader
+from hydromt_fiat.writer import Writer
 import logging
 
 
-from . import workflows, DATADIR
+from . import DATADIR
 
 __all__ = ["FiatModel"]
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class FiatModel(Model):
@@ -23,7 +20,7 @@ class FiatModel(Model):
     _CONF = "fiat_configuration.ini"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
-    _FOLDERS = ["hazard", "exposure", "susceptibility", "output"]
+    _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
     def __init__(
@@ -32,7 +29,7 @@ class FiatModel(Model):
         mode="w",
         config_fn=None,
         data_libs=None,
-        logger=logger,
+        logger=_logger,
         deltares_data=False,
         artifact_data=False,
     ):
@@ -46,121 +43,34 @@ class FiatModel(Model):
             logger=logger,
         )
 
-    """ MODEL METHODS """
-    
-    def setup_basemaps(
-        self,
-        region,
-        **kwargs,
-    ):
-        """Define the model domain that is used to clip the raster layers.
+    def setup_config(self):
+        # TODO: check if this is required
+        NotImplemented
 
-        Adds model layer:
+    def setup_exposure_vector(self, region, **kwargs):
+        NotImplemented
+        # workflows.exposure_vector.Exposure
 
-        * **region** geom: A geometry with the nomenclature 'region'.
+    def setup_exposure_raster(self):
+        NotImplemented
 
-        Parameters
-        ----------
-        region: dict
-            Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.
-        """
+    def setup_vulnerability(self):
+        NotImplemented
 
-        kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
-        if kind == "bbox":
-            geom = gpd.GeoDataFrame(geometry=[box(*region["bbox"])], crs=4326)
-        elif kind == "grid":
-            geom = region["grid"].raster.box
-        elif kind == "geom":
-            geom = region["geom"]
-        else:
-            raise ValueError(
-                f"Unknown region kind {kind} for FIAT, expected one of ['bbox', 'grid', 'geom']."
-            )
+    def setup_hazard(self):
+        NotImplemented
 
-        # Set the model region geometry (to be accessed through the shortcut self.region).
-        self.set_geoms(geom, "region")
+    def setup_social_vulnerability_index(self):
+        NotImplemented
 
+    def read(self):
+        reader = Reader()
+        reader.read_config()
+        reader.read_staticmaps()
+        reader.read_staticgeoms()
 
-
-    """ SUPPORT FUNCTIONS """
-
-    def set_root(self, root=None, mode="w"):
-        """Initialized the model root.
-        In read mode it checks if the root exists.
-        In write mode in creates the required model folder structure.
-
-        Parameters
-        ----------
-        root: str, optional
-            Path to model root.
-        mode: {"r", "r+", "w"}, optional
-            Read/write-only mode for model files.
-        """
-
-        # Do super method and update absolute paths in config.
-        if root is None:
-            root = Path(self._config_fn).parent
-        super().set_root(root=root, mode=mode)
-        if self._write and root is not None:
-            self._root = Path(root)
-
-            # Set the general information.
-            self.set_config("hazard_dp", self.root.joinpath("hazard"))
-            self.set_config("exposure_dp", self.root.joinpath("exposure"))
-            self.set_config("susceptibility_dp", self.root.joinpath("susceptibility"))
-            self.set_config("output_dp", self.root.joinpath("output"))
-
-            # Set the hazard information.
-            if self.get_config("hazard"):
-                for hazard_type, hazard_scenario in self.get_config("hazard").items():
-                    for hazard_fn in hazard_scenario:
-                        hazard_scenario[hazard_fn]["map_fn"] = self.get_config(
-                            "hazard_dp"
-                        ).joinpath(hazard_scenario[hazard_fn]["map_fn"].name)
-                        self.set_config(
-                            "hazard",
-                            hazard_type,
-                            hazard_fn,
-                            hazard_scenario[hazard_fn],
-                        )
-            if self.get_config("exposure"):
-                for exposure_fn in self.get_config("exposure"):
-                    self.set_config(
-                        "exposure",
-                        exposure_fn,
-                        "map_fn",
-                        self.get_config("exposure_dp").joinpath(
-                            self.get_config("exposure", exposure_fn, "map_fn").name,
-                        ),
-                    )
-                    for sf_path in self.get_config(
-                        "exposure",
-                        exposure_fn,
-                        "function_fn",
-                    ).values():
-                        if (
-                            not self.get_config("susceptibility_dp")
-                            .joinpath(
-                                sf_path.name,
-                            )
-                            .is_file()
-                        ):
-                            copy(
-                                sf_path,
-                                self.get_config("susceptibility_dp").joinpath(
-                                    sf_path.name,
-                                ),
-                            )
-                    self.set_config(
-                        "exposure",
-                        exposure_fn,
-                        "function_fn",
-                        {
-                            i: self.get_config("susceptibility_dp").joinpath(j.name)
-                            for i, j in self.get_config(
-                                "exposure",
-                                exposure_fn,
-                                "function_fn",
-                            ).items()
-                        },
-                    )
+    def write(self):
+        writer = Writer()
+        writer.write_staticmaps()
+        writer.write_staticgeoms()
+        writer.write_config()

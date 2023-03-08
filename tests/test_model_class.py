@@ -1,7 +1,7 @@
 """Test FIAT plugin model class against hydromt.models.model_api"""
 
 from hydromt.cli.cli_utils import parse_config
-from hydromt_fiat import FiatModel
+from hydromt_fiat.fiat import FiatModel
 from os.path import join, dirname, abspath
 import logging
 import numpy as np
@@ -60,7 +60,7 @@ def test_model_build(tmpdir, case):
     invalid_maps = {}
     if len(mod0._staticmaps) > 0:
         maps = mod0.staticmaps.raster.vars
-        assert np.all(mod0.crs == mod1.crs), f"map crs staticmaps"
+        assert np.all(mod0.crs == mod1.crs), "map crs staticmaps"
         for name in maps:
             map0 = mod0.staticmaps[name].fillna(0)
             map1 = mod1.staticmaps[name].fillna(0)
@@ -92,4 +92,4 @@ def test_model_build(tmpdir, case):
     if mod0._config:
         mod0.set_root(mod1.root)
         mod1.set_root(mod1.root)
-        assert mod0._config == mod1._config, f"config mismatch"
+        assert mod0._config == mod1._config, "config mismatch"
