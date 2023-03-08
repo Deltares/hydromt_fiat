@@ -9,11 +9,11 @@ import hydromt
 import logging
 
 
-from . import workflows, DATADIR
+from . import DATADIR
 
 __all__ = ["FiatModel"]
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class FiatModel(Model):
@@ -23,7 +23,7 @@ class FiatModel(Model):
     _CONF = "fiat_configuration.ini"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
-    _FOLDERS = ["hazard", "exposure", "susceptibility", "output"]
+    _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
     def __init__(
@@ -32,7 +32,7 @@ class FiatModel(Model):
         mode="w",
         config_fn=None,
         data_libs=None,
-        logger=logger,
+        logger=_logger,
         deltares_data=False,
         artifact_data=False,
     ):
@@ -46,8 +46,6 @@ class FiatModel(Model):
             logger=logger,
         )
 
-    """ MODEL METHODS """
-    
     def setup_basemaps(
         self,
         region,
@@ -80,10 +78,6 @@ class FiatModel(Model):
         # Set the model region geometry (to be accessed through the shortcut self.region).
         self.set_geoms(geom, "region")
 
-
-
-    """ SUPPORT FUNCTIONS """
-
     def set_root(self, root=None, mode="w"):
         """Initialized the model root.
         In read mode it checks if the root exists.
@@ -107,7 +101,7 @@ class FiatModel(Model):
             # Set the general information.
             self.set_config("hazard_dp", self.root.joinpath("hazard"))
             self.set_config("exposure_dp", self.root.joinpath("exposure"))
-            self.set_config("susceptibility_dp", self.root.joinpath("susceptibility"))
+            self.set_config("vulnerability_dp", self.root.joinpath("vulnerability"))
             self.set_config("output_dp", self.root.joinpath("output"))
 
             # Set the hazard information.
@@ -139,7 +133,7 @@ class FiatModel(Model):
                         "function_fn",
                     ).values():
                         if (
-                            not self.get_config("susceptibility_dp")
+                            not self.get_config("vulnerability_dp")
                             .joinpath(
                                 sf_path.name,
                             )
@@ -147,7 +141,7 @@ class FiatModel(Model):
                         ):
                             copy(
                                 sf_path,
-                                self.get_config("susceptibility_dp").joinpath(
+                                self.get_config("vulnerability_dp").joinpath(
                                     sf_path.name,
                                 ),
                             )
@@ -156,7 +150,7 @@ class FiatModel(Model):
                         exposure_fn,
                         "function_fn",
                         {
-                            i: self.get_config("susceptibility_dp").joinpath(j.name)
+                            i: self.get_config("vulnerability_dp").joinpath(j.name)
                             for i, j in self.get_config(
                                 "exposure",
                                 exposure_fn,
