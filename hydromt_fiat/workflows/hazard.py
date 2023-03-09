@@ -2,6 +2,18 @@ from ast import literal_eval
 
 ### TO BE UPDATED ###
 class Hazard:
+
+    def __init__(
+        self,
+        root=None,
+        mode="w",
+        config_fn=None,
+        data_libs=None,
+        logger=_logger,
+        deltares_data=False,
+        artifact_data=False,
+    ):
+
     def setup_hazard(
         self,
         map_fn,
