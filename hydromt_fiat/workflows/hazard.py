@@ -1,18 +1,9 @@
+from pathlib import Path
+import hydromt
+import geopandas as gpd
 from ast import literal_eval
 
-### TO BE UPDATED ###
-class Hazard:
-
-    def __init__(
-        self,
-        root=None,
-        mode="w",
-        config_fn=None,
-        data_libs=None,
-        logger=_logger,
-        deltares_data=False,
-        artifact_data=False,
-    ):
+class Hazard():
 
     def setup_hazard(
         self,
@@ -25,34 +16,11 @@ class Hazard:
         var=None,
         **kwargs,
     ):
-        """Add a hazard map to the FIAT model schematization.
-
-        Adds model layer:
-
-        * **hazard** map(s): A raster map with the nomenclature <file_name>.
-
-        Parameters
-        ----------
-        map_fn: (list of) str, Path
-            Absolute or relative (with respect to the configuration file or hazard directory) path to the hazard file.
-        map_type: (list of) str
-            Description of the hazard type.
-        rp: (list of) int, float, optional
-            Return period in years, required for a risk calculation.
-        crs: (list of) int, str, optional
-            Coordinate reference system of the hazard file.
-        nodata: (list of) int, float, optional
-            Value that is assigned as nodata.
-        var: (list of) str, optional
-            Hazard variable name in NetCDF input files.
-        chunks: (list of) int, optional
-            Chunk sizes along each dimension used to load the hazard file into a dask array. The default is value 'auto'.
-        """
-
+        
         # Check the hazard input parameter types.
-        map_fn_lst = [map_fn] if isinstance(map_fn, (str, Path)) else map_fn
+        map_fn_lst   = [map_fn] if isinstance(map_fn, (str, Path)) else map_fn
         map_type_lst = [map_type] if isinstance(map_type, (str, Path)) else map_type
-        self.check_param_type(map_fn_lst, name="map_fn", types=(str, Path))
+        self.check_param_type(map_fn_lst,   name="map_fn", types=(str, Path))
         self.check_param_type(map_type_lst, name="map_type", types=str)
         if chunks != "auto":
             chunks_lst = [chunks] if isinstance(chunks, (int, dict)) else chunks
@@ -102,119 +70,134 @@ class Hazard:
                         var_lst, map_fn_lst, "hazard", da_name, idx, "NetCDF variable"
                     )
                 )
-            da = self.data_catalog.get_rasterdataset(
-                da_map_fn, geom=self.region, **kwargs
-            )
+        print('Hazard')
+        return map_fn_lst
 
-            # Set (if necessary) the coordinate reference system.
-            if crs is not None and not da.raster.crs.is_epsg_code:
-                da_crs = self.get_param(
-                    crs_lst,
-                    map_fn_lst,
-                    "hazard",
-                    da_name,
-                    idx,
-                    "coordinate reference system",
-                )
-                da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
-                da.raster.set_crs(da_crs_str)
-            elif crs is None and not da.raster.crs.is_epsg_code:
-                raise ValueError(
-                    "The hazard map has no coordinate reference system assigned."
-                )
+    #         #This cannot be run since self.region works only after running setup_basemaps() which adds the attribute "region" 
+    #         #da = self.data_catalog.get_rasterdataset(
+    #         #    da_map_fn, geom=self.region, **kwargs
+    #         #)
+            
+    #         #################################################################################
+    #         #HERE WE START HYDROMT FUNCTIONALITIES self. and get_config required to be called
+    #         da = self.data_catalog.get_rasterdataset(
+    #             da_map_fn, **kwargs
+    #         )
 
-            # Set (if necessary) and mask the nodata value.
-            if nodata is not None:
-                da_nodata = self.get_param(
-                    nodata_lst, map_fn_lst, "hazard", da_name, idx, "nodata"
-                )
-                da.raster.set_nodata(nodata=da_nodata)
-            elif nodata is None and da.raster.nodata is None:
-                raise ValueError("The hazard map has no nodata value assigned.")
+    #         # Set (if necessary) the coordinate reference system.
+    #         if crs is not None and not da.raster.crs:
+    #             da_crs = self.get_param(
+    #                 crs_lst,
+    #                 map_fn_lst,
+    #                 "hazard",
+    #                 da_name,
+    #                 idx,
+    #                 "coordinate reference system",
+    #             )
+    #             da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
+    #             da.raster.set_crs(da_crs_str)
+    #         elif crs is None and not da.raster.crs:
+    #             raise ValueError(
+    #                 "The hazard map has no coordinate reference system assigned."
+    #             )
 
-            # Correct (if necessary) the grid orientation from the lower to the upper left corner.
-            if da.raster.res[1] > 0:
-                da = da.reindex({da.raster.y_dim: list(reversed(da.raster.ycoords))})
+    #         # Set (if necessary) and mask the nodata value.
+    #         if nodata is not None:
+    #             da_nodata = self.get_param(
+    #                 nodata_lst, map_fn_lst, "hazard", da_name, idx, "nodata"
+    #             )
+    #             da.raster.set_nodata(nodata=da_nodata)
+    #         elif nodata is None and da.raster.nodata is None:
+    #             raise ValueError("The hazard map has no nodata value assigned.")
+            
+    #         # Correct (if necessary) the grid orientation from the lower to the upper left corner.
+    #         if da.raster.res[1] > 0:
+    #             da = da.reindex({da.raster.y_dim: list(reversed(da.raster.ycoords))})
 
-            # Check if the obtained hazard map is identical.
-            if self.staticmaps and not self.staticmaps.raster.identical_grid(da):
-                raise ValueError("The hazard maps should have identical grids.")
+    #         # Check if the obtained hazard map is identical.
+    #         if self.staticmaps and not self.staticmaps.raster.identical_grid(da):
+    #             raise ValueError("The hazard maps should have identical grids.")
+            
+    #         # Get the return period input parameter.
+    #         da_rp = (
+    #             self.get_param(
+    #                 rp_lst, map_fn_lst, "hazard", da_name, idx, "return period"
+    #             )
+    #             if "rp_lst" in locals()
+    #             else None
+    #         )
 
-            # Get the return period input parameter.
-            da_rp = (
-                self.get_param(
-                    rp_lst, map_fn_lst, "hazard", da_name, idx, "return period"
-                )
-                if "rp_lst" in locals()
-                else None
-            )
-            if self.get_config("risk_output") and da_rp is None:
 
-                # Get (if possible) the return period from dataset names if the input parameter is None.
-                if "rp" in da_name.lower():
-                    fstrip = lambda x: x in "0123456789."
-                    rp_str = "".join(
-                        filter(fstrip, da_name.lower().split("rp")[-1])
-                    ).lstrip("0")
-                    try:
-                        assert isinstance(
-                            literal_eval(rp_str) if rp_str else None, (int, float)
-                        )
-                        da_rp = literal_eval(rp_str)
-                    except AssertionError:
-                        raise ValueError(
-                            f"Could not derive the return period for hazard map: {da_name}."
-                        )
-                else:
-                    raise ValueError(
-                        "The hazard map must contain a return period in order to conduct a risk calculation."
-                    )
+    #         if self.get_config("risk_output", fallback=True) and da_rp is None:
 
-            # Add the hazard map to config and staticmaps.
-            hazard_type = self.get_config("hazard_type", fallback="flooding")
-            self.check_uniqueness(
-                "hazard",
-                da_type,
-                da_name,
-                {
-                    "usage": True,
-                    "map_fn": da_map_fn,
-                    "map_type": da_type,
-                    "rp": da_rp,
-                    "crs": da.raster.crs,
-                    "nodata": da.raster.nodata,
-                    "var": None if "var_lst" not in locals() else var_lst[idx],
-                    "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
-                },
-                file_type="hazard",
-                filename=da_name,
-            )
-            self.set_config(
-                "hazard",
-                da_type,
-                da_name,
-                {
-                    "usage": "True",
-                    "map_fn": da_map_fn,
-                    "map_type": da_type,
-                    "rp": da_rp,
-                    "crs": da.raster.crs,
-                    "nodata": da.raster.nodata,
-                    "var": None if "var_lst" not in locals() else var_lst[idx],
-                    "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
-                },
-            )
-            self.set_staticmaps(da, da_name)
-            post = (
-                f"(rp {da_rp})"
-                if rp is not None and self.get_config("risk_output")
-                else ""
-            )
-            self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
+    #             # Get (if possible) the return period from dataset names if the input parameter is None.
+    #             if "rp" in da_name.lower():
+    #                 fstrip = lambda x: x in "0123456789."
+    #                 rp_str = "".join(
+    #                     filter(fstrip, da_name.lower().split("rp")[-1])
+    #                 ).lstrip("0")
+
+    #                 try:
+    #                     assert isinstance(
+    #                         literal_eval(rp_str) if rp_str else None, (int, float)
+    #                     )
+    #                     da_rp = literal_eval(rp_str)
+    #                 except AssertionError:
+    #                     raise ValueError(
+    #                         f"Could not derive the return period for hazard map: {da_name}."
+    #                     )
+    #             else:
+    #                 raise ValueError(
+    #                     "The hazard map must contain a return period in order to conduct a risk calculation."
+    #                 )
+                
+    #         # Add the hazard map to config and staticmaps.
+    #         hazard_type = self.get_config("hazard_type", fallback="flooding")
+            
+    #         self.check_uniqueness(
+    #             "hazard",
+    #             da_type,
+    #             da_name,
+    #             {
+    #                 "usage": True,
+    #                 "map_fn": da_map_fn,
+    #                 "map_type": da_type,
+    #                 "rp": da_rp,
+    #                 "crs": da.raster.crs,
+    #                 "nodata": da.raster.nodata,
+    #                 "var": None if "var_lst" not in locals() else var_lst[idx],
+    #                 "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
+    #             },
+    #             file_type="hazard",
+    #             filename=da_name,
+    #         )
+    #         self.set_config(
+    #             "hazard",
+    #             da_type,
+    #             da_name,
+    #             {
+    #                 "usage": "True",
+    #                 "map_fn": da_map_fn,
+    #                 "map_type": da_type,
+    #                 "rp": da_rp,
+    #                 "crs": da.raster.crs,
+    #                 "nodata": da.raster.nodata,
+    #                 "var": None if "var_lst" not in locals() else var_lst[idx],
+    #                 "chunks": "auto" if chunks == "auto" else chunks_lst[idx],
+    #             },
+    #         )
+    #         self.set_staticmaps(da, da_name)
+    #         post = (
+    #             f"(rp {da_rp})"
+    #             if rp is not None and self.get_config("risk_output")
+    #             else ""
+    #         )
+    #         self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
+
+    #         print(f"Added {hazard_type} hazard map: {da_name} {post}")
+                
 
     def get_param(self, param_lst, map_fn_lst, file_type, filename, i, param_name):
-        """ """
-
         if len(param_lst) == 1:
             return param_lst[0]
         elif len(param_lst) != 1 and len(map_fn_lst) == len(param_lst):
@@ -225,8 +208,8 @@ class Hazard:
                 f"map: {filename}."
             )
         
+    #Check functions. We can skip them since the chek will be done in th GUI.
     def check_param_type(self, param, name=None, types=None):
-        """ """
 
         if not isinstance(param, list):
             raise TypeError(
@@ -243,3 +226,76 @@ class Hazard:
                     f"The '{name}' parameter should be a of {types}, received a "
                     f"{type(i)} instead."
                 )
+
+    def check_file_exist(self, param_lst, name=None, input_dir=None):
+
+        for param_idx, param in enumerate(param_lst):
+            if isinstance(param, dict):
+                fn_lst = list(param.values())
+            else:
+                fn_lst = [param]
+            for fn_idx, fn in enumerate(fn_lst):
+                if not Path(fn).is_file():
+                    if self.root.joinpath(fn).is_file():
+                        if isinstance(param, dict):
+                            param_lst[param_idx][
+                                list(param.keys())[fn_idx]
+                            ] = self.root.joinpath(fn)
+                        else:
+                            param_lst[param_idx] = self.root.joinpath(fn)
+                    if input_dir is not None:
+                        if self.get_config(input_dir).joinpath(fn).is_file():
+                            if isinstance(param, dict):
+                                param_lst[param_idx][
+                                    list(param.keys())[fn_idx]
+                                ] = self.get_config(input_dir).joinpath(fn)
+                            else:
+                                param_lst[param_idx] = self.get_config(
+                                    input_dir
+                                ).joinpath(fn)
+                else:
+                    if isinstance(param, dict):
+                        param_lst[param_idx][list(param.keys())[fn_idx]] = Path(fn)
+                    else:
+                        param_lst[param_idx] = Path(fn)
+                try:
+                    if isinstance(param, dict):
+                        assert isinstance(
+                            param_lst[param_idx][list(param.keys())[fn_idx]], Path
+                        )
+                    else:
+                        assert isinstance(param_lst[param_idx], Path)
+                except AssertionError:
+                    if input_dir is None:
+                        raise TypeError(
+                            f"The file indicated by the '{name}' parameter does not"
+                            f" exist in the directory '{self.root}'."
+                        )
+                    else:
+                        raise TypeError(
+                            f"The file indicated by the '{name}' parameter does not"
+                            f" exist in either of the directories '{self.root}' or "
+                            f"'{self.get_config(input_dir)}'."
+                        )
+
+
+    def check_uniqueness(self, *args, file_type=None, filename=None):
+        """ """
+        args = list(args)
+        if len(args) == 1 and "." in args[0]:
+            args = args[0].split(".") + args[1:]
+        branch = args.pop(-1)
+        for key in args[::-1]:
+            branch = {key: branch}
+
+        if self.get_config(args[0], args[1]):
+            for key in self.staticmaps.data_vars:
+                if filename == key:
+                    raise ValueError(
+                        f"The filenames of the {file_type} maps should be unique."
+                    )
+                if (
+                    self.get_config(args[0], args[1], key)
+                    == list(branch[args[0]][args[1]].values())[0]
+                ):
+                    raise ValueError(f"Each model input layers must be unique.")
