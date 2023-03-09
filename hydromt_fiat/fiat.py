@@ -1,6 +1,7 @@
 """Implement fiat model class"""
 
 from hydromt.models.model_api import Model
+from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
 from pathlib import Path
 from configparser import ConfigParser
@@ -52,9 +53,8 @@ class FiatModel(Model):
         # TODO: check if this is required
         NotImplemented
 
-    def setup_exposure_vector(self, region, **kwargs):
-        NotImplemented
-        # workflows.exposure_vector.Exposure
+    def setup_exposure_vector(self, region):
+        ExposureVector(region)
 
     def setup_exposure_raster(self):
         NotImplemented
@@ -83,12 +83,6 @@ class FiatModel(Model):
 
         # Store the general information.
         config = opt["setup_config"]
-
-        # Set the paths
-        config["hazard_dp"] = Path(self.root).joinpath("hazard")
-        config["exposure_dp"] = Path(self.root).joinpath("exposure")
-        config["vulnerability_dp"] = Path(self.root).joinpath("vulnerability")
-        config["output_dp"] = Path(self.root).joinpath("output")
 
         # Store the hazard information.
         config["hazard"] = {}
@@ -254,10 +248,6 @@ class FiatModel(Model):
         """Method to write the complete model schematization and configuration to file."""
 
         self.logger.info(f"Writing model data to {self.root}")
-        # if in r, r+ mode, only write updated components
-        if not self._write:
-            self.logger.warning("Cannot write in read-only mode")
-            return
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self._staticmaps:
