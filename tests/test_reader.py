@@ -20,13 +20,12 @@ def test_read():
     assert fm.config["output_unit"] == "USD"
     assert fm.config["hazard_dp"] == root / "hazard"
     assert fm.config["exposure_dp"] == root / "exposure"
-    assert fm.config["susceptibility_dp"] == "susceptibility"
+    assert fm.config["vulnerability_dp"] == root / "vulnerability"
     assert fm.config["output_dp"] == root / "output"
     assert fm.config["category_output"] is True
     assert fm.config["total_output"] is True
     assert fm.config["risk_output"] is True
     assert fm.config["map_output"] is True
-    assert fm.config["vulnerability_dp"] == root / "vulnerability"
     assert fm.config["hazard"]["water_depth"]["hand_050cm_rp02"]["usage"] is True
     assert (
         fm.config["hazard"]["water_depth"]["hand_050cm_rp02"]["map_fn"]
