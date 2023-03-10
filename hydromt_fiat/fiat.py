@@ -10,6 +10,7 @@ import xarray as xr
 import hydromt
 from hydromt.cli.cli_utils import parse_config
 from shutil import copy
+from shapely.geometry import box
 
 
 from . import DATADIR
@@ -49,12 +50,51 @@ class FiatModel(Model):
             logger=logger,
         )
 
+    def setup_basemaps(
+        self,
+        region,
+        **kwargs,
+    ):
+        """Define the model domain that is used to clip the raster layers.
+
+        Adds model layer:
+
+        * **region** geom: A geometry with the nomenclature 'region'.
+
+        Parameters
+        ----------
+        region: dict
+            Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.
+        """
+
+        kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
+        if kind == "bbox":
+            geom = gpd.GeoDataFrame(geometry=[box(*region["bbox"])], crs=4326)
+        elif kind == "grid":
+            geom = region["grid"].raster.box
+        elif kind == "geom":
+            geom = region["geom"]
+        else:
+            raise ValueError(
+                f"Unknown region kind {kind} for FIAT, expected one of ['bbox', 'grid', 'geom']."
+            )
+
+        # Set the model region geometry (to be accessed through the shortcut self.region).
+        self.set_geoms(geom, "region")
+
     def setup_config(self):
         # TODO: check if this is required
         NotImplemented
 
     def setup_exposure_vector(self, region):
-        ExposureVector(region)
+        ev = ExposureVector(self.data_catalog, self.config["exposure"], region)
+        ev.setup_asset_locations()
+        ev.setup_occupancy_type()
+        ev.setup_max_potential_damage()
+        ev.setup_ground_floor_height()
+        ev.setup_aggregation_labels()
+
+        # Add: linking damage functions to assets
 
     def setup_exposure_raster(self):
         NotImplemented
@@ -84,6 +124,12 @@ class FiatModel(Model):
         # Store the general information.
         config = opt["setup_config"]
 
+        # Set the paths.  # FIXME: how to do this more elegantly?
+        config["hazard_dp"] = self.root.joinpath("hazard")
+        config["exposure_dp"] = self.root.joinpath("exposure")
+        config["vulnerability_dp"] = self.root.joinpath("vulnerability")
+        config["output_dp"] = self.root.joinpath("output")
+
         # Store the hazard information.
         config["hazard"] = {}
         for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
@@ -102,24 +148,7 @@ class FiatModel(Model):
                 )
 
         # Store the exposure information.
-        config["exposure"] = {}
-        for exposure_dict in [opt[key] for key in opt.keys() if "exposure" in key]:
-            exposure_dict.update(
-                {"map_fn": config["exposure_dp"].joinpath(exposure_dict["map_fn"])}
-            )
-            exposure_dict.update(
-                {
-                    "function_fn": {
-                        i: config["vulnerability_dp"].joinpath(j)
-                        for i, j in exposure_dict["function_fn"].items()
-                    }
-                }
-            )
-            config["exposure"].update(
-                {
-                    exposure_dict["map_fn"].stem: exposure_dict,
-                }
-            )
+        config["exposure"] = opt["setup_exposure"]
 
         return config
 
@@ -154,16 +183,6 @@ class FiatModel(Model):
                     name=hazard_fn.stem,
                 )
 
-        # Read the exposure maps.
-        for exposure_fn in [i["map_fn"] for i in self.get_config("exposure").values()]:
-            if not exposure_fn.is_file():
-                raise ValueError(f"Could not find the exposure map: {hazard_fn}.")
-            else:
-                self.set_staticmaps(
-                    hydromt.open_raster(exposure_fn),
-                    name=exposure_fn.stem,
-                )
-
     def set_root(self, root=None, mode="w"):
         """Initialized the model root.
         In read mode it checks if the root exists.
@@ -180,68 +199,26 @@ class FiatModel(Model):
         if root is None:
             root = Path(self._config_fn).parent
         super().set_root(root=root, mode=mode)
-        if self._write and root is not None:
-            self._root = Path(root)
+        self._root = Path(root)
 
-            # Set the general information.
-            self.set_config("hazard_dp", self.root.joinpath("hazard"))
-            self.set_config("exposure_dp", self.root.joinpath("exposure"))
-            self.set_config("vulnerability_dp", self.root.joinpath("vulnerability"))
-            self.set_config("output_dp", self.root.joinpath("output"))
+        # Set the paths.  # FIXME: how to do this more elegantly?
+        self.set_config("hazard_dp", self.root.joinpath("hazard"))
+        self.set_config("exposure_dp", self.root.joinpath("exposure"))
+        self.set_config("vulnerability_dp", self.root.joinpath("vulnerability"))
+        self.set_config("output_dp", self.root.joinpath("output"))
 
-            # Set the hazard information.
-            if self.get_config("hazard"):
-                for hazard_type, hazard_scenario in self.get_config("hazard").items():
-                    for hazard_fn in hazard_scenario:
-                        hazard_scenario[hazard_fn]["map_fn"] = self.get_config(
-                            "hazard_dp"
-                        ).joinpath(hazard_scenario[hazard_fn]["map_fn"].name)
-                        self.set_config(
-                            "hazard",
-                            hazard_type,
-                            hazard_fn,
-                            hazard_scenario[hazard_fn],
-                        )
-            if self.get_config("exposure"):
-                for exposure_fn in self.get_config("exposure"):
+        # Set the hazard information.
+        if self.get_config("hazard"):
+            for hazard_type, hazard_scenario in self.get_config("hazard").items():
+                for hazard_fn in hazard_scenario:
+                    hazard_scenario[hazard_fn]["map_fn"] = self.get_config(
+                        "hazard_dp"
+                    ).joinpath(hazard_scenario[hazard_fn]["map_fn"].name)
                     self.set_config(
-                        "exposure",
-                        exposure_fn,
-                        "map_fn",
-                        self.get_config("exposure_dp").joinpath(
-                            self.get_config("exposure", exposure_fn, "map_fn").name,
-                        ),
-                    )
-                    for sf_path in self.get_config(
-                        "exposure",
-                        exposure_fn,
-                        "function_fn",
-                    ).values():
-                        if (
-                            not self.get_config("vulnerability_dp")
-                            .joinpath(
-                                sf_path.name,
-                            )
-                            .is_file()
-                        ):
-                            copy(
-                                sf_path,
-                                self.get_config("vulnerability_dp").joinpath(
-                                    sf_path.name,
-                                ),
-                            )
-                    self.set_config(
-                        "exposure",
-                        exposure_fn,
-                        "function_fn",
-                        {
-                            i: self.get_config("vulnerability_dp").joinpath(j.name)
-                            for i, j in self.get_config(
-                                "exposure",
-                                exposure_fn,
-                                "function_fn",
-                            ).items()
-                        },
+                        "hazard",
+                        hazard_type,
+                        hazard_fn,
+                        hazard_scenario[hazard_fn],
                     )
 
     def write(self):
