@@ -88,11 +88,7 @@ class FiatModel(Model):
 
     def setup_exposure_vector(self, region):
         ev = ExposureVector(self.data_catalog, self.config["exposure"], region)
-        ev.setup_asset_locations()
-        ev.setup_occupancy_type()
-        ev.setup_max_potential_damage()
-        ev.setup_ground_floor_height()
-        ev.setup_aggregation_labels()
+        ev.setup_from_single_source()
 
         # Add: linking damage functions to assets
 

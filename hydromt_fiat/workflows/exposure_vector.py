@@ -4,6 +4,21 @@ import geopandas as gpd
 
 
 class ExposureVector(Exposure):
+    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Flood Height"]
+    _REQUIRED_VARIABLE_COLUMNS = ["Damage Function: {}", "Max Potential Damage: {}"]
+    _OPTIONAL_COLUMNS = [
+        "Object Name",
+        "Primary Object Type",
+        "Secondary Object Type",
+        "X Coordinate",
+        "Y Coordinate",
+        "Ground Elevation",
+        "Object-Location Shapefile Path",
+        "Object-Location Join ID",
+        "Join Attribute Field",
+    ]
+    _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
+
     def __init__(
         self, data_catalog: DataCatalog, config: dict, region: gpd.GeoDataFrame = None
     ):
@@ -14,6 +29,9 @@ class ExposureVector(Exposure):
         self.object_name_attr = "fid"
         self.primary_object_type_attr = "st_damcat"
         self.secondary_object_type_attr = "occtype"
+        self.max_potential_damage_structure = "val_struct"
+        self.max_potential_damage_content = "val_cont"
+        self.ground_elevation_attr = "grnd_elv_m"
         self.ground_floor_height_attr = ""
         self.geometry_attr = "geometry"
 
@@ -35,6 +53,26 @@ class ExposureVector(Exposure):
             # check if the 'fid' attribute can be used as unique ID
             if len(source.index) != len(set(source["fid"])):
                 source[self.unique_id_attr] = range(1, len(source.index) + 1)
+
+            # Fill the exposure data
+            self.exposure["Object ID"] = source[self.unique_id_attr]
+            self.exposure["Object Name"] = source[self.unique_id_attr]
+            self.exposure["Primary Object Type"] = source[self.primary_object_type_attr]
+            self.exposure["Secondary Object Type"] = source[
+                self.secondary_object_type_attr
+            ]
+            self.exposure["Max Potential Damage: Structure"] = source[
+                self.max_potential_damage_structure
+            ]
+            self.exposure["Max Potential Damage: Content"] = source[
+                self.max_potential_damage_content
+            ]
+            self.exposure["Ground Elevation"] = source[self.ground_elevation_attr]
+
+            # Multipoint to single point
+            points = source[self.geometry_attr].apply(lambda x: x.geoms[0])
+            self.exposure["X Coordinate"] = points.x
+            self.exposure["Y Coordinate"] = points.y
 
         else:
             NotImplemented
