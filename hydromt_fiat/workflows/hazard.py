@@ -70,7 +70,7 @@ class Hazard():
                         var_lst, map_fn_lst, "hazard", da_name, idx, "NetCDF variable"
                     )
                 )
-        print('Hazard')
+                
         return map_fn_lst
 
     #         #This cannot be run since self.region works only after running setup_basemaps() which adds the attribute "region" 

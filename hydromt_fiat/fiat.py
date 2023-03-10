@@ -6,6 +6,7 @@ from hydromt_fiat.writer import Writer
 from hydromt_fiat.workflows.hazard import Hazard
 import logging
 from pathlib import Path
+from hydromt import DataCatalog
 
 
 from . import DATADIR
@@ -18,31 +19,31 @@ _logger = logging.getLogger(__name__)
 class FiatModel(Model):
     """General and basic API for the FIAT model in hydroMT."""
 
-    _NAME = "fiat"
-    _CONF = "fiat_configuration.ini"
-    _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
-    _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
+    _NAME    = "fiat"
+    _CONF    = "fiat_configuration.ini"
+    _GEOMS   = {}  # FIXME Mapping from hydromt names to model specific names
+    _MAPS    = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
     def __init__(
         self,
-        root=None,
-        mode="w",
-        config_fn=None,
-        data_libs=None,
-        logger=_logger,
-        deltares_data=False,
-        artifact_data=False,
+        root          =None,
+        mode          ="w",
+        config_fn     =None,
+        data_libs     =None,
+        logger        =_logger,
+        deltares_data =False,
+        artifact_data =False,
     ):
         super().__init__(
-            root=root,
-            mode=mode,
-            config_fn=config_fn,
-            data_libs=data_libs,
-            deltares_data=deltares_data,
-            artifact_data=artifact_data,
-            logger=logger,
+            root          =root,
+            mode          =mode,
+            config_fn     =config_fn,
+            data_libs     =data_libs,
+            logger        =logger,
+            deltares_data =deltares_data,
+            artifact_data =artifact_data,
         )
 
     def setup_config(self):
@@ -73,7 +74,8 @@ class FiatModel(Model):
         var      = None									
         chunks   = 100	
 
-        self.da = Hazard().setup_hazard(map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
+
+        self.da      = Hazard().setup_hazard(map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
 
         
 
