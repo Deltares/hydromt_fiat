@@ -173,7 +173,7 @@ Note that this is not the HydroMT model setup configuration file!</p></li>
 <td><p>Get a config value at key(s).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read" title="hydromt_fiat.fiat.FiatModel.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>()</p></td>
-<td><p>Read the complete model schematization and configuration from model files.</p></td>
+<td><p>Method to read the complete model schematization and configuration from file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_config.html#hydromt_fiat.fiat.FiatModel.read_config" title="hydromt_fiat.fiat.FiatModel.read_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_config</span></code></a>([config_fn])</p></td>
 <td><p>Parse config from file.</p></td>
@@ -194,10 +194,10 @@ Note that this is not the HydroMT model setup configuration file!</p></li>
 <td><p>Read states at &lt;root&gt;/&lt;fn&gt; and add to states property</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_staticgeoms.html#hydromt_fiat.fiat.FiatModel.read_staticgeoms" title="hydromt_fiat.fiat.FiatModel.read_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_staticgeoms</span></code></a>()</p></td>
-<td><p>This method will be deprecated in future versions, use <code class="xref py py-meth docutils literal notranslate"><span class="pre">read_geoms()</span></code></p></td>
+<td><p>Read staticgeoms at &lt;root/?/&gt; and parse to dict of GeoPandas.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_staticmaps.html#hydromt_fiat.fiat.FiatModel.read_staticmaps" title="hydromt_fiat.fiat.FiatModel.read_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_staticmaps</span></code></a>([fn])</p></td>
-<td><p>Read static model maps at &lt;root&gt;/&lt;fn&gt; and add to staticmaps property</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_staticmaps.html#hydromt_fiat.fiat.FiatModel.read_staticmaps" title="hydromt_fiat.fiat.FiatModel.read_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_staticmaps</span></code></a>()</p></td>
+<td><p>Read staticmaps at &lt;root/?/&gt; and parse to xarray Dataset.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_config.html#hydromt_fiat.fiat.FiatModel.set_config" title="hydromt_fiat.fiat.FiatModel.set_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_config</span></code></a>(*args)</p></td>
 <td><p>Update the config dictionary at key(s) with values.</p></td>
@@ -217,8 +217,8 @@ Note that this is not the HydroMT model setup configuration file!</p></li>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_results</span></code>(data[, name, split_dataset])</p></td>
 <td><p>Add data to results attribute.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root" title="hydromt_fiat.fiat.FiatModel.set_root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_root</span></code></a>(root[, mode])</p></td>
-<td><p>Initialize the model root.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root" title="hydromt_fiat.fiat.FiatModel.set_root"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_root</span></code></a>([root, mode])</p></td>
+<td><p>Initialized the model root.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_states</span></code>(data[, name, split_dataset])</p></td>
 <td><p>Add data to states attribute.</p></td>
@@ -266,7 +266,7 @@ Note that this is not the HydroMT model setup configuration file!</p></li>
 <td><p>Single method to update a model based the settings in <cite>opt</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write" title="hydromt_fiat.fiat.FiatModel.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>()</p></td>
-<td><p>Write the complete model schematization and configuration to model files.</p></td>
+<td><p>Method to write the complete model schematization and configuration to file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_config.html#hydromt_fiat.fiat.FiatModel.write_config" title="hydromt_fiat.fiat.FiatModel.write_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_config</span></code></a>([config_name, config_root])</p></td>
 <td><p>Write config to &lt;root/config_fn&gt;</p></td>
@@ -287,10 +287,10 @@ Note that this is not the HydroMT model setup configuration file!</p></li>
 <td><p>Write states to netcdf file at &lt;root&gt;/&lt;fn&gt;</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_staticgeoms.html#hydromt_fiat.fiat.FiatModel.write_staticgeoms" title="hydromt_fiat.fiat.FiatModel.write_staticgeoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code></a>()</p></td>
-<td><p>This method will be deprecated in future versions, use <code class="xref py py-meth docutils literal notranslate"><span class="pre">write_geoms()</span></code></p></td>
+<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_staticmaps.html#hydromt_fiat.fiat.FiatModel.write_staticmaps" title="hydromt_fiat.fiat.FiatModel.write_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code></a>([fn])</p></td>
-<td><p>Write static model maps to netcdf file at &lt;root&gt;/&lt;fn&gt;</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_staticmaps.html#hydromt_fiat.fiat.FiatModel.write_staticmaps" title="hydromt_fiat.fiat.FiatModel.write_staticmaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code></a>([compress])</p></td>
+<td><p>Write staticmaps at &lt;root/?/&gt; in model ready format.</p></td>
 </tr>
 </tbody>
 </table>
