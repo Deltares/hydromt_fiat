@@ -9,6 +9,7 @@ import xarray as xr
 import hydromt
 from hydromt.cli.cli_utils import parse_config
 from shutil import copy
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
 
 
 from . import DATADIR
@@ -66,7 +67,14 @@ class FiatModel(Model):
         NotImplemented
 
     def setup_social_vulnerability_index(self):
-        NotImplemented
+
+        #Create SVI object 
+        svi = SocialVulnerabilityIndex()
+        #Call functionalities of SVI
+        #
+        df_SVI = svi.get_svi_data()
+        self.df, self.list = svi.normalization_svi_data(self, df_SVI)
+
 
     def read(self):
         """Method to read the complete model schematization and configuration from file."""
