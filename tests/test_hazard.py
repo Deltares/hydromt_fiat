@@ -4,7 +4,6 @@ import pytest
 
 EXAMPLEDIR = Path().absolute() / "examples"
 DATASET     = Path("p:/11207058-fiat-objects-interface/FiatModelBuilder/Model_Builder")
-#DATASET     = Path("C:/Users/fuentesm/CISNE/HydroMT_sprint_sessions/Model_Builder") 
 
 _cases = {
     # "fiat_flood": {
@@ -16,7 +15,6 @@ _cases = {
     "fiat_objects": {
         "folder"   : "test_hazard",
         "ini"      : "test_hazard.ini",
-        "flood_map":  Path("Hazard").joinpath("kingTide_SLR_max_flood_depth.tif"),
         "catalog"  : "fiat_catalog_hazard.yml",
 
     },
@@ -29,15 +27,14 @@ def test_Hazard(case):
     root             = DATASET.joinpath(_cases[case]["folder"])
     config_fn        = DATASET.joinpath(_cases[case]["ini"])
     data_libs        = DATASET.joinpath(_cases[case]["catalog"])
-    root_raster      = DATASET.joinpath(_cases[case]["flood_map"])
-
-
 
     hyfm = FiatModel(root=root, mode="r", data_libs=data_libs, config_fn=config_fn)
-    hyfm.setup_hazard()
 
-    raster_max_depth = hyfm.data_catalog.get_rasterdataset("max_depth")
-    hazard_type      = hyfm.get_config('setup_config', 'hazard_type')
+    raster_max_depth    = hyfm.data_catalog.get_rasterdataset("max_depth")
+    flood_maps_varaible = hyfm.data_catalog.get_rasterdataset("flood_maps_varaible")
+    hazard_type         = hyfm.get_config('setup_config', 'hazard_type')
+
+    hyfm.setup_hazard()
 
     assert hyfm
 

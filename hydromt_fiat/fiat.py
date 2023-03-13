@@ -60,25 +60,20 @@ class FiatModel(Model):
     def setup_vulnerability(self):
         NotImplemented
 
-    def setup_hazard(self):
+    def setup_hazard(self): 	
+        			
+        map_fn      = self.get_config('setup_hazard', 'map_fn')			
+        map_type    = self.get_config('setup_hazard', 'map_type')				
+        rp          = self.get_config('setup_hazard', 'rp')
+        crs         = self.get_config('setup_hazard', 'crs')
+        nodata      = self.get_config('setup_hazard', 'nodata')
+        var         = self.get_config('setup_hazard', 'var')		
+        chunks      = self.get_config('setup_hazard', 'chunks')
+        risk_output = self.get_config('setup_config','risk_output', fallback=True)
+        hazard_type = self.get_config('setup_config','hazard_type', fallback="flooding")
 
-        #map_fn   = "C:/Users/fuentesm/CISNE/HydroMT_sprint_sessions/Model_Builder/Hazard/kingTide_SLR_max_flood_depth.tif"  				
-        map_fn   = "C:/Users/fuentesm/CISNE/HydroMT_sprint_sessions/Model_Builder/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif"  				
-
-        map_type = "water_depth"						
-        rp       = None  
-        #Not needed if the raster already has this information      								
-        crs      = None
-        #crs      = 4326									
-        nodata   = -9999.0									
-        var      = None									
-        chunks   = 100	
-
-
-        self.da      = Hazard().setup_hazard(map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
-
-        
-
+        Hazard().setup_hazard(self,hazard_type=hazard_type,risk_output=risk_output, map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
+ 
     def setup_social_vulnerability_index(self):
         NotImplemented
 
