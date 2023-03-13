@@ -25,15 +25,6 @@ class ExposureVector(Exposure):
         super().__init__(data_catalog=data_catalog, config=config, region=region)
         self.exposure = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
-        self.object_id_attr = "fid"
-        self.object_name_attr = "fid"
-        self.primary_object_type_attr = "st_damcat"
-        self.secondary_object_type_attr = "occtype"
-        self.max_potential_damage_structure = "val_struct"
-        self.max_potential_damage_content = "val_cont"
-        self.ground_elevation_attr = "grnd_elv_m"
-        self.ground_floor_height_attr = ""
-        self.geometry_attr = "geometry"
 
     def setup_from_single_source(self):
         """
