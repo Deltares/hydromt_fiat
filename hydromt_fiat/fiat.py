@@ -68,12 +68,15 @@ class FiatModel(Model):
 
     def setup_social_vulnerability_index(self):
 
+        c_key   = "495a349ce22bdb1294b378fb199e4f27e57471a9"
+
         #Create SVI object 
         svi = SocialVulnerabilityIndex()
         #Call functionalities of SVI
-        #
-        df_SVI = svi.get_svi_data()
-        self.df, self.list = svi.normalization_svi_data(self, df_SVI)
+        df_SVI             = svi.get_svi_data(c_key)
+        df_SVI_normalized  = svi.normalization_svi_data(df_SVI)
+        self.df_scores     = svi.scores_by_cathegory(df_SVI_normalized)
+
 
 
     def read(self):
