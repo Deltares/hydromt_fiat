@@ -1,4 +1,5 @@
 from hydromt_fiat.fiat import FiatModel
+from hydromt.config import configread
 from pathlib import Path
 import pytest
 
@@ -21,13 +22,10 @@ def test_exposure(case):
 
     fm = FiatModel(
         root=root,
-        mode="r",
+        mode="w",
         data_libs=[data_catalog_yml],
-        config_fn=_cases[case]["ini"],
     )
-    fm.read()
 
     region = fm.data_catalog.get_geodataframe("region", variables=None)
-    fm.setup_basemaps({"geom": region})
-
-    fm.setup_exposure_vector(fm.region)
+    opt = configread(_cases[case]["ini"])
+    fm.build(region={"geom": region}, opt=opt)

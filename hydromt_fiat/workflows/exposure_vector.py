@@ -1,6 +1,7 @@
 from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
+import json
 
 
 class ExposureVector(Exposure):
@@ -20,50 +21,49 @@ class ExposureVector(Exposure):
     _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
 
     def __init__(
-        self, data_catalog: DataCatalog, config: dict, region: gpd.GeoDataFrame = None
-    ):
-        super().__init__(data_catalog=data_catalog, config=config, region=region)
+        self, data_catalog: DataCatalog, region: gpd.GeoDataFrame = None
+    ) -> None:
+        """_summary_
+
+        Parameters
+        ----------
+        data_catalog : DataCatalog
+            _description_
+        region : gpd.GeoDataFrame, optional
+            _description_, by default None
+        """
+        super().__init__(data_catalog=data_catalog, region=region)
         self.exposure = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
 
-    def setup_from_single_source(self):
-        """
-         column names NSI data:
-         'fid', 'fd_id', 'bid', 'cbfips', 'st_damcat', 'occtype', 'bldgtype',
-        'num_story', 'sqft', 'found_type', 'found_ht', 'med_yr_blt',
-        'val_struct', 'val_cont', 'val_vehic', 'ftprntid', 'ftprntsrc',
-        'source', 'students', 'pop2amu65', 'pop2amo65', 'pop2pmu65',
-        'pop2pmo65', 'o65disable', 'u65disable', 'x', 'y', 'firmzone',
-        'grnd_elv_m', 'ground_elv', 'id', 'geometry'
-        """
-        if self.config["asset_locations"] == "NSI":
-            source = self.data_catalog.get_geodataframe(
-                "NSI", variables=None, geom=self.region
-            )
+    def setup_from_single_source(self, source: str) -> None:
+        """_summary_
 
-            # check if the 'fid' attribute can be used as unique ID
-            if len(source.index) != len(set(source["fid"])):
-                source[self.unique_id_attr] = range(1, len(source.index) + 1)
+        Parameters
+        ----------
+        source : str
+            _description_
+        """
+        if source == "NSI":
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+
+            # Check if the 'fid' attribute can be used as unique ID
+            if len(source_data.index) != len(set(source_data["fid"])):
+                source_data[self.unique_id_attr] = range(1, len(source_data.index) + 1)
+
+            # Read the json file that holds a dictionary of names of the NSI coupled to Delft-FIAT names
+            with open(
+                self.data_catalog.sources[source].kwargs["NSI_to_FIAT_translation_fn"]
+            ) as json_file:
+                nsi_fiat_translation = json_file.read()
+            nsi_fiat_translation = json.loads(nsi_fiat_translation)
 
             # Fill the exposure data
-            self.exposure["Object ID"] = source[self.unique_id_attr]
-            self.exposure["Object Name"] = source[self.unique_id_attr]
-            self.exposure["Primary Object Type"] = source[self.primary_object_type_attr]
-            self.exposure["Secondary Object Type"] = source[
-                self.secondary_object_type_attr
-            ]
-            self.exposure["Max Potential Damage: Structure"] = source[
-                self.max_potential_damage_structure
-            ]
-            self.exposure["Max Potential Damage: Content"] = source[
-                self.max_potential_damage_content
-            ]
-            self.exposure["Ground Elevation"] = source[self.ground_elevation_attr]
-
-            # Multipoint to single point
-            points = source[self.geometry_attr].apply(lambda x: x.geoms[0])
-            self.exposure["X Coordinate"] = points.x
-            self.exposure["Y Coordinate"] = points.y
+            columns_to_fill = nsi_fiat_translation.keys()
+            for column_name in columns_to_fill:
+                self.exposure[column_name] = source_data[
+                    nsi_fiat_translation[column_name]
+                ]
 
         else:
             NotImplemented
@@ -72,7 +72,7 @@ class ExposureVector(Exposure):
         NotImplemented
 
     def setup_asset_locations(self, asset_locations):
-        self.exposure = asset_locations[[self.unique_id_attr, self.geometry_attr]]
+        NotImplemented
 
     def setup_occupancy_type(self):
         NotImplemented
