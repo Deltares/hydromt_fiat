@@ -66,18 +66,26 @@ class FiatModel(Model):
     def setup_hazard(self):
         NotImplemented
 
-    def setup_social_vulnerability_index(self):
-
-        c_key   = "495a349ce22bdb1294b378fb199e4f27e57471a9"
+    def setup_social_vulnerability_index(self, census_key: str, path:str, state_abbreviation:str):
 
         #Create SVI object 
-        svi = SocialVulnerabilityIndex()
+        svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
+
         #Call functionalities of SVI
-        df_SVI             = svi.get_svi_data(c_key)
-        df_SVI_normalized  = svi.normalization_svi_data(df_SVI)
-        self.df_scores     = svi.scores_by_cathegory(df_SVI_normalized)
+        svi.set_up_census_key(census_key)
+        svi.variable_code_csv_to_pd_df(path)
+        svi.set_up_download_codes()
+        svi.set_up_state_code(state_abbreviation)
+        svi.download_census_data()
+        svi.rename_census_data("Census_code_withE", "Census_variable_name")
+        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data()
+        svi.normalization_svi_data()
+        svi.domain_scores()
+        svi.composite_scores()
 
-
+#TO DO: JOIN WITH GEOMETRIES. FOR MAPPING. 
+#this link can be used: https://github.com/datamade/census
 
     def read(self):
         """Method to read the complete model schematization and configuration from file."""

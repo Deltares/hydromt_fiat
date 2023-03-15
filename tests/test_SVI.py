@@ -1,9 +1,10 @@
 from hydromt_fiat.fiat import FiatModel
+from hydromt.config import configread
 from pathlib import Path
 import pytest
 
 
-DATASET     = Path("p:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+DATASET     = Path("C:\python\hydromt_fiat\local_test_database")
 _cases = {
     # "fiat_flood": {
     #     "region_grid": Path("data").joinpath("flood_hand", "hand_050cm_rp02.tif"),
@@ -29,9 +30,10 @@ def test_SVI(case):
     config_fn        = DATASET.joinpath(_cases[case]["ini"])
     data_libs        = DATASET.joinpath(_cases[case]["catalog"])
 
-    hyfm = FiatModel(root=root, mode="r", data_libs=data_libs, config_fn=config_fn)
+    hyfm = FiatModel(root=root, mode="w", data_libs=data_libs)
+    config = configread(config_fn)
 
-    hyfm.setup_social_vulnerability_index()
+    hyfm.build(opt = config)
 
     df= hyfm.df_scores
 
