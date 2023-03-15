@@ -55,9 +55,9 @@ class FiatModel(Model):
     def setup_exposure_raster(self):
         NotImplemented
 
-    def setup_vulnerability(self):
-        vul = Vulnerability(self.data_catalog, self.config)
-        vul.get_vulnerability_function()
+    def setup_vulnerability(self, vulnerability_source, vulnerability_identifiers_and_linking):
+        vul = Vulnerability(self.data_catalog)
+        vul.get_vulnerability_function(vulnerability_source, vulnerability_identifiers_and_linking)
 
     def setup_hazard(self):
         NotImplemented
