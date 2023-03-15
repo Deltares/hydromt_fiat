@@ -1,9 +1,10 @@
 """Implement fiat model class"""
 
+import logging
 from hydromt.models.model_api import Model
 from hydromt_fiat.reader import Reader
 from hydromt_fiat.writer import Writer
-import logging
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 
 from . import DATADIR
@@ -55,7 +56,8 @@ class FiatModel(Model):
         NotImplemented
 
     def setup_vulnerability(self):
-        NotImplemented
+        vul = Vulnerability(self.data_catalog, self.config)
+        vul.get_vulnerability_function()
 
     def setup_hazard(self):
         NotImplemented
