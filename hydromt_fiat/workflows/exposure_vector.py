@@ -1,13 +1,15 @@
 from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
+import pandas as pd
 import json
 import geopandas as gpd
 import json
+from typing import Union
 
 
 class ExposureVector(Exposure):
-    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Flood Height"]
+    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
     _REQUIRED_VARIABLE_COLUMNS = ["Damage Function: {}", "Max Potential Damage: {}"]
     _OPTIONAL_COLUMNS = [
         "Object Name",
@@ -38,7 +40,9 @@ class ExposureVector(Exposure):
         self.exposure = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
 
-    def setup_from_single_source(self, source: str) -> None:
+    def setup_from_single_source(
+        self, source: str, ground_floor_height: Union[int, float, str, None]
+    ) -> None:
         """_summary_
 
         Parameters
@@ -67,8 +71,10 @@ class ExposureVector(Exposure):
                     nsi_fiat_translation[column_name]
                 ]
 
-            exposure_1_df["Extraction Method"] = "centroid"
-            exposure_1_df["First Floor Elevation"] = exposure_1["FOUND_HT"]  # TOCHANGE
+            self.setup_ground_floor_height(ground_floor_height)
+
+            # Because NSI is used, the extraction method must be centroid
+            self.setup_extraction_method("centroid")
 
         else:
             NotImplemented
@@ -85,8 +91,22 @@ class ExposureVector(Exposure):
     def setup_max_potential_damage(self):
         NotImplemented
 
-    def setup_ground_floor_height(self):
-        NotImplemented
+    def setup_extraction_method(self, extraction_method):
+        self.exposure["Extraction Method"] = extraction_method
+
+    def setup_ground_floor_height(self, ground_floor_height):
+        # If the Ground Floor Height is input as a number, assign all objects with
+        # the same Ground Floor Height.
+        if ground_floor_height:
+            if type(ground_floor_height) == int or type(ground_floor_height) == float:
+                self.exposure["Ground Floor Height"] = ground_floor_height
+            elif type(ground_floor_height) == str:
+                # TODO: implement the option to add the ground floor height from a file.
+                NotImplemented
+        else:
+            # Set the Ground Floor Height to 0 if the user did not specify any
+            # Ground Floor Height.
+            self.exposure["Ground Floor Height"] = 0
 
     def setup_aggregation_labels(self):
         NotImplemented
@@ -98,3 +118,24 @@ class ExposureVector(Exposure):
     def get_occupancy_type2(self):
         if self.occupancy_type2_attr in self.exposure.columns:
             return list(self.exposure[self.occupancy_type2_attr].unique())
+
+    def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
+        linking_dict = dict(
+            zip(exposure_linking_table["Link"], exposure_linking_table["Name"])
+        )
+        self.exposure["Damage Function: Structure"] = self.exposure[
+            "Secondary Object Type"
+        ].map(linking_dict)
+
+    def check_required_columns(self):
+        for col in self._REQUIRED_COLUMNS:
+            try:
+                assert col in self.exposure.columns
+            except AssertionError:
+                print(f"Required column {col} not found in exposure data.")
+
+        for col in self._REQUIRED_VARIABLE_COLUMNS:
+            try:
+                assert col.format("Structure") in self.exposure.columns
+            except AssertionError:
+                print(f"Required variable column {col} not found in exposure data.")
