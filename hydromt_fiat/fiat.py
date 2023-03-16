@@ -9,6 +9,7 @@ import xarray as xr
 import hydromt
 from hydromt.cli.cli_utils import parse_config
 from shutil import copy
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
 
 
 from . import DATADIR
@@ -65,8 +66,26 @@ class FiatModel(Model):
     def setup_hazard(self):
         NotImplemented
 
-    def setup_social_vulnerability_index(self):
-        NotImplemented
+    def setup_social_vulnerability_index(self, census_key: str, path:str, state_abbreviation:str):
+
+        #Create SVI object 
+        svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
+
+        #Call functionalities of SVI
+        svi.set_up_census_key(census_key)
+        svi.variable_code_csv_to_pd_df(path)
+        svi.set_up_download_codes()
+        svi.set_up_state_code(state_abbreviation)
+        svi.download_census_data()
+        svi.rename_census_data("Census_code_withE", "Census_variable_name")
+        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data()
+        svi.normalization_svi_data()
+        svi.domain_scores()
+        svi.composite_scores()
+
+#TO DO: JOIN WITH GEOMETRIES. FOR MAPPING. 
+#this link can be used: https://github.com/datamade/census
 
     def read(self):
         """Method to read the complete model schematization and configuration from file."""
