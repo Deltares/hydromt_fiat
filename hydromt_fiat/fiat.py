@@ -1,5 +1,6 @@
 """Implement fiat model class"""
 
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
@@ -10,9 +11,7 @@ from hydromt.cli.cli_utils import parse_config
 
 from shapely.geometry import box
 from typing import Union
-from shutil import copy
 from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
-
 
 
 from . import DATADIR
@@ -100,18 +99,39 @@ class FiatModel(GridModel):
     def setup_exposure_raster(self):
         NotImplemented
 
-    def setup_vulnerability(self):
-        NotImplemented
+    def setup_vulnerability(
+        self,
+        vulnerability_source: str,
+        vulnerability_identifiers_and_linking: str,
+        unit: str,
+    ) -> None:
+        """Setup the vulnerability curves from various possible inputs.
+
+        Parameters
+        ----------
+        vulnerability_source : str
+            The (relative) path or ID from the data catalog to the source of the vulnerability functions.
+        vulnerability_identifiers_and_linking : str
+            The (relative) path to the table that links the vulnerability functions and exposure categories.
+        unit : str
+            The unit of the vulnerability functions.
+        """
+        vul = Vulnerability(self.data_catalog)
+        vul.get_vulnerability_functions_from_one_file(
+            vulnerability_source, vulnerability_identifiers_and_linking, unit
+        )
 
     def setup_hazard(self, map_fn):
         NotImplemented
 
-    def setup_social_vulnerability_index(self, census_key: str, path:str, state_abbreviation:str):
+    def setup_social_vulnerability_index(
+        self, census_key: str, path: str, state_abbreviation: str
+    ):
 
-        #Create SVI object 
+        # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
-        #Call functionalities of SVI
+        # Call functionalities of SVI
         svi.set_up_census_key(census_key)
         svi.variable_code_csv_to_pd_df(path)
         svi.set_up_download_codes()
@@ -124,8 +144,8 @@ class FiatModel(GridModel):
         svi.domain_scores()
         svi.composite_scores()
 
-#TO DO: JOIN WITH GEOMETRIES. FOR MAPPING. 
-#this link can be used: https://github.com/datamade/census
+    # TO DO: JOIN WITH GEOMETRIES. FOR MAPPING.
+    # this link can be used: https://github.com/datamade/census
 
     def read(self):
         """Method to read the complete model schematization and configuration from file."""

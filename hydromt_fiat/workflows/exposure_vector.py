@@ -2,6 +2,8 @@ from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import json
+import geopandas as gpd
+import json
 
 
 class ExposureVector(Exposure):
@@ -64,6 +66,9 @@ class ExposureVector(Exposure):
                 self.exposure[column_name] = source_data[
                     nsi_fiat_translation[column_name]
                 ]
+
+            exposure_1_df["Extraction Method"] = "centroid"
+            exposure_1_df["First Floor Elevation"] = exposure_1["FOUND_HT"]  # TOCHANGE
 
         else:
             NotImplemented
