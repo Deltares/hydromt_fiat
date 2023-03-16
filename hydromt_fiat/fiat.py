@@ -24,10 +24,10 @@ _logger = logging.getLogger(__name__)
 class FiatModel(GridModel):
     """General and basic API for the FIAT model in hydroMT."""
 
-    _NAME = "fiat"
-    _CONF = "fiat_configuration.ini"
-    _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
-    _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
+    _NAME    = "fiat"
+    _CONF    = "fiat_configuration.ini"
+    _GEOMS   = {}  # FIXME Mapping from hydromt names to model specific names
+    _MAPS    = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
@@ -107,6 +107,21 @@ class FiatModel(GridModel):
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
+    def setup_hazard(self): 	
+        			
+        map_fn      = self.get_config('setup_hazard', 'map_fn')			
+        map_type    = self.get_config('setup_hazard', 'map_type')				
+        rp          = self.get_config('setup_hazard', 'rp')
+        crs         = self.get_config('setup_hazard', 'crs')
+        nodata      = self.get_config('setup_hazard', 'nodata')
+        var         = self.get_config('setup_hazard', 'var')		
+        chunks      = self.get_config('setup_hazard', 'chunks')
+        risk_output = self.get_config('setup_config','risk_output', fallback=True)
+        hazard_type = self.get_config('setup_config','hazard_type', fallback="flooding")
+
+        Hazard().setup_hazard(self,hazard_type=hazard_type,risk_output=risk_output, map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
+ 
+    def setup_social_vulnerability_index(self):
         Parameters
         ----------
         vulnerability_source : str
@@ -120,9 +135,6 @@ class FiatModel(GridModel):
         vul.get_vulnerability_functions_from_one_file(
             vulnerability_source, vulnerability_identifiers_and_linking, unit
         )
-
-    def setup_hazard(self, map_fn):
-        NotImplemented
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -229,3 +241,4 @@ class FiatModel(GridModel):
         # # Save the configuration file.
         # with open(self.root.joinpath(self._CONF), "w") as config:
         #     parser.write(config)
+
