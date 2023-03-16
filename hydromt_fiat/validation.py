@@ -2,7 +2,7 @@ from pathlib import Path
 
 ### TO BE UPDATED ###
 class Validation:
-    """ CONTROL FUNCTIONS """
+    """CONTROL FUNCTIONS"""
 
     def check_dir_exist(self, dir, name=None):
         """ """
@@ -84,4 +84,4 @@ class Validation:
                     self.get_config(args[0], args[1], key)
                     == list(branch[args[0]][args[1]].values())[0]
                 ):
-                    raise ValueError(f"Each model input layers must be unique.")
+                    raise ValueError("Each model input layers must be unique.")

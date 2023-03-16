@@ -6,24 +6,16 @@ import pytest
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
 _cases = {
-    "vulnerability": {
+    "exposure": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_vulnerability",
-        "ini": EXAMPLEDIR / "test_vulnerability.ini",
-    },
-}
-
-_cases = {
-    "vulnerability": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_vulnerability",
-        "ini": EXAMPLEDIR / "test_vulnerability.ini",
+        "dir": "test_exposure",
+        "ini": EXAMPLEDIR / "test_exposure.ini",
     },
 }
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_vulnerability_class_initialization(case):
+def test_exposure(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
     data_catalog_yml = str(_cases[case]["data_catalogue"])
@@ -34,5 +26,6 @@ def test_vulnerability_class_initialization(case):
         data_libs=[data_catalog_yml],
     )
 
+    region = fm.data_catalog.get_geodataframe("region", variables=None)
     opt = configread(_cases[case]["ini"])
-    fm.build(opt=opt)
+    fm.build(region={"geom": region}, opt=opt)

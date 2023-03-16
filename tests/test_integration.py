@@ -7,7 +7,7 @@ EXAMPLEDIR = Path().absolute() / "examples"
 _cases = {
     "fiat_flood": {
         "region_grid": Path("data").joinpath("flood_hand", "hand_050cm_rp02.tif"),
-        "example": "fiat_flood",
+        "dir": "fiat_flood",
         "ini": "fiat_flood.ini",
     },
 }
@@ -16,5 +16,5 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_initialization_fiat_model(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["example"])
+    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
     assert FiatModel(root=root, mode="r")
