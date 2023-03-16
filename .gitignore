@@ -116,3 +116,4 @@ venv.bak/
 
 # dask
 dask-worker-space/
+/local_test_database
