@@ -140,7 +140,10 @@ class Hazard:
 
                 # Get (if possible) the return period from dataset names if the input parameter is None.
                 if "rp" in da_name.lower():
-                    fstrip = lambda x: x in "0123456789."
+
+                    def fstrip(x):
+                        return x in "0123456789."
+
                     rp_str = "".join(
                         filter(fstrip, da_name.lower().split("rp")[-1])
                     ).lstrip("0")
@@ -212,7 +215,7 @@ class Hazard:
                 f"Could not derive the {param_name} parameter for {file_type} "
                 f"map: {filename}."
             )
-        
+
     def check_param_type(self, param, name=None, types=None):
         """ """
 
