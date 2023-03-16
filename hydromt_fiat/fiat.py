@@ -55,9 +55,27 @@ class FiatModel(Model):
     def setup_exposure_raster(self):
         NotImplemented
 
-    def setup_vulnerability(self, vulnerability_source, vulnerability_identifiers_and_linking):
+    def setup_vulnerability(
+        self,
+        vulnerability_source: str,
+        vulnerability_identifiers_and_linking: str,
+        unit: str,
+    ) -> None:
+        """Setup the vulnerability curves from various possible inputs.
+
+        Parameters
+        ----------
+        vulnerability_source : str
+            The (relative) path or ID from the data catalog to the source of the vulnerability functions.
+        vulnerability_identifiers_and_linking : str
+            The (relative) path to the table that links the vulnerability functions and exposure categories.
+        unit : str
+            The unit of the vulnerability functions.
+        """
         vul = Vulnerability(self.data_catalog)
-        vul.get_vulnerability_function(vulnerability_source, vulnerability_identifiers_and_linking)
+        vul.get_vulnerability_functions_from_one_file(
+            vulnerability_source, vulnerability_identifiers_and_linking, unit
+        )
 
     def setup_hazard(self):
         NotImplemented
