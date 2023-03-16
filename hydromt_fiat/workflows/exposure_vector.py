@@ -2,6 +2,8 @@ from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import json
+import geopandas as gpd
+import json
 
 
 class ExposureVector(Exposure):
