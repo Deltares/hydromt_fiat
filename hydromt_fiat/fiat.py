@@ -6,8 +6,10 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
 from configparser import ConfigParser
 import geopandas as gpd
+import pandas as pd
 import hydromt
 from hydromt.cli.cli_utils import parse_config
+from pathlib import Path
 
 from shapely.geometry import box
 from typing import Union
@@ -46,6 +48,7 @@ class FiatModel(GridModel):
             data_libs=data_libs,
             logger=logger,
         )
+        self.tables = []  # List of tables to write
 
     def setup_basemaps(
         self,
@@ -79,26 +82,6 @@ class FiatModel(GridModel):
         # Set the model region geometry (to be accessed through the shortcut self.region).
         self.set_geoms(geom, "region")
 
-    def setup_exposure_vector(
-        self,
-        asset_locations: str,
-        occupancy_type: str,
-        max_potential_damage: str,
-        ground_floor_height: Union[int, float, str, None],
-        ground_flood_height_unit: str,
-    ) -> None:
-        ev = ExposureVector(self.data_catalog, self.region)
-
-        if asset_locations == occupancy_type == max_potential_damage:
-            # The source for the asset locations, occupancy type and maximum potential
-            # damage is the same, use one source to create the exposure data.
-            ev.setup_from_single_source(asset_locations)
-
-        # Add: linking damage functions to assets
-
-    def setup_exposure_raster(self):
-        NotImplemented
-
     def setup_vulnerability(
         self,
         vulnerability_source: str,
@@ -116,13 +99,74 @@ class FiatModel(GridModel):
         unit : str
             The unit of the vulnerability functions.
         """
+
+        if not Path(vulnerability_identifiers_and_linking):
+            logging.error(
+                f"Vulnerability identifiers and linking table does not exist at: {vulnerability_identifiers_and_linking}"
+            )
+
         vul = Vulnerability(self.data_catalog)
-        vul.get_vulnerability_functions_from_one_file(
-            vulnerability_source, vulnerability_identifiers_and_linking, unit
+        vf_source_df = vul.get_vulnerability_source(vulnerability_source)
+        self.vf_ids_and_linking_df = (
+            vul.get_vulnerability_identifiers_and_linking_source(
+                vulnerability_identifiers_and_linking
+            )
+        )
+        self.tables.append(
+            (
+                vul.get_vulnerability_functions_from_one_file(
+                    vf_source_df, self.vf_ids_and_linking_df, unit
+                ),
+                "./vulnerability/vulnerability_curves.csv",
+                {"index": False, "header": False},
+            )
         )
 
-    def setup_hazard(self, map_fn):
+    def setup_exposure_vector(
+        self,
+        asset_locations: str,
+        occupancy_type: str,
+        max_potential_damage: str,
+        ground_floor_height: Union[int, float, str, None],
+        ground_flood_height_unit: str,
+    ) -> None:
+        ev = ExposureVector(self.data_catalog, self.region)
+
+        if asset_locations == occupancy_type == max_potential_damage:
+            # The source for the asset locations, occupancy type and maximum potential
+            # damage is the same, use one source to create the exposure data.
+            ev.setup_from_single_source(asset_locations, ground_floor_height)
+
+        # Link the damage functions to assets
+        try:
+            assert not self.vf_ids_and_linking_df.empty
+        except AssertionError:
+            logging.error(
+                "Please call the 'setup_vulnerability' function before "
+                "the 'setup_exposure_vector' function. Error message: {e}"
+            )
+        ev.link_exposure_vulnerability(self.vf_ids_and_linking_df)
+        ev.check_required_columns()
+
+        # Save the exposure data in the geoms
+        self.tables.append((ev.exposure, "./exposure/exposure.csv", {"index": False}))
+
+    def setup_exposure_raster(self):
         NotImplemented
+
+    def setup_hazard(self): 	
+        			
+        map_fn      = self.get_config('setup_hazard', 'map_fn')			
+        map_type    = self.get_config('setup_hazard', 'map_type')				
+        rp          = self.get_config('setup_hazard', 'rp')
+        crs         = self.get_config('setup_hazard', 'crs')
+        nodata      = self.get_config('setup_hazard', 'nodata')
+        var         = self.get_config('setup_hazard', 'var')		
+        chunks      = self.get_config('setup_hazard', 'chunks')
+        risk_output = self.get_config('setup_config','risk_output', fallback=True)
+        hazard_type = self.get_config('setup_config','hazard_type', fallback="flooding")
+
+        Hazard().setup_hazard(self,hazard_type=hazard_type,risk_output=risk_output, map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -197,10 +241,34 @@ class FiatModel(GridModel):
         self.logger.info(f"Writing model data to {self.root}")
         if self.config:  # try to read default if not yet set
             self.write_config()
-        if self._staticmaps:
-            self.write_grid()
-        if self._staticgeoms:
-            self.write_geoms()
+        if self.maps:
+            self.write_maps(fn="hazard/{name}.nc", driver="nc")
+        if self.geoms:
+            self.write_geoms(fn="exposure/{name}.geojson")
+        if self.tables:
+            self.write_tables()
+
+    def write_tables(self) -> None:
+        if len(self.tables) == 0:
+            self.logger.debug("No table data found, skip writing.")
+            return
+        self._assert_write_mode
+        for (data, path, kwargs) in self.tables:
+            path = Path(path)
+            if not isinstance(data, (pd.DataFrame)) or len(data.index) == 0:
+                self.logger.warning(
+                    f"{path.name} object of type {type(data).__name__} not recognized"
+                )
+                continue
+            self.logger.debug(f"Writing file {str(path)}")
+            _fn = Path(self.root) / path
+            if not _fn.parent.is_dir():
+                _fn.parent.mkdir(parents=True)
+
+            if path.name.endswith("csv"):
+                data.to_csv(_fn, **kwargs)
+            elif path.name.endswith("xlsx"):
+                data.to_excel(_fn, **kwargs)
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
