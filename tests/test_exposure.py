@@ -13,6 +13,11 @@ _cases = {
         "dir": "test_exposure",
         "ini": EXAMPLEDIR / "test_vulnerability_and_exposure.ini",
     },
+    "vulnerability_and_exposure": {
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_exposure",
+        "ini": EXAMPLEDIR / "test_vulnerability_and_exposure.ini",
+    },
 }
 
 

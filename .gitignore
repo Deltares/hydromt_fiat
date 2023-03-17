@@ -115,6 +115,5 @@ venv.bak/
 .mypy_cache/
 
 # dask
-dask-worker-space/
 /local_test_database
 
