@@ -112,8 +112,14 @@ class FiatModel(GridModel):
                 vulnerability_identifiers_and_linking
             )
         )
-        vul.get_vulnerability_functions_from_one_file(
-            vf_source_df, self.vf_ids_and_linking_df, unit
+        self.tables.append(
+            (
+                vul.get_vulnerability_functions_from_one_file(
+                    vf_source_df, self.vf_ids_and_linking_df, unit
+                ),
+                "./vulnerability/vulnerability_curves.csv",
+                {"index": False, "header": False},
+            )
         )
 
     def setup_exposure_vector(
@@ -143,7 +149,7 @@ class FiatModel(GridModel):
         ev.check_required_columns()
 
         # Save the exposure data in the geoms
-        self.tables.append(ev.exposure, "./exposure/exposure.csv")
+        self.tables.append((ev.exposure, "./exposure/exposure.csv", {"index": False}))
 
     def setup_exposure_raster(self):
         NotImplemented
@@ -227,21 +233,16 @@ class FiatModel(GridModel):
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc", driver="nc")
         if self.geoms:
-            self.write_geoms()
+            self.write_geoms(fn="exposure/{name}.geojson")
         if self.tables:
             self.write_tables()
 
-    def write_tables(self, **kwargs) -> None:
+    def write_tables(self) -> None:
         if len(self.tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
         self._assert_write_mode
-        if "driver" not in kwargs:
-            kwargs.update(driver="csv")  # default
-        for (
-            data,
-            path,
-        ) in self.tables:
+        for (data, path, kwargs) in self.tables:
             path = Path(path)
             if not isinstance(data, (pd.DataFrame)) or len(data.index) == 0:
                 self.logger.warning(
@@ -250,12 +251,13 @@ class FiatModel(GridModel):
                 continue
             self.logger.debug(f"Writing file {str(path)}")
             _fn = Path(self.root) / path
-            if not _fn.is_dir():
+            if not _fn.parent.is_dir():
                 _fn.parent.mkdir(parents=True)
-            if kwargs["driver"] == "csv":
-                data.to_csv(_fn, index=False)
-            elif kwargs["driver"] == "xlsx":
-                data.to_excel(_fn, index=False)
+
+            if path.name.endswith("csv"):
+                data.to_csv(_fn, **kwargs)
+            elif path.name.endswith("xlsx"):
+                data.to_excel(_fn, **kwargs)
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""

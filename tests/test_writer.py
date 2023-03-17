@@ -11,4 +11,3 @@ def test_write():
     fm = FiatModel(root=root, mode="r+")
     fm.read()
     fm.write()
-    # TO ASK: how does the reading and writing happen at the same time??

@@ -4,12 +4,11 @@ from pathlib import Path
 EXAMPLEDIR = Path().absolute() / "examples"
 
 
-def test_read():
+def test_read_hydromt_config():
     # First remove the output folders?
 
     root = EXAMPLEDIR.joinpath("fiat_flood")
     fm = FiatModel(root=root, mode="r")
-    fm.read()
 
     # Assert that all the configurations are read in correctly
     assert fm.config["strategy"] == "base"
