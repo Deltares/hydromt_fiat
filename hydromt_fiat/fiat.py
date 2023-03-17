@@ -225,7 +225,7 @@ class FiatModel(GridModel):
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
-            self.write_grid(driver="nc")
+            self.write_maps(fn="hazard/{name}.nc", driver="nc")
         if self.geoms:
             self.write_geoms()
         if self.tables:
