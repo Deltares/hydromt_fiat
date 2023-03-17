@@ -2,6 +2,7 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.config import configread
 from pathlib import Path
 import pytest
+import shutil
 
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
@@ -18,6 +19,9 @@ _cases = {
 def test_exposure(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    if root.exists:
+        shutil.rmtree(root)
+
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 
     fm = FiatModel(

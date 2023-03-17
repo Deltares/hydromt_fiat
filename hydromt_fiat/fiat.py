@@ -1,6 +1,7 @@
 """Implement fiat model class"""
 
 from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.hazard import Hazard
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
@@ -154,8 +155,31 @@ class FiatModel(GridModel):
     def setup_exposure_raster(self):
         NotImplemented
 
-    def setup_hazard(self, map_fn):
-        NotImplemented
+    def setup_hazard(
+        self,
+        map_fn: str,
+        map_type: str,
+        rp,
+        crs,
+        nodata,
+        var,
+        chunks,
+        risk_output: bool = True,
+        hazard_type: str = "flooding",
+    ):
+        Hazard().setup_hazard(
+            self,
+            hazard_type=hazard_type,
+            risk_output=risk_output,
+            map_fn=map_fn,
+            map_type=map_type,
+            rp=rp,
+            crs=crs,
+            nodata=nodata,
+            var=var,
+            chunks=chunks,
+            region=self.region,
+        )
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -225,7 +249,7 @@ class FiatModel(GridModel):
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
-            self.write_maps(fn="hazard/{name}.nc", driver="nc")
+            self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
             self.write_geoms(fn="exposure/{name}.geojson")
         if self.tables:
