@@ -6,8 +6,10 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
 from configparser import ConfigParser
 import geopandas as gpd
+import pandas as pd
 import hydromt
 from hydromt.cli.cli_utils import parse_config
+from pathlib import Path
 
 from shapely.geometry import box
 from typing import Union
@@ -24,10 +26,10 @@ _logger = logging.getLogger(__name__)
 class FiatModel(GridModel):
     """General and basic API for the FIAT model in hydroMT."""
 
-    _NAME    = "fiat"
-    _CONF    = "fiat_configuration.ini"
-    _GEOMS   = {}  # FIXME Mapping from hydromt names to model specific names
-    _MAPS    = {}  # FIXME Mapping from hydromt names to model specific names
+    _NAME = "fiat"
+    _CONF = "fiat_configuration.ini"
+    _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
+    _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
@@ -46,6 +48,7 @@ class FiatModel(GridModel):
             data_libs=data_libs,
             logger=logger,
         )
+        self.tables = []  # List of tables to write
 
     def setup_basemaps(
         self,
@@ -79,6 +82,46 @@ class FiatModel(GridModel):
         # Set the model region geometry (to be accessed through the shortcut self.region).
         self.set_geoms(geom, "region")
 
+    def setup_vulnerability(
+        self,
+        vulnerability_source: str,
+        vulnerability_identifiers_and_linking: str,
+        unit: str,
+    ) -> None:
+        """Setup the vulnerability curves from various possible inputs.
+
+        Parameters
+        ----------
+        vulnerability_source : str
+            The (relative) path or ID from the data catalog to the source of the vulnerability functions.
+        vulnerability_identifiers_and_linking : str
+            The (relative) path to the table that links the vulnerability functions and exposure categories.
+        unit : str
+            The unit of the vulnerability functions.
+        """
+
+        if not Path(vulnerability_identifiers_and_linking):
+            logging.error(
+                f"Vulnerability identifiers and linking table does not exist at: {vulnerability_identifiers_and_linking}"
+            )
+
+        vul = Vulnerability(self.data_catalog)
+        vf_source_df = vul.get_vulnerability_source(vulnerability_source)
+        self.vf_ids_and_linking_df = (
+            vul.get_vulnerability_identifiers_and_linking_source(
+                vulnerability_identifiers_and_linking
+            )
+        )
+        self.tables.append(
+            (
+                vul.get_vulnerability_functions_from_one_file(
+                    vf_source_df, self.vf_ids_and_linking_df, unit
+                ),
+                "./vulnerability/vulnerability_curves.csv",
+                {"index": False, "header": False},
+            )
+        )
+
     def setup_exposure_vector(
         self,
         asset_locations: str,
@@ -92,20 +135,24 @@ class FiatModel(GridModel):
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            ev.setup_from_single_source(asset_locations)
+            ev.setup_from_single_source(asset_locations, ground_floor_height)
 
-        # Add: linking damage functions to assets
+        # Link the damage functions to assets
+        try:
+            assert not self.vf_ids_and_linking_df.empty
+        except AssertionError:
+            logging.error(
+                "Please call the 'setup_vulnerability' function before "
+                "the 'setup_exposure_vector' function. Error message: {e}"
+            )
+        ev.link_exposure_vulnerability(self.vf_ids_and_linking_df)
+        ev.check_required_columns()
+
+        # Save the exposure data in the geoms
+        self.tables.append((ev.exposure, "./exposure/exposure.csv", {"index": False}))
 
     def setup_exposure_raster(self):
         NotImplemented
-
-    def setup_vulnerability(
-        self,
-        vulnerability_source: str,
-        vulnerability_identifiers_and_linking: str,
-        unit: str,
-    ) -> None:
-        """Setup the vulnerability curves from various possible inputs.
 
     def setup_hazard(self): 	
         			
@@ -120,21 +167,6 @@ class FiatModel(GridModel):
         hazard_type = self.get_config('setup_config','hazard_type', fallback="flooding")
 
         Hazard().setup_hazard(self,hazard_type=hazard_type,risk_output=risk_output, map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
- 
-    def setup_social_vulnerability_index(self):
-        Parameters
-        ----------
-        vulnerability_source : str
-            The (relative) path or ID from the data catalog to the source of the vulnerability functions.
-        vulnerability_identifiers_and_linking : str
-            The (relative) path to the table that links the vulnerability functions and exposure categories.
-        unit : str
-            The unit of the vulnerability functions.
-        """
-        vul = Vulnerability(self.data_catalog)
-        vul.get_vulnerability_functions_from_one_file(
-            vulnerability_source, vulnerability_identifiers_and_linking, unit
-        )
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -209,10 +241,34 @@ class FiatModel(GridModel):
         self.logger.info(f"Writing model data to {self.root}")
         if self.config:  # try to read default if not yet set
             self.write_config()
-        if self._staticmaps:
-            self.write_grid()
-        if self._staticgeoms:
-            self.write_geoms()
+        if self.maps:
+            self.write_maps(fn="hazard/{name}.nc", driver="nc")
+        if self.geoms:
+            self.write_geoms(fn="exposure/{name}.geojson")
+        if self.tables:
+            self.write_tables()
+
+    def write_tables(self) -> None:
+        if len(self.tables) == 0:
+            self.logger.debug("No table data found, skip writing.")
+            return
+        self._assert_write_mode
+        for (data, path, kwargs) in self.tables:
+            path = Path(path)
+            if not isinstance(data, (pd.DataFrame)) or len(data.index) == 0:
+                self.logger.warning(
+                    f"{path.name} object of type {type(data).__name__} not recognized"
+                )
+                continue
+            self.logger.debug(f"Writing file {str(path)}")
+            _fn = Path(self.root) / path
+            if not _fn.parent.is_dir():
+                _fn.parent.mkdir(parents=True)
+
+            if path.name.endswith("csv"):
+                data.to_csv(_fn, **kwargs)
+            elif path.name.endswith("xlsx"):
+                data.to_excel(_fn, **kwargs)
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
@@ -241,4 +297,3 @@ class FiatModel(GridModel):
         # # Save the configuration file.
         # with open(self.root.joinpath(self._CONF), "w") as config:
         #     parser.write(config)
-

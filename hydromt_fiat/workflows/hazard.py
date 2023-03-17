@@ -315,4 +315,3 @@ class Hazard():
                     else ""
                 )
                 model_fiat.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
-
