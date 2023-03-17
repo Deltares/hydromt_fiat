@@ -1,6 +1,7 @@
 """Implement fiat model class"""
 
 from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.hazard import Hazard
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
@@ -26,10 +27,10 @@ _logger = logging.getLogger(__name__)
 class FiatModel(GridModel):
     """General and basic API for the FIAT model in hydroMT."""
 
-    _NAME    = "fiat"
-    _CONF    = "fiat_configuration.ini"
-    _GEOMS   = {}  # FIXME Mapping from hydromt names to model specific names
-    _MAPS    = {}  # FIXME Mapping from hydromt names to model specific names
+    _NAME = "fiat"
+    _CONF = "fiat_configuration.ini"
+    _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
+    _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _DATADIR = DATADIR
 
@@ -90,21 +91,6 @@ class FiatModel(GridModel):
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
-    def setup_hazard(self): 	
-        			
-        map_fn      = self.get_config('setup_hazard', 'map_fn')			
-        map_type    = self.get_config('setup_hazard', 'map_type')				
-        rp          = self.get_config('setup_hazard', 'rp')
-        crs         = self.get_config('setup_hazard', 'crs')
-        nodata      = self.get_config('setup_hazard', 'nodata')
-        var         = self.get_config('setup_hazard', 'var')		
-        chunks      = self.get_config('setup_hazard', 'chunks')
-        risk_output = self.get_config('setup_config','risk_output', fallback=True)
-        hazard_type = self.get_config('setup_config','hazard_type', fallback="flooding")
-
-        Hazard().setup_hazard(self,hazard_type=hazard_type,risk_output=risk_output, map_fn=map_fn,map_type=map_type,rp=rp,crs=crs, nodata=nodata,var=var,chunks=chunks)
- 
-    def setup_social_vulnerability_index(self):
         Parameters
         ----------
         vulnerability_source : str
@@ -127,8 +113,14 @@ class FiatModel(GridModel):
                 vulnerability_identifiers_and_linking
             )
         )
-        vul.get_vulnerability_functions_from_one_file(
-            vf_source_df, self.vf_ids_and_linking_df, unit
+        self.tables.append(
+            (
+                vul.get_vulnerability_functions_from_one_file(
+                    vf_source_df, self.vf_ids_and_linking_df, unit
+                ),
+                "./vulnerability/vulnerability_curves.csv",
+                {"index": False, "header": False},
+            )
         )
 
     def setup_exposure_vector(
@@ -158,10 +150,36 @@ class FiatModel(GridModel):
         ev.check_required_columns()
 
         # Save the exposure data in the geoms
-        self.tables.append(ev.exposure, "./exposure/exposure.csv")
+        self.tables.append((ev.exposure, "./exposure/exposure.csv", {"index": False}))
 
     def setup_exposure_raster(self):
         NotImplemented
+
+    def setup_hazard(
+        self,
+        map_fn: str,
+        map_type: str,
+        rp,
+        crs,
+        nodata,
+        var,
+        chunks,
+        risk_output: bool = True,
+        hazard_type: str = "flooding",
+    ):
+        Hazard().setup_hazard(
+            self,
+            hazard_type=hazard_type,
+            risk_output=risk_output,
+            map_fn=map_fn,
+            map_type=map_type,
+            rp=rp,
+            crs=crs,
+            nodata=nodata,
+            var=var,
+            chunks=chunks,
+            region=self.region,
+        )
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -202,12 +220,6 @@ class FiatModel(GridModel):
         # Store the general information.
         config = opt["setup_config"]
 
-        # Set the paths.  # FIXME: how to do this more elegantly?
-        # config["hazard_dp"] = self.root.joinpath("hazard")
-        # config["exposure_dp"] = self.root.joinpath("exposure")
-        # config["vulnerability_dp"] = self.root.joinpath("vulnerability")
-        # config["output_dp"] = self.root.joinpath("output")
-
         # Store the hazard information.
         config["hazard"] = {}
         for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
@@ -237,23 +249,18 @@ class FiatModel(GridModel):
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
-            self.write_maps(fn="hazard/{name}.nc", driver="nc")
+            self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
-            self.write_geoms()
+            self.write_geoms(fn="exposure/{name}.geojson")
         if self.tables:
             self.write_tables()
 
-    def write_tables(self, **kwargs) -> None:
+    def write_tables(self) -> None:
         if len(self.tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
         self._assert_write_mode
-        if "driver" not in kwargs:
-            kwargs.update(driver="csv")  # default
-        for (
-            data,
-            path,
-        ) in self.tables:
+        for (data, path, kwargs) in self.tables:
             path = Path(path)
             if not isinstance(data, (pd.DataFrame)) or len(data.index) == 0:
                 self.logger.warning(
@@ -262,12 +269,13 @@ class FiatModel(GridModel):
                 continue
             self.logger.debug(f"Writing file {str(path)}")
             _fn = Path(self.root) / path
-            if not _fn.is_dir():
+            if not _fn.parent.is_dir():
                 _fn.parent.mkdir(parents=True)
-            if kwargs["driver"] == "csv":
-                data.to_csv(_fn, index=False)
-            elif kwargs["driver"] == "xlsx":
-                data.to_excel(_fn, index=False)
+
+            if path.name.endswith("csv"):
+                data.to_csv(_fn, **kwargs)
+            elif path.name.endswith("xlsx"):
+                data.to_excel(_fn, **kwargs)
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
@@ -296,4 +304,3 @@ class FiatModel(GridModel):
         # # Save the configuration file.
         # with open(self.root.joinpath(self._CONF), "w") as config:
         #     parser.write(config)
-

@@ -1,20 +1,36 @@
 from hydromt_fiat.fiat import FiatModel
+from hydromt.config import configread
 from pathlib import Path
 import pytest
+import shutil
 
-EXAMPLEDIR = Path().absolute() / "examples"
+EXAMPLEDIR = Path().absolute() / "local_test_database"
 
 _cases = {
-    "fiat_flood": {
-        "region_grid": Path("data").joinpath("flood_hand", "hand_050cm_rp02.tif"),
-        "dir": "fiat_flood",
-        "ini": "fiat_flood.ini",
+    "integration": {
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_integration",
+        "ini": EXAMPLEDIR / "test_hydromt_fiat.ini",
     },
 }
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_initialization_fiat_model(case):
+def test_exposure(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
-    assert FiatModel(root=root, mode="r")
+    if root.exists:
+        shutil.rmtree(root)
+
+    data_catalog_yml = str(_cases[case]["data_catalogue"])
+
+    fm = FiatModel(
+        root=root,
+        mode="w",
+        data_libs=[data_catalog_yml],
+    )
+
+    region = fm.data_catalog.get_geodataframe("region", variables=None)
+    opt = configread(_cases[case]["ini"])
+    fm.build(region={"geom": region}, opt=opt)
+    fm.write()
