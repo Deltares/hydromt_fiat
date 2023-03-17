@@ -196,12 +196,6 @@ class FiatModel(GridModel):
         # Store the general information.
         config = opt["setup_config"]
 
-        # Set the paths.  # FIXME: how to do this more elegantly?
-        # config["hazard_dp"] = self.root.joinpath("hazard")
-        # config["exposure_dp"] = self.root.joinpath("exposure")
-        # config["vulnerability_dp"] = self.root.joinpath("vulnerability")
-        # config["output_dp"] = self.root.joinpath("output")
-
         # Store the hazard information.
         config["hazard"] = {}
         for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
