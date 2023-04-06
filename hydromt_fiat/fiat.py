@@ -9,7 +9,6 @@ from hydromt_fiat.configparser import ConfigParser
 import geopandas as gpd
 import pandas as pd
 import hydromt
-from hydromt.cli.cli_utils import parse_config
 from pathlib import Path
 
 from shapely.geometry import box
@@ -50,6 +49,7 @@ class FiatModel(GridModel):
             logger=logger,
         )
         self.tables = []  # List of tables to write
+        self.exposure = None
 
     def setup_config(self, **kwargs):
         """_summary_"""
@@ -144,12 +144,12 @@ class FiatModel(GridModel):
         ground_floor_height: Union[int, float, str, None],
         ground_flood_height_unit: str,
     ) -> None:
-        ev = ExposureVector(self.data_catalog, self.region)
+        self.exposure = ExposureVector(self.data_catalog, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            ev.setup_from_single_source(asset_locations, ground_floor_height)
+            self.exposure.setup_from_single_source(asset_locations, ground_floor_height)
 
         # Link the damage functions to assets
         try:
@@ -159,17 +159,19 @@ class FiatModel(GridModel):
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_vector' function. Error message: {e}"
             )
-        ev.link_exposure_vulnerability(self.vf_ids_and_linking_df)
-        ev.check_required_columns()
+        self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df)
+        self.exposure.check_required_columns()
 
         # Save the exposure data in the geoms
         exposure_output_path = "./exposure/exposure.csv"
-        self.tables.append((ev.exposure, exposure_output_path, {"index": False}))
+        self.tables.append(
+            (self.exposure.exposure, exposure_output_path, {"index": False})
+        )
 
         # Store the exposure settings.
         self.config["exposure"] = {
             "dbase_file": exposure_output_path,
-            "crs": ev.crs,
+            "crs": self.exposure.crs,
         }
 
     def setup_exposure_raster(self):
@@ -246,41 +248,35 @@ class FiatModel(GridModel):
     def read(self):
         """Method to read the complete model schematization and configuration from file."""
         self.logger.info(f"Reading model data from {self.root}")
-        self.read_config()
-        self.read_grid()
-        self.read_geoms()
+        self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
+
+        # TODO: determine if it is required to read the hazard files
+        # hazard_maps = self.config["hazard"]["grid_file"]
+        # self.read_grid(fn="hazard/{name}.nc")
+
+        # Read the exposure data
+        self.read_exposure()
 
     def _configread(self, fn):
         """Parse fiat configuration toml file to dict."""
         # TODO: update to FIAT toml file
 
-        # Read and parse the fiat_configuration.ini.
-        opt = parse_config(fn)
+        # Read the fiat configuration toml file.
+        parser = ConfigParser()
+        return parser.load_file(fn)
 
-        # Store the general information.
-        config = opt["setup_config"]
+    def read_exposure(self, fn):
+        """_summary_"""
 
-        # Store the hazard information.
-        config["hazard"] = {}
-        for hazard_dict in [opt[key] for key in opt.keys() if "hazard" in key]:
-            hazard_dict.update(
-                {"map_fn": config["hazard_dp"].joinpath(hazard_dict["map_fn"])}
-            )
-            if hazard_dict["map_type"] not in config["hazard"].keys():
-                config["hazard"][hazard_dict["map_type"]] = {
-                    hazard_dict["map_fn"].stem: hazard_dict,
-                }
-            else:
-                config["hazard"][hazard_dict["map_type"]].update(
-                    {
-                        hazard_dict["map_fn"].stem: hazard_dict,
-                    }
-                )
+        path = Path(fn)
+        self.logger.debug(f"Reading file {str(path)}")
+        _fn = Path(self.root) / path
+        if not _fn.is_file():
+            logging.warning(f"File {_fn} does not exist!")
 
-        # Store the exposure information.
-        config["exposure"] = opt["setup_exposure"]
-
-        return config
+        if path.name.endswith("csv"):
+            self.exposure = ExposureVector()
+            self.exposure.read(_fn)
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
