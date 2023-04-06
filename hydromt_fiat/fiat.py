@@ -255,7 +255,10 @@ class FiatModel(GridModel):
         # self.read_grid(fn="hazard/{name}.nc")
 
         # Read the exposure data
-        self.read_exposure()
+        self.read_exposure(Path(self.root).joinpath("exposure", "exposure.csv"))
+
+        # Read the vulnerability data
+        self.read_vulnerability()
 
     def _configread(self, fn):
         """Parse fiat configuration toml file to dict."""
@@ -277,6 +280,9 @@ class FiatModel(GridModel):
         if path.name.endswith("csv"):
             self.exposure = ExposureVector()
             self.exposure.read(_fn)
+
+    def read_vulnerability(self, fn):
+        NotImplemented
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""

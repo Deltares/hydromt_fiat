@@ -47,7 +47,7 @@ class ExposureVector(Exposure):
     }
 
     def __init__(
-        self, data_catalog: DataCatalog, region: gpd.GeoDataFrame = None
+        self, data_catalog: DataCatalog = None, region: gpd.GeoDataFrame = None
     ) -> None:
         """_summary_
 
@@ -140,6 +140,113 @@ class ExposureVector(Exposure):
             # Set the Ground Floor Height to 0 if the user did not specify any
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
+
+    def measure_raise_property(self):
+        # The measure is to raise selected properties.
+        # The user has submitted with how much the properties should be raised.
+        """
+        object_ids_file = open(scenario_dict['input_path'] / 'measures' / measure['name'] / 'object_ids.txt', 'r')
+        object_ids = [int(i) for i in object_ids_file.read().split(',')]
+        all_objects_modified.extend(object_ids)
+        modified_objects = exposure.loc[exposure['Object ID'].isin(object_ids)]
+        raise_to = float(measure['elevation'])
+
+        logging.info("Raising {} properties with {} ft.".format(len(object_ids), raise_to))
+
+        if measure['elevation_type'] == 'datum':
+            # Elevate the object with 'raise_to'
+            logging.info("Raising properties relative to Datum or DEM (depending where your exposure database is referenced to).")
+            # modified_objects.loc[:, 'First Floor Elevation'] = modified_objects['First Floor Elevation'] + raise_to  # OLD METHOD
+            modified_objects.loc[modified_objects['First Floor Elevation'] < raise_to, 'First Floor Elevation'] = raise_to
+
+        else:  # TODO: make cleaner in the code, specify 'BFE' instead of else and give an error is something else is specified
+            # Elevate the objects relative to the surface water elevation map that the user submitted.
+            path_bfe = get_path_bfe(scenario_dict)
+            col_bfe = 'STATIC_BFE'
+            logging.info("Raising properties relative to {}, with column {}.".format(path_bfe.stem, col_bfe))
+
+            modified_objects = raise_relative_to_floodmap(modified_objects, col_bfe, raise_to, config_data,
+                                                          scenario_dict)
+
+        # Change the modified objects in the exposure_modification dataframe
+        exposure_modification = exposure_modification.append(modified_objects, ignore_index=True)
+        """
+
+    def measure_floodproof(self):
+        """
+        # The measure is to floodproof selected properties.
+        object_ids_file = open(scenario_dict['input_path'] / 'measures' / measure['name'] / 'object_ids.txt', 'r')
+        object_ids = [int(i) for i in object_ids_file.read().split(',')]
+        all_objects_modified.extend(object_ids)
+        modified_objects = exposure.loc[exposure['Object ID'].isin(object_ids)]
+
+        # The user can submit with how much feet the properties should be floodproofed and the damage function
+        # is truncated to that level.
+        floodproof_to = float(measure['elevation'])
+        truncate_to = floodproof_to + 0.01
+        df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
+        logging.info("Floodproofing {} properties for {} ft of water.".format(len(object_ids), floodproof_to))
+
+        # Create a new folder in the scenario results folder to save the truncated damage functions.
+        scenario_dict['results_scenario_path'].joinpath("damage_functions").mkdir(parents=True, exist_ok=True)
+
+        # Open the configuration file in the Damage Functions tab and save the new damage function information.
+        config_file = load_workbook(config_data['config_path'])
+        sheet = config_file['Damage Functions']
+
+        # Find all damage functions that should be modified and truncate with floodproof_to.
+        for df_type in df_types:
+            dfs_to_modify = [d for d in list(modified_objects[df_type].unique()) if d == d]
+            if dfs_to_modify:
+                for df in dfs_to_modify:
+                    df_path = config_data['damage_function_files'][config_data['damage_function_ids'].index(df)]
+                    damfunc = pd.read_csv(df_path)
+                    closest_wd_idx = damfunc.iloc[
+                        (damfunc['wd[ft]'] - truncate_to).abs().argsort()[:2]].index.tolist()
+                    line = pd.DataFrame({"wd[ft]": truncate_to, "factor": None}, index=[closest_wd_idx[0]])
+                    damfunc = pd.concat([damfunc.iloc[:closest_wd_idx[0]], line, damfunc.iloc[closest_wd_idx[0]:]]).reset_index(drop=True)
+                    damfunc.set_index("wd[ft]", inplace=True)
+                    damfunc.interpolate(method='index', axis=0, inplace=True)
+                    damfunc.reset_index(inplace=True)
+
+                    closest_wd_idx = damfunc.iloc[
+                        (damfunc['wd[ft]'] - floodproof_to).abs().argsort()[:2]].index.tolist()
+                    line = pd.DataFrame({"wd[ft]": floodproof_to, "factor": 0.0}, index=[closest_wd_idx[0]])
+                    damfunc = pd.concat(
+                        [damfunc.iloc[:closest_wd_idx[0]], line, damfunc.iloc[closest_wd_idx[0]:]]).reset_index(
+                        drop=True)
+                    damfunc.loc[damfunc['wd[ft]'] < truncate_to, 'factor'] = 0.0
+
+                    # Save the truncated damage function to the damage functions folder
+                    path_new_df = scenario_dict['results_scenario_path'] / "damage_functions" / (df + df_name_suffix + '.csv')
+                    damfunc.to_csv(path_new_df, index=False)
+
+                    # Add the truncated damage function information to the configuration file
+                    sheet.append((df + df_name_suffix, str(path_new_df), 'average'))
+
+        # Save the configuration file.
+        config_file.save(config_data['config_path'])
+
+        # Rename the damage function names in the exposure data file
+        modified_objects[df_types] = modified_objects[df_types] + df_name_suffix
+
+        # Add the modified objects to the exposure_modification dataframe
+        exposure_modification = exposure_modification.append(modified_objects, ignore_index=True)
+        """
+
+    def measure_buyout_property(self):
+        """
+        # The measure is to buy out selected properties.
+        object_ids_file = open(scenario_dict['input_path'] / 'measures' / measure['name'] / 'object_ids.txt', 'r')
+        object_ids = [int(i) for i in object_ids_file.read().split(',')]
+        all_objects_modified.extend(object_ids)
+
+        print("Buying out {} properties.".format(len(object_ids)))
+
+        modified_objects = exposure.loc[exposure['Object ID'].isin(object_ids)]
+        modified_objects.loc[:, 'Buyout (1=yes)'] = 1
+        exposure_modification = exposure_modification.append(modified_objects, ignore_index=True)
+        """
 
     def setup_aggregation_labels(self):
         NotImplemented
