@@ -39,6 +39,7 @@ class ExposureVector(Exposure):
         super().__init__(data_catalog=data_catalog, region=region)
         self.exposure = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
+        self.crs = ""
 
     def setup_from_single_source(
         self, source: str, ground_floor_height: Union[int, float, str, None]
@@ -52,6 +53,8 @@ class ExposureVector(Exposure):
         """
         if source == "NSI":
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+            source_data_authority = source_data.crs.to_authority()
+            self.crs = source_data_authority[0] + ":" + source_data_authority[1]
 
             # Check if the 'fid' attribute can be used as unique ID
             if len(source_data.index) != len(set(source_data["fid"])):

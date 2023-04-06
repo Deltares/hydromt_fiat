@@ -5,7 +5,7 @@ from hydromt_fiat.workflows.hazard import Hazard
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
-from configparser import ConfigParser
+from hydromt_fiat.configparser import ConfigParser
 import geopandas as gpd
 import pandas as pd
 import hydromt
@@ -50,6 +50,15 @@ class FiatModel(GridModel):
             logger=logger,
         )
         self.tables = []  # List of tables to write
+
+    def setup_config(self, **kwargs):
+        """_summary_"""
+        # Setup config from HydroMT FIAT ini file
+        global_settings = {}
+        for k in kwargs.keys():
+            global_settings[k] = kwargs[k]
+
+        self.config["global"] = global_settings
 
     def setup_basemaps(
         self,
@@ -113,15 +122,19 @@ class FiatModel(GridModel):
                 vulnerability_identifiers_and_linking
             )
         )
+        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
         self.tables.append(
             (
                 vul.get_vulnerability_functions_from_one_file(
                     vf_source_df, self.vf_ids_and_linking_df, unit
                 ),
-                "./vulnerability/vulnerability_curves.csv",
+                vulnerability_output_path,
                 {"index": False, "header": False},
             )
         )
+
+        # Store the remaining exposure and vulnerability settings.
+        self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
 
     def setup_exposure_vector(
         self,
@@ -150,7 +163,14 @@ class FiatModel(GridModel):
         ev.check_required_columns()
 
         # Save the exposure data in the geoms
-        self.tables.append((ev.exposure, "./exposure/exposure.csv", {"index": False}))
+        exposure_output_path = "./exposure/exposure.csv"
+        self.tables.append((ev.exposure, exposure_output_path, {"index": False}))
+
+        # Store the exposure settings.
+        self.config["exposure"] = {
+            "dbase_file": exposure_output_path,
+            "crs": ev.crs,
+        }
 
     def setup_exposure_raster(self):
         NotImplemented
@@ -167,7 +187,8 @@ class FiatModel(GridModel):
         risk_output: bool = True,
         hazard_type: str = "flooding",
     ):
-        Hazard().setup_hazard(
+        hazard = Hazard()
+        hazard.setup_hazard(
             self,
             hazard_type=hazard_type,
             risk_output=risk_output,
@@ -180,6 +201,24 @@ class FiatModel(GridModel):
             chunks=chunks,
             region=self.region,
         )
+
+        # Store the hazard settings.
+        hazard_settings = {}
+        hazard_maps = []
+        for hazard_map in self.maps.keys():
+            hazard_maps.append(
+                str(Path("hazard") / (self.maps[hazard_map].name + ".nc"))
+            )
+
+        hazard_settings["grid_file"] = hazard_maps
+
+        if not isinstance(rp, list):
+            rp = "Event"
+        hazard_settings["return_period"] = rp
+
+        hazard_settings["crs"] = hazard.crs
+        hazard_settings["spatial_reference"] = map_type
+        self.config["hazard"] = hazard_settings
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -212,7 +251,8 @@ class FiatModel(GridModel):
         self.read_geoms()
 
     def _configread(self, fn):
-        """Parse fiat_configuration.ini to dict."""
+        """Parse fiat configuration toml file to dict."""
+        # TODO: update to FIAT toml file
 
         # Read and parse the fiat_configuration.ini.
         opt = parse_config(fn)
@@ -279,28 +319,5 @@ class FiatModel(GridModel):
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
-        # TODO: change function to new Delft-FIAT configuration toml file.
-        parser = ConfigParser()
-
-        # Store the general information.
-        parser["setup_config"] = {
-            "case": str(self.config.get("case")),
-            "strategy": str(self.config.get("strategy")),
-            "scenario": str(self.config.get("scenario")),
-            "year": str(self.config.get("year")),
-            "country": str(self.get_config("country")),
-            "hazard_type": str(self.config.get("hazard_type")),
-            "output_unit": str(self.config.get("output_unit")),
-            # "hazard_dp": str(self.config.get("hazard_dp").name),
-            # "exposure_dp": str(self.config.get("exposure_dp").name),
-            # "vulnerability_dp": str(self.config.get("vulnerability_dp").name),
-            # "output_dp": str(self.config.get("output_dp").name),
-            "category_output": str(self.config.get("category_output")),
-            "total_output": str(self.config.get("total_output")),
-            "risk_output": str(self.config.get("risk_output")),
-            "map_output": str(self.config.get("map_output")),
-        }
-
-        # # Save the configuration file.
-        # with open(self.root.joinpath(self._CONF), "w") as config:
-        #     parser.write(config)
+        # Save the configuration file.
+        ConfigParser().save(self.config, Path(self.root).joinpath("settings.toml"))
