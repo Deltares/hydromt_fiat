@@ -1,3 +1,4 @@
+from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
@@ -65,7 +66,7 @@ class ExposureVector(Exposure):
         self.crs = ""
 
     def read(self, fn):
-        # Read the exposure data and create a modified exposure dataframe.
+        # Read the exposure data.
         csv_delimiter = detect_delimiter(fn)
         self.exposure_db = pd.read_csv(
             fn, delimiter=csv_delimiter, dtype=self._CSV_COLUMN_DATATYPES, engine="c"
@@ -279,17 +280,3 @@ class ExposureVector(Exposure):
                 assert col.format("Structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
-
-
-def detect_delimiter(csvFile):
-    """From stackoverflow
-    https://stackoverflow.com/questions/16312104/can-i-import-a-csv-file-and-automatically-infer-the-delimiter
-    """
-    with open(csvFile, "r") as myCsvfile:
-        header = myCsvfile.readline()
-        if header.find(";") != -1:
-            return ";"
-        if header.find(",") != -1:
-            return ","
-    # default delimiter (MS Office export)
-    return ";"

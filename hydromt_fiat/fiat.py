@@ -257,8 +257,10 @@ class FiatModel(GridModel):
         # Read the exposure data
         self.read_exposure(Path(self.root).joinpath("exposure", "exposure.csv"))
 
-        # Read the vulnerability data
-        self.read_vulnerability()
+        # Read the vulnerability data (TODO: implement)
+        self.read_vulnerability(
+            Path(self.root).joinpath("vulnerability", "vulnerability_curves.csv")
+        )
 
     def _configread(self, fn):
         """Parse fiat configuration toml file to dict."""
@@ -268,18 +270,18 @@ class FiatModel(GridModel):
         parser = ConfigParser()
         return parser.load_file(fn)
 
+    def check_path_exists(self, fn):
+        """TODO: decide to use this or another function (check_file_exist in validation.py)"""
+        path = Path(fn)
+        self.logger.debug(f"Reading file {str(path.name)}")
+        if not fn.is_file():
+            logging.warning(f"File {fn} does not exist!")
+
     def read_exposure(self, fn):
         """_summary_"""
-
-        path = Path(fn)
-        self.logger.debug(f"Reading file {str(path)}")
-        _fn = Path(self.root) / path
-        if not _fn.is_file():
-            logging.warning(f"File {_fn} does not exist!")
-
-        if path.name.endswith("csv"):
-            self.exposure = ExposureVector()
-            self.exposure.read(_fn)
+        self.check_path_exists(fn)
+        self.exposure = ExposureVector()
+        self.exposure.read(fn)
 
     def read_vulnerability(self, fn):
         NotImplemented
