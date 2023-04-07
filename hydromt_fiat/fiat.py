@@ -5,7 +5,7 @@ from hydromt_fiat.workflows.hazard import Hazard
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
-from hydromt_fiat.configparser import ConfigParser
+from hydromt_fiat.config import Config
 import geopandas as gpd
 import pandas as pd
 import hydromt
@@ -267,8 +267,8 @@ class FiatModel(GridModel):
         # TODO: update to FIAT toml file
 
         # Read the fiat configuration toml file.
-        parser = ConfigParser()
-        return parser.load_file(fn)
+        config = Config()
+        return config.load_file(fn)
 
     def check_path_exists(self, fn):
         """TODO: decide to use this or another function (check_file_exist in validation.py)"""
@@ -324,4 +324,4 @@ class FiatModel(GridModel):
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
-        ConfigParser().save(self.config, Path(self.root).joinpath("settings.toml"))
+        Config().save(self.config, Path(self.root).joinpath("settings.toml"))
