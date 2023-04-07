@@ -6,7 +6,7 @@ import pytest
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
 _cases = {
-    "integration": {
+    "read": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_read",
         "ini": EXAMPLEDIR / "test_read.ini",

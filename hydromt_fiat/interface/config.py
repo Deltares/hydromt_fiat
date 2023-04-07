@@ -25,7 +25,7 @@ class OutputModel(BaseModel):
 
 
 class HazardModel(BaseModel):
-    grid_file: Union[str, os.PathLike]
+    grid_file: str
     crs: str
     mode: Mode
     return_periods: Optional[List[int]]
@@ -33,12 +33,12 @@ class HazardModel(BaseModel):
 
 
 class ExposureModel(BaseModel):
-    dbase_file: Union[str, os.PathLike]
+    dbase_file: str
     crs: str
 
 
 class VulnerabilityModel(BaseModel):
-    dbase_file: Union[str, os.PathLike]
+    dbase_file: str
 
 
 class ConfigModel(BaseModel):
