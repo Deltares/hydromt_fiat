@@ -5,8 +5,10 @@ import geopandas as gpd
 import pandas as pd
 import json
 import geopandas as gpd
+from pathlib import Path
 import json
-from typing import Union
+from typing import Union, List
+import logging
 
 
 class ExposureVector(Exposure):
@@ -48,22 +50,26 @@ class ExposureVector(Exposure):
     }
 
     def __init__(
-        self, data_catalog: DataCatalog = None, region: gpd.GeoDataFrame = None
+        self,
+        data_catalog: DataCatalog = None,
+        region: gpd.GeoDataFrame = None,
+        crs: str = None,
     ) -> None:
         """_summary_
 
         Parameters
         ----------
-        data_catalog : DataCatalog
-            _description_
+        data_catalog : DataCatalog, optional
+            _description_, by default None
         region : gpd.GeoDataFrame, optional
             _description_, by default None
+        crs : str, optional
+            _description_, by default None
         """
-        super().__init__(data_catalog=data_catalog, region=region)
+        super().__init__(data_catalog=data_catalog, region=region, crs=crs)
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
-        self.crs = ""
 
     def read(self, fn):
         # Read the exposure data.
@@ -125,53 +131,83 @@ class ExposureVector(Exposure):
     def setup_max_potential_damage(self):
         NotImplemented
 
-    def setup_extraction_method(self, extraction_method):
+    def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
 
-    def setup_ground_floor_height(self, ground_floor_height):
-        # If the Ground Floor Height is input as a number, assign all objects with
-        # the same Ground Floor Height.
-        if ground_floor_height:
-            if type(ground_floor_height) == int or type(ground_floor_height) == float:
-                self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif type(ground_floor_height) == str:
-                # TODO: implement the option to add the ground floor height from a file.
-                NotImplemented
+    def setup_ground_floor_height(
+        self,
+        objectids: Union[List[int], str],
+        ground_floor_height: Union[int, float],
+        height_reference: str = "",
+        reference_geom_path: str = "",
+        reference_geom_colname: str = "STATIC_BFE",
+    ) -> None:
+        # Check if the Ground Floor Height column already exists
+        if "Ground Floor Height" in self.exposure_db.columns:
+            # Update the ground floor height column
+            logging.info(
+                "Setting the ground floor height of {} properties to {}.".format(
+                    len(objectids), ground_floor_height
+                )
+            )
+
+            # Check if the objectids contain all Object IDs in the exposure data (all data is selected)
+            if objectids.lower() == "all":
+                # All data is selected
+                idx = self.exposure_db.index
+            else:
+                idx = self.exposure_db.loc[
+                    self.exposure_db["Object ID"].isin(objectids)
+                ].index
+
+            if height_reference.lower() == "datum":
+                # Elevate the object with 'raise_to'
+                logging.info(
+                    "Setting the ground floor height of the properties relative to Datum."
+                )
+                self.exposure_db.loc[
+                    self.exposure_db["Ground Floor Height"] < ground_floor_height,
+                    "Ground Floor Height",
+                ].iloc[idx] = ground_floor_height
+
+            elif height_reference.lower() == "shp":
+                # Elevate the objects relative to the surface water elevation map that the user submitted.
+                logging.info(
+                    f"Setting the ground floor height of the properties relative to {Path(reference_geom_path).stem}, with column {reference_geom_colname}."
+                )
+
+                self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
+                self.exposure_db.iloc[idx] = self.set_height_relative_to_geom(
+                    self.exposure_db.iloc[idx],
+                    reference_geom_path,
+                    reference_geom_colname,
+                    ground_floor_height,
+                    self.crs,
+                )
+
+            else:
+                logging.warning(
+                    f"The height reference of the Ground Floor Height is set to '{height_reference}'. "
+                    "This is not one of the allowed height references. Set the height reference to 'Datum' or 'BFE'."
+                )
+
         else:
-            # Set the Ground Floor Height to 0 if the user did not specify any
-            # Ground Floor Height.
-            self.exposure_db["Ground Floor Height"] = 0
-
-    def measure_raise_property(self):
-        # The measure is to raise selected properties.
-        # The user has submitted with how much the properties should be raised.
-        """
-        object_ids_file = open(scenario_dict['input_path'] / 'measures' / measure['name'] / 'object_ids.txt', 'r')
-        object_ids = [int(i) for i in object_ids_file.read().split(',')]
-        all_objects_modified.extend(object_ids)
-        modified_objects = exposure.loc[exposure['Object ID'].isin(object_ids)]
-        raise_to = float(measure['elevation'])
-
-        logging.info("Raising {} properties with {} ft.".format(len(object_ids), raise_to))
-
-        if measure['elevation_type'] == 'datum':
-            # Elevate the object with 'raise_to'
-            logging.info("Raising properties relative to Datum or DEM (depending where your exposure database is referenced to).")
-            # modified_objects.loc[:, 'First Floor Elevation'] = modified_objects['First Floor Elevation'] + raise_to  # OLD METHOD
-            modified_objects.loc[modified_objects['First Floor Elevation'] < raise_to, 'First Floor Elevation'] = raise_to
-
-        else:  # TODO: make cleaner in the code, specify 'BFE' instead of else and give an error is something else is specified
-            # Elevate the objects relative to the surface water elevation map that the user submitted.
-            path_bfe = get_path_bfe(scenario_dict)
-            col_bfe = 'STATIC_BFE'
-            logging.info("Raising properties relative to {}, with column {}.".format(path_bfe.stem, col_bfe))
-
-            modified_objects = raise_relative_to_floodmap(modified_objects, col_bfe, raise_to, config_data,
-                                                          scenario_dict)
-
-        # Change the modified objects in the exposure_modification dataframe
-        exposure_modification = exposure_modification.append(modified_objects, ignore_index=True)
-        """
+            # Set the ground floor height column.
+            # If the Ground Floor Height is input as a number, assign all objects with
+            # the same Ground Floor Height.
+            if ground_floor_height:
+                if (
+                    type(ground_floor_height) == int
+                    or type(ground_floor_height) == float
+                ):
+                    self.exposure_db["Ground Floor Height"] = ground_floor_height
+                elif type(ground_floor_height) == str:
+                    # TODO: implement the option to add the ground floor height from a file.
+                    NotImplemented
+            else:
+                # Set the Ground Floor Height to 0 if the user did not specify any
+                # Ground Floor Height.
+                self.exposure_db["Ground Floor Height"] = 0
 
     def measure_floodproof(self):
         """
@@ -268,6 +304,20 @@ class ExposureVector(Exposure):
             "Secondary Object Type"
         ].map(linking_dict)
 
+    def get_object_ids(self):
+        NotImplemented
+
+    def get_geoms_from_xy(self):
+        exposure_geoms = gpd.GeoDataFrame(
+            {
+                "Object ID": self.exposure_db["Object ID"],
+                "geometry": gpd.points_from_xy(
+                    self.exposure_db["X Coordinate"], self.exposure_db["Y Coordinate"]
+                ),
+            }
+        )
+        self.exposure_geoms = exposure_geoms
+
     def check_required_columns(self):
         for col in self._REQUIRED_COLUMNS:
             try:
@@ -280,3 +330,48 @@ class ExposureVector(Exposure):
                 assert col.format("Structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
+
+    def set_height_relative_to_geom(
+        self,
+        exposure_to_modify: gpd.GeoDataFrame,
+        path_geom: str,
+        col_geom: str,
+        raise_with: Union[int, float],
+        out_crs,
+    ) -> gpd.GeoDataFrame:
+        """
+        Step 1: Read the reference shapefile and read its georeference
+        Step 2: Reproject the exposure data to the CRS of the geom file if necessary.
+        Step 3: Do a spatial join between the two datasets.
+        Step 4: Set the ground floor height the objects that are raised to the height of the geom file PLUS raise_with
+
+        Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
+        """
+        reference_shp = gpd.read_file(path_geom)
+
+        # Reproject the input flood map if necessary
+        if str(reference_shp.crs).upper() != str(out_crs).upper():
+            reference_shp = reference_shp.to_crs(out_crs)
+
+        # Spatially join the data
+        modified_objects_gdf = gpd.sjoin(
+            self.exposure_geoms,
+            reference_shp[[col_geom, "geometry"]],
+            how="left",
+        )
+        modified_objects_gdf["value"] = [
+            bfe if bfe > 0 else 0 for bfe in modified_objects_gdf[col_geom]
+        ]
+
+        # Sort and add the elevation to the shp values, append to the exposure dataframe.
+        # To be able to append the values from the GeoDataFrame to the DataFrame, it must be sorted on the Object ID.
+        modified_objects_gdf = (
+            modified_objects_gdf.groupby("Object ID").max("value").reset_index()
+        )
+        modified_objects_gdf = modified_objects_gdf.sort_values(by=["Object ID"])
+        exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"])
+        exposure_to_modify.loc[:, "Ground Floor Height"] = list(
+            modified_objects_gdf.loc[:, "value"] + raise_with
+        )
+
+        return exposure_to_modify

@@ -122,12 +122,14 @@ class FiatModel(GridModel):
                 vulnerability_identifiers_and_linking
             )
         )
+        self.vulnerability = vul.get_vulnerability_functions_from_one_file(
+            vf_source_df, self.vf_ids_and_linking_df, unit
+        )
+
         vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
         self.tables.append(
             (
-                vul.get_vulnerability_functions_from_one_file(
-                    vf_source_df, self.vf_ids_and_linking_df, unit
-                ),
+                self.vulnerability,
                 vulnerability_output_path,
                 {"index": False, "header": False},
             )
@@ -165,7 +167,7 @@ class FiatModel(GridModel):
         # Save the exposure data in the geoms
         exposure_output_path = "./exposure/exposure.csv"
         self.tables.append(
-            (self.exposure.exposure, exposure_output_path, {"index": False})
+            (self.exposure.exposure_db, exposure_output_path, {"index": False})
         )
 
         # Store the exposure settings.
@@ -280,11 +282,28 @@ class FiatModel(GridModel):
     def read_exposure(self, fn):
         """_summary_"""
         self.check_path_exists(fn)
-        self.exposure = ExposureVector()
+        self.exposure = ExposureVector(crs=self.config["exposure"]["crs"])
         self.exposure.read(fn)
 
+        # Save the exposure data in the geoms
+        exposure_output_path = "./exposure/exposure.csv"
+        self.tables.append(
+            (self.exposure.exposure_db, exposure_output_path, {"index": False})
+        )
+
     def read_vulnerability(self, fn):
-        NotImplemented
+        self.check_path_exists(fn)
+        self.vulnerability = Vulnerability()
+        self.vulnerability.read(fn)
+
+        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
+        self.tables.append(
+            (
+                self.vulnerability,
+                vulnerability_output_path,
+                {"index": False, "header": False},
+            )
+        )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
