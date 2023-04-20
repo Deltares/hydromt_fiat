@@ -1,6 +1,7 @@
 from hydromt_fiat.fiat import FiatModel
 from pathlib import Path
 import pytest
+import shutil
 
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
@@ -41,7 +42,8 @@ def test_set_ground_floor_height(case):
         reference_geom_colname="bfe",
     )
 
+    if _cases[case]["new_root"].exists:
+        shutil.rmtree(_cases[case]["new_root"])
+
     fm.set_root(_cases[case]["new_root"])
     fm.write()
-
-    print("Bla")

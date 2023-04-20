@@ -227,7 +227,6 @@ class FiatModel(GridModel):
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
     ):
-
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
@@ -259,7 +258,7 @@ class FiatModel(GridModel):
         # Read the exposure data
         self.read_exposure(Path(self.root).joinpath("exposure", "exposure.csv"))
 
-        # Read the vulnerability data (TODO: implement)
+        # Read the vulnerability data
         self.read_vulnerability(
             Path(self.root).joinpath("vulnerability", "vulnerability_curves.csv")
         )
@@ -299,7 +298,7 @@ class FiatModel(GridModel):
         vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
         self.tables.append(
             (
-                self.vulnerability,
+                self.vulnerability.vulnerability,
                 vulnerability_output_path,
                 {"index": False, "header": False},
             )
@@ -323,7 +322,7 @@ class FiatModel(GridModel):
             self.logger.debug("No table data found, skip writing.")
             return
         self._assert_write_mode
-        for (data, path, kwargs) in self.tables:
+        for data, path, kwargs in self.tables:
             path = Path(path)
             if not isinstance(data, (pd.DataFrame)) or len(data.index) == 0:
                 self.logger.warning(
