@@ -249,6 +249,8 @@ class FiatModel(GridModel):
     def read(self):
         """Method to read the complete model schematization and configuration from file."""
         self.logger.info(f"Reading model data from {self.root}")
+
+        # Read the configuration file
         self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
 
         # TODO: determine if it is required to read the hazard files

@@ -62,3 +62,4 @@ class IConfig(ABC):
     @abstractmethod
     def save(self, filepath: Union[str, os.PathLike]):
         """Save Delft-FIAT config attributes to a Delft-FIAT settings toml file."""
+        ...

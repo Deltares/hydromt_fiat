@@ -42,7 +42,7 @@ def test_set_ground_floor_height(case):
         reference_geom_colname="bfe",
     )
 
-    if _cases[case]["new_root"].exists:
+    if _cases[case]["new_root"].exists():
         shutil.rmtree(_cases[case]["new_root"])
 
     fm.set_root(_cases[case]["new_root"])
