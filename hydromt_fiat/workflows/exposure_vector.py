@@ -192,8 +192,15 @@ class ExposureVector(Exposure):
 
     def raise_ground_floor_height(
         self,
-        objectids: Union[List[int], str],
         raise_by: Union[int, float],
+        selection_type: str,
+        property_type: Optional[str] = None,
+        non_building_names: Optional[List[str]] = None,
+        aggregation: Optional[str] = None,
+        aggregation_area_name: Optional[str] = None,
+        polygon_file: Optional[str] = None,
+        list_file: Optional[str] = None,
+        objectids: Optional[List[int]] = None,
         height_reference: str = "",
         reference_geom_path: str = "",
         reference_geom_attrname: str = "STATIC_BFE",
@@ -211,7 +218,16 @@ class ExposureVector(Exposure):
             f"Setting the ground floor height of {len(objectids)} properties to {raise_by}."
         )
 
-        idx = self.get_object_idx(selection_type="list", objectids=objectids)
+        idx = self.get_object_idx(
+            selection_type,
+            property_type,
+            non_building_names,
+            aggregation,
+            aggregation_area_name,
+            polygon_file,
+            list_file,
+            objectids,
+        )
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
