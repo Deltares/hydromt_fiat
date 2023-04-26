@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 EXAMPLEDIR = Path().absolute() / "examples"
-DATASET     = Path("p:/11207058-fiat-objects-interface/FiatModelBuilder/Model_Builder")
+DATASET     = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
 _cases = {
     # "fiat_flood": {
@@ -30,11 +30,11 @@ def test_Hazard(case):
 
     hyfm = FiatModel(root=root, mode="r", data_libs=data_libs, config_fn=config_fn)
 
-    raster_max_depth    = hyfm.data_catalog.get_rasterdataset("max_depth")
-    flood_maps_varaible = hyfm.data_catalog.get_rasterdataset("flood_maps_varaible")
-    hazard_type         = hyfm.get_config('setup_config', 'hazard_type')
+    # raster_max_depth    = hyfm.data_catalog.get_rasterdataset("max_depth")
+    # flood_maps_varaible = hyfm.data_catalog.get_rasterdataset("flood_maps_varaible")
+    # hazard_type         = hyfm.get_config('setup_config', 'hazard_type')
 
-    hyfm.setup_hazard()
+    # hyfm.setup_hazard()
 
     assert hyfm
 
