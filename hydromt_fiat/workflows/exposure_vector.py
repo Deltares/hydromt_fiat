@@ -1,3 +1,4 @@
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
@@ -210,7 +211,7 @@ class ExposureVector(Exposure):
             f"Setting the ground floor height of {len(objectids)} properties to {raise_by}."
         )
 
-        idx = self.get_object_ids(objectids=objectids)
+        idx = self.get_object_idx(selection_type="list", objectids=objectids)
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
@@ -220,7 +221,7 @@ class ExposureVector(Exposure):
             self.exposure_db.loc[
                 self.exposure_db["Ground Floor Height"] < raise_by,
                 "Ground Floor Height",
-            ].iloc[idx] = raise_by
+            ].iloc[idx, :] = raise_by
 
         elif height_reference.lower() == "geom":
             # Elevate the objects relative to the surface water elevation map that the user submitted.
@@ -261,74 +262,64 @@ class ExposureVector(Exposure):
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
 
-    def truncate_damage_function(self):
-        # The measure is to floodproof selected properties.
-        object_ids_file = open(
-            scenario_dict["input_path"]
-            / "measures"
-            / measure["name"]
-            / "object_ids.txt",
-            "r",
+    def truncate_damage_function(
+        self,
+        objectids: Union[List[int], str],
+        floodproof_to: Union[int, float],
+        damage_function_types: List[str],
+        vulnerability: Vulnerability,
+    ):
+        logging.info(
+            f"Floodproofing {len(objectids)} properties for {floodproof_to} ft of water."
         )
-        object_ids = [int(i) for i in object_ids_file.read().split(",")]
-        all_objects_modified.extend(object_ids)
-        modified_objects = exposure.loc[exposure["Object ID"].isin(object_ids)]
 
         # The user can submit with how much feet the properties should be floodproofed and the damage function
         # is truncated to that level.
-        floodproof_to = float(measure["elevation"])
         truncate_to = floodproof_to + 0.01
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
-        logging.info(
-            "Floodproofing {} properties for {} ft of water.".format(
-                len(object_ids), floodproof_to
-            )
-        )
 
-        # Create a new folder in the scenario results folder to save the truncated damage functions.
-        scenario_dict["results_scenario_path"].joinpath("damage_functions").mkdir(
-            parents=True, exist_ok=True
-        )
-
-        # Open the configuration file in the Damage Functions tab and save the new damage function information.
-        config_file = load_workbook(config_data["config_path"])
-        sheet = config_file["Damage Functions"]
+        idx = self.get_object_idx(selection_type="list", objectids=objectids)
 
         # Find all damage functions that should be modified and truncate with floodproof_to.
-        for df_type in df_types:
+        for df_type in damage_function_types:
             dfs_to_modify = [
-                d for d in list(modified_objects[df_type].unique()) if d == d
+                d
+                for d in list(
+                    self.exposure_db.iloc[idx, :][
+                        f"Damage Function: {df_type}"
+                    ].unique()
+                )
+                if d == d
             ]
             if dfs_to_modify:
-                for df in dfs_to_modify:
-                    df_path = config_data["damage_function_files"][
-                        config_data["damage_function_ids"].index(df)
-                    ]
-                    damfunc = pd.read_csv(df_path)
+                for df_name in dfs_to_modify:
+                    damfunc = vulnerability.functions[df_name]
                     closest_wd_idx = damfunc.iloc[
-                        (damfunc["wd[ft]"] - truncate_to).abs().argsort()[:2]
+                        (vulnerability.hazard_values - truncate_to).abs().argsort()[:2]
                     ].index.tolist()
                     line = pd.DataFrame(
-                        {"wd[ft]": truncate_to, "factor": None},
-                        index=[closest_wd_idx[0]],
+                        {vulnerability.hazard_name: truncate_to, df_name: None},
+                        index=[closest_wd_idx[1]],
                     )
                     damfunc = pd.concat(
                         [
-                            damfunc.iloc[: closest_wd_idx[0]],
+                            damfunc.iloc[: closest_wd_idx[1]],
                             line,
-                            damfunc.iloc[closest_wd_idx[0] :],
+                            damfunc.iloc[closest_wd_idx[1] :],
                         ]
                     ).reset_index(drop=True)
-                    damfunc.set_index("wd[ft]", inplace=True)
+                    damfunc.set_index(vulnerability.hazard_name, inplace=True)
                     damfunc.interpolate(method="index", axis=0, inplace=True)
                     damfunc.reset_index(inplace=True)
 
                     closest_wd_idx = damfunc.iloc[
-                        (damfunc["wd[ft]"] - floodproof_to).abs().argsort()[:2]
+                        (damfunc[vulnerability.hazard_name] - floodproof_to)
+                        .abs()
+                        .argsort()[:2]
                     ].index.tolist()
                     line = pd.DataFrame(
-                        {"wd[ft]": floodproof_to, "factor": 0.0},
-                        index=[closest_wd_idx[0]],
+                        {vulnerability.hazard_name: floodproof_to, df_name: 0.0},
+                        index=[closest_wd_idx[1]],
                     )
                     damfunc = pd.concat(
                         [
@@ -337,27 +328,24 @@ class ExposureVector(Exposure):
                             damfunc.iloc[closest_wd_idx[0] :],
                         ]
                     ).reset_index(drop=True)
-                    damfunc.loc[damfunc["wd[ft]"] < truncate_to, "factor"] = 0.0
+                    damfunc.loc[
+                        damfunc[vulnerability.hazard_name] < truncate_to, df_name
+                    ] = 0.0
 
                     # Save the truncated damage function to the damage functions folder
-                    path_new_df = (
-                        scenario_dict["results_scenario_path"]
-                        / "damage_functions"
-                        / (df + df_name_suffix + ".csv")
-                    )
-                    damfunc.to_csv(path_new_df, index=False)
+                    new_df_name = df_name + df_name_suffix
+                    vulnerability.add(new_df_name, damfunc)
 
                     # Add the truncated damage function information to the configuration file
-                    sheet.append((df + df_name_suffix, str(path_new_df), "average"))
+                    # sheet.append((df + df_name_suffix, str(path_new_df), "average"))
 
         # Save the configuration file.
         config_file.save(config_data["config_path"])
 
         # Rename the damage function names in the exposure data file
-        modified_objects[df_types] = modified_objects[df_types] + df_name_suffix
-
-        # Add the modified objects to the exposure_modification dataframe
-        exposure_modification.append(modified_objects, ignore_index=True)
+        self.exposure_db.iloc[idx, :][damage_function_types] = (
+            self.exposure_db.iloc[idx, :][damage_function_types] + df_name_suffix
+        )
 
     def setup_aggregation_labels(self):
         NotImplemented
@@ -379,37 +367,33 @@ class ExposureVector(Exposure):
             return list(self.exposure_db["Secondary Object Type"].unique())
 
     def get_buildings(
-        self, type=Optional[str], non_building_names=Optional[list[str]]
+        self,
+        type: Optional[str] = None,
+        non_building_names: Optional[list[str]] = None,
     ) -> gpd.GeoDataFrame:
-        buildings = self.exposure_db.loc[
-            ~self.exposure_db["Primary Object Type"].isin(non_building_names), :
-        ]
+        buildings = self.exposure_db
+
+        if non_building_names:
+            buildings = buildings.loc[
+                ~buildings["Primary Object Type"].isin(non_building_names), :
+            ]
+
         if type:
-            if str(type).upper() != "ALL":
+            if str(type).lower() != "all":
                 buildings = buildings.loc[buildings["Primary Object Type"] == type, :]
 
         return buildings
 
-    def get_object_ids(self, objectids) -> list[Any]:
-        # Check if the objectids contain all Object IDs in the exposure data (all data is selected)
-        if objectids.lower() == "all":
-            # All data is selected
-            idx = self.exposure_db.index
-        else:
-            idx = self.exposure_db.loc[
-                self.exposure_db["Object ID"].isin(objectids)
-            ].index
-        return idx
-
-    def get_object_ids2(
+    def get_object_idx(
         self,
-        selection_type,
-        property_type,
-        non_building_names,
-        aggregation,
-        aggregation_area_name,
-        polygon_file,
-        list_file,
+        selection_type: str,
+        property_type: Optional[str] = None,
+        non_building_names: Optional[List[str]] = None,
+        aggregation: Optional[str] = None,
+        aggregation_area_name: Optional[str] = None,
+        polygon_file: Optional[str] = None,
+        list_file: Optional[str] = None,
+        objectids: Optional[List[int]] = None,
     ) -> list[Any]:
         """Get ids of objects that are affected by the measure.
         Returns
@@ -435,10 +419,10 @@ class ExposureVector(Exposure):
             polygon = gpd.read_file(polygon_file)
             idx = gpd.sjoin(buildings, polygon).index
         elif selection_type == "list":
-            objectids = pd.read_csv(list_file)  # TODO Implement better
-            idx = buildings.loc[self.exposure_db["Object ID"].isin(objectids)].index
+            # objectids = pd.read_csv(list_file)  # TODO Implement better
+            idx = buildings.loc[buildings["Object ID"].isin(objectids)].index
 
-        return list(idx)
+        return idx
 
     def get_geoms_from_xy(self):
         exposure_geoms = gpd.GeoDataFrame(

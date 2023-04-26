@@ -6,7 +6,7 @@ import shutil
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
 _cases = {
-    "read": {
+    "raise_ground_floor_height": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_read",
         "ini": EXAMPLEDIR / "test_read.ini",
