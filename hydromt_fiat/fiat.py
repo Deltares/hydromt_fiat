@@ -126,18 +126,6 @@ class FiatModel(GridModel):
             vf_source_df, self.vf_ids_and_linking_df, unit
         )
 
-        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
-        self.tables.append(
-            (
-                self.vulnerability,
-                vulnerability_output_path,
-                {"index": False, "header": False},
-            )
-        )
-
-        # Store the remaining exposure and vulnerability settings.
-        self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
-
     def setup_exposure_vector(
         self,
         asset_locations: str,
@@ -163,18 +151,6 @@ class FiatModel(GridModel):
             )
         self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df)
         self.exposure.check_required_columns()
-
-        # Save the exposure data in the geoms
-        exposure_output_path = "./exposure/exposure.csv"
-        self.tables.append(
-            (self.exposure.exposure_db, exposure_output_path, {"index": False})
-        )
-
-        # Store the exposure settings.
-        self.config["exposure"] = {
-            "dbase_file": exposure_output_path,
-            "crs": self.exposure.crs,
-        }
 
     def setup_exposure_raster(self):
         NotImplemented
@@ -286,12 +262,6 @@ class FiatModel(GridModel):
         self.exposure = ExposureVector(crs=self.config["exposure"]["crs"])
         self.exposure.read(fn)
 
-        # Save the exposure data in the geoms
-        exposure_output_path = "./exposure/exposure.csv"
-        self.tables.append(
-            (self.exposure.exposure_db, exposure_output_path, {"index": False})
-        )
-
     def read_vulnerability(self, fn):
         self.check_path_exists(fn)
         self.vulnerability = Vulnerability()
@@ -310,6 +280,32 @@ class FiatModel(GridModel):
         """Method to write the complete model schematization and configuration to file."""
 
         self.logger.info(f"Writing model data to {self.root}")
+
+        # Set the paths and filenames
+        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
+        exposure_output_path = "./exposure/exposure.csv"
+
+        # Save the vulnerability and exposure data in the tables variable.
+        self.tables.append(
+            (
+                self.vulnerability,
+                vulnerability_output_path,
+                {"index": False, "header": False},
+            )
+        )
+        self.tables.append(
+            (self.exposure.exposure_db, exposure_output_path, {"index": False})
+        )
+
+        # Store the vulnerability settings in the config file.
+        self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
+
+        # Store the exposure settings in the config file.
+        self.config["exposure"] = {
+            "dbase_file": exposure_output_path,
+            "crs": self.exposure.crs,
+        }
+
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:

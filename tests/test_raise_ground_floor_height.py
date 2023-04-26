@@ -13,13 +13,13 @@ _cases = {
         "ground_floor_height_reference": EXAMPLEDIR
         / "test_read"
         / "reference_groundHeight_test.shp",
-        "new_root": EXAMPLEDIR / "test_new_root",
+        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height",
     },
 }
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_set_ground_floor_height(case):
+def test_raise_ground_floor_height(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
 
@@ -34,12 +34,12 @@ def test_set_ground_floor_height(case):
     fm.read()
 
     objectids_to_modify = "all"
-    fm.exposure.setup_ground_floor_height(
+    fm.exposure.raise_ground_floor_height(
         objectids=objectids_to_modify,
-        ground_floor_height=2,
-        height_reference="shp",
+        raise_by=2,
+        height_reference="geom",
         reference_geom_path=_cases[case]["ground_floor_height_reference"],
-        reference_geom_colname="bfe",
+        reference_geom_attrname="bfe",
     )
 
     if _cases[case]["new_root"].exists():

@@ -3,6 +3,7 @@ from hydromt.data_catalog import DataCatalog
 from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 import json
 import geopandas as gpd
 from pathlib import Path
@@ -134,24 +135,31 @@ class ExposureVector(Exposure):
         damage_types: Union[List[str], str],
         max_potential_damage: Union[List[float], float],
     ):
-        # The measure is to buy out selected properties. #TODO revise
-        logging.info(
-            f"Setup the maximum potential damage of {len(objectids)} properties."
-        )
+        # TODO: implement that the max pot damage can be set from scratch from a single value or by doing a spatial join and taking from a column
+        damage_cols = [
+            c for c in self.exposure_db.columns if "Max Potential Damage:" in c
+        ]
 
-        # Get the Object IDs to buy out
-        idx = self.get_object_ids(objectids=objectids)
+        print(damage_cols)
 
-        # Get the columns that contain the maximum potential damage
-        if damage_types.lower() == "all":
-            damage_cols = [
-                c for c in self.exposure_db.columns if "Max Potential Damage:" in c
-            ]
-        else:
-            damage_cols = [f"Max Potential Damage: {t}" for t in damage_types]
+        # # The measure is to buy out selected properties. #TODO revise
+        # logging.info(
+        #     f"Setup the maximum potential damage of {len(objectids)} properties."
+        # )
 
-        # Set the maximum potential damage of the objects to buy out to zero
-        self.exposure_db[damage_cols].iloc[idx] = max_potential_damage
+        # # Get the Object IDs to buy out
+        # idx = self.get_object_ids(objectids=objectids)
+
+        # # Get the columns that contain the maximum potential damage
+        # if damage_types.lower() == "all":
+        #     damage_cols = [
+        #         c for c in self.exposure_db.columns if "Max Potential Damage:" in c
+        #     ]
+        # else:
+        #     damage_cols = [f"Max Potential Damage: {t}" for t in damage_types]
+
+        # # Set the maximum potential damage of the objects to buy out to zero
+        # self.exposure_db[damage_cols].iloc[idx, :] = max_potential_damage
 
     def update_max_potential_damage(self, updated_max_potential_damages: pd.DataFrame):
         logging.info(
@@ -168,14 +176,15 @@ class ExposureVector(Exposure):
             for c in updated_max_potential_damages.columns
             if "Max Potential Damage:" in c
         ]
+        updated_max_potential_damages.sort_values("Object ID", inplace=True)
+        self.exposure_db.sort_values("Object ID", inplace=True)
 
-        self.exposure_db.set_index("Object ID", inplace=True)
-        updated_max_potential_damages.set_index("Object ID", inplace=True)
-
-        self.exposure_db[damage_cols].iloc[
-            updated_max_potential_damages.index
+        self.exposure_db.loc[
+            self.exposure_db["Object ID"].isin(
+                updated_max_potential_damages["Object ID"]
+            ),
+            damage_cols,
         ] = updated_max_potential_damages[damage_cols]
-        self.exposure_db.reset_index(inplace=True)
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
@@ -186,7 +195,7 @@ class ExposureVector(Exposure):
         raise_by: Union[int, float],
         height_reference: str = "",
         reference_geom_path: str = "",
-        reference_geom_colname: str = "STATIC_BFE",
+        reference_geom_attrname: str = "STATIC_BFE",
     ):
         # ground floor height attr already exist, update relative to a reference file or datum
         # Check if the Ground Floor Height column already exists
@@ -213,17 +222,17 @@ class ExposureVector(Exposure):
                 "Ground Floor Height",
             ].iloc[idx] = raise_by
 
-        elif height_reference.lower() == "shp":  # TODO: Change to reference
+        elif height_reference.lower() == "geom":
             # Elevate the objects relative to the surface water elevation map that the user submitted.
             logging.info(
-                f"Setting the ground floor height of the properties relative to {Path(reference_geom_path).stem}, with column {reference_geom_colname}."
+                f"Setting the ground floor height of the properties relative to {Path(reference_geom_path).stem}, with column {reference_geom_attrname}."
             )
 
             self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
-            self.exposure_db.iloc[idx] = self.set_height_relative_to_reference(
-                self.exposure_db.iloc[idx],
+            self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
+                self.exposure_db.iloc[idx, :],
                 reference_geom_path,
-                reference_geom_colname,
+                reference_geom_attrname,
                 raise_by,
                 self.crs,
             )
@@ -231,33 +240,13 @@ class ExposureVector(Exposure):
         else:
             logging.warning(
                 f"The height reference of the Ground Floor Height is set to '{height_reference}'. "
-                "This is not one of the allowed height references. Set the height reference to 'Datum' or 'BFE'."
+                "This is not one of the allowed height references. Set the height reference to 'datum', 'geom' or 'raster' (last option not yet implemented)."
             )
 
     def setup_ground_floor_height(
         self,
-        objectids: Union[List[int], str],
         ground_floor_height: Union[int, float],
-        raise_by: Union[int, float],
-        height_reference: str = "",
-        reference_geom_path: str = "",
-        reference_geom_colname: str = "STATIC_BFE",
     ) -> None:
-        """_summary_
-
-        Parameters
-        ----------
-        objectids : Union[List[int], str]
-            _description_
-        ground_floor_height : Union[int, float]
-            _description_
-        height_reference : str, optional
-            _description_, by default ""
-        reference_geom_path : str, optional
-            _description_, by default ""
-        reference_geom_colname : str, optional
-            _description_, by default "STATIC_BFE"
-        """
         # Set the ground floor height column.
         # If the Ground Floor Height is input as a number, assign all objects with
         # the same Ground Floor Height.
@@ -272,78 +261,106 @@ class ExposureVector(Exposure):
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
 
-    def measure_floodproof(self):
-        """
+    def truncate_damage_function(self):
         # The measure is to floodproof selected properties.
-        object_ids_file = open(scenario_dict['input_path'] / 'measures' / measure['name'] / 'object_ids.txt', 'r')
-        object_ids = [int(i) for i in object_ids_file.read().split(',')]
+        object_ids_file = open(
+            scenario_dict["input_path"]
+            / "measures"
+            / measure["name"]
+            / "object_ids.txt",
+            "r",
+        )
+        object_ids = [int(i) for i in object_ids_file.read().split(",")]
         all_objects_modified.extend(object_ids)
-        modified_objects = exposure.loc[exposure['Object ID'].isin(object_ids)]
+        modified_objects = exposure.loc[exposure["Object ID"].isin(object_ids)]
 
         # The user can submit with how much feet the properties should be floodproofed and the damage function
         # is truncated to that level.
-        floodproof_to = float(measure['elevation'])
+        floodproof_to = float(measure["elevation"])
         truncate_to = floodproof_to + 0.01
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
-        logging.info("Floodproofing {} properties for {} ft of water.".format(len(object_ids), floodproof_to))
+        logging.info(
+            "Floodproofing {} properties for {} ft of water.".format(
+                len(object_ids), floodproof_to
+            )
+        )
 
         # Create a new folder in the scenario results folder to save the truncated damage functions.
-        scenario_dict['results_scenario_path'].joinpath("damage_functions").mkdir(parents=True, exist_ok=True)
+        scenario_dict["results_scenario_path"].joinpath("damage_functions").mkdir(
+            parents=True, exist_ok=True
+        )
 
         # Open the configuration file in the Damage Functions tab and save the new damage function information.
-        config_file = load_workbook(config_data['config_path'])
-        sheet = config_file['Damage Functions']
+        config_file = load_workbook(config_data["config_path"])
+        sheet = config_file["Damage Functions"]
 
         # Find all damage functions that should be modified and truncate with floodproof_to.
         for df_type in df_types:
-            dfs_to_modify = [d for d in list(modified_objects[df_type].unique()) if d == d]
+            dfs_to_modify = [
+                d for d in list(modified_objects[df_type].unique()) if d == d
+            ]
             if dfs_to_modify:
                 for df in dfs_to_modify:
-                    df_path = config_data['damage_function_files'][config_data['damage_function_ids'].index(df)]
+                    df_path = config_data["damage_function_files"][
+                        config_data["damage_function_ids"].index(df)
+                    ]
                     damfunc = pd.read_csv(df_path)
                     closest_wd_idx = damfunc.iloc[
-                        (damfunc['wd[ft]'] - truncate_to).abs().argsort()[:2]].index.tolist()
-                    line = pd.DataFrame({"wd[ft]": truncate_to, "factor": None}, index=[closest_wd_idx[0]])
-                    damfunc = pd.concat([damfunc.iloc[:closest_wd_idx[0]], line, damfunc.iloc[closest_wd_idx[0]:]]).reset_index(drop=True)
+                        (damfunc["wd[ft]"] - truncate_to).abs().argsort()[:2]
+                    ].index.tolist()
+                    line = pd.DataFrame(
+                        {"wd[ft]": truncate_to, "factor": None},
+                        index=[closest_wd_idx[0]],
+                    )
+                    damfunc = pd.concat(
+                        [
+                            damfunc.iloc[: closest_wd_idx[0]],
+                            line,
+                            damfunc.iloc[closest_wd_idx[0] :],
+                        ]
+                    ).reset_index(drop=True)
                     damfunc.set_index("wd[ft]", inplace=True)
-                    damfunc.interpolate(method='index', axis=0, inplace=True)
+                    damfunc.interpolate(method="index", axis=0, inplace=True)
                     damfunc.reset_index(inplace=True)
 
                     closest_wd_idx = damfunc.iloc[
-                        (damfunc['wd[ft]'] - floodproof_to).abs().argsort()[:2]].index.tolist()
-                    line = pd.DataFrame({"wd[ft]": floodproof_to, "factor": 0.0}, index=[closest_wd_idx[0]])
+                        (damfunc["wd[ft]"] - floodproof_to).abs().argsort()[:2]
+                    ].index.tolist()
+                    line = pd.DataFrame(
+                        {"wd[ft]": floodproof_to, "factor": 0.0},
+                        index=[closest_wd_idx[0]],
+                    )
                     damfunc = pd.concat(
-                        [damfunc.iloc[:closest_wd_idx[0]], line, damfunc.iloc[closest_wd_idx[0]:]]).reset_index(
-                        drop=True)
-                    damfunc.loc[damfunc['wd[ft]'] < truncate_to, 'factor'] = 0.0
+                        [
+                            damfunc.iloc[: closest_wd_idx[0]],
+                            line,
+                            damfunc.iloc[closest_wd_idx[0] :],
+                        ]
+                    ).reset_index(drop=True)
+                    damfunc.loc[damfunc["wd[ft]"] < truncate_to, "factor"] = 0.0
 
                     # Save the truncated damage function to the damage functions folder
-                    path_new_df = scenario_dict['results_scenario_path'] / "damage_functions" / (df + df_name_suffix + '.csv')
+                    path_new_df = (
+                        scenario_dict["results_scenario_path"]
+                        / "damage_functions"
+                        / (df + df_name_suffix + ".csv")
+                    )
                     damfunc.to_csv(path_new_df, index=False)
 
                     # Add the truncated damage function information to the configuration file
-                    sheet.append((df + df_name_suffix, str(path_new_df), 'average'))
+                    sheet.append((df + df_name_suffix, str(path_new_df), "average"))
 
         # Save the configuration file.
-        config_file.save(config_data['config_path'])
+        config_file.save(config_data["config_path"])
 
         # Rename the damage function names in the exposure data file
         modified_objects[df_types] = modified_objects[df_types] + df_name_suffix
 
         # Add the modified objects to the exposure_modification dataframe
-        exposure_modification = exposure_modification.append(modified_objects, ignore_index=True)
-        """
+        exposure_modification.append(modified_objects, ignore_index=True)
 
     def setup_aggregation_labels(self):
         NotImplemented
-
-    def get_occupancy_type1(self):
-        if self.occupancy_type1_attr in self.exposure_db.columns:
-            return list(self.exposure_db[self.occupancy_type1_attr].unique())
-
-    def get_occupancy_type2(self):
-        if self.occupancy_type2_attr in self.exposure_db.columns:
-            return list(self.exposure_db[self.occupancy_type2_attr].unique())
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
@@ -352,6 +369,14 @@ class ExposureVector(Exposure):
         self.exposure_db["Damage Function: Structure"] = self.exposure_db[
             "Secondary Object Type"
         ].map(linking_dict)
+
+    def get_primary_object_type(self):
+        if "Primary Object Type" in self.exposure_db.columns:
+            return list(self.exposure_db["Primary Object Type"].unique())
+
+    def get_secondary_object_type(self):
+        if "Secondary Object Type" in self.exposure_db.columns:
+            return list(self.exposure_db["Secondary Object Type"].unique())
 
     def get_buildings(
         self, type=Optional[str], non_building_names=Optional[list[str]]
@@ -410,10 +435,8 @@ class ExposureVector(Exposure):
             polygon = gpd.read_file(polygon_file)
             idx = gpd.sjoin(buildings, polygon).index
         elif selection_type == "list":
-            objectids = pd.read_csv(list_file) #TODO Implement better
-            idx = buildings.loc[
-                self.exposure_db["Object ID"].isin(objectids)
-            ].index
+            objectids = pd.read_csv(list_file)  # TODO Implement better
+            idx = buildings.loc[self.exposure_db["Object ID"].isin(objectids)].index
 
         return list(idx)
 
@@ -450,15 +473,10 @@ class ExposureVector(Exposure):
         out_crs,
     ) -> gpd.GeoDataFrame:
         """
-        Step 1: Read the reference shapefile and read its georeference
-        Step 2: Reproject the exposure data to the CRS of the geom file if necessary.
-        Step 3: Do a spatial join between the two datasets.
-        Step 4: Set the ground floor height the objects that are raised to the height of the geom file PLUS raise_with
-
         Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
-        reference_shp = gpd.read_file(path_geom)
+        reference_shp = gpd.read_file(path_ref)
 
         # Reproject the input flood map if necessary
         if str(reference_shp.crs).upper() != str(out_crs).upper():
@@ -467,44 +485,43 @@ class ExposureVector(Exposure):
         # Spatially join the data
         modified_objects_gdf = gpd.sjoin(
             self.exposure_geoms,
-            reference_shp[[col_geom, "geometry"]],
+            reference_shp[[attr_ref, "geometry"]],
             how="left",
         )
-        modified_objects_gdf["value"] = [
-            bfe if bfe > 0 else 0 for bfe in modified_objects_gdf[col_geom]
-        ]
+        modified_objects_gdf["value"] = modified_objects_gdf[attr_ref]
 
         # Sort and add the elevation to the shp values, append to the exposure dataframe.
         # To be able to append the values from the GeoDataFrame to the DataFrame, it must be sorted on the Object ID.
         modified_objects_gdf = (
-            modified_objects_gdf.groupby("Object ID").max("value").reset_index()
+            modified_objects_gdf.groupby("Object ID")
+            .max("value")
+            .sort_values(by=["Object ID"])
         )
-        modified_objects_gdf = modified_objects_gdf.sort_values(by=["Object ID"])
-        exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"])
-        exposure_to_modify.loc[:, "Ground Floor Height"] = list(
-            modified_objects_gdf.loc[:, "value"] + raise_with
+        exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"]).set_index(
+            "Object ID", drop=False
         )
-        """
-        # Spatially join the data
-        modified_objects_gdf = gpd.sjoin(input_data['gdf_exposure'][['Object ID', 'geometry']],
-                                        reference_shp[['STATIC_BFE', 'geometry']], how="left")
-        # modified_objects_gdf['SWE'] = [bfe if bfe > 0 else 0 for bfe in modified_objects_gdf[col_bfe]]
-        modified_objects_gdf['SWE'] = modified_objects_gdf[col_bfe]
-
-        # Sort and add the elevation to the Surface Water Elevation (SWE) levels, append to the exposure dataframe.
-        # To be able to append the values from the GeoDataFrame to the DataFrame, it must be sorted on the Object ID.
-        modified_objects_gdf = modified_objects_gdf.groupby('Object ID').max('SWE').sort_values(by=['Object ID'])
-        modified_df = modified_df.sort_values(by=['Object ID']).set_index('Object ID', drop=False)
 
         # Find indices of properties that are bellow the required level
-        to_change = modified_df.loc[:, 'First Floor Elevation'] + modified_df.loc[:, 'Ground Elevation'] < modified_objects_gdf.loc[:, 'SWE'] + raise_with
-        original_df = modified_df.copy()  # to be used for metrics
-        modified_df.loc[to_change, 'First Floor Elevation'] = list(modified_objects_gdf.loc[to_change, 'SWE'] + raise_with - modified_df.loc[to_change, 'Ground Elevation'])
-        
-        # Get some metrics on changes (to be used in future version)
-        no_builds_to_change = sum(to_change)
-        avg_raise = np.average(modified_df.loc[to_change, 'First Floor Elevation'] - original_df.loc[to_change, 'First Floor Elevation'])
-        print('raised {} properties with an average of {}'.format(no_builds_to_change, avg_raise))
-        """
+        to_change = (
+            exposure_to_modify.loc[:, "Ground Floor Height"]
+            + exposure_to_modify.loc[:, "Ground Elevation"]
+            < modified_objects_gdf.loc[:, "value"] + raise_by
+        )
+        original_df = exposure_to_modify.copy()  # to be used for metrics
+        exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
+            modified_objects_gdf.loc[to_change, "value"]
+            + raise_by
+            - exposure_to_modify.loc[to_change, "Ground Elevation"]
+        )
 
-        return exposure_to_modify
+        # Get some metrics on changes
+        no_builds_to_change = sum(to_change)
+        avg_raise = np.average(
+            exposure_to_modify.loc[to_change, "Ground Floor Height"]
+            - original_df.loc[to_change, "Ground Floor Height"]
+        )
+        logging.info(
+            f"Raised {no_builds_to_change} properties with an average of {avg_raise}."
+        )
+
+        return exposure_to_modify.reset_index(drop=True)
