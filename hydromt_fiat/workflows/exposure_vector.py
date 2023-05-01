@@ -482,7 +482,7 @@ class ExposureVector(Exposure):
         Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
-        reference_shp = gpd.read_file(path_ref)
+        reference_shp = gpd.read_file(path_ref)  # Vector
 
         # Reproject the input flood map if necessary
         if str(reference_shp.crs).upper() != str(out_crs).upper():

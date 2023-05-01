@@ -20,12 +20,9 @@ def test_update_max_potential_damage(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
 
-    data_catalog_yml = str(_cases[case]["data_catalogue"])
-
     fm = FiatModel(
         root=root,
         mode="r",
-        data_libs=[data_catalog_yml],
     )
 
     fm.read()
