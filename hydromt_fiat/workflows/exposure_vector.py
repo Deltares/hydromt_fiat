@@ -142,7 +142,7 @@ class ExposureVector(Exposure):
         ]
 
         print(damage_cols)
-
+        NotImplemented
         # # The measure is to buy out selected properties. #TODO revise
         # logging.info(
         #     f"Setup the maximum potential damage of {len(objectids)} properties."
@@ -213,12 +213,8 @@ class ExposureVector(Exposure):
             )
             return
 
-        # Update the ground floor height column
-        logging.info(
-            f"Setting the ground floor height of {len(objectids)} properties to {raise_by}."
-        )
-
-        idx = self.get_object_idx(
+        # Get the Object IDs and index of the objects to raise the ground floor height.
+        ids = self.get_object_ids(
             selection_type,
             property_type,
             non_building_names,
@@ -227,6 +223,12 @@ class ExposureVector(Exposure):
             polygon_file,
             list_file,
             objectids,
+        )
+        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
+
+        # Log the number of objects that are being raised.
+        logging.info(
+            f"Setting the ground floor height of {len(ids)} properties to {raise_by}."
         )
 
         if height_reference.lower() == "datum":
@@ -295,12 +297,10 @@ class ExposureVector(Exposure):
 
         # The user can submit with how much feet the properties should be floodproofed and the damage function
         # is truncated to that level.
-        truncate_to = floodproof_to + 0.01
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
 
-        idx = self.get_object_idx(
-            selection_type="list", objectids=objectids
-        )  # UPDATE with get_object_ids
+        ids = self.get_object_ids(selection_type="list", objectids=objectids)
+        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
 
         # Find all damage functions that should be modified and truncate with floodproof_to.
         for df_type in damage_function_types:
@@ -315,58 +315,21 @@ class ExposureVector(Exposure):
             ]
             if dfs_to_modify:
                 for df_name in dfs_to_modify:
-                    damfunc = vulnerability.functions[df_name]
-                    closest_wd_idx = damfunc.iloc[
-                        (vulnerability.hazard_values - truncate_to).abs().argsort()[:2]
-                    ].index.tolist()
-                    line = pd.DataFrame(
-                        {vulnerability.hazard_name: truncate_to, df_name: None},
-                        index=[closest_wd_idx[1]],
+                    vulnerability.truncate(
+                        damage_function_name=df_name,
+                        suffix=df_name_suffix,
+                        floodproof_to=floodproof_to,
                     )
-                    damfunc = pd.concat(
-                        [
-                            damfunc.iloc[: closest_wd_idx[1]],
-                            line,
-                            damfunc.iloc[closest_wd_idx[1] :],
-                        ]
-                    ).reset_index(drop=True)
-                    damfunc.set_index(vulnerability.hazard_name, inplace=True)
-                    damfunc.interpolate(method="index", axis=0, inplace=True)
-                    damfunc.reset_index(inplace=True)
-
-                    closest_wd_idx = damfunc.iloc[
-                        (damfunc[vulnerability.hazard_name] - floodproof_to)
-                        .abs()
-                        .argsort()[:2]
-                    ].index.tolist()
-                    line = pd.DataFrame(
-                        {vulnerability.hazard_name: floodproof_to, df_name: 0.0},
-                        index=[closest_wd_idx[1]],
-                    )
-                    damfunc = pd.concat(
-                        [
-                            damfunc.iloc[: closest_wd_idx[0]],
-                            line,
-                            damfunc.iloc[closest_wd_idx[0] :],
-                        ]
-                    ).reset_index(drop=True)
-                    damfunc.loc[
-                        damfunc[vulnerability.hazard_name] < truncate_to, df_name
-                    ] = 0.0
-
-                    # Save the truncated damage function to the damage functions folder
-                    new_df_name = df_name + df_name_suffix
-                    vulnerability.add(new_df_name, damfunc)
-
-                    # Add the truncated damage function information to the configuration file
-                    # sheet.append((df + df_name_suffix, str(path_new_df), "average"))
-
-        # Save the configuration file.
-        config_file.save(config_data["config_path"])
 
         # Rename the damage function names in the exposure data file
-        self.exposure_db.iloc[idx, :][damage_function_types] = (
-            self.exposure_db.iloc[idx, :][damage_function_types] + df_name_suffix
+        damage_function_columns = [
+            c
+            for c in self.exposure_db.columns
+            if ("Damage Function: " in c)
+            and (c.split(": ")[-1] in damage_function_types)
+        ]
+        self.exposure_db.iloc[idx, :][damage_function_columns] = (
+            self.exposure_db.iloc[idx, :][damage_function_columns] + df_name_suffix
         )
 
     def setup_aggregation_labels(self):

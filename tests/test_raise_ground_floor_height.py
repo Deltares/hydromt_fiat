@@ -30,9 +30,8 @@ def test_raise_ground_floor_height(case):
 
     fm.read()
 
-    objectids_to_modify = "all"
     fm.exposure.raise_ground_floor_height(
-        objectids=objectids_to_modify,
+        selection_type="all",
         raise_by=2,
         height_reference="geom",
         reference_geom_path=_cases[case]["ground_floor_height_reference"],

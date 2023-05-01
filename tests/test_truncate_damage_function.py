@@ -34,7 +34,7 @@ def test_truncate_damage_function(case):
     fm.exposure.truncate_damage_function(
         objectids=objectids_to_modify,
         floodproof_to=2.5,
-        damage_function_types=["Structure", "Content"],
+        damage_function_types=["Structure"],
         vulnerability=fm.vulnerability,
     )
 

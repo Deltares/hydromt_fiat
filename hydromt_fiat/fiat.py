@@ -115,14 +115,14 @@ class FiatModel(GridModel):
                 f"Vulnerability identifiers and linking table does not exist at: {vulnerability_identifiers_and_linking}"
             )
 
-        vul = Vulnerability(unit, self.data_catalog)
-        vf_source_df = vul.get_vulnerability_source(vulnerability_source)
+        self.vulnerability = Vulnerability(unit, self.data_catalog)
+        vf_source_df = self.vulnerability.get_vulnerability_source(vulnerability_source)
         self.vf_ids_and_linking_df = (
-            vul.get_vulnerability_identifiers_and_linking_source(
+            self.vulnerability.get_vulnerability_identifiers_and_linking_source(
                 vulnerability_identifiers_and_linking
             )
         )
-        vul.get_vulnerability_functions_from_one_file(
+        self.vulnerability.get_vulnerability_functions_from_one_file(
             vf_source_df, self.vf_ids_and_linking_df
         )
 
@@ -267,45 +267,36 @@ class FiatModel(GridModel):
         self.vulnerability = Vulnerability()
         self.vulnerability.read(fn)
 
-        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
-        self.tables.append(
-            (
-                self.vulnerability.vulnerability,
-                vulnerability_output_path,
-                {"index": False, "header": False},
-            )
-        )
-
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
-
         self.logger.info(f"Writing model data to {self.root}")
 
-        # Set the paths and filenames
-        vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
-        exposure_output_path = "./exposure/exposure.csv"
-
         # Save the vulnerability and exposure data in the tables variable.
-        # TODO: check if variables exist
-        self.tables.append(
-            (
-                self.vulnerability.get_table(),
-                vulnerability_output_path,
-                {"index": False, "header": False},
+        # Check if data exist
+        if self.vulnerability:
+            vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
+            self.tables.append(
+                (
+                    self.vulnerability.get_table(),
+                    vulnerability_output_path,
+                    {"index": False, "header": False},
+                )
             )
-        )
-        self.tables.append(
-            (self.exposure.exposure_db, exposure_output_path, {"index": False})
-        )
 
-        # Store the vulnerability settings in the config file.
-        self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
+            # Store the vulnerability settings in the config file.
+            self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
 
-        # Store the exposure settings in the config file.
-        self.config["exposure"] = {
-            "dbase_file": exposure_output_path,
-            "crs": self.exposure.crs,
-        }
+        if self.exposure:
+            exposure_output_path = "./exposure/exposure.csv"
+            self.tables.append(
+                (self.exposure.exposure_db, exposure_output_path, {"index": False})
+            )
+
+            # Store the exposure settings in the config file.
+            self.config["exposure"] = {
+                "dbase_file": exposure_output_path,
+                "crs": self.exposure.crs,
+            }
 
         if self.config:  # try to read default if not yet set
             self.write_config()
