@@ -254,6 +254,10 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
+        elif height_reference.lower() == "table":
+            # Input a CSV with Object IDs and elevations
+            NotImplemented
+
         else:
             logging.warning(
                 f"The height reference of the Ground Floor Height is set to '{height_reference}'. "
@@ -294,7 +298,9 @@ class ExposureVector(Exposure):
         truncate_to = floodproof_to + 0.01
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
 
-        idx = self.get_object_idx(selection_type="list", objectids=objectids)
+        idx = self.get_object_idx(
+            selection_type="list", objectids=objectids
+        )  # UPDATE with get_object_ids
 
         # Find all damage functions that should be modified and truncate with floodproof_to.
         for df_type in damage_function_types:
@@ -400,7 +406,7 @@ class ExposureVector(Exposure):
 
         return buildings
 
-    def get_object_idx(
+    def get_object_ids(
         self,
         selection_type: str,
         property_type: Optional[str] = None,
@@ -424,21 +430,21 @@ class ExposureVector(Exposure):
 
         if (selection_type == "aggregation_area") or (selection_type == "all"):
             if selection_type == "all":
-                idx = buildings.index
+                ids = buildings["Object ID"]
             elif selection_type == "aggregation_area":
                 label = aggregation[0].name  # Always use first aggregation area type
-                idx = buildings.loc[
-                    buildings[f"Aggregation Label: {label}"] == aggregation_area_name
-                ].index
+                ids = buildings.loc[
+                    buildings[f"Aggregation Label: {label}"] == aggregation_area_name,
+                    "Object ID",
+                ]
         elif selection_type == "polygon":
             assert polygon_file is not None
             polygon = gpd.read_file(polygon_file)
-            idx = gpd.sjoin(buildings, polygon).index
+            ids = gpd.sjoin(buildings, polygon)["Object ID"]
         elif selection_type == "list":
-            # objectids = pd.read_csv(list_file)  # TODO Implement better
-            idx = buildings.loc[buildings["Object ID"].isin(objectids)].index
+            ids = objectids
 
-        return idx
+        return ids
 
     def get_geoms_from_xy(self):
         exposure_geoms = gpd.GeoDataFrame(

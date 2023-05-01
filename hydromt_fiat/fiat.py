@@ -115,15 +115,15 @@ class FiatModel(GridModel):
                 f"Vulnerability identifiers and linking table does not exist at: {vulnerability_identifiers_and_linking}"
             )
 
-        vul = Vulnerability(self.data_catalog)
+        vul = Vulnerability(unit, self.data_catalog)
         vf_source_df = vul.get_vulnerability_source(vulnerability_source)
         self.vf_ids_and_linking_df = (
             vul.get_vulnerability_identifiers_and_linking_source(
                 vulnerability_identifiers_and_linking
             )
         )
-        self.vulnerability = vul.get_vulnerability_functions_from_one_file(
-            vf_source_df, self.vf_ids_and_linking_df, unit
+        vul.get_vulnerability_functions_from_one_file(
+            vf_source_df, self.vf_ids_and_linking_df
         )
 
     def setup_exposure_vector(
@@ -286,9 +286,10 @@ class FiatModel(GridModel):
         exposure_output_path = "./exposure/exposure.csv"
 
         # Save the vulnerability and exposure data in the tables variable.
+        # TODO: check if variables exist
         self.tables.append(
             (
-                self.vulnerability,
+                self.vulnerability.get_table(),
                 vulnerability_output_path,
                 {"index": False, "header": False},
             )
