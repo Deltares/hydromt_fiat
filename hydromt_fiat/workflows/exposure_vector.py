@@ -322,14 +322,14 @@ class ExposureVector(Exposure):
                     )
 
         # Rename the damage function names in the exposure data file
-        damage_function_columns = [
-            c
+        damage_function_column_idx = [
+            self.exposure_db.columns.get_loc(c)
             for c in self.exposure_db.columns
             if ("Damage Function: " in c)
             and (c.split(": ")[-1] in damage_function_types)
         ]
-        self.exposure_db.iloc[idx, :][damage_function_columns] = (
-            self.exposure_db.iloc[idx, :][damage_function_columns] + df_name_suffix
+        self.exposure_db.iloc[idx, damage_function_column_idx] = (
+            self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
 
     def setup_aggregation_labels(self):

@@ -31,6 +31,12 @@ def test_truncate_damage_function(case):
     fm.read()
 
     objectids_to_modify = [173, 175, 241, 247, 1012528]
+    print(
+        fm.exposure.exposure_db.loc[
+            fm.exposure.exposure_db["Object ID"].isin(objectids_to_modify),
+            "Damage Function: Structure",
+        ].unique()
+    )
     fm.exposure.truncate_damage_function(
         objectids=objectids_to_modify,
         floodproof_to=2.5,
