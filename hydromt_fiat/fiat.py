@@ -293,10 +293,13 @@ class FiatModel(GridModel):
             )
 
             # Store the exposure settings in the config file.
-            self.config["exposure"] = {
-                "dbase_file": exposure_output_path,
-                "crs": self.exposure.crs,
-            }
+            self.config["exposure"] = [
+                {
+                    "type": "vector",
+                    "dbase_file": exposure_output_path,
+                    "crs": self.exposure.crs,
+                }
+            ]
 
         if self.config:  # try to read default if not yet set
             self.write_config()

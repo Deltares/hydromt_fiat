@@ -5,8 +5,6 @@ from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import pandas as pd
 import numpy as np
-import json
-import geopandas as gpd
 from pathlib import Path
 import json
 from typing import Union, List, Any, Optional
@@ -184,7 +182,18 @@ class ExposureVector(Exposure):
         # # Set the maximum potential damage of the objects to buy out to zero
         # self.exposure_db[damage_cols].iloc[idx, :] = max_potential_damage
 
-    def update_max_potential_damage(self, updated_max_potential_damages: pd.DataFrame):
+    def update_max_potential_damage(
+        self, updated_max_potential_damages: pd.DataFrame
+    ) -> None:
+        """Updates the maximum potential damage columns that are provided in a
+        Pandas DataFrame.
+
+        Parameters
+        ----------
+        updated_max_potential_damages : pd.DataFrame
+            A DataFrame containing the values of the maximum potential damage that
+            should be updated.
+        """
         logging.info(
             f"Updating the maximum potential damage of {len(updated_max_potential_damages.index)} properties."
         )
@@ -212,18 +221,30 @@ class ExposureVector(Exposure):
     def raise_ground_floor_height(
         self,
         raise_by: Union[int, float],
-        selection_type: str,
-        property_type: Optional[str] = None,
-        non_building_names: Optional[List[str]] = None,
-        aggregation: Optional[str] = None,
-        aggregation_area_name: Optional[str] = None,
-        polygon_file: Optional[str] = None,
-        list_file: Optional[str] = None,
-        objectids: Optional[List[int]] = None,
+        objectids: List[int],
         height_reference: str = "",
-        reference_geom_path: str = "",
-        reference_geom_attrname: str = "STATIC_BFE",
+        path_ref: str = None,
+        attr_ref: str = "STATIC_BFE",
     ):
+        """Raises the ground floor height of selected objects to a certain level.
+
+        Parameters
+        ----------
+        raise_by : Union[int, float]
+            The level to raise the selected objects by.
+        objectids : List[int]
+            A list of Object IDs to select the exposure objects to raise the ground
+            floor of.
+        height_reference : str, optional
+            Either 'datum' when the Ground Floor Height should be raised relative to the
+            Datum or 'geom' when the Ground Floor Height should be raised relative to
+            the attribute `attr_ref` in the geometry file `path_ref`, by default ""
+        path_ref : str, optional
+            The full path to the geometry file used to calculate the Ground Floor
+            Height if the `height_reference` is set 'geom', by default None
+        attr_ref : str, optional
+            The attribute in the geometry file `path_ref`, by default "STATIC_BFE"
+        """
         # ground floor height attr already exist, update relative to a reference file or datum
         # Check if the Ground Floor Height column already exists
         if "Ground Floor Height" not in self.exposure_db.columns:
@@ -232,22 +253,12 @@ class ExposureVector(Exposure):
             )
             return
 
-        # Get the Object IDs and index of the objects to raise the ground floor height.
-        ids = self.get_object_ids(
-            selection_type,
-            property_type,
-            non_building_names,
-            aggregation,
-            aggregation_area_name,
-            polygon_file,
-            list_file,
-            objectids,
-        )
-        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
+        # Get the index of the objects to raise the ground floor height.
+        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
         logging.info(
-            f"Setting the ground floor height of {len(ids)} properties to {raise_by}."
+            f"Setting the ground floor height of {len(idx)} properties to {raise_by}."
         )
 
         if height_reference.lower() == "datum":
@@ -263,14 +274,14 @@ class ExposureVector(Exposure):
         elif height_reference.lower() == "geom":
             # Elevate the objects relative to the surface water elevation map that the user submitted.
             logging.info(
-                f"Setting the ground floor height of the properties relative to {Path(reference_geom_path).stem}, with column {reference_geom_attrname}."
+                f"Setting the ground floor height of the properties relative to {Path(path_ref).stem}, with column {attr_ref}."
             )
 
             self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
-                reference_geom_path,
-                reference_geom_attrname,
+                path_ref,
+                attr_ref,
                 raise_by,
                 self.crs,
             )
@@ -287,11 +298,26 @@ class ExposureVector(Exposure):
 
     def truncate_damage_function(
         self,
-        objectids: Union[List[int], str],
+        objectids: List[int],
         floodproof_to: Union[int, float],
         damage_function_types: List[str],
         vulnerability: Vulnerability,
-    ):
+    ) -> None:
+        """Truncates damage functions to a certain level.
+
+        Parameters
+        ----------
+        objectids : List[int]
+            A list of Object IDs to select the exposure objects to truncate the damage
+            functions of.
+        floodproof_to : Union[int, float]
+            The height to floodproof to, i.e. to truncate the damage functions to.
+        damage_function_types : List[str]
+            A list of damage types that should be considered for the new composite area,
+            e.g. ['Structure', 'Content']. The function is case-sensitive.
+        vulnerability : Vulnerability
+            The Vulnerability object from the FiatModel.
+        """
         logging.info(
             f"Floodproofing {len(objectids)} properties for {floodproof_to} ft (CHANGE TO UNIT) of water."
         )  # TODO: change ft to unit
@@ -362,7 +388,37 @@ class ExposureVector(Exposure):
         elevation_reference: str,
         path_ref: str = None,
         attr_ref: str = None,
-    ):
+    ) -> None:
+        """Adds one or multiple (polygon) areas to the exposure database with
+        a composite damage function and a percentage of the total damage.
+
+        Parameters
+        ----------
+        percent_growth : float
+            The percent of the total damages that should be divided over the new
+            composite area(s) per damage type in `damage_types`.
+        geom_file : str
+            The full path to the file that contains the geometries of composite areas.
+            Optionally this file can contain a feature 'FID' to link to the exposure
+            database.
+        ground_floor_height : float
+            The height that the ground floor should have relative to either 'datum' or
+            'geom' as defined in the `elevation_reference` variable.
+        damage_types : List[str]
+            A list of damage types that should be considered for the new composite area,
+            e.g. ['Structure', 'Content']. The function is case-sensitive.
+        vulnerability : Vulnerability
+            The Vulnerability object from the FiatModel.
+        elevation_reference : str
+            Either 'datum' when the Ground Floor Height should be set relative to the
+            Datum or 'geom' when the Ground Floor Height should be set relative to the
+            attribute `attr_ref` in the geometry file `path_ref`.
+        path_ref : str, optional
+            The full path to the geometry file used to calculate the Ground Floor
+            Height if the `elevation_reference` is set 'geom', by default None
+        attr_ref : str, optional
+            The attribute in the geometry file `path_ref`, by default None
+        """
         logging.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
             "of the current total exposure objects, using the "
