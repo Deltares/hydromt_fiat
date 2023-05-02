@@ -5,6 +5,9 @@ from ast import literal_eval
 
 
 class Hazard:
+    def __init__(self):
+        self.crs = ""
+
     def setup_hazard(
         self,
         model_fiat,
@@ -248,6 +251,8 @@ class Hazard:
                     )
                     da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
                     da.raster.set_crs(da_crs_str)
+                    self.crs = da_crs_str
+
                 # elif crs is None and not da.raster.crs.is_epsg_code:
                 elif crs is None and not da.raster.crs:
                     raise ValueError(
