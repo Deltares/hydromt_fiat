@@ -11,7 +11,7 @@ _cases = {
         "dir": "test_read",
         "ini": EXAMPLEDIR / "test_read.ini",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area",
-        "composite_areas": EXAMPLEDIR / "new_development_area_test.gpkg",
+        "composite_areas": EXAMPLEDIR / "test_read" / "new_development_area_test.gpkg",
     },
 }
 
@@ -30,13 +30,14 @@ def test_setup_new_composite_areas(case):
     )
 
     fm.read()
-    
+
     fm.exposure.setup_new_composite_areas(
-         percent_growth=10,
-         geom_file=str(_cases[case]["composite_areas"]),
-         ground_floor_height=2
-         damage_types=['Structure'],
-         vulnerability=fm.vulnerability
+        percent_growth=10,
+        geom_file=str(_cases[case]["composite_areas"]),
+        ground_floor_height=2,
+        damage_types=["Structure"],
+        vulnerability=fm.vulnerability,
+        elevation_reference="datum",
     )
 
     if _cases[case]["new_root"].exists():

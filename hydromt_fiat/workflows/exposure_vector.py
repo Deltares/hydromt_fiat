@@ -346,7 +346,9 @@ class ExposureVector(Exposure):
         # multiplied with the total sum of the Max Potential Structural/Content/Other Damage.
         for c in damages_cols:
             total_damages = sum(self.exposure_db[c].fillna(0))
-            new_damages[c] = total_damages * percent_growth
+            new_damages[c.split("Max Potential Damage: ")[-1]] = (
+                total_damages * percent_growth
+            )
 
         return new_damages
 
@@ -357,6 +359,9 @@ class ExposureVector(Exposure):
         ground_floor_height: float,
         damage_types: List[str],
         vulnerability: Vulnerability,
+        elevation_reference: str,
+        path_ref: str = None,
+        attr_ref: str = None,
     ):
         logging.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -366,7 +371,7 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.exists()
+        assert geom_file.is_file()
 
         # Calculate the total damages for the new object, for the indicated damage types.
         new_object_damages = self.calculate_damages_new_exposure_object(
@@ -394,13 +399,15 @@ class ExposureVector(Exposure):
 
         # Add the new development area as an object to the Exposure Modification file.
         new_area = gpd.read_file(geom_file)
-        # check_crs(new_area, geom_file)
-        modified_objects = gpd.GeoDataFrame()
+        # check_crs(new_area, geom_file)  #TODO implement again
+        new_objects = []
 
         # Calculate the total area to use for adding the damages relative to area
-        total_area = new_area.geometry.area.sum()
+        total_area = (
+            new_area.geometry.area.sum()
+        )  # TODO: reproject to a projected CRS if this is a geographic CRS?
 
-        # There should be an attribute 'ID' in the new development area shapefile. This ID is used to join the
+        # There should be an attribute 'FID' in the new development area shapefile. This ID is used to join the
         # shapefile to the exposure data.
         join_id_name = "FID"
         if join_id_name not in new_area.columns:
@@ -410,9 +417,6 @@ class ExposureVector(Exposure):
             new_area[join_id_name] = range(len(new_area.index))
             new_area.to_file(geom_file)
 
-        aggregation_column_name = [
-            c for c in self.exposure_db.columns if "Aggregation Label:" in c
-        ][0]
         max_id = self.exposure_db["Object ID"].max()
         for i in range(len(new_area.index)):
             perc_damages = new_area.geometry.iloc[i].area / total_area
@@ -420,62 +424,61 @@ class ExposureVector(Exposure):
             # Take ground elevation from DEM?
             # For water level calculation this will not take into account the non-flooded cells separately, just averaged
             # Reduction factor for the part of the area is not build-up?
-            modified_objects = modified_objects.append(
+            dict_new_objects_data = {
+                "Object ID": [max_id + 1],
+                "Object Name": ["New development area: " + str(max_id + 1)],
+                "Primary Object Type": ["New development area"],
+                "Secondary Object Type": ["New development area"],
+                "Extraction Method": ["AREA"],
+                "Ground Floor Height": [0],
+                "Ground Elevation": [0],
+                "Object-Location Shapefile Path": [str(geom_file)],
+                "Object-Location Join ID": [new_area["FID"].iloc[i]],
+                "Join Attribute Field": [join_id_name],
+            }
+            dict_new_objects_data.update(
                 {
-                    "Object ID": max_id + 1,
-                    "Object Name": "New development area: " + str(max_id + 1),
-                    "Primary Object Type": "New development area",
-                    "Secondary Object Type": "New development area",
-                    "X Coordinate": None,
-                    "Y Coordinate": None,
-                    "Extraction Method": "AREA",
-                    aggregation_column_name: None,
-                    "Damage Function: Structure": new_damage_functions["Structure"][
-                        "damage_function_id"
-                    ],
-                    "Damage Function: Content": new_damage_functions["Content"][
-                        "damage_function_id"
-                    ],
-                    "Damage Function: Other": None,
-                    "Ground Floor Height": 0,
-                    "Ground Elevation": 0,
-                    "Max Potential Damage: Structure": new_object_damages["Structure"]
-                    * perc_damages,
-                    "Max Potential Damage: Content": new_object_damages["Content"]
-                    * perc_damages,
-                    "Max Potential Damage: Other": None,
-                    "Object-Location Shapefile Path": str(geom_file),
-                    "Object-Location Join ID": new_area["FID"].iloc[i],
-                    "Join Attribute Field": join_id_name,
-                },
-                ignore_index=True,
+                    f"Damage Function: {damage_type}": [
+                        new_damage_functions[damage_type]
+                    ]
+                    for damage_type in damage_types
+                }
             )
+            dict_new_objects_data.update(
+                {
+                    f"Max Potential Damage: {damage_type}": [
+                        new_object_damages[damage_type] * perc_damages
+                    ]
+                    for damage_type in damage_types
+                }
+            )
+            new_objects.append(pd.DataFrame(dict_new_objects_data))
             max_id += 1
 
+        new_objects = pd.concat(new_objects)
+        new_objects.reset_index(inplace=True)
+
         if elevation_reference == "datum":
-            modified_objects["First Floor Elevation"] = ground_floor_height
+            new_objects["Ground Floor Height"] = ground_floor_height
             logging.info(
-                "The elevation of the new development area is {} ft relative to datum.".format(
-                    ground_floor_height
-                )
+                f"The elevation of the new development area is {ground_floor_height} ft"
+                " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
-            path_bfe = get_path_bfe(scenario_dict)
-            col_bfe = "STATIC_BFE"
             logging.info(
-                "The elevation of the new development area is {} ft relative to {}. The height of the floodmap is identified with column {}.".format(
-                    ground_floor_height, path_bfe.stem, col_bfe
-                )
+                f"The elevation of the new development area is {ground_floor_height} ft"
+                f" relative to {Path(path_ref).stem}. The height of the floodmap is"
+                f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
-            modified_objects = raise_relative_to_floodmap(
-                modified_objects,
-                col_bfe,
+            new_objects = self.set_height_relative_to_reference(
+                new_objects,
+                path_ref,
+                attr_ref,
                 ground_floor_height,
-                config_data,
-                scenario_dict,
+                self.crs,
             )
 
-        exposure.append(modified_objects, ignore_index=True)
+        self.exposure_db = pd.concat([self.exposure_db, new_objects])
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
