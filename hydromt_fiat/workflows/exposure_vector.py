@@ -130,6 +130,30 @@ class ExposureVector(Exposure):
     def setup_occupancy_type(self):
         NotImplemented
 
+    def setup_extraction_method(self, extraction_method: str) -> None:
+        self.exposure_db["Extraction Method"] = extraction_method
+
+    def setup_aggregation_labels(self):
+        NotImplemented
+
+    def setup_ground_floor_height(
+        self,
+        ground_floor_height: Union[int, float],
+    ) -> None:
+        # Set the ground floor height column.
+        # If the Ground Floor Height is input as a number, assign all objects with
+        # the same Ground Floor Height.
+        if ground_floor_height:
+            if type(ground_floor_height) == int or type(ground_floor_height) == float:
+                self.exposure_db["Ground Floor Height"] = ground_floor_height
+            elif type(ground_floor_height) == str:
+                # TODO: implement the option to add the ground floor height from a file.
+                NotImplemented
+        else:
+            # Set the Ground Floor Height to 0 if the user did not specify any
+            # Ground Floor Height.
+            self.exposure_db["Ground Floor Height"] = 0
+
     def setup_max_potential_damage(
         self,
         objectids: Union[List[int], str],
@@ -137,9 +161,7 @@ class ExposureVector(Exposure):
         max_potential_damage: Union[List[float], float],
     ):
         # TODO: implement that the max pot damage can be set from scratch from a single value or by doing a spatial join and taking from a column
-        damage_cols = [
-            c for c in self.exposure_db.columns if "Max Potential Damage:" in c
-        ]
+        damage_cols = self.get_max_potential_damage_columns()
 
         print(damage_cols)
         NotImplemented
@@ -186,9 +208,6 @@ class ExposureVector(Exposure):
             ),
             damage_cols,
         ] = updated_max_potential_damages[damage_cols]
-
-    def setup_extraction_method(self, extraction_method: str) -> None:
-        self.exposure_db["Extraction Method"] = extraction_method
 
     def raise_ground_floor_height(
         self,
@@ -266,24 +285,6 @@ class ExposureVector(Exposure):
                 "This is not one of the allowed height references. Set the height reference to 'datum', 'geom' or 'raster' (last option not yet implemented)."
             )
 
-    def setup_ground_floor_height(
-        self,
-        ground_floor_height: Union[int, float],
-    ) -> None:
-        # Set the ground floor height column.
-        # If the Ground Floor Height is input as a number, assign all objects with
-        # the same Ground Floor Height.
-        if ground_floor_height:
-            if type(ground_floor_height) == int or type(ground_floor_height) == float:
-                self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif type(ground_floor_height) == str:
-                # TODO: implement the option to add the ground floor height from a file.
-                NotImplemented
-        else:
-            # Set the Ground Floor Height to 0 if the user did not specify any
-            # Ground Floor Height.
-            self.exposure_db["Ground Floor Height"] = 0
-
     def truncate_damage_function(
         self,
         objectids: Union[List[int], str],
@@ -292,8 +293,8 @@ class ExposureVector(Exposure):
         vulnerability: Vulnerability,
     ):
         logging.info(
-            f"Floodproofing {len(objectids)} properties for {floodproof_to} ft of water."
-        )
+            f"Floodproofing {len(objectids)} properties for {floodproof_to} ft (CHANGE TO UNIT) of water."
+        )  # TODO: change ft to unit
 
         # The user can submit with how much feet the properties should be floodproofed and the damage function
         # is truncated to that level.
@@ -324,16 +325,157 @@ class ExposureVector(Exposure):
         # Rename the damage function names in the exposure data file
         damage_function_column_idx = [
             self.exposure_db.columns.get_loc(c)
-            for c in self.exposure_db.columns
-            if ("Damage Function: " in c)
-            and (c.split(": ")[-1] in damage_function_types)
+            for c in self.get_damage_function_columns()
+            if c.split(": ")[-1] in damage_function_types
         ]
         self.exposure_db.iloc[idx, damage_function_column_idx] = (
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
 
-    def setup_aggregation_labels(self):
-        NotImplemented
+    def calculate_damages_new_exposure_object(
+        self, percent_growth: float, damage_types: List[str]
+    ):
+        damages_cols = [
+            c
+            for c in self.get_max_potential_damage_columns()
+            if c.split("Max Potential Damage: ")[-1] in damage_types
+        ]
+        new_damages = dict()
+
+        # Calculate the Max. Potential Damages for the new area. This is the total percentage of population growth
+        # multiplied with the total sum of the Max Potential Structural/Content/Other Damage.
+        for c in damages_cols:
+            total_damages = sum(self.exposure_db[c].fillna(0))
+            new_damages[c] = total_damages * percent_growth
+
+        return new_damages
+
+    def setup_new_composite_areas(
+        self,
+        percent_growth: float,
+        geom_file: str,
+        ground_floor_height: float,
+        damage_types: List[str],
+        vulnerability: Vulnerability,
+    ):
+        logging.info(
+            f"Adding a new exposure object with a value of {percent_growth}% "
+            "of the current total exposure objects, using the "
+            f"geometry/geometries from {geom_file}."
+        )
+
+        percent_growth = float(percent_growth) / 100
+        geom_file = Path(geom_file)
+        assert geom_file.exists()
+
+        # Calculate the total damages for the new object, for the indicated damage types.
+        new_object_damages = self.calculate_damages_new_exposure_object(
+            percent_growth, damage_types
+        )
+
+        # Read the original damage functions and create new weighted damage functions from the original ones.
+        df_dict = {
+            damage_type: [
+                df
+                for df in self.exposure_db["Damage Function: " + damage_type].unique()
+                if df == df
+            ]
+            for damage_type in damage_types
+        }
+        df_value_counts_dict = {
+            damage_type: self.exposure_db[
+                "Damage Function: " + damage_type
+            ].value_counts()
+            for damage_type in damage_types
+        }
+        new_damage_functions = vulnerability.calculate_weighted_damage_function(
+            df_dict, df_value_counts_dict
+        )
+
+        # Add the new development area as an object to the Exposure Modification file.
+        new_area = gpd.read_file(geom_file)
+        # check_crs(new_area, geom_file)
+        modified_objects = gpd.GeoDataFrame()
+
+        # Calculate the total area to use for adding the damages relative to area
+        total_area = new_area.geometry.area.sum()
+
+        # There should be an attribute 'ID' in the new development area shapefile. This ID is used to join the
+        # shapefile to the exposure data.
+        join_id_name = "FID"
+        if join_id_name not in new_area.columns:
+            logging.info(
+                'The unique ID column in the New Development Area is not named "FID", therefore, a new unique identifyer named "FID" is added.'
+            )
+            new_area[join_id_name] = range(len(new_area.index))
+            new_area.to_file(geom_file)
+
+        aggregation_column_name = [
+            c for c in self.exposure_db.columns if "Aggregation Label:" in c
+        ][0]
+        max_id = self.exposure_db["Object ID"].max()
+        for i in range(len(new_area.index)):
+            perc_damages = new_area.geometry.iloc[i].area / total_area
+            # TODO: Alert the user that the ground elevation is set to 0.
+            # Take ground elevation from DEM?
+            # For water level calculation this will not take into account the non-flooded cells separately, just averaged
+            # Reduction factor for the part of the area is not build-up?
+            modified_objects = modified_objects.append(
+                {
+                    "Object ID": max_id + 1,
+                    "Object Name": "New development area: " + str(max_id + 1),
+                    "Primary Object Type": "New development area",
+                    "Secondary Object Type": "New development area",
+                    "X Coordinate": None,
+                    "Y Coordinate": None,
+                    "Extraction Method": "AREA",
+                    aggregation_column_name: None,
+                    "Damage Function: Structure": new_damage_functions["Structure"][
+                        "damage_function_id"
+                    ],
+                    "Damage Function: Content": new_damage_functions["Content"][
+                        "damage_function_id"
+                    ],
+                    "Damage Function: Other": None,
+                    "Ground Floor Height": 0,
+                    "Ground Elevation": 0,
+                    "Max Potential Damage: Structure": new_object_damages["Structure"]
+                    * perc_damages,
+                    "Max Potential Damage: Content": new_object_damages["Content"]
+                    * perc_damages,
+                    "Max Potential Damage: Other": None,
+                    "Object-Location Shapefile Path": str(geom_file),
+                    "Object-Location Join ID": new_area["FID"].iloc[i],
+                    "Join Attribute Field": join_id_name,
+                },
+                ignore_index=True,
+            )
+            max_id += 1
+
+        if elevation_reference == "datum":
+            modified_objects["First Floor Elevation"] = ground_floor_height
+            logging.info(
+                "The elevation of the new development area is {} ft relative to datum.".format(
+                    ground_floor_height
+                )
+            )
+        elif elevation_reference == "geom":
+            path_bfe = get_path_bfe(scenario_dict)
+            col_bfe = "STATIC_BFE"
+            logging.info(
+                "The elevation of the new development area is {} ft relative to {}. The height of the floodmap is identified with column {}.".format(
+                    ground_floor_height, path_bfe.stem, col_bfe
+                )
+            )
+            modified_objects = raise_relative_to_floodmap(
+                modified_objects,
+                col_bfe,
+                ground_floor_height,
+                config_data,
+                scenario_dict,
+            )
+
+        exposure.append(modified_objects, ignore_index=True)
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
@@ -350,6 +492,12 @@ class ExposureVector(Exposure):
     def get_secondary_object_type(self):
         if "Secondary Object Type" in self.exposure_db.columns:
             return list(self.exposure_db["Secondary Object Type"].unique())
+
+    def get_max_potential_damage_columns(self):
+        return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
+
+    def get_damage_function_columns(self):
+        return [c for c in self.exposure_db.columns if "Damage Function:" in c]
 
     def get_buildings(
         self,
