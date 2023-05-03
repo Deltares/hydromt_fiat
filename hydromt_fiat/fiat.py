@@ -170,12 +170,9 @@ class FiatModel(GridModel):
         maps_id: str = "RP",
     ):
         hazard = Hazard()
-        hazard.setup_hazard(
 
         hazard.checkInputs(
             self,
-            hazard_type=hazard_type,
-            risk_output=risk_output,
             map_fn=map_fn,
             map_type=map_type,
             chunks=chunks,
@@ -257,8 +254,6 @@ class FiatModel(GridModel):
 
     def _configread(self, fn):
         """Parse fiat configuration toml file to dict."""
-        # TODO: update to FIAT toml file
-
         # Read the fiat configuration toml file.
         config = Config()
         return config.load_file(fn)
