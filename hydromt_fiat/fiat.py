@@ -166,20 +166,34 @@ class FiatModel(GridModel):
         chunks,
         risk_output: bool = True,
         hazard_type: str = "flooding",
+        name_catalog: str = "flood_maps",
+        maps_id: str = "RP",
     ):
         hazard = Hazard()
         hazard.setup_hazard(
+
+        hazard.checkInputs(
             self,
             hazard_type=hazard_type,
             risk_output=risk_output,
             map_fn=map_fn,
             map_type=map_type,
+            chunks=chunks,
             rp=rp,
             crs=crs,
             nodata=nodata,
             var=var,
+        )
+
+        hazard.readMaps(
+            self,
+            name_catalog=name_catalog,
+            hazard_type=hazard_type,
+            risk_output=risk_output,
+            crs=crs,
+            nodata=nodata,
+            var=var,
             chunks=chunks,
-            region=self.region,
         )
 
         # Store the hazard settings.
