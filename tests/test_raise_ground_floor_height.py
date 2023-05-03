@@ -31,7 +31,7 @@ def test_raise_ground_floor_height(case):
     fm.read()
 
     fm.exposure.raise_ground_floor_height(
-        selection_type="all",
+        selection_type="all",  # TODO: update to the new function.
         raise_by=2,
         height_reference="geom",
         reference_geom_path=_cases[case]["ground_floor_height_reference"],

@@ -527,7 +527,7 @@ class ExposureVector(Exposure):
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
             new_objects = self.set_height_relative_to_reference(
-                new_objects,
+                new_objects,  # TODO: Change to a GeoPandas dataframe
                 path_ref,
                 attr_ref,
                 ground_floor_height,
@@ -639,8 +639,9 @@ class ExposureVector(Exposure):
     @staticmethod
     def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
         gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
-            crs = crs
+            df,
+            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
+            crs=crs,
         )
         return gdf
 
@@ -677,7 +678,7 @@ class ExposureVector(Exposure):
 
         # Spatially join the data
         modified_objects_gdf = gpd.sjoin(
-            self.exposure_geoms,
+            exposure_to_modify,  # TODO: change to the exposure objects that should be modified, check if this is the correct variable.
             reference_shp[[attr_ref, "geometry"]],
             how="left",
         )
