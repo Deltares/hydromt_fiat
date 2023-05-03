@@ -280,6 +280,7 @@ class ExposureVector(Exposure):
             self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
+                self.exposure_geoms,
                 path_ref,
                 attr_ref,
                 raise_by,
@@ -526,8 +527,15 @@ class ExposureVector(Exposure):
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
+            new_objects_geoms = new_area.merge(
+                new_objects[["Object-Location Join ID", "Object ID"]],
+                how="left",
+                left_on="FID",
+                right_on="Object-Location Join ID",
+            )[['Object ID', 'geometry']]
             new_objects = self.set_height_relative_to_reference(
-                new_objects,  # TODO: Change to a GeoPandas dataframe
+                new_objects,
+                new_objects_geoms,
                 path_ref,
                 attr_ref,
                 ground_floor_height,
@@ -622,7 +630,7 @@ class ExposureVector(Exposure):
         elif selection_type == "list":
             ids = objectids
 
-        return ids
+        return list(ids)
 
     def get_geoms_from_xy(self):
         # TODO see if and how this can be merged with the df_to_gdf function
@@ -660,13 +668,35 @@ class ExposureVector(Exposure):
 
     def set_height_relative_to_reference(
         self,
-        exposure_to_modify: gpd.GeoDataFrame,
+        exposure_to_modify: pd.DataFrame,
+        exposure_geoms: gpd.GeoDataFrame,
         path_ref: str,
         attr_ref: str,
         raise_by: Union[int, float],
         out_crs,
     ) -> gpd.GeoDataFrame:
-        """
+        """Sets the height of exposure_to_modify to the level of the reference file.
+
+        Parameters
+        ----------
+        exposure_to_modify : pd.DataFrame
+            _description_
+        exposure_geoms : gpd.GeoDataFrame
+            _description_
+        path_ref : str
+            _description_
+        attr_ref : str
+            _description_
+        raise_by : Union[int, float]
+            _description_
+        out_crs : _type_
+            _description_
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            _description_
+
         Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
@@ -674,11 +704,13 @@ class ExposureVector(Exposure):
 
         # Reproject the input flood map if necessary
         if str(reference_shp.crs).upper() != str(out_crs).upper():
-            reference_shp = reference_shp.to_crs(out_crs)
+            reference_shp = reference_shp.to_crs(
+                out_crs
+            )  # TODO: make sure that the exposure_geoms file is projected in the out_crs (this doesn't happen now)
 
         # Spatially join the data
         modified_objects_gdf = gpd.sjoin(
-            exposure_to_modify,  # TODO: change to the exposure objects that should be modified, check if this is the correct variable.
+            exposure_geoms,
             reference_shp[[attr_ref, "geometry"]],
             how="left",
         )
