@@ -558,23 +558,27 @@ class ExposureVector(Exposure):
     def get_damage_function_columns(self):
         return [c for c in self.exposure_db.columns if "Damage Function:" in c]
 
-    def get_buildings(
+    def select_objects(
         self,
         type: Optional[str] = None,
         non_building_names: Optional[list[str]] = None,
+        return_gdf: bool = False,
     ) -> gpd.GeoDataFrame:
-        buildings = self.exposure_db
+        objects = self.exposure_db
 
         if non_building_names:
-            buildings = buildings.loc[
-                ~buildings["Primary Object Type"].isin(non_building_names), :
+            objects = objects.loc[
+                ~objects["Primary Object Type"].isin(non_building_names), :
             ]
 
         if type:
             if str(type).lower() != "all":
-                buildings = buildings.loc[buildings["Primary Object Type"] == type, :]
+                objects = objects.loc[objects["Primary Object Type"] == type, :]
 
-        return buildings
+        if return_gdf:
+            objects = self.df_to_gdf(objects, crs=self.crs)
+
+        return objects
 
     def get_object_ids(
         self,
@@ -593,22 +597,26 @@ class ExposureVector(Exposure):
         list[Any]
             list of ids
         """
-        buildings = self.get_buildings(
-            type=property_type,
-            non_building_names=non_building_names,
-        )
-
         if (selection_type == "aggregation_area") or (selection_type == "all"):
+            buildings = self.select_objects(
+                type=property_type,
+                non_building_names=non_building_names,
+            )
             if selection_type == "all":
                 ids = buildings["Object ID"]
             elif selection_type == "aggregation_area":
-                label = aggregation[0].name  # Always use first aggregation area type
                 ids = buildings.loc[
-                    buildings[f"Aggregation Label: {label}"] == aggregation_area_name,
+                    buildings[f"Aggregation Label: {aggregation}"]
+                    == aggregation_area_name,
                     "Object ID",
                 ]
         elif selection_type == "polygon":
             assert polygon_file is not None
+            buildings = self.select_objects(
+                type=property_type,
+                non_building_names=non_building_names,
+                return_gdf=True,
+            )
             polygon = gpd.read_file(polygon_file)
             ids = gpd.sjoin(buildings, polygon)["Object ID"]
         elif selection_type == "list":
@@ -617,6 +625,7 @@ class ExposureVector(Exposure):
         return ids
 
     def get_geoms_from_xy(self):
+        # TODO see if and how this can be merged with the df_to_gdf function
         exposure_geoms = gpd.GeoDataFrame(
             {
                 "Object ID": self.exposure_db["Object ID"],
@@ -626,6 +635,14 @@ class ExposureVector(Exposure):
             }
         )
         self.exposure_geoms = exposure_geoms
+
+    @staticmethod
+    def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
+        gdf = gpd.GeoDataFrame(
+            df, geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
+            crs = crs
+        )
+        return gdf
 
     def check_required_columns(self):
         for col in self._REQUIRED_COLUMNS:
