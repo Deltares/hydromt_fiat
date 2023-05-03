@@ -6,11 +6,11 @@ import shutil
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 
 _cases = {
-    "read": {
+    "update_max_potential_damage": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_read",
         "ini": EXAMPLEDIR / "test_read.ini",
-        "new_root": EXAMPLEDIR / "test_set_max_potential_damage",
+        "new_root": EXAMPLEDIR / "test_update_max_potential_damage",
     },
 }
 
@@ -20,12 +20,9 @@ def test_update_max_potential_damage(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
 
-    data_catalog_yml = str(_cases[case]["data_catalogue"])
-
     fm = FiatModel(
         root=root,
         mode="r",
-        data_libs=[data_catalog_yml],
     )
 
     fm.read()
