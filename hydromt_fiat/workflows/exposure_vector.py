@@ -542,7 +542,9 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
-        self.exposure_db = pd.concat([self.exposure_db, new_objects])
+        self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
+            drop=True
+        )
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
