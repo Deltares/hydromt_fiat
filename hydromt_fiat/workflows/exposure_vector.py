@@ -280,7 +280,7 @@ class ExposureVector(Exposure):
             self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
-                self.exposure_geoms,
+                self.exposure_geoms.iloc[idx, :],
                 path_ref,
                 attr_ref,
                 raise_by,
@@ -513,7 +513,7 @@ class ExposureVector(Exposure):
             max_id += 1
 
         new_objects = pd.concat(new_objects)
-        new_objects.reset_index(inplace=True)
+        new_objects.reset_index(inplace=True, drop=True)
 
         if elevation_reference == "datum":
             new_objects["Ground Floor Height"] = ground_floor_height
@@ -532,7 +532,7 @@ class ExposureVector(Exposure):
                 how="left",
                 left_on="FID",
                 right_on="Object-Location Join ID",
-            )[['Object ID', 'geometry']]
+            )[["Object ID", "geometry"]]
             new_objects = self.set_height_relative_to_reference(
                 new_objects,
                 new_objects_geoms,
