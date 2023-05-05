@@ -59,7 +59,7 @@ class FiatModel(GridModel):
             global_settings[k] = kwargs[k]
 
         self.config["global"] = global_settings
-
+        
     def setup_basemaps(
         self,
         region,
@@ -153,8 +153,8 @@ class FiatModel(GridModel):
         self.exposure.check_required_columns()
 
     def setup_exposure_raster(self):
-        NotImplemented
-
+        NotImplemented           
+  
     def setup_hazard(
         self,
         map_fn: str,
@@ -168,6 +168,7 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         name_catalog: str = "flood_maps",
         maps_id: str = "RP",
+
     ):
         hazard = Hazard()
 
@@ -210,6 +211,8 @@ class FiatModel(GridModel):
         hazard_settings["crs"] = hazard.crs
         hazard_settings["spatial_reference"] = map_type
         self.config["hazard"] = hazard_settings
+
+
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str
@@ -280,35 +283,16 @@ class FiatModel(GridModel):
         """Method to write the complete model schematization and configuration to file."""
         self.logger.info(f"Writing model data to {self.root}")
 
-        # Save the vulnerability and exposure data in the tables variable.
-        # Check if data exist
-        if self.vulnerability:
-            vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
-            self.tables.append(
-                (
-                    self.vulnerability.get_table(),
-                    vulnerability_output_path,
-                    {"index": False, "header": False},
-                )
-            )
+        # if self.hazard:
+        #     exposure_output_path = "./hazard/*.nc"
 
-            # Store the vulnerability settings in the config file.
-            self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
-
-        if self.exposure:
-            exposure_output_path = "./exposure/exposure.csv"
-            self.tables.append(
-                (self.exposure.exposure_db, exposure_output_path, {"index": False})
-            )
-
-            # Store the exposure settings in the config file.
-            self.config["exposure"] = [
-                {
-                    "type": "vector",
-                    "dbase_file": exposure_output_path,
-                    "crs": self.exposure.crs,
-                }
-            ]
+        #     self.config["hazard"] = [
+        #         {
+        #             "type": "vector",
+        #             "dbase_file": exposure_output_path,
+        #             "crs": self.hazard.raster.crs,
+        #         }
+        #     ]
 
         if self.config:  # try to read default if not yet set
             self.write_config()
@@ -345,3 +329,5 @@ class FiatModel(GridModel):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
         Config().save(self.config, Path(self.root).joinpath("settings.toml"))
+    
+    

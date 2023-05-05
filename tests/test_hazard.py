@@ -66,7 +66,7 @@ def test_Hazard(case):
         var,
         chunks,
     )
-    ds.to_netcdf("C:/Users/fuentesm/CISNE/HydroMT_sprint_sessions/test_77.nc")
+    
     assert hyfm
 
 
