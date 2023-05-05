@@ -339,10 +339,10 @@ class Hazard:
             layer = maps[key_name]
             maps_0 = xr.concat([maps_0, layer], dim='rp') 
 
-        new_da = maps_0.to_dataset(name='RISK')
-        new_da.attrs = {  "returnperiod": list(list_rp),
-                          "type":self.map_type_lst,
-                          'name':list_names}
+        # new_da = maps_0.to_dataset(name='RISK')
+        # new_da.attrs = {  "returnperiod": list(list_rp),
+        #                   "type":self.map_type_lst,
+        #                   'name':list_names}
         
         if not risk_output:
             # new_da = maps_0.drop_dims('rp')
@@ -367,7 +367,7 @@ class Hazard:
         if risk_output:
             for item in list_maps[:-1]:
                 model_fiat.maps.pop(item)
-                
+
 
         # ds = xr.Dataset(maps)
         # ds.raster.set_crs(da.raster.crs)
