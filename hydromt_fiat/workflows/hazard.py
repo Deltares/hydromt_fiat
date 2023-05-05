@@ -359,6 +359,13 @@ class Hazard:
                             'name':list_names,
                             "Analysis": "Risk"}  
 
+        model_fiat.hazard = new_da
+        model_fiat.set_maps(model_fiat.hazard, 'HydroMT_Fiat_hazard')
+
+        list_maps = list(model_fiat.maps.keys())
+
+        for item in list_maps[:-1]:
+            model_fiat.maps.pop(item)
 
         # ds = xr.Dataset(maps)
         # ds.raster.set_crs(da.raster.crs)
@@ -383,5 +390,4 @@ class Hazard:
         # # config = model_fiat.config
         # # new_da.to_netcdf("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/test_hazard_1/hazard/test_final_v2.nc")
         # #C:\Users\fuentesm\CISNE\HydroMT_sprint_sessions
-        return new_da
-        
+        return model_fiat.maps 

@@ -15,7 +15,7 @@ _cases = {
     # },
 
     "fiat_objects": {
-        "folder"   : "test_hazard_1",
+        "folder"   : "test_hazard_2",
         "ini"      : "test_hazard.ini",
         "catalog"  : "fiat_catalog_hazard.yml",
 
@@ -66,7 +66,7 @@ def test_Hazard(case):
         var,
         chunks,
     )
-    ds.to_netcdf("C:/Users/fuentesm/CISNE/HydroMT_sprint_sessions/test_77.nc")
+    
     assert hyfm
 
 
