@@ -15,7 +15,7 @@ _cases = {
     # },
 
     "fiat_objects": {
-        "folder"   : "test_hazard_2",
+        "folder"   : "test_hazard_1",
         "ini"      : "test_hazard.ini",
         "catalog"  : "fiat_catalog_hazard.yml",
 
