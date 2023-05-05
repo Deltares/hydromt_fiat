@@ -364,8 +364,10 @@ class Hazard:
 
         list_maps = list(model_fiat.maps.keys())
 
-        for item in list_maps[:-1]:
-            model_fiat.maps.pop(item)
+        if risk_output:
+            for item in list_maps[:-1]:
+                model_fiat.maps.pop(item)
+                
 
         # ds = xr.Dataset(maps)
         # ds.raster.set_crs(da.raster.crs)
