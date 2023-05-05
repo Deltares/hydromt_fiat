@@ -283,16 +283,35 @@ class FiatModel(GridModel):
         """Method to write the complete model schematization and configuration to file."""
         self.logger.info(f"Writing model data to {self.root}")
 
-        # if self.hazard:
-        #     exposure_output_path = "./hazard/*.nc"
+        # Save the vulnerability and exposure data in the tables variable.
+        # Check if data exist
+        if self.vulnerability:
+            vulnerability_output_path = "./vulnerability/vulnerability_curves.csv"
+            self.tables.append(
+                (
+                    self.vulnerability.get_table(),
+                    vulnerability_output_path,
+                    {"index": False, "header": False},
+                )
+            )
 
-        #     self.config["hazard"] = [
-        #         {
-        #             "type": "vector",
-        #             "dbase_file": exposure_output_path,
-        #             "crs": self.hazard.raster.crs,
-        #         }
-        #     ]
+            # Store the vulnerability settings in the config file.
+            self.config["vulnerability"] = {"dbase_file": vulnerability_output_path}
+
+        if self.exposure:
+            exposure_output_path = "./exposure/exposure.csv"
+            self.tables.append(
+                (self.exposure.exposure_db, exposure_output_path, {"index": False})
+            )
+
+            # Store the exposure settings in the config file.
+            self.config["exposure"] = [
+                {
+                    "type": "vector",
+                    "dbase_file": exposure_output_path,
+                    "crs": self.exposure.crs,
+                }
+            ]
 
         if self.config:  # try to read default if not yet set
             self.write_config()
