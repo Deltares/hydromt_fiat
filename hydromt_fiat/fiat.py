@@ -182,7 +182,7 @@ class FiatModel(GridModel):
         )
 
     def setup_social_vulnerability_index(
-        self, census_key: str, path: str, state_abbreviation: str
+        self, census_key: str, path: str, state_abbreviation: str, path_dataset: str
     ):
 
         # Create SVI object
@@ -190,16 +190,21 @@ class FiatModel(GridModel):
 
         # Call functionalities of SVI
         svi.set_up_census_key(census_key)
+        #svi.read_dataset(path_dataset)
         svi.variable_code_csv_to_pd_df(path)
         svi.set_up_download_codes()
         svi.set_up_state_code(state_abbreviation)
         svi.download_census_data()
         svi.rename_census_data("Census_code_withE", "Census_variable_name")
-        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
-        svi.processing_svi_data()
+        svi.identify_no_data()
+        svi.check_nan_variable_columns()
+        svi.print_missing_variables("Census_variable_name", "Indicator_code")
+        translation_variable_to_indicator = svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data(translation_variable_to_indicator)
         svi.normalization_svi_data()
         svi.domain_scores()
         svi.composite_scores()
+        print("hi")
 
     # TO DO: JOIN WITH GEOMETRIES. FOR MAPPING.
     # this link can be used: https://github.com/datamade/census
