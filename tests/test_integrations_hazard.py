@@ -8,8 +8,8 @@ EXAMPLEDIR   = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT
 
 _cases = {
     "integration": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog_hazard.yml",
-        "dir": "test_hazard",
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_hazard_integration",
         "ini": EXAMPLEDIR / "test_hazard.ini",
     },
 }

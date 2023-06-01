@@ -157,17 +157,17 @@ class FiatModel(GridModel):
   
     def setup_hazard(
         self,
-        map_fn: str,
-        map_type: str,
-        rp,
-        crs,
-        nodata,
-        var,
-        chunks,
-        risk_output: bool = True,
-        hazard_type: str = "flooding",
+        map_fn:       Union[str, list[str]],
+        map_type:     Union[str, list[str]],
+        rp:           Union[int, list[int], None] = None ,
+        crs:          Union[str, list[str], None] = None,
+        nodata:       Union[int, list[int]] = None,
+        var:          Union[str, list[str], None] = None,
+        chunks:       Union[str, int, list[int]] = 'auto',
+        risk_output:  bool = True,
+        hazard_type:  str = "flooding",
         name_catalog: str = "flood_maps",
-        maps_id: str = "RP",
+        maps_id:      str = "RP",
 
     ):
         hazard = Hazard()
@@ -199,18 +199,19 @@ class FiatModel(GridModel):
         hazard_maps = []
         for hazard_map in self.maps.keys():
             hazard_maps.append(
-                str(Path("hazard") / (self.maps[hazard_map].name + ".nc"))
+                str(Path("hazard") / (hazard_map + ".nc"))
             )
 
         hazard_settings["grid_file"] = hazard_maps
-
+        hazard_settings["crs"] = hazard.crs
         if not isinstance(rp, list):
             rp = "Event"
         hazard_settings["return_period"] = rp
-
-        hazard_settings["crs"] = hazard.crs
-        hazard_settings["spatial_reference"] = map_type
-        self.config["hazard"] = hazard_settings
+        if map_type == "water_depth":
+            hazard_settings["spatial_reference"] = "DEM"
+        # else:
+        #     hazard_settings["spatial_reference"] = "DATUM"
+        self.config["hazard"]  = hazard_settings
 
 
 
