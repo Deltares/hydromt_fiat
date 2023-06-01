@@ -52,8 +52,7 @@ class FiatModel(GridModel):
         self.exposure = None
 
     def setup_config(self, **kwargs):
-        """_summary_"""
-        # Setup config from HydroMT FIAT ini file
+        """Setup configurations from the HydroMT-FIAT ini/yml file."""
         global_settings = {}
         for k in kwargs.keys():
             global_settings[k] = kwargs[k]

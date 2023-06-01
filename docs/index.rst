@@ -7,8 +7,8 @@ and analyse hydro models. It provides a generic model api with attributes to acc
 (dynamic) forcing data, results and states. 
 
 This plugin provides an implementation for the 
-`FIAT <https://publicwiki.deltares.nl/display/DFIAT/Delft-FIAT+Home>`_ flood impact assessment tool. 
-It details the different steps and explains how to  use HydroMT to easily get started and work on your own fiat model.
+`Delft-FIAT <https://github.com/Deltares/Delft-FIAT>`_ flood impact assessment tool. 
+It details the different steps and explains how to  use HydroMT to easily get started and work on your own FIAT model.
 
 For detailed information on HydroMT itself, you can visit the `core documentation <https://deltares.github.io/hydromt/>`_.
 

@@ -35,9 +35,10 @@ The following components are available to build or update Delft-FIAT model schem
 
    FiatModel.setup_config
    FiatModel.setup_basemaps
+   FiatModel.setup_vulnerability
+   FiatModel.setup_exposure_vector
    FiatModel.setup_hazard
-   FiatModel.setup_exposure_buildings
-   FiatModel.scale_exposure
+   FiatModel.setup_vulnerability
 
 .. _data: https://deltares.github.io/hydromt/latest/user_guide/data.html
 .. _region: https://deltares.github.io/hydromt/latest/user_guide/cli.html#region-options
