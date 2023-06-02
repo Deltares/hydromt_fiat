@@ -20,7 +20,7 @@ hydroMT-fiat: FIAT plugin for hydroMT
     :target: https://mybinder.org/v2/gh/Deltares/hydromt_fiat/main?urlpath=lab/tree/examples
 
 
-hydroMT_ is a python package, developed by Deltares, to build and analysis hydro models.
+hydroMT_ is a python package, developed by Deltares, to build and analyze hydro models.
 It provides a generic model api with attributes to access the model schematization,
 (dynamic) forcing data, results and states. This plugin provides an implementation 
 for the FIAT_ model.
@@ -33,7 +33,7 @@ for the FIAT_ model.
 Installation
 ------------
 
-hydroMT-fiat will soon be availble from pypi and conda-forge (in progress).
+hydroMT-fiat is available from pypi and will be added to conda-forge (in progress).
 
 To install hydromt_fiat using pip do:
 
