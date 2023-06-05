@@ -7,21 +7,23 @@ name = "hydromt_fiat"
 authors = [
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
 	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
-	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
 	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
 	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
+	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
 ]
 dependencies = [
-    "hydromt >=0.4.1",
+    "hydromt >=0.6.0",
     "geopandas >=0.8",
     "numpy",
     "pandas",
     "pygeos",
     "rasterio",
     "xarray",
-	"pydantic"
+	"pydantic",
+	"census",
+	"us"
 ]
-requires-python = ">=3.8" # fix tests to support older versions
+requires-python = ">=3.8"
 readme = "README.rst"
 classifiers = [
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
