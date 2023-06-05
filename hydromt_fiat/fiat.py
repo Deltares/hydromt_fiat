@@ -120,7 +120,8 @@ class FiatModel(GridModel):
         # Depending on what the input is, another function is chosen to generate the
         # vulnerability curves file for Delft-FIAT.
         vulnerability.get_vulnerability_functions_from_one_file(
-            df_source=df_vulnerability, df_identifiers_linking=vf_ids_and_linking_df
+            df_source=df_vulnerability,
+            df_identifiers_linking=vf_ids_and_linking_df,
         )
 
         # Add the vulnerability curves to tables property
@@ -176,6 +177,7 @@ class FiatModel(GridModel):
         # Update config
         self.set_config("exposure.type", "vector")
         self.set_config("exposure.crs", self.exposure.crs)
+        self.set_config("exposure.dbase_file", "./exposure/exposure.csv")
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT."""
@@ -348,22 +350,6 @@ class FiatModel(GridModel):
         """Method to write the complete model schematization and configuration to file."""
         self.logger.info(f"Writing model data to {self.root}")
 
-        # TODO: place in setup_exposure_vector()
-        if self.exposure:
-            exposure_output_path = "./exposure/exposure.csv"
-            self._tables.append(
-                (self.exposure.exposure_db, exposure_output_path, {"index": False})
-            )
-
-            # Store the exposure settings in the config file.
-            self.config["exposure"] = [
-                {
-                    "type": "vector",
-                    "dbase_file": exposure_output_path,
-                    "crs": self.exposure.crs,
-                }
-            ]
-
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
@@ -390,8 +376,11 @@ class FiatModel(GridModel):
                 # The default location and save settings of the exposure data
                 fn = "exposure/exposure.csv"
                 kwargs = {"index": False}
+            elif name == "vulnerability_identifiers":
+                # The default location and save settings of the vulnerability curves
+                fn = "vulnerability/vulnerability_identifiers.csv"
+                kwargs = dict()
             # Other, can also return an error or pass silently
-            # I added vulnerability_identifiers here as it is required input for exposure
             else:
                 fn = f"{name}.csv"
                 kwargs = dict()
