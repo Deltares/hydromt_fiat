@@ -184,6 +184,18 @@ class FiatModel(GridModel):
     def setup_social_vulnerability_index(
         self, census_key: str, path: str, state_abbreviation: str, path_dataset: str
     ):
+        """
+        census_key : str
+
+            The user's unique Census key that they got from the census.gov website (https://api.census.gov/data/key_signup.html) to be able to download the Census data
+        path : str
+
+            The path to the codebook excel 
+
+        state_abbreviation : str
+
+            The abbreviation of the US state one would like to use in the analysis
+            """
 
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
@@ -204,7 +216,6 @@ class FiatModel(GridModel):
         svi.normalization_svi_data()
         svi.domain_scores()
         svi.composite_scores()
-        print("hi")
 
     # TO DO: JOIN WITH GEOMETRIES. FOR MAPPING.
     # this link can be used: https://github.com/datamade/census
