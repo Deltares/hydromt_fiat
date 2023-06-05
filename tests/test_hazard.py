@@ -1,18 +1,12 @@
 from hydromt_fiat.fiat import FiatModel
-from hydromt_fiat.workflows.hazard import Hazard
+from hydromt_fiat.hazard_functions import *
 from hydromt.config import configread
 from pathlib import Path
 import pytest
 
-EXAMPLEDIR = Path().absolute() / "examples"
 DATASET     = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
 _cases = {
-    # "fiat_flood": {
-    #     "region_grid": Path("data").joinpath("flood_hand", "hand_050cm_rp02.tif"),
-    #     "example"    : "fiat_flood",
-    #     "ini"        : "fiat_flood.ini",
-    # },
 
     "fiat_objects": {
         "folder"   : "test_hazard_1",
@@ -43,10 +37,7 @@ def test_Hazard(case):
     risk_output    = configread(config_fn)['setup_hazard']['risk_output']
     hazard_type    = configread(config_fn)['setup_config']['hazard_type']
 
-    hyfm_hazard = Hazard()
-
-    hyfm_hazard.checkInputs(
-        hyfm,
+    param_lst = get_lists(
         map_fn,
         map_type,
         chunks,
@@ -56,7 +47,18 @@ def test_Hazard(case):
         var,
     )
 
-    ds = hyfm_hazard.readMaps(
+    check_parameters(
+        param_lst,
+        hyfm,
+        chunks,
+        rp,
+        crs,
+        nodata,
+        var,
+    )
+
+    process_maps(
+        param_lst,
         hyfm,
         name_catalog,
         hazard_type,
@@ -67,6 +69,6 @@ def test_Hazard(case):
         chunks,
     )
     
-    assert hyfm
+    assert param_lst
 
 

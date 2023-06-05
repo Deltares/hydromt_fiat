@@ -263,7 +263,7 @@ class FiatModel(GridModel):
         return config.load_file(fn)
 
     def check_path_exists(self, fn):
-        """TODO: decide to use this or another function (check_file_exist in validation.py)"""
+        """TODO: decide to use this or another function (check_file_exist in py)"""
         path = Path(fn)
         self.logger.debug(f"Reading file {str(path.name)}")
         if not fn.is_file():
