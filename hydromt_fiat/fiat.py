@@ -318,9 +318,8 @@ class FiatModel(GridModel):
         vulnerability_fn = Path(self.root) / self.get_config("vulnerability.dbase_file")
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
-            vf = Vulnerability()
-            vf.read(vulnerability_fn)
-            self._tables["vulnerability_curves"] = vf.get_table()
+            self.vulnerability = Vulnerability(fn=vulnerability_fn)
+            self._tables["vulnerability_curves"] = self.vulnerability.get_table()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
