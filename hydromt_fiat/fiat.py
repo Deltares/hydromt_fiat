@@ -133,32 +133,38 @@ class FiatModel(GridModel):
     def setup_exposure_vector(
         self,
         asset_locations: Union[str, Path],
-        occupancy_type: str,
+        occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
-        ground_floor_height: Union[int, float, str, None],
+        ground_floor_height: Union[int, float, str, Path, None],
         ground_flood_height_unit: str,
+        extraction_method: str = "centroid",
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
 
         Parameters
         ----------
         asset_locations : Union[str, Path]
-            _description_
-        occupancy_type : str
-            _description_
+            The path to the vector data (points or polygons) that can be used for the
+            asset locations.
+        occupancy_type : Union[str, Path]
+            The path to the data that can be used for the occupancy type.
         max_potential_damage : Union[str, Path]
-            _description_
-        ground_floor_height : Union[int, float, str, None]
-            _description_
+            The path to the data that can be used for the maximum potential damage.
+        ground_floor_height : Union[int, float, str, Path None]
+            Either a number (int or float), to give all assets the same ground floor
+            height or a path to the data that can be used to add the ground floor
+            height to the assets.
         ground_flood_height_unit : str
-            _description_
+            The unit of the ground_floor_height
         """
         self.exposure = ExposureVector(self.data_catalog, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            self.exposure.setup_from_single_source(asset_locations, ground_floor_height)
+            self.exposure.setup_from_single_source(
+                asset_locations, ground_floor_height, extraction_method
+            )
 
         # Link the damage functions to assets
         try:
@@ -180,7 +186,9 @@ class FiatModel(GridModel):
         self.set_config("exposure.dbase_file", "./exposure/exposure.csv")
 
     def setup_exposure_raster(self):
-        """Setup raster exposure data for Delft-FIAT."""
+        """Setup raster exposure data for Delft-FIAT.
+        This function will be implemented at a later stage.
+        """
         NotImplemented
 
     def setup_hazard(
@@ -252,11 +260,13 @@ class FiatModel(GridModel):
         Parameters
         ----------
         census_key : str
-            _description_
-        path : Union[str, Path]
-            _description_
+            The user's unique Census key that they got from the census.gov website
+            (https://api.census.gov/data/key_signup.html) to be able to download the
+            Census data
+        path : str
+            The path to the codebook excel
         state_abbreviation : str
-            _description_
+            The abbreviation of the US state one would like to use in the analysis
         """
         # TODO: Read the SVI table
 
