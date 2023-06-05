@@ -315,24 +315,22 @@ class FiatModel(GridModel):
         self.logger.info("Reading model table files.")
 
         # Start with vulnerability table
-        vulnerability_fn = self.get_config(
-            "vulnerability.dbase_file", "vulnerability/vulnerability_curves.csv"
-        )
-        if Path(vulnerability_fn).is_file:
+        vulnerability_fn = Path(self.root) / self.get_config("vulnerability.dbase_file")
+        if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             vf = Vulnerability()
-            df = vf.read(vulnerability_fn)
-            self._tables["vulnerability_curves"] = df
+            vf.read(vulnerability_fn)
+            self._tables["vulnerability_curves"] = vf.get_table()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = self.get_config("exposure.dbase_file", "exposure/exposure.csv")
-        if Path(exposure_fn).is_file:
+        exposure_fn = Path(self.root) / self.get_config("exposure.dbase_file")
+        if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
-            ef = ExposureVector(crs=self.get_config("exposure.crs", self.crs))
-            df = ef.read(exposure_fn)
-            self._tables["exposure"] = df
+            self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
+            self.exposure.read(exposure_fn)
+            self._tables["exposure"] = self.exposure.exposure_db
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
 

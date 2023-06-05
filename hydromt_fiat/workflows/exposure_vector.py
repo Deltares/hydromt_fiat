@@ -639,8 +639,9 @@ class ExposureVector(Exposure):
     @staticmethod
     def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
         gdf = gpd.GeoDataFrame(
-            df, geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
-            crs = crs
+            df,
+            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
+            crs=crs,
         )
         return gdf
 
@@ -663,7 +664,7 @@ class ExposureVector(Exposure):
         path_ref: str,
         attr_ref: str,
         raise_by: Union[int, float],
-        out_crs,
+        out_crs: str,
     ) -> gpd.GeoDataFrame:
         """
         Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data

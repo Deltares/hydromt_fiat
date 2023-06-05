@@ -29,12 +29,13 @@ def test_raise_ground_floor_height(case):
 
     fm.read()
 
+    objectids = fm.exposure.get_object_ids(selection_type="all")
     fm.exposure.raise_ground_floor_height(
-        selection_type="all",
         raise_by=2,
+        objectids=objectids,
         height_reference="geom",
-        reference_geom_path=_cases[case]["ground_floor_height_reference"],
-        reference_geom_attrname="bfe",
+        path_ref=_cases[case]["ground_floor_height_reference"],
+        attr_ref="bfe",
     )
 
     if _cases[case]["new_root"].exists():
