@@ -1,11 +1,7 @@
 """Implement fiat model class"""
 
-from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.hazard import Hazard
 from hydromt.models.model_grid import GridModel
-from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
-from hydromt_fiat.config import Config
 import geopandas as gpd
 import pandas as pd
 import hydromt
@@ -13,8 +9,11 @@ from pathlib import Path
 
 from shapely.geometry import box
 from typing import Union
-from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
 
+from .config import Config
+from .workflows.vulnerability import Vulnerability
+from .workflows.exposure_vector import ExposureVector
+from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 
 from . import DATADIR
 
@@ -31,6 +30,7 @@ class FiatModel(GridModel):
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
+    _CLI_ARGS = {"region": "setup_basemaps"}
     _DATADIR = DATADIR
 
     def __init__(
@@ -48,17 +48,8 @@ class FiatModel(GridModel):
             data_libs=data_libs,
             logger=logger,
         )
-        self.tables = []  # List of tables to write
+        self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
-
-    def setup_config(self, **kwargs):
-        """_summary_"""
-        # Setup config from HydroMT FIAT ini file
-        global_settings = {}
-        for k in kwargs.keys():
-            global_settings[k] = kwargs[k]
-
-        self.config["global"] = global_settings
 
     def setup_basemaps(
         self,
@@ -94,46 +85,64 @@ class FiatModel(GridModel):
 
     def setup_vulnerability(
         self,
-        vulnerability_source: str,
-        vulnerability_identifiers_and_linking: str,
+        vulnerability_fn: Union[str, Path],
+        vulnerability_identifiers_and_linking_fn: Union[str, Path],
         unit: str,
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
         Parameters
         ----------
-        vulnerability_source : str
+        vulnerability_fn : Union[str, Path]
             The (relative) path or ID from the data catalog to the source of the vulnerability functions.
-        vulnerability_identifiers_and_linking : str
+        vulnerability_identifiers_and_linking_fn : Union[str, Path]
             The (relative) path to the table that links the vulnerability functions and exposure categories.
         unit : str
             The unit of the vulnerability functions.
         """
 
-        if not Path(vulnerability_identifiers_and_linking):
-            logging.error(
-                f"Vulnerability identifiers and linking table does not exist at: {vulnerability_identifiers_and_linking}"
-            )
+        # Read the vulnerability data
+        df_vulnerability = self.data_catalog.get_dataframe(vulnerability_fn)
 
-        self.vulnerability = Vulnerability(unit, self.data_catalog)
-        vf_source_df = self.vulnerability.get_vulnerability_source(vulnerability_source)
-        self.vf_ids_and_linking_df = (
-            self.vulnerability.get_vulnerability_identifiers_and_linking_source(
-                vulnerability_identifiers_and_linking
-            )
+        # Read the vulnerability linking table
+        vf_ids_and_linking_df = self.data_catalog.get_dataframe(
+            vulnerability_identifiers_and_linking_fn
         )
+
+        # Process the vulnerability data
+        self.vulnerability = Vulnerability(unit)
         self.vulnerability.get_vulnerability_functions_from_one_file(
-            vf_source_df, self.vf_ids_and_linking_df
+            df_source=df_vulnerability, df_identifiers_linking=vf_ids_and_linking_df
         )
+
+        # Add to tables property
+        self.set_tables(df=self.vulnerability.get_table(), name="vulnerability")
+        # Also add the identifiers
+        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
     def setup_exposure_vector(
         self,
-        asset_locations: str,
+        asset_locations: Union[str, Path],
         occupancy_type: str,
-        max_potential_damage: str,
+        max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, None],
         ground_flood_height_unit: str,
     ) -> None:
+        """Setup vector exposure data for Delft-FIAT.
+
+        Parameters
+        ----------
+        asset_locations : Union[str, Path]
+            _description_
+        occupancy_type : str
+            _description_
+        max_potential_damage : Union[str, Path]
+            _description_
+        ground_floor_height : Union[int, float, str, None]
+            _description_
+        ground_flood_height_unit : str
+            _description_
+        """
         self.exposure = ExposureVector(self.data_catalog, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
@@ -152,7 +161,15 @@ class FiatModel(GridModel):
         self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df)
         self.exposure.check_required_columns()
 
+        # Add to tables
+        self.set_tables(df=self.exposure.exposure_db, name="exposure")
+
+        # Update config
+        self.set_config("exposure.type", "vector")
+        self.set_config("exposure.crs", self.exposure.crs)
+
     def setup_exposure_raster(self):
+        """Setup raster exposure data for Delft-FIAT."""
         NotImplemented
 
     def setup_hazard(
@@ -169,54 +186,67 @@ class FiatModel(GridModel):
         name_catalog: str = "flood_maps",
         maps_id: str = "RP",
     ):
-        hazard = Hazard()
-        hazard.setup_hazard(
+        NotImplemented
+        # FIXME commented out because Mario will update this part.
+        # hazard = Hazard()
 
-        hazard.checkInputs(
-            self,
-            hazard_type=hazard_type,
-            risk_output=risk_output,
-            map_fn=map_fn,
-            map_type=map_type,
-            chunks=chunks,
-            rp=rp,
-            crs=crs,
-            nodata=nodata,
-            var=var,
-        )
+        # hazard.checkInputs(
+        #     self,
+        #     hazard_type=hazard_type,
+        #     risk_output=risk_output,
+        #     map_fn=map_fn,
+        #     map_type=map_type,
+        #     chunks=chunks,
+        #     rp=rp,
+        #     crs=crs,
+        #     nodata=nodata,
+        #     var=var,
+        # )
 
-        hazard.readMaps(
-            self,
-            name_catalog=name_catalog,
-            hazard_type=hazard_type,
-            risk_output=risk_output,
-            crs=crs,
-            nodata=nodata,
-            var=var,
-            chunks=chunks,
-        )
+        # hazard.readMaps(
+        #     self,
+        #     name_catalog=name_catalog,
+        #     hazard_type=hazard_type,
+        #     risk_output=risk_output,
+        #     crs=crs,
+        #     nodata=nodata,
+        #     var=var,
+        #     chunks=chunks,
+        # )
 
-        # Store the hazard settings.
-        hazard_settings = {}
-        hazard_maps = []
-        for hazard_map in self.maps.keys():
-            hazard_maps.append(
-                str(Path("hazard") / (self.maps[hazard_map].name + ".nc"))
-            )
+        # # Store the hazard settings.
+        # hazard_settings = {}
+        # hazard_maps = []
+        # for hazard_map in self.maps.keys():
+        #     hazard_maps.append(
+        #         str(Path("hazard") / (self.maps[hazard_map].name + ".nc"))
+        #     )
 
-        hazard_settings["grid_file"] = hazard_maps
+        # hazard_settings["grid_file"] = hazard_maps
 
-        if not isinstance(rp, list):
-            rp = "Event"
-        hazard_settings["return_period"] = rp
+        # if not isinstance(rp, list):
+        #     rp = "Event"
+        # hazard_settings["return_period"] = rp
 
-        hazard_settings["crs"] = hazard.crs
-        hazard_settings["spatial_reference"] = map_type
-        self.config["hazard"] = hazard_settings
+        # hazard_settings["crs"] = hazard.crs
+        # hazard_settings["spatial_reference"] = map_type
+        # self.config["hazard"] = hazard_settings
 
     def setup_social_vulnerability_index(
-        self, census_key: str, path: str, state_abbreviation: str
+        self, census_key: str, path: Union[str, Path], state_abbreviation: str
     ):
+        """Setup the social vulnerability index for the vector exposure data for
+        Delft-FIAT.
+
+        Parameters
+        ----------
+        census_key : str
+            _description_
+        path : Union[str, Path]
+            _description_
+        state_abbreviation : str
+            _description_
+        """
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
