@@ -4,21 +4,34 @@ from pathlib import Path
 import pytest
 import shutil
 
-EXAMPLEDIR = Path().absolute() / "local_test_database"
+EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
 _cases = {
-    "setup_new_composite_area": {
+    "setup_new_composite_area_datum": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_read",
         "ini": EXAMPLEDIR / "test_read.ini",
-        "new_root": EXAMPLEDIR / "test_setup_new_composite_area",
+        "new_root": EXAMPLEDIR / "test_setup_new_composite_area_datum",
         "composite_areas": EXAMPLEDIR / "test_read" / "new_development_area_test.gpkg",
+        "type": "datum",
+        "path_ref": None,
+        "attr_ref": None,
+    },
+    "setup_new_composite_area_geom": {
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_read",
+        "ini": EXAMPLEDIR / "test_read.ini",
+        "new_root": EXAMPLEDIR / "test_setup_new_composite_area_geom",
+        "composite_areas": EXAMPLEDIR / "test_read" / "new_development_area_test.gpkg",
+        "type": "geom",
+        "path_ref": EXAMPLEDIR / "test_read" / "reference_groundHeight_test.shp",
+        "attr_ref": "bfe",
     },
 }
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_setup_new_composite_areas(case):
+def test_setup_new_composite_areas_datum(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
@@ -34,7 +47,9 @@ def test_setup_new_composite_areas(case):
         ground_floor_height=2,
         damage_types=["Structure"],
         vulnerability=fm.vulnerability,
-        elevation_reference="datum",
+        elevation_reference=_cases[case]["type"],
+        path_ref=_cases[case]["path_ref"],
+        attr_ref=_cases[case]["attr_ref"],
     )
 
     if _cases[case]["new_root"].exists():
