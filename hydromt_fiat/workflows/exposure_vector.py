@@ -285,6 +285,7 @@ class ExposureVector(Exposure):
             self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
+                self.exposure_geoms.iloc[idx, :],
                 path_ref,
                 attr_ref,
                 raise_by,
@@ -539,7 +540,9 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
-        self.exposure_db = pd.concat([self.exposure_db, new_objects])
+        self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
+            drop=True
+        )
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
