@@ -1,5 +1,5 @@
 from hydromt_fiat.fiat import FiatModel
-from hydromt_fiat.hazard_functions import *
+from hydromt_fiat.workflows.hazard import *
 from hydromt.config import configread
 from pathlib import Path
 import pytest

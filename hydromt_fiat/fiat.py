@@ -1,7 +1,7 @@
 """Implement fiat model class"""
 
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.hazard import Hazard
+from hydromt_fiat.workflows.hazard_old import Hazard
 from hydromt.models.model_grid import GridModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 import logging
