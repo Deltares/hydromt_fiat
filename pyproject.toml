@@ -12,7 +12,7 @@ authors = [
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
 ]
 dependencies = [
-    "hydromt >=0.4.1",
+    "hydromt >=0.6.0",
     "geopandas >=0.8",
     "numpy",
     "pandas",

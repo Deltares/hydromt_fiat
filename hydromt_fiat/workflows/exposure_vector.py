@@ -79,7 +79,10 @@ class ExposureVector(Exposure):
         )
 
     def setup_from_single_source(
-        self, source: str, ground_floor_height: Union[int, float, str, None]
+        self,
+        source: str,
+        ground_floor_height: Union[int, float, str, Path, None],
+        extraction_method: str,
     ) -> None:
         """_summary_
 
@@ -87,37 +90,39 @@ class ExposureVector(Exposure):
         ----------
         source : str
             _description_
+        ground_floor_height : Union[int, float, str, Path, None]
+            Either a number (int or float), to give all assets the same ground floor
+            height or a path to the data that can be used to add the ground floor
+            height to the assets.
+        extraction_method : str
+            The extraction method to be used for all of the assets.
         """
-        if source == "NSI":
-            source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
-            source_data_authority = source_data.crs.to_authority()
-            self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+        source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+        source_data_authority = source_data.crs.to_authority()
+        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
 
-            # Read the json file that holds a dictionary of names of the NSI coupled to Delft-FIAT names
-            with open(
-                self.data_catalog.sources[source].kwargs["NSI_to_FIAT_translation_fn"]
-            ) as json_file:
-                nsi_fiat_translation = json_file.read()
-            nsi_fiat_translation = json.loads(nsi_fiat_translation)
+        # Read the json file that holds a dictionary of names of the NSI coupled to Delft-FIAT names
+        with open(
+            self.data_catalog.sources[source].kwargs["translation_fn"]
+        ) as json_file:
+            nsi_fiat_translation = json_file.read()
+        nsi_fiat_translation = json.loads(nsi_fiat_translation)
 
-            # Fill the exposure data
-            columns_to_fill = nsi_fiat_translation.keys()
-            for column_name in columns_to_fill:
-                self.exposure_db[column_name] = source_data[
-                    nsi_fiat_translation[column_name]
-                ]
+        # Fill the exposure data
+        columns_to_fill = nsi_fiat_translation.keys()
+        for column_name in columns_to_fill:
+            self.exposure_db[column_name] = source_data[
+                nsi_fiat_translation[column_name]
+            ]
 
-            # Check if the 'Object ID' column is unique
-            if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
-                source_data["Object ID"] = range(1, len(self.exposure_db.index) + 1)
+        # Check if the 'Object ID' column is unique
+        if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
+            source_data["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
-            self.setup_ground_floor_height(ground_floor_height)
+        self.setup_ground_floor_height(ground_floor_height)
 
-            # Because NSI is used, the extraction method must be centroid
-            self.setup_extraction_method("centroid")
-
-        else:
-            NotImplemented
+        # Set the extraction method
+        self.setup_extraction_method(extraction_method)
 
     def setup_from_multiple_sources(self):
         NotImplemented
@@ -675,7 +680,7 @@ class ExposureVector(Exposure):
         path_ref: str,
         attr_ref: str,
         raise_by: Union[int, float],
-        out_crs,
+        out_crs: str,
     ) -> gpd.GeoDataFrame:
         """Sets the height of exposure_to_modify to the level of the reference file.
 

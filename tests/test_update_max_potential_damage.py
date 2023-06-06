@@ -1,4 +1,5 @@
 from hydromt_fiat.fiat import FiatModel
+from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
@@ -19,11 +20,9 @@ _cases = {
 def test_update_max_potential_damage(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    logger = setuplog("hydromt_fiat", log_level=10)
 
-    fm = FiatModel(
-        root=root,
-        mode="r",
-    )
+    fm = FiatModel(root=root, mode="r", logger=logger)
 
     fm.read()
 
