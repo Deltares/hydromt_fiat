@@ -11,8 +11,8 @@ EXAMPLEDIR = Path(
 
 _cases = {
     "integration": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog_hazard.yml",
-        "dir": "test_hazard",
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_hazard_integration",
         "ini": EXAMPLEDIR / "test_hazard.ini",
     },
 }
