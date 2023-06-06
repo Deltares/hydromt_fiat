@@ -428,7 +428,7 @@ class FiatModel(GridModel):
         return vi
 
     def set_tables(self, df: pd.DataFrame, name: str) -> None:
-        """Add DataFrames to the tables variable.
+        """Add <pandas.DataFrame> to the tables variable.
 
         Parameters
         ----------
@@ -437,8 +437,11 @@ class FiatModel(GridModel):
         name : str
             Name of the DataFrame to add
         """
-        if df.empty:
-            self.logger.warning(
-                f"Trying to add an empty DataFrame '{name}' to the " "tables variable."
-            )
+        if not (isinstance(df, pd.DataFrame) or isinstance(df, pd.Series)):
+            raise ValueError("df type not recognized, should be pandas.DataFrame.")
+        if name in self._tables:
+            if not self._write:
+                raise IOError(f"Cannot overwrite table {name} in read-only mode")
+            elif self._read:
+                self.logger.warning(f"Overwriting table: {name}")
         self._tables[name] = df
