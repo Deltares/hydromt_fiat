@@ -22,6 +22,8 @@ class Hazard:
         nodata,
         var,
     ):
+        
+        
         # Checks the hazard input parameter types.
         # Checks map path list
         self.map_fn_lst = [map_fn] if isinstance(map_fn, (str, Path)) else map_fn
@@ -159,12 +161,23 @@ class Hazard:
                 )
 
             if os.path.exists(da_map_fn):
-                if not region.empty:
-                    da = model_fiat.data_catalog.get_rasterdataset(
-                        da_map_fn, geom=region, **kwargs
-                    )
+                if da_map_fn.stem == "sfincs_map":
+                    #da = model_fiat.data_catalog.get_rasterdataset(da_map_fn) The file cannot be directly read by HydroMT
+
+                    ds_map = xr.open_dataset(da_map_fn)
+                    da = ds_map[kwargs["variables"]].squeeze(dim="timemax").drop_vars("timemax")
+                    da.raster.set_crs(ds_map.crs.epsg_code)  
+                    da.raster.set_nodata(nodata=ds_map.encoding.get("_FillValue"))
+                    da.reset_coords(['spatial_ref'], drop=False)
+                    da.encoding["_FillValue"] = None
+                    #da_name = kwargs["variables"]
                 else:
-                    da = model_fiat.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
+                    if not region.empty:
+                        da = model_fiat.data_catalog.get_rasterdataset(
+                            da_map_fn, geom=region, **kwargs
+                        )
+                    else:
+                        da = model_fiat.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
             else:
                 if not region.empty:
                     da = model_fiat.data_catalog.get_rasterdataset(
@@ -206,9 +219,12 @@ class Hazard:
                 raise ValueError("The hazard map has no nodata value assigned.")
 
             # Correct (if necessary) the grid orientation from the lower to the upper left corner.
-            if da.raster.res[1] > 0:
-                da = da.reindex({da.raster.y_dim: list(reversed(da.raster.ycoords))})
-
+            if da_name != "sfincs_map":            #This check could not be implemented into the sfincs_map outputs
+                if da.raster.res[1] > 0:
+                    da = da.reindex(
+                        {da.raster.y_dim: list(reversed(da.raster.ycoords))}
+                        )
+                
             # Check if the obtained hazard map is identical.
             if (
                 model_fiat.staticmaps
@@ -230,6 +246,9 @@ class Hazard:
                 else None
             )
 
+            if risk_output:
+                da = da.expand_dims({'rp': [da_rp]}, axis=0)
+
             if risk_output and da_rp is None:
                 # Get (if possible) the return period from dataset names if the input parameter is None.
                 if "rp" in da_name.lower():
@@ -240,7 +259,7 @@ class Hazard:
                     rp_str = "".join(
                         filter(fstrip, da_name.lower().split("rp")[-1])
                     ).lstrip("0")
-
+                    
                     try:
                         assert isinstance(
                             literal_eval(rp_str) if rp_str else None, (int, float)
@@ -308,63 +327,90 @@ class Hazard:
             #             "var": None if not hasattr(self, "var_lst") else self.var_lst[idx],
             #             "chunks": "auto" if chunks == "auto" else self.chunks_lst[idx],
             #            }
-
-            da = da.expand_dims({"rp": [da_rp]}, axis=0)
+            
+            
 
             model_fiat.set_maps(da, da_name)
             # post = f"(rp {da_rp})" if rp is not None and risk_output else ""
             post = f"(rp {da_rp})" if risk_output else ""
             model_fiat.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
 
-            # new_da = xr.concat([new_da, da], dim='rp')
+            # new_da = xr.concat([new_da, da], dim='rp')   
 
             # import numpy as np
             # new_da = xr.DataArray(np.zeros_like(da), dims=da.dims, coords=da.coords).rename('new_dataframe')
 
-        # # model_fiat.maps.to_netcdf("test_hazard_1/test.nc")
 
-        # #model_fiat.set_maps(catalog, "all")
-        maps = model_fiat.maps
-        list_keys = list(maps.keys())
-        maps_0 = maps[list_keys[0]].rename("risk")
-        list_keys.pop(0)
+        if risk_output:
+            maps = model_fiat.maps
+            list_keys = list(maps.keys())
+            maps_0 = maps[list_keys[0]].rename('risk')
+            list_keys.pop(0)
 
-        for idx, x in enumerate(list_keys):
-            key_name = list_keys[idx]
-            layer = maps[key_name]
-            maps_0 = xr.concat([maps_0, layer], dim="rp")
+            for idx, x in enumerate(list_keys):
+                key_name = list_keys[idx]
+                layer = maps[key_name]
+                maps_0 = xr.concat([maps_0, layer], dim='rp') 
 
-        # new_da = maps_0.to_dataset(name='RISK')
-        # new_da.attrs = {  "returnperiod": list(list_rp),
-        #                   "type":self.map_type_lst,
-        #                   'name':list_names}
-        
-        if not risk_output:
-            # new_da = maps_0.drop_dims('rp')
-            new_da = maps_0.to_dataset(name="EVENT")
-            new_da.attrs = {
-                "returnperiod": list(list_rp),
-                "type": self.map_type_lst,
-                "name": list_names,
-                "Analysis": "Event base",
-            }
-
-        else:
             new_da = maps_0.to_dataset(name='RISK')
             new_da.attrs = {  "returnperiod": list(list_rp),
                             "type":self.map_type_lst,
                             'name':list_names,
                             "Analysis": "Risk"}  
 
-        model_fiat.hazard = new_da
-        model_fiat.set_maps(model_fiat.hazard, 'HydroMT_Fiat_hazard')
+            model_fiat.hazard = new_da
+            model_fiat.set_maps(model_fiat.hazard, 'HydroMT_Fiat_hazard')
 
-        list_maps = list(model_fiat.maps.keys())
+            list_maps = list(model_fiat.maps.keys())
 
-        if risk_output:
-            for item in list_maps[:-1]:
-                model_fiat.maps.pop(item)
+            if risk_output:
+                for item in list_maps[:-1]:
+                    model_fiat.maps.pop(item)
 
+        # else:
+        #     model_fiat.hazard = new_da
+
+
+        # # model_fiat.maps.to_netcdf("test_hazard_1/test.nc")
+
+        # #model_fiat.set_maps(catalog, "all")
+        # maps = model_fiat.maps
+        # list_keys = list(maps.keys())
+        # maps_0 = maps[list_keys[0]].rename('risk')
+        # list_keys.pop(0)
+
+        # for idx, x in enumerate(list_keys):
+        #     key_name = list_keys[idx]
+        #     layer = maps[key_name]
+        #     maps_0 = xr.concat([maps_0, layer], dim='rp') 
+        
+        # if not risk_output:
+        #     # new_da = maps_0.drop_dims('rp')
+        #     new_da = maps_0.to_dataset(name='EVENT')
+        #     new_da.attrs = {  "returnperiod": list(list_rp),
+        #                     "type":self.map_type_lst,
+        #                     'name':list_names,
+        #                     "Analysis": "Event base"}  
+                                                            #TODO: A netcdf is not required when working with evetns       
+        # else:
+        #     new_da = maps_0.to_dataset(name='RISK')
+        #     new_da.attrs = {  "returnperiod": list(list_rp),
+        #                     "type":self.map_type_lst,
+        #                     'name':list_names,
+        #                     "Analysis": "Risk"}  
+
+        # if risk_output:
+        #     model_fiat.hazard = new_da
+        #     model_fiat.set_maps(model_fiat.hazard, 'HydroMT_Fiat_hazard')
+        # else:
+        #     model_fiat.hazard = new_da
+
+        # list_maps = list(model_fiat.maps.keys())
+
+        # if risk_output:
+        #     for item in list_maps[:-1]:
+        #         model_fiat.maps.pop(item)
+        
 
         # ds = xr.Dataset(maps)
         # ds.raster.set_crs(da.raster.crs)
@@ -372,7 +418,6 @@ class Hazard:
         # # new_da= ds.to_array(dim='rp')
 
         # # new_da = new_da.to_dataset(name='Full_stack')
-
         # # new_da.attrs = {  "returnperiod": list_rp,
         # #                   "type":self.map_type_lst,
         # #                   'name':list_names}
@@ -385,8 +430,7 @@ class Hazard:
         #     new_da = xr.concat([new_da, layer], dim='rp')
 
         # # new_da = new_da.to_dataset()
-
         # # config = model_fiat.config
         # # new_da.to_netcdf("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/test_hazard_1/hazard/test_final_v2.nc")
         # #C:\Users\fuentesm\CISNE\HydroMT_sprint_sessions
-        return model_fiat.maps 
+        return model_fiat.maps

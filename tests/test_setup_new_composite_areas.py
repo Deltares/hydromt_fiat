@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 import shutil
 
-EXAMPLEDIR = Path().absolute() / "local_test_database"
+EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
 _cases = {
     "setup_new_composite_area_datum": {
