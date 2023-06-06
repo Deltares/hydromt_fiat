@@ -157,7 +157,7 @@ class FiatModel(GridModel):
         ground_flood_height_unit : str
             The unit of the ground_floor_height
         """
-        self.exposure = ExposureVector(self.data_catalog, self.region)
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential

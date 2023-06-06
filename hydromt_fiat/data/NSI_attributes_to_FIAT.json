@@ -5,7 +5,7 @@
     "Secondary Object Type": "occtype",
     "Max Potential Damage: Structure": "val_struct",
     "Max Potential Damage: Content": "val_cont",
-    "Ground Elevation": "grnd_elv_m",
+    "Ground Elevation": "ground_el",
     "X Coordinate": "x",
     "Y Coordinate": "y",
     "Aggregation Label: Census Block": "cbfips"

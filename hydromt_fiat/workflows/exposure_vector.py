@@ -1,7 +1,9 @@
-from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.utils import detect_delimiter
+from .vulnerability import Vulnerability
+from .utils import detect_delimiter
+from .exposure import Exposure
+from hydromt_fiat.data.national_structure_inventory import nsi_post_request
+
 from hydromt.data_catalog import DataCatalog
-from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -52,6 +54,7 @@ class ExposureVector(Exposure):
     def __init__(
         self,
         data_catalog: DataCatalog = None,
+        logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
     ) -> None:
@@ -66,7 +69,9 @@ class ExposureVector(Exposure):
         crs : str, optional
             _description_, by default None
         """
-        super().__init__(data_catalog=data_catalog, region=region, crs=crs)
+        super().__init__(
+            data_catalog=data_catalog, logger=logger, region=region, crs=crs
+        )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
@@ -97,7 +102,16 @@ class ExposureVector(Exposure):
         extraction_method : str
             The extraction method to be used for all of the assets.
         """
-        source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+        if str(source).upper() == "NSI":
+            # polygon = data_catalog.get_geodataset("annapolis").iloc[0][0]
+            polygon = self.region.iloc[0][0]
+            post = nsi_post_request(self.data_catalog["NSI"].path, polygon, self.logger)
+
+            if post:
+                source_data = gpd.read_file(post.text, driver="GeoJSON")
+        else:
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+
         source_data_authority = source_data.crs.to_authority()
         self.crs = source_data_authority[0] + ":" + source_data_authority[1]
 
@@ -111,9 +125,16 @@ class ExposureVector(Exposure):
         # Fill the exposure data
         columns_to_fill = nsi_fiat_translation.keys()
         for column_name in columns_to_fill:
-            self.exposure_db[column_name] = source_data[
-                nsi_fiat_translation[column_name]
-            ]
+            try:
+                assert nsi_fiat_translation[column_name] in source_data.columns
+                self.exposure_db[column_name] = source_data[
+                    nsi_fiat_translation[column_name]
+                ]
+            except AssertionError:
+                logging.warning(
+                    f"Attribute {nsi_fiat_translation[column_name]} not "
+                    f"found in {str(source)}, skipping attribute."
+                )
 
         # Check if the 'Object ID' column is unique
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
