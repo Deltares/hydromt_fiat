@@ -58,16 +58,18 @@ class ExposureVector(Exposure):
         region: gpd.GeoDataFrame = None,
         crs: str = None,
     ) -> None:
-        """_summary_
+        """Transforms data into Vector Exposure data for Delft-FIAT.
 
         Parameters
         ----------
         data_catalog : DataCatalog, optional
-            _description_, by default None
+            The HydroMT DataCatalog, by default None
+        logger : logging.Logger, optional
+            A logger object, by default None
         region : gpd.GeoDataFrame, optional
-            _description_, by default None
+            The region of interest, by default None
         crs : str, optional
-            _description_, by default None
+            The CRS of the Exposure data, by default None
         """
         super().__init__(
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
@@ -184,7 +186,8 @@ class ExposureVector(Exposure):
         damage_types: Union[List[str], str],
         max_potential_damage: Union[List[float], float],
     ):
-        # TODO: implement that the max pot damage can be set from scratch from a single value or by doing a spatial join and taking from a column
+        # TODO: implement that the max pot damage can be set from scratch from a single
+        # value or by doing a spatial join and taking from a column
         damage_cols = self.get_max_potential_damage_columns()
 
         print(damage_cols)
@@ -319,8 +322,11 @@ class ExposureVector(Exposure):
 
         else:
             logging.warning(
-                f"The height reference of the Ground Floor Height is set to '{height_reference}'. "
-                "This is not one of the allowed height references. Set the height reference to 'datum', 'geom' or 'raster' (last option not yet implemented)."
+                "The height reference of the Ground Floor Height is set to "
+                f"'{height_reference}'. "
+                "This is not one of the allowed height references. Set the height "
+                "reference to 'datum', 'geom' or 'raster' (last option not yet "
+                "implemented)."
             )
 
     def truncate_damage_function(
@@ -346,17 +352,19 @@ class ExposureVector(Exposure):
             The Vulnerability object from the FiatModel.
         """
         logging.info(
-            f"Floodproofing {len(objectids)} properties for {floodproof_to} ft (CHANGE TO UNIT) of water."
-        )  # TODO: change ft to unit
+            f"Floodproofing {len(objectids)} properties for {floodproof_to} "
+            f"{vulnerability.unit} of water."
+        )
 
-        # The user can submit with how much feet the properties should be floodproofed and the damage function
-        # is truncated to that level.
+        # The user can submit with how much feet the properties should be floodproofed
+        # and the damage function is truncated to that level.
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
 
         ids = self.get_object_ids(selection_type="list", objectids=objectids)
         idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
 
-        # Find all damage functions that should be modified and truncate with floodproof_to.
+        # Find all damage functions that should be modified and truncate with
+        # floodproof_to.
         for df_type in damage_function_types:
             dfs_to_modify = [
                 d
@@ -395,8 +403,9 @@ class ExposureVector(Exposure):
         ]
         new_damages = dict()
 
-        # Calculate the Max. Potential Damages for the new area. This is the total percentage of population growth
-        # multiplied with the total sum of the Max Potential Structural/Content/Other Damage.
+        # Calculate the Max. Potential Damages for the new area. This is the total
+        # percentage of population growth multiplied with the total sum of the Max
+        # Potential Structural/Content/Other Damage.
         for c in damages_cols:
             total_damages = sum(self.exposure_db[c].fillna(0))
             new_damages[c.split("Max Potential Damage: ")[-1]] = (
@@ -456,12 +465,13 @@ class ExposureVector(Exposure):
         geom_file = Path(geom_file)
         assert geom_file.is_file()
 
-        # Calculate the total damages for the new object, for the indicated damage types.
+        # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
             percent_growth, damage_types
         )
 
-        # Read the original damage functions and create new weighted damage functions from the original ones.
+        # Read the original damage functions and create new weighted damage functions
+        # from the original ones.
         df_dict = {
             damage_type: [
                 df
@@ -490,12 +500,13 @@ class ExposureVector(Exposure):
             new_area.geometry.area.sum()
         )  # TODO: reproject to a projected CRS if this is a geographic CRS?
 
-        # There should be an attribute 'FID' in the new development area shapefile. This ID is used to join the
-        # shapefile to the exposure data.
+        # There should be an attribute 'FID' in the new development area shapefile.
+        # This ID is used to join the shapefile to the exposure data.
         join_id_name = "FID"
         if join_id_name not in new_area.columns:
             logging.info(
-                'The unique ID column in the New Development Area is not named "FID", therefore, a new unique identifyer named "FID" is added.'
+                'The unique ID column in the New Development Area is not named "FID", '
+                'therefore, a new unique identifyer named "FID" is added.'
             )
             new_area[join_id_name] = range(len(new_area.index))
             new_area.to_file(geom_file)
@@ -505,7 +516,8 @@ class ExposureVector(Exposure):
             perc_damages = new_area.geometry.iloc[i].area / total_area
             # TODO: Alert the user that the ground elevation is set to 0.
             # Take ground elevation from DEM?
-            # For water level calculation this will not take into account the non-flooded cells separately, just averaged
+            # For water level calculation this will not take into account the
+            # non-flooded cells separately, just averaged
             # Reduction factor for the part of the area is not build-up?
             dict_new_objects_data = {
                 "Object ID": [max_id + 1],
@@ -696,7 +708,8 @@ class ExposureVector(Exposure):
         out_crs: str,
     ) -> gpd.GeoDataFrame:
         """
-        Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
+        Note: It is assumed that the datum/DEM with which the geom file is created is
+        the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
         reference_shp = gpd.read_file(path_ref)  # Vector
@@ -713,8 +726,9 @@ class ExposureVector(Exposure):
         )
         modified_objects_gdf["value"] = modified_objects_gdf[attr_ref]
 
-        # Sort and add the elevation to the shp values, append to the exposure dataframe.
-        # To be able to append the values from the GeoDataFrame to the DataFrame, it must be sorted on the Object ID.
+        # Sort and add the elevation to the shp values, append to the exposure dataframe
+        # To be able to append the values from the GeoDataFrame to the DataFrame, it
+        # must be sorted on the Object ID.
         modified_objects_gdf = (
             modified_objects_gdf.groupby("Object ID")
             .max("value")

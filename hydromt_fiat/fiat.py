@@ -136,7 +136,7 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        ground_flood_height_unit: str,
+        ground_floor_height_unit: str,
         extraction_method: str = "centroid",
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -154,7 +154,7 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        ground_flood_height_unit : str
+        ground_floor_height_unit : str
             The unit of the ground_floor_height
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
@@ -179,6 +179,8 @@ class FiatModel(GridModel):
 
         # Add to tables
         self.set_tables(df=self.exposure.exposure_db, name="exposure")
+
+        # Add to
 
         # Update config
         self.set_config("exposure.type", "vector")
