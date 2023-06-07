@@ -130,6 +130,11 @@ class FiatModel(GridModel):
         # Also add the identifiers
         self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
+        # Update config
+        self.set_config(
+            "vulnerability.dbase_file", "./vulnerability/vulnerability_curves.csv"
+        )
+
     def setup_exposure_vector(
         self,
         asset_locations: Union[str, Path],
@@ -180,12 +185,18 @@ class FiatModel(GridModel):
         # Add to tables
         self.set_tables(df=self.exposure.exposure_db, name="exposure")
 
-        # Add to
+        # Add to the geoms
+        self.set_geoms(
+            geom=self.exposure.get_geom_gdf(
+                self._tables["exposure"], self.exposure.crs
+            ),
+            name="exposure",
+        )
 
         # Update config
-        self.set_config("exposure.type", "vector")
-        self.set_config("exposure.crs", self.exposure.crs)
-        self.set_config("exposure.dbase_file", "./exposure/exposure.csv")
+        self.set_config("exposure.vector.type", "vector")
+        self.set_config("exposure.vector.crs", self.exposure.crs)
+        self.set_config("exposure.vector.dbase_file", "./exposure/exposure.csv")
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -360,11 +371,17 @@ class FiatModel(GridModel):
         self.logger.info(f"Writing model data to {self.root}")
 
         if self.config:  # try to read default if not yet set
+            # TODO: think about setting global settings here or somewhere else??
+            self.set_config("global.output_dir", "output")
+            self.set_config(
+                "global.crs", "EPSG:4326"
+            )  # FOR TESTING, TODO: make flexible
+
             self.write_config()
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
-            self.write_geoms(fn="exposure/{name}.geojson")
+            self.write_geoms(fn="exposure/{name}.gpkg")
         if self._tables:
             self.write_tables()
 

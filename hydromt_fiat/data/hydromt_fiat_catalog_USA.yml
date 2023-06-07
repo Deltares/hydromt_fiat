@@ -1,6 +1,6 @@
 
 meta:
-  root: <path to the /hydromt_fiat/data folder on your local machine>
+  root: d:/hydromt_fiat/hydromt_fiat/data
 
 NSI:
     path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"

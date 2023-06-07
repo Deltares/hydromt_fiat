@@ -78,8 +78,14 @@ class ExposureVector(Exposure):
         self.exposure_geoms = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
 
-    def read(self, fn):
-        # Read the exposure data.
+    def read(self, fn: Union[str, Path]):
+        """Read the Delft-FIAT exposure data.
+
+        Parameters
+        ----------
+        fn : Union[str, Path]
+            Path to the exposure data.
+        """
         csv_delimiter = detect_delimiter(fn)
         self.exposure_db = pd.read_csv(
             fn, delimiter=csv_delimiter, dtype=self._CSV_COLUMN_DATATYPES, engine="c"
@@ -87,16 +93,18 @@ class ExposureVector(Exposure):
 
     def setup_from_single_source(
         self,
-        source: str,
+        source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
     ) -> None:
-        """_summary_
+        """Set up asset locations and other available data from a single source.
 
         Parameters
         ----------
-        source : str
-            _description_
+        source : Union[str, Path]
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the asset locations. This can be either
+            a point or polygon dataset.
         ground_floor_height : Union[int, float, str, Path, None]
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
@@ -600,18 +608,52 @@ class ExposureVector(Exposure):
         if "Secondary Object Type" in self.exposure_db.columns:
             return list(self.exposure_db["Secondary Object Type"].unique())
 
-    def get_max_potential_damage_columns(self):
+    def get_max_potential_damage_columns(self) -> List[str]:
+        """Returns the maximum potential damage columns in <exposure_db>
+
+        Returns
+        -------
+        List[str]
+            The maximum potential damage columns in <exposure_db>
+        """
         return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
 
-    def get_damage_function_columns(self):
+    def get_damage_function_columns(self) -> List[str]:
+        """Returns the damage function columns in <exposure_db>
+
+        Returns
+        -------
+        List[str]
+            The damage function columns in <exposure_db>
+        """
         return [c for c in self.exposure_db.columns if "Damage Function:" in c]
 
     def select_objects(
         self,
-        type: Optional[str] = None,
-        non_building_names: Optional[list[str]] = None,
+        primary_object_type: Optional[List[str]] = None,
+        non_building_names: Optional[List[str]] = None,
         return_gdf: bool = False,
-    ) -> gpd.GeoDataFrame:
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Filters the Exposure Database by <primary_object_type> and
+        <non_building_names>
+
+        Parameters
+        ----------
+        primary_object_type : Optional[List[str]], optional
+            Only select assets from this/these primary object type(s).
+            Can be any primary object type in a list or 'all', by default None
+            (also selecting all)
+        non_building_names : Optional[list[str]], optional
+            The names of the , by default None
+        return_gdf : bool, optional
+            If True the function returns a GeoDataFrame, if False the function
+            returns a Dataframe, by default False
+
+        Returns
+        -------
+        objects : Union[pd.DataFrame, gpd.GeoDataFrame]
+            The filtered (Geo)DataFrame.
+        """
         objects = self.exposure_db
 
         if non_building_names:
@@ -619,9 +661,11 @@ class ExposureVector(Exposure):
                 ~objects["Primary Object Type"].isin(non_building_names), :
             ]
 
-        if type:
-            if str(type).lower() != "all":
-                objects = objects.loc[objects["Primary Object Type"] == type, :]
+        if primary_object_type:
+            if str(primary_object_type).lower() != "all":
+                objects = objects.loc[
+                    objects["Primary Object Type"].isin(primary_object_type), :
+                ]
 
         if return_gdf:
             objects = self.df_to_gdf(objects, crs=self.crs)
@@ -640,6 +684,27 @@ class ExposureVector(Exposure):
         objectids: Optional[List[int]] = None,
     ) -> list[Any]:
         """Get ids of objects that are affected by the measure.
+
+        Parameters
+        ----------
+        selection_type : str
+            Type of selection, either 'all', 'aggregation_area',
+            'polygon', or 'list'.
+        property_type : Optional[str], optional
+            _description_, by default None
+        non_building_names : Optional[List[str]], optional
+            _description_, by default None
+        aggregation : Optional[str], optional
+            _description_, by default None
+        aggregation_area_name : Optional[str], optional
+            _description_, by default None
+        polygon_file : Optional[str], optional
+            _description_, by default None
+        list_file : Optional[str], optional
+            _description_, by default None
+        objectids : Optional[List[int]], optional
+            _description_, by default None
+
         Returns
         -------
         list[Any]
@@ -685,6 +750,17 @@ class ExposureVector(Exposure):
         self.exposure_geoms = exposure_geoms
 
     @staticmethod
+    def get_geom_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
+        # TODO decide if this is the best way
+        gdf = gpd.GeoDataFrame(
+            df[["Object ID"]],
+            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
+            crs=crs,
+        )
+        gdf.rename(columns={"Object ID": "object_id"}, inplace=True)
+        return gdf
+
+    @staticmethod
     def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
         gdf = gpd.GeoDataFrame(
             df,
@@ -694,6 +770,7 @@ class ExposureVector(Exposure):
         return gdf
 
     def check_required_columns(self):
+        """Checks whether the <_REQUIRED_COLUMNS> are in the <exposure_db>."""
         for col in self._REQUIRED_COLUMNS:
             try:
                 assert col in self.exposure_db.columns
