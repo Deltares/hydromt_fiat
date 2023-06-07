@@ -13,7 +13,7 @@ _cases = {
     "integration": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_hazard_integration",
-        "ini": EXAMPLEDIR / "test_hazard.ini",
+        "ini": EXAMPLEDIR / "test_hazard_unique.ini",
     },
 }
 

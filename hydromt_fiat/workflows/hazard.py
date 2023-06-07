@@ -15,7 +15,16 @@ def get_lists(
     var,
         
 ):  
+    params = dict()
     dict_lists = dict()
+
+    params['map_fn']   = map_fn
+    params['map_type'] = map_type
+    params['chunks']   = chunks
+    params['rp']       = rp
+    params['crs']      = crs
+    params['nodata']   = nodata  
+    params['var']      = var
     
     def validate_param(dictionary, param, name, types):
         param_lst = [param] if isinstance(param, types) else param
@@ -36,17 +45,21 @@ def get_lists(
     if var is not None:
         validate_param(dict_lists, var, name="var", types=str)
 
-    return dict_lists
+    return dict_lists, params
 
 def check_parameters(
     dict_lists,
+    params,
     model,
-    chunks,
-    rp,
-    crs,
-    nodata,
-    var,
 ):
+    
+    map_fn = params['map_fn']   
+    map_type = params['map_type'] 
+    chunks = params['chunks']   
+    rp = params['rp']       
+    crs = params['crs']      
+    nodata = params['nodata']     
+    var = params['var']      
     
     def error_message(variable_list):
         raise IndexError(f"The number of '{variable_list}' parameters should match with the number of 'map_fn' parameters.")
@@ -88,6 +101,58 @@ def check_parameters(
 
     # Check if the hazard input files exist.
     check_file_exist(model, param_lst=map_fn_lst, name="map_fn")
+
+def process_floodmaps(list_names,da_map_fn,idx, dict_lists, params, **kwargs):
+        map_fn_lst     = dict_lists['map_fn_lst']
+        map_type_lst   = dict_lists['map_type_lst']
+
+        map_fn   = params['map_fn']   
+        map_type = params['map_type'] 
+        chunks   = params['chunks']   
+        rp       = params['rp']       
+        crs      = params['crs']      
+        nodata   = params['nodata']     
+        var      = params['var'] 
+
+        # Check if it is a path or a name from the catalog
+        if os.path.exists(da_map_fn):
+            da_map_fn = Path(da_map_fn)
+            da_name   = da_map_fn.stem
+            da_suffix = da_map_fn.suffix
+            list_names.append(da_name)
+        else:
+            da_name = da_map_fn
+            list_names.append(da_name)
+
+        da_type = get_param(
+                map_type_lst, 
+                map_fn_lst, 
+                "hazard", 
+                da_name, 
+                idx, 
+                "map type"
+        )
+
+        # Get the local hazard map.
+        kwargs.update(chunks=chunks if chunks == "auto" else dict_lists['chunks_lst'][idx])
+
+        if "da_suffix" in locals() and da_suffix == ".nc":
+            if var is None:
+                raise ValueError(
+                    "The 'var' parameter is required when reading NetCDF data."
+                )
+            da_var = get_param(
+                    dict_lists['var_lst'],
+                    map_fn_lst,
+                    "hazard",
+                    da_name,
+                    idx,
+                    "NetCDF variable",
+            )
+            kwargs.update(variables=da_var)
+
+        return kwargs, da_name, da_map_fn
+
 
 def process_maps(
     dict_lists,

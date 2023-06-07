@@ -3,6 +3,7 @@ from hydromt_fiat.workflows.hazard import *
 from hydromt.config import configread
 from pathlib import Path
 import pytest
+from hydromt.log import setuplog
 
 DATASET     = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
@@ -11,7 +12,7 @@ _cases = {
     "fiat_objects": {
         "folder": "test_hazard_1",
         "ini": "test_hazard.ini",
-        "catalog": "fiat_catalog_hazard.yml",
+        "catalog": "fiat_catalog.yml",
     }
 }
 
@@ -24,6 +25,7 @@ def test_Hazard(case):
     data_libs = DATASET.joinpath(_cases[case]["catalog"])
 
     logger = setuplog("hydromt_fiat", log_level=10)
+
     hyfm = FiatModel(
         root=root, mode="w", data_libs=data_libs, config_fn=config_fn, logger=logger
     )

@@ -16,6 +16,7 @@ from .config import Config
 from .workflows.vulnerability import Vulnerability
 from .workflows.exposure_vector import ExposureVector
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from .workflows.hazard import *
 
 from . import DATADIR
 
@@ -195,16 +196,73 @@ class FiatModel(GridModel):
         self,
         map_fn: str,
         map_type: str,
-        rp,
-        crs,
-        nodata,
-        var,
-        chunks,
+        rp: str,
+        crs: Union[int, str],
+        nodata: Union[int, None],
+        var:int,
+        chunks: Union[int,str],
         risk_output: bool = True,
         hazard_type: str = "flooding",
         name_catalog: str = "flood_maps",
         maps_id: str = "RP",
     ):
+
+        
+        param_lst, params = get_lists(
+            map_fn,
+            map_type,
+            chunks,
+            rp,
+            crs,
+            nodata,
+            var,
+        )
+
+        check_parameters(
+            param_lst,
+            params,
+            self,
+        )
+
+        list_names   = []
+        for idx, da_map_fn in enumerate(param_lst['map_fn_lst']):
+            kwargs, da_name, da_map_fn = process_floodmaps(list_names,da_map_fn, idx, param_lst, params)
+            print(da_map_fn)
+
+            # reading from path
+            if da_map_fn.stem:
+                if da_map_fn.stem == "sfincs_map":
+                    ds_map = xr.open_dataset(da_map_fn)
+                    da     = ds_map[kwargs["variables"]].squeeze(dim="timemax").drop_vars("timemax")
+                    da.raster.set_crs(ds_map.crs.epsg_code)  
+                    da.raster.set_nodata(nodata=ds_map.encoding.get("_FillValue"))
+                    da.reset_coords(['spatial_ref'], drop=False)
+                    da.encoding["_FillValue"] = None
+
+                else:
+                    if not self.region.empty:
+                        da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region, **kwargs)
+                    else:
+                        da = self.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
+            # reading from the datacatalog
+            else:
+                if not self.region.empty:
+                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name, geom=self.region)
+                else:
+                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)
+
+        # process_maps(
+        #     param_lst,
+        #     self,
+        #     name_catalog,
+        #     hazard_type,
+        #     risk_output,
+        #     crs,
+        #     nodata,
+        #     var,
+        #     chunks,
+        # )
+
         NotImplemented
         # FIXME commented out because Mario will update this part.
         # hazard = Hazard()
@@ -311,7 +369,7 @@ class FiatModel(GridModel):
         return config.load_file(fn)
 
     def check_path_exists(self, fn):
-        """TODO: decide to use this or another function (check_file_exist in validation.py)"""
+        """TODO: decide to use this or another function (check_file_exist in py)"""
         path = Path(fn)
         self.logger.debug(f"Reading file {str(path.name)}")
         if not fn.is_file():
