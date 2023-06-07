@@ -132,7 +132,7 @@ class FiatModel(GridModel):
 
         # Update config
         self.set_config(
-            "vulnerability.dbase_file", "./vulnerability/vulnerability_curves.csv"
+            "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
         )
 
     def setup_exposure_vector(
@@ -194,9 +194,9 @@ class FiatModel(GridModel):
         )
 
         # Update config
-        self.set_config("exposure.vector.type", "vector")
+        self.set_config("exposure.file", "./exposure/exposure.csv")
         self.set_config("exposure.vector.crs", self.exposure.crs)
-        self.set_config("exposure.vector.dbase_file", "./exposure/exposure.csv")
+        self.set_config("exposure.vector.file1", "./exposure/exposure.gpkg")
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
