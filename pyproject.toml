@@ -20,6 +20,7 @@ dependencies = [
     "rasterio",
     "xarray",
 	"pydantic",
+	"osmnx",
 	"census",
 	"us"
 ]
