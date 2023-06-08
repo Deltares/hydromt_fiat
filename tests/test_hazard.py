@@ -42,7 +42,7 @@ def test_Hazard(case):
     risk_output = configread(config_fn)["setup_hazard"]["risk_output"]
     hazard_type = configread(config_fn)["setup_config"]["hazard_type"]
 
-    param_lst = get_lists(
+    param_lst, params = get_lists(
         map_fn,
         map_type,
         chunks,
@@ -54,24 +54,8 @@ def test_Hazard(case):
 
     check_parameters(
         param_lst,
+        params,
         hyfm,
-        chunks,
-        rp,
-        crs,
-        nodata,
-        var,
-    )
-
-    process_maps(
-        param_lst,
-        hyfm,
-        name_catalog,
-        hazard_type,
-        risk_output,
-        crs,
-        nodata,
-        var,
-        chunks,
     )
     
     assert hyfm

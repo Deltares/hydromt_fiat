@@ -17,6 +17,7 @@ from .workflows.vulnerability import Vulnerability
 from .workflows.exposure_vector import ExposureVector
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.hazard import *
+from hydromt_sfincs import SfincsModel
 
 from . import DATADIR
 
@@ -205,90 +206,121 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         name_catalog: str = "flood_maps",
         maps_id: str = "RP",
-    ):
+    ):  
+        """_summary_
 
+        Parameters
+        ----------
+        map_fn : str
+            _description_
+        map_type : str
+            _description_
+        rp : str
+            _description_
+        crs : Union[int, str]
+            _description_
+        nodata : Union[int, None]
+            _description_
+        var : int
+            _description_
+        chunks : Union[int,str]
+            _description_
+        risk_output : bool, optional
+            _description_, by default True
+        hazard_type : str, optional
+            _description_, by default "flooding"
+        name_catalog : str, optional
+            _description_, by default "flood_maps"
+        maps_id : str, optional
+            _description_, by default "RP"
+        """        
         
-        param_lst, params = get_lists(
-            map_fn,
-            map_type,
-            chunks,
-            rp,
-            crs,
-            nodata,
-            var,
-        )
+        params_lists, params = get_parameters(map_fn,map_type,chunks,rp,crs,nodata,var,)
 
-        check_parameters(
-            param_lst,
-            params,
-            self,
-        )
+        check_parameters(params_lists,params,self,)
 
         list_names   = []
-        for idx, da_map_fn in enumerate(param_lst['map_fn_lst']):
-            kwargs, da_name, da_map_fn = process_floodmaps(list_names,da_map_fn, idx, param_lst, params)
-            print(da_map_fn)
+        for idx, da_map_fn in enumerate(params_lists['map_fn_lst']):
+            kwargs, da_name, da_map_fn, da_type = read_floodmaps(list_names,da_map_fn, idx, params_lists, params)
+            da = load_floodmaps(self,da_map_fn,name_catalog, da_name, **kwargs)
 
-            # reading from path
-            if da_map_fn.stem:
-                if da_map_fn.stem == "sfincs_map":
-                    ds_map = xr.open_dataset(da_map_fn)
-                    da     = ds_map[kwargs["variables"]].squeeze(dim="timemax").drop_vars("timemax")
-                    da.raster.set_crs(ds_map.crs.epsg_code)  
-                    da.raster.set_nodata(nodata=ds_map.encoding.get("_FillValue"))
-                    da.reset_coords(['spatial_ref'], drop=False)
-                    da.encoding["_FillValue"] = None
+            # # reading from path
+            # if da_map_fn.stem:
+            #     if da_map_fn.stem == "sfincs_map":
+            #         sfincs_root = os.path.dirname(da_map_fn)
+            #         sfincs_model = SfincsModel(sfincs_root, mode="r")
+            #         sfincs_model.read_results()
+            #         result_list = list(sfincs_model.results.keys())
+            #         sfincs_model.write_raster("results.zsmax", compress="LZW")
+            #         da =  sfincs_model.results['zsmax']
+            #         da.encoding["_FillValue"] = None
+            #     else:
+            #         if not self.region.empty:
+            #             da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region, **kwargs)
+            #         else:
+            #             da = self.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
+            # # reading from the datacatalog
+            # else:
+            #     if not self.region.empty:
+            #         da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name, geom=self.region)
+            #     else:
+            #         da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)
 
-                else:
-                    if not self.region.empty:
-                        da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region, **kwargs)
-                    else:
-                        da = self.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
-            # reading from the datacatalog
-            else:
-                if not self.region.empty:
-                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name, geom=self.region)
-                else:
-                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)
+            da_rp, list_rp = checking_floodmaps(risk_output, self, da, da_name,da_map_fn, da_type, idx, params_lists, params, **kwargs)
+            self.set_config(
+                "hazard",
+                da_type,
+                da_name,
+                {
+                    "usage": "True",
+                    "map_fn": str(da_map_fn),
+                    "map_type": str(da_type),
+                    "rp": str(da_rp),
+                    "crs": str(da.raster.crs),
+                    "nodata": str(da.raster.nodata),
+                    # "var": None if "var_lst" not in locals() else self.var_lst[idx],
+                    "var": None if not 'var_lst' in params_lists else str(params_lists['var_lst'][idx]),
+                    "chunks": "auto" if chunks == "auto" else str(params_lists['chunks_lst'][idx]),
+                },
+            )
 
-        # process_maps(
-        #     param_lst,
-        #     self,
-        #     name_catalog,
-        #     hazard_type,
-        #     risk_output,
-        #     crs,
-        #     nodata,
-        #     var,
-        #     chunks,
-        # )
+            self.set_maps(da, da_name)
+            post = f"(rp {da_rp})" if risk_output else ""
+            self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
 
-        NotImplemented
-        # FIXME commented out because Mario will update this part.
-        # hazard = Hazard()
+        if risk_output:
+            maps = self.maps
+            list_keys = list(maps.keys())
+            maps_0 = maps[list_keys[0]].rename('risk')
+            list_keys.pop(0)
 
-        # hazard.checkInputs(
-        #     self,
-        #     hazard_type=hazard_type,
-        #     risk_output=risk_output,
-        #     map_fn=map_fn,
-        #     map_type=map_type,
-        #     chunks=chunks,
-        #     rp=rp,
-        #     crs=crs,
-        #     nodata=nodata,
-        #     var=var,
-        # )
+            for idx, x in enumerate(list_keys):
+                key_name = list_keys[idx]
+                layer = maps[key_name]
+                maps_0 = xr.concat([maps_0, layer], dim='rp') 
 
-        # hazard.readMaps(
-        #     self,
-        #     name_catalog=name_catalog,
-        #     hazard_type=hazard_type,
-        #     risk_output=risk_output,
-        #     crs=crs,
-        #     nodata=nodata,
-        #     var=var,
-        #     chunks=chunks,
+            new_da = maps_0.to_dataset(name='RISK')
+            new_da.attrs = {  "returnperiod": list(list_rp),
+                            "type":params_lists['map_type_lst'],
+                            'name':list_names,
+                            "Analysis": "Risk"}  
+
+            self.hazard = new_da
+            self.set_maps(self.hazard, 'HydroMT_Fiat_hazard')
+
+            list_maps = list(self.maps.keys())
+
+            if risk_output:
+                for item in list_maps[:-1]:
+                    self.maps.pop(item)
+
+
+        # self.set_config(
+        #     "hazard",
+        #     {
+        #         "file": [str(Path("hazard") / (self.maps[hazard_map].name + ".nc")) for hazard_map in self.maps.keys()]
+        #     }
+
         # )
 
         # # Store the hazard settings.
