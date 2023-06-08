@@ -1,11 +1,10 @@
 import requests
 from shapely.geometry import Polygon
 import logging
+import geopandas as gpd
 
 
-def nsi_post_request(
-    url: str, polygon: Polygon, logger: logging.Logger
-) -> requests.models.Response:
+def nsi_post_request(url: str, polygon: Polygon) -> requests.models.Response:
     """Post request to the National Structure Inventory (NSI) database.
 
     API reference: https://www.hec.usace.army.mil/confluence/nsi/technicalreferences/latest/api-reference-guide#id-.APIReferenceGuidev2022-GET
@@ -27,5 +26,13 @@ def nsi_post_request(
         return response
     # If the request fails (404) then print the error.
     except requests.exceptions.HTTPError as error:
-        logger.error(error)
+        logging.error(error)
         return None
+
+
+def get_assets_from_nsi(url: str, polygon: Polygon) -> gpd.GeoDataFrame:
+    post_response = nsi_post_request(url, polygon)
+    if post_response is None:
+        return gpd.GeoDataFrame()
+    source_data = gpd.read_file(post_response.text, driver="GeoJSON")
+    return source_data

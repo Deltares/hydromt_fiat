@@ -10,7 +10,7 @@ from os.path import join, basename
 import glob
 
 from shapely.geometry import box
-from typing import Union
+from typing import Union, List
 
 from .config import Config
 from .workflows.vulnerability import Vulnerability
@@ -53,6 +53,40 @@ class FiatModel(GridModel):
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
 
+    def setup_global_settings(self, crs: str):
+        """Setup Delft-FIAT global settings.
+
+        Parameters
+        ----------
+        crs : str
+            The CRS of the model.
+        """
+        self.set_config("global.crs", crs)
+
+    def setup_output(
+        self,
+        output_dir: str = "output",
+        output_csv_name: str = "output.csv",
+        output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+    ) -> None:
+        """Setup Delft-FIAT output folder and files.
+
+        Parameters
+        ----------
+        output_dir : str, optional
+            The name of the output directory, by default "output".
+        output_csv_name : str, optional
+            The name of the output csv file, by default "output.csv".
+        output_vector_name : Union[str, List[str]], optional
+            The name of the output vector file, by default "spatial.gpkg".
+        """
+        self.set_config("output", output_dir)
+        self.set_config("output.csv.name", output_csv_name)
+        if isinstance(output_vector_name, str):
+            output_vector_name = [output_vector_name]
+        for i, name in enumerate(output_vector_name):
+            self.set_config(f"output.vector.name{str(i+1)}", name)
+
     def setup_basemaps(
         self,
         region,
@@ -85,6 +119,12 @@ class FiatModel(GridModel):
 
         # Set the model region geometry (to be accessed through the shortcut self.region).
         self.set_geoms(geom, "region")
+
+        # Set the region crs
+        if geom.crs:
+            self.region.set_crs(geom.crs)
+        else:
+            self.region.set_crs(4326)
 
     def setup_vulnerability(
         self,
@@ -170,6 +210,16 @@ class FiatModel(GridModel):
             self.exposure.setup_from_single_source(
                 asset_locations, ground_floor_height, extraction_method
             )
+        else:
+            # The source for the asset locations, occupancy type and maximum potential
+            # damage is different, use three sources to create the exposure data.
+            self.exposure.setup_from_multiple_sources(
+                asset_locations,
+                occupancy_type,
+                max_potential_damage,
+                ground_floor_height,
+                extraction_method,
+            )
 
         # Link the damage functions to assets
         try:
@@ -194,9 +244,11 @@ class FiatModel(GridModel):
         )
 
         # Update config
-        self.set_config("exposure.file", "./exposure/exposure.csv")
+        self.set_config("exposure.vector.csv", "./exposure/exposure.csv")
         self.set_config("exposure.vector.crs", self.exposure.crs)
-        self.set_config("exposure.vector.file1", "./exposure/exposure.gpkg")
+        self.set_config(
+            "exposure.vector.file1", "./exposure/exposure.gpkg"
+        )  # TODO: update if we have more than one file
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -371,12 +423,6 @@ class FiatModel(GridModel):
         self.logger.info(f"Writing model data to {self.root}")
 
         if self.config:  # try to read default if not yet set
-            # TODO: think about setting global settings here or somewhere else??
-            self.set_config("global.output_dir", "output")
-            self.set_config(
-                "global.crs", "EPSG:4326"
-            )  # FOR TESTING, TODO: make flexible
-
             self.write_config()
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")

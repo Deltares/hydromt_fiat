@@ -1,7 +1,11 @@
 from .vulnerability import Vulnerability
 from .utils import detect_delimiter
 from .exposure import Exposure
-from hydromt_fiat.data.national_structure_inventory import nsi_post_request
+from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
+from hydromt_fiat.data_apis.open_street_maps import (
+    get_assets_from_osm,
+    get_landuse_from_osm,
+)
 
 from hydromt.data_catalog import DataCatalog
 import geopandas as gpd
@@ -113,56 +117,128 @@ class ExposureVector(Exposure):
             The extraction method to be used for all of the assets.
         """
         if str(source).upper() == "NSI":
-            # polygon = data_catalog.get_geodataset("annapolis").iloc[0][0]
+            # The NSI data is selected, so get the assets from the NSI
             polygon = self.region.iloc[0][0]
-            post = nsi_post_request(self.data_catalog["NSI"].path, polygon, self.logger)
-
-            if post:
-                source_data = gpd.read_file(post.text, driver="GeoJSON")
+            source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
+        if source_data.empty:
+            logging.warning(
+                f"No assets found in the selected region from source {source}."
+            )
+
+        # Set the CRS of the exposure data
         source_data_authority = source_data.crs.to_authority()
         self.crs = source_data_authority[0] + ":" + source_data_authority[1]
 
-        # Read the json file that holds a dictionary of names of the NSI coupled to Delft-FIAT names
+        # Read the json file that holds a dictionary of names of the source_data coupled to Delft-FIAT names
         with open(
             self.data_catalog.sources[source].kwargs["translation_fn"]
         ) as json_file:
-            nsi_fiat_translation = json_file.read()
-        nsi_fiat_translation = json.loads(nsi_fiat_translation)
+            attribute_translation_to_fiat = json_file.read()
+        attribute_translation_to_fiat = json.loads(attribute_translation_to_fiat)
 
         # Fill the exposure data
-        columns_to_fill = nsi_fiat_translation.keys()
+        columns_to_fill = attribute_translation_to_fiat.keys()
         for column_name in columns_to_fill:
             try:
-                assert nsi_fiat_translation[column_name] in source_data.columns
+                assert attribute_translation_to_fiat[column_name] in source_data.columns
                 self.exposure_db[column_name] = source_data[
-                    nsi_fiat_translation[column_name]
+                    attribute_translation_to_fiat[column_name]
                 ]
             except AssertionError:
                 logging.warning(
-                    f"Attribute {nsi_fiat_translation[column_name]} not "
+                    f"Attribute {attribute_translation_to_fiat[column_name]} not "
                     f"found in {str(source)}, skipping attribute."
                 )
 
         # Check if the 'Object ID' column is unique
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
-            source_data["Object ID"] = range(1, len(self.exposure_db.index) + 1)
+            self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
         self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-    def setup_from_multiple_sources(self):
-        NotImplemented
+    def setup_from_multiple_sources(
+        self,
+        asset_locations: Union[str, Path],
+        occupancy_type: Union[str, Path],
+        max_potential_damage: Union[str, Path],
+        ground_floor_height: Union[int, float, str, Path, None],
+        extraction_method: str,
+    ):
+        self.setup_asset_locations(asset_locations)
+        self.setup_occupancy_type(occupancy_type)
+        self.setup_max_potential_damage(max_potential_damage)
+        self.setup_ground_floor_height(ground_floor_height)
+        self.setup_extraction_method(extraction_method)
 
-    def setup_asset_locations(self, asset_locations):
-        NotImplemented
+    def setup_asset_locations(self, asset_locations: str) -> None:
+        """Set up the asset locations.
 
-    def setup_occupancy_type(self):
-        NotImplemented
+        Parameters
+        ----------
+        asset_locations : str
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the asset locations. This can be either
+            a point or polygon dataset.
+        """
+        logging.info("Setting up asset locations...")
+        if str(asset_locations).upper() == "OSM":
+            polygon = self.region.iloc[0][0]
+            assets = get_assets_from_osm(polygon)
+
+            if assets.empty:
+                logging.warning(
+                    f"No assets found in the selected region from source {asset_locations}."
+                )
+
+            # Rename the osmid column to Object ID
+            assets.rename(columns={"osmid": "Object ID"}, inplace=True)
+        else:
+            assets = self.data_catalog.get_geodataframe(
+                asset_locations, geom=self.region
+            )
+
+        # Set the CRS of the exposure data
+        source_data_authority = assets.crs.to_authority()
+        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+
+        # Check if the 'Object ID' column exists and if so, is unique
+        if "Object ID" not in assets.columns:
+            assets["Object ID"] = range(1, len(assets.index) + 1)
+        else:
+            if len(assets.index) != len(set(assets["Object ID"])):
+                assets["Object ID"] = range(1, len(assets.index) + 1)
+
+        # Set the asset locations to the geometry variable (self.exposure_geoms)
+        self.exposure_geoms = assets
+
+    def setup_occupancy_type(self, occupancy_type: str) -> None:
+        logging.info("Setting up occupancy type...")
+        if str(occupancy_type).upper() == "OSM":
+            polygon = self.region.iloc[0][0]
+            occupancy_map = get_landuse_from_osm(polygon)
+
+            if occupancy_map.empty:
+                logging.warning(
+                    f"No land use data found in the selected region from source {occupancy_type}."
+                )
+        else:
+            occupancy_map = self.data_catalog.get_geodataframe(
+                occupancy_type,
+                geom=gpd.GeoDataFrame(
+                    data={"geometry": [self.region.iloc[0][0]]}, crs=4326
+                ),
+            )  # TODO: ask Helene / hydromt people how to set the crs of self.region
+
+        # Spatially join the exposure data with the occupancy map
+        self.exposure_db = gpd.sjoin(
+            self.exposure_geoms, occupancy_map, how="left", op="intersects"
+        )
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
