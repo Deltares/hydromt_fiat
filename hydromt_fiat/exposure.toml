@@ -1,23 +1,7 @@
-[setup_config]
-output_dir = "Output"
-crs = "EPSG:4326"
-
-[setup_hazard]
-hazard_map_fn   = "event_map "                                    
-hazard_type = "water_depth"                               
-return_period = 3                                                                                 
-no_data   = -9999                                                                     
-chunks   = "auto"                                   
-
-[setup_vulnerability]
-vulnerability_fn = "hazus_vulnerability_curves"
-link_table = "vulnerability_ids"
-units = "feet"
-
 [setup_exposure_vector]
 asset_locations = "NSI"
 occupancy_type = "NSI"
 max_potential_damage = "NSI"
 ground_floor_height = 1
-gfh_units = "m"
+gfh_units = "meter"
 extraction_method = "centroid"

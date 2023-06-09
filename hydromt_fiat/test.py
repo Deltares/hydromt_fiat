@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from hydromt_fiat.loader import MBuilderComponent
+from hydromt_fiat.loader import ConfigHandler
 
 filepath = Path(__file__).parent / "exposure.toml"
-obj = MBuilderComponent.load_file(filepath)
+obj = ConfigHandler.load_file(filepath)
 
 print("a")
 print("a")
