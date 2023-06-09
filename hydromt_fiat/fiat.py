@@ -131,6 +131,8 @@ class FiatModel(GridModel):
         vulnerability_fn: Union[str, Path],
         vulnerability_identifiers_and_linking_fn: Union[str, Path],
         unit: str,
+        functions_mean: Union[str, List[str], None] = "default",
+        functions_max: Union[str, List[str], None] = None,
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
@@ -144,6 +146,14 @@ class FiatModel(GridModel):
             exposure categories.
         unit : str
             The unit of the vulnerability functions.
+        functions_mean : Union[str, List[str], None], optional
+            The name(s) of the vulnerability functions that should use the mean hazard
+            value when using the area extraction method, by default "default" (this
+            means that all vulnerability functions are using mean).
+        functions_max : Union[str, List[str], None], optional
+            The name(s) of the vulnerability functions that should use the maximum
+            hazard value when using the area extraction method, by default None (this
+            means that all vulnerability functions are using mean).
         """
 
         # Read the vulnerability data
@@ -155,13 +165,20 @@ class FiatModel(GridModel):
         )
 
         # Process the vulnerability data
-        vulnerability = Vulnerability(unit)
+        vulnerability = Vulnerability(
+            unit,
+        )
 
         # Depending on what the input is, another function is chosen to generate the
         # vulnerability curves file for Delft-FIAT.
         vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
             df_identifiers_linking=vf_ids_and_linking_df,
+        )
+
+        # Set the area extraction method for the vulnerability curves
+        vulnerability.set_area_extraction_methods(
+            functions_mean=functions_mean, functions_max=functions_max
         )
 
         # Add the vulnerability curves to tables property
