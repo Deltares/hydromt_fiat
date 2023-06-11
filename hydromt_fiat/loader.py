@@ -8,8 +8,12 @@ from pydantic import BaseModel
 
 from hydromt_fiat.interface.database import IDatabase
 class ExtractionMethod(str, Enum):
-    centroid: ExtractionMethod = "centroid"
+    centroid = "centroid"
     area = "area"
+    
+class Units(Enum):
+    meter = "m"
+    feet = "ft"
 class ExposureVector(BaseModel):
     asset_locations: Union[str, Path]
     occupancy_type: Union[str, Path]
@@ -20,6 +24,7 @@ class ExposureVector(BaseModel):
     
 class ExposureViewModel:
     def __init__(self, database: IDatabase):
+        self._location_source = dict()
         self.exposure_model: ExposureVector
 
     def set_interest_area(self, *args):
@@ -29,18 +34,37 @@ class ExposureViewModel:
             # change in data catalog
             ...
 
-    def create_location_source(self, *args):
-        if (args == "file"):
-            # create file in database and set attribute in model
-            # change attribute in datacatalog
-            # set attribute in exposure model to point to data catalog
-            # make calls to backend 
+    def on_dropdown_location_source(self, *args):
+        
+        
+        if (args == "Upload data"):
+            # callback: open another pop up window that returns file location,
+            # and attribute file
+            # set data catalog folder to point to file location in database
             ...
-        elif (args == "NSI"):
-            # make calls to back end to generate automatically json file and save in data
-            # base
-            # change attribute in data catalog and set exposure model
-            # attribute to point to data
+        
+    def on_create_location_source(self, *args):
+        # see if you can pass variable of dropdown
+        if (args == "NSI"):
+            # make api call to link data with with Delft-fiat names
+            # save output files to database
+            # modify data catalog to use output file
+            # set self._exposure_model to NSI
+            
+        if (args == "Upload data")
+            # look for data file and attribute file in database and set 
+            # self._location_source
+            # 
+            ...
+            
+        # make calls to back end to do linking with delft-fiat names
+        # save linked file in database and put in datacatalog
+        ...
+
+    def do_custom_file_map(self, *args):
+        
+    
+            
             ...
     def set_extraction_method(self, *args):
         self.exposure_model.extraction_method = "centroid"
@@ -76,14 +100,6 @@ class ExtractionMethodViewModel:
        self.ExtractionMethodViewModel.set_centroid()
          
          
-class ExtractionMethod(str, Enum):
-    centroid: ExtractionMethod = "centroid"
-    area = "area"
-
-
-class Units(Enum):
-    m = "meter"
-    feet = "feet"
 
 
 class Config(BaseModel):
@@ -106,14 +122,6 @@ class Vulnerability(BaseModel):
     link_table: Union[str, Path]
     units: Units
 
-
-class ExposureVector(BaseModel):
-    asset_locations: Union[str, Path]
-    occupancy_type: Union[str, Path]
-    max_potential_damage: Union[int, Path]
-    ground_floor_height: Union[int, Path]
-    gfh_units: Units
-    extraction_method: ExtractionMethod
 
 
 class ExposureGrid(BaseModel):
