@@ -1,7 +1,13 @@
-from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.utils import detect_delimiter
+from .vulnerability import Vulnerability
+from .utils import detect_delimiter
+from .exposure import Exposure
+from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
+from hydromt_fiat.data_apis.open_street_maps import (
+    get_assets_from_osm,
+    get_landuse_from_osm,
+)
+
 from hydromt.data_catalog import DataCatalog
-from hydromt_fiat.workflows.exposure import Exposure
 import geopandas as gpd
 import pandas as pd
 import numpy as np
@@ -52,27 +58,38 @@ class ExposureVector(Exposure):
     def __init__(
         self,
         data_catalog: DataCatalog = None,
+        logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
     ) -> None:
-        """_summary_
+        """Transforms data into Vector Exposure data for Delft-FIAT.
 
         Parameters
         ----------
         data_catalog : DataCatalog, optional
-            _description_, by default None
+            The HydroMT DataCatalog, by default None
+        logger : logging.Logger, optional
+            A logger object, by default None
         region : gpd.GeoDataFrame, optional
-            _description_, by default None
+            The region of interest, by default None
         crs : str, optional
-            _description_, by default None
+            The CRS of the Exposure data, by default None
         """
-        super().__init__(data_catalog=data_catalog, region=region, crs=crs)
+        super().__init__(
+            data_catalog=data_catalog, logger=logger, region=region, crs=crs
+        )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
 
-    def read(self, fn):
-        # Read the exposure data.
+    def read(self, fn: Union[str, Path]):
+        """Read the Delft-FIAT exposure data.
+
+        Parameters
+        ----------
+        fn : Union[str, Path]
+            Path to the exposure data.
+        """
         csv_delimiter = detect_delimiter(fn)
         self.exposure_db = pd.read_csv(
             fn, delimiter=csv_delimiter, dtype=self._CSV_COLUMN_DATATYPES, engine="c"
@@ -80,16 +97,18 @@ class ExposureVector(Exposure):
 
     def setup_from_single_source(
         self,
-        source: str,
+        source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
     ) -> None:
-        """_summary_
+        """Set up asset locations and other available data from a single source.
 
         Parameters
         ----------
-        source : str
-            _description_
+        source : Union[str, Path]
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the asset locations. This can be either
+            a point or polygon dataset.
         ground_floor_height : Union[int, float, str, Path, None]
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
@@ -97,41 +116,129 @@ class ExposureVector(Exposure):
         extraction_method : str
             The extraction method to be used for all of the assets.
         """
-        source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+        if str(source).upper() == "NSI":
+            # The NSI data is selected, so get the assets from the NSI
+            polygon = self.region.iloc[0][0]
+            source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
+        else:
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+
+        if source_data.empty:
+            logging.warning(
+                f"No assets found in the selected region from source {source}."
+            )
+
+        # Set the CRS of the exposure data
         source_data_authority = source_data.crs.to_authority()
         self.crs = source_data_authority[0] + ":" + source_data_authority[1]
 
-        # Read the json file that holds a dictionary of names of the NSI coupled to Delft-FIAT names
+        # Read the json file that holds a dictionary of names of the source_data coupled to Delft-FIAT names
         with open(
             self.data_catalog.sources[source].kwargs["translation_fn"]
         ) as json_file:
-            nsi_fiat_translation = json_file.read()
-        nsi_fiat_translation = json.loads(nsi_fiat_translation)
+            attribute_translation_to_fiat = json_file.read()
+        attribute_translation_to_fiat = json.loads(attribute_translation_to_fiat)
 
         # Fill the exposure data
-        columns_to_fill = nsi_fiat_translation.keys()
+        columns_to_fill = attribute_translation_to_fiat.keys()
         for column_name in columns_to_fill:
-            self.exposure_db[column_name] = source_data[
-                nsi_fiat_translation[column_name]
-            ]
+            try:
+                assert attribute_translation_to_fiat[column_name] in source_data.columns
+                self.exposure_db[column_name] = source_data[
+                    attribute_translation_to_fiat[column_name]
+                ]
+            except AssertionError:
+                logging.warning(
+                    f"Attribute {attribute_translation_to_fiat[column_name]} not "
+                    f"found in {str(source)}, skipping attribute."
+                )
 
         # Check if the 'Object ID' column is unique
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
-            source_data["Object ID"] = range(1, len(self.exposure_db.index) + 1)
+            self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
         self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-    def setup_from_multiple_sources(self):
-        NotImplemented
+    def setup_from_multiple_sources(
+        self,
+        asset_locations: Union[str, Path],
+        occupancy_type: Union[str, Path],
+        max_potential_damage: Union[str, Path],
+        ground_floor_height: Union[int, float, str, Path, None],
+        extraction_method: str,
+    ):
+        self.setup_asset_locations(asset_locations)
+        self.setup_occupancy_type(occupancy_type)
+        self.setup_max_potential_damage(max_potential_damage)
+        self.setup_ground_floor_height(ground_floor_height)
+        self.setup_extraction_method(extraction_method)
 
-    def setup_asset_locations(self, asset_locations):
-        NotImplemented
+    def setup_asset_locations(self, asset_locations: str) -> None:
+        """Set up the asset locations.
 
-    def setup_occupancy_type(self):
-        NotImplemented
+        Parameters
+        ----------
+        asset_locations : str
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the asset locations. This can be either
+            a point or polygon dataset.
+        """
+        logging.info("Setting up asset locations...")
+        if str(asset_locations).upper() == "OSM":
+            polygon = self.region.iloc[0][0]
+            assets = get_assets_from_osm(polygon)
+
+            if assets.empty:
+                logging.warning(
+                    f"No assets found in the selected region from source {asset_locations}."
+                )
+
+            # Rename the osmid column to Object ID
+            assets.rename(columns={"osmid": "Object ID"}, inplace=True)
+        else:
+            assets = self.data_catalog.get_geodataframe(
+                asset_locations, geom=self.region
+            )
+
+        # Set the CRS of the exposure data
+        source_data_authority = assets.crs.to_authority()
+        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+
+        # Check if the 'Object ID' column exists and if so, is unique
+        if "Object ID" not in assets.columns:
+            assets["Object ID"] = range(1, len(assets.index) + 1)
+        else:
+            if len(assets.index) != len(set(assets["Object ID"])):
+                assets["Object ID"] = range(1, len(assets.index) + 1)
+
+        # Set the asset locations to the geometry variable (self.exposure_geoms)
+        self.exposure_geoms = assets
+
+    def setup_occupancy_type(self, occupancy_type: str) -> None:
+        logging.info("Setting up occupancy type...")
+        if str(occupancy_type).upper() == "OSM":
+            polygon = self.region.iloc[0][0]
+            occupancy_map = get_landuse_from_osm(polygon)
+
+            if occupancy_map.empty:
+                logging.warning(
+                    f"No land use data found in the selected region from source {occupancy_type}."
+                )
+        else:
+            occupancy_map = self.data_catalog.get_geodataframe(
+                occupancy_type,
+                geom=gpd.GeoDataFrame(
+                    data={"geometry": [self.region.iloc[0][0]]}, crs=4326
+                ),
+            )  # TODO: ask Helene / hydromt people how to set the crs of self.region
+
+        # Spatially join the exposure data with the occupancy map
+        self.exposure_db = gpd.sjoin(
+            self.exposure_geoms, occupancy_map, how="left", op="intersects"
+        )
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
@@ -163,7 +270,8 @@ class ExposureVector(Exposure):
         damage_types: Union[List[str], str],
         max_potential_damage: Union[List[float], float],
     ):
-        # TODO: implement that the max pot damage can be set from scratch from a single value or by doing a spatial join and taking from a column
+        # TODO: implement that the max pot damage can be set from scratch from a single
+        # value or by doing a spatial join and taking from a column
         damage_cols = self.get_max_potential_damage_columns()
 
         print(damage_cols)
@@ -298,8 +406,11 @@ class ExposureVector(Exposure):
 
         else:
             logging.warning(
-                f"The height reference of the Ground Floor Height is set to '{height_reference}'. "
-                "This is not one of the allowed height references. Set the height reference to 'datum', 'geom' or 'raster' (last option not yet implemented)."
+                "The height reference of the Ground Floor Height is set to "
+                f"'{height_reference}'. "
+                "This is not one of the allowed height references. Set the height "
+                "reference to 'datum', 'geom' or 'raster' (last option not yet "
+                "implemented)."
             )
 
     def truncate_damage_function(
@@ -325,17 +436,19 @@ class ExposureVector(Exposure):
             The Vulnerability object from the FiatModel.
         """
         logging.info(
-            f"Floodproofing {len(objectids)} properties for {floodproof_to} ft (CHANGE TO UNIT) of water."
-        )  # TODO: change ft to unit
+            f"Floodproofing {len(objectids)} properties for {floodproof_to} "
+            f"{vulnerability.unit} of water."
+        )
 
-        # The user can submit with how much feet the properties should be floodproofed and the damage function
-        # is truncated to that level.
+        # The user can submit with how much feet the properties should be floodproofed
+        # and the damage function is truncated to that level.
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
 
         ids = self.get_object_ids(selection_type="list", objectids=objectids)
         idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
 
-        # Find all damage functions that should be modified and truncate with floodproof_to.
+        # Find all damage functions that should be modified and truncate with
+        # floodproof_to.
         for df_type in damage_function_types:
             dfs_to_modify = [
                 d
@@ -374,8 +487,9 @@ class ExposureVector(Exposure):
         ]
         new_damages = dict()
 
-        # Calculate the Max. Potential Damages for the new area. This is the total percentage of population growth
-        # multiplied with the total sum of the Max Potential Structural/Content/Other Damage.
+        # Calculate the Max. Potential Damages for the new area. This is the total
+        # percentage of population growth multiplied with the total sum of the Max
+        # Potential Structural/Content/Other Damage.
         for c in damages_cols:
             total_damages = sum(self.exposure_db[c].fillna(0))
             new_damages[c.split("Max Potential Damage: ")[-1]] = (
@@ -435,12 +549,13 @@ class ExposureVector(Exposure):
         geom_file = Path(geom_file)
         assert geom_file.is_file()
 
-        # Calculate the total damages for the new object, for the indicated damage types.
+        # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
             percent_growth, damage_types
         )
 
-        # Read the original damage functions and create new weighted damage functions from the original ones.
+        # Read the original damage functions and create new weighted damage functions
+        # from the original ones.
         df_dict = {
             damage_type: [
                 df
@@ -469,12 +584,13 @@ class ExposureVector(Exposure):
             new_area.geometry.area.sum()
         )  # TODO: reproject to a projected CRS if this is a geographic CRS?
 
-        # There should be an attribute 'FID' in the new development area shapefile. This ID is used to join the
-        # shapefile to the exposure data.
+        # There should be an attribute 'FID' in the new development area shapefile.
+        # This ID is used to join the shapefile to the exposure data.
         join_id_name = "FID"
         if join_id_name not in new_area.columns:
             logging.info(
-                'The unique ID column in the New Development Area is not named "FID", therefore, a new unique identifyer named "FID" is added.'
+                'The unique ID column in the New Development Area is not named "FID", '
+                'therefore, a new unique identifyer named "FID" is added.'
             )
             new_area[join_id_name] = range(len(new_area.index))
             new_area.to_file(geom_file)
@@ -484,7 +600,8 @@ class ExposureVector(Exposure):
             perc_damages = new_area.geometry.iloc[i].area / total_area
             # TODO: Alert the user that the ground elevation is set to 0.
             # Take ground elevation from DEM?
-            # For water level calculation this will not take into account the non-flooded cells separately, just averaged
+            # For water level calculation this will not take into account the
+            # non-flooded cells separately, just averaged
             # Reduction factor for the part of the area is not build-up?
             dict_new_objects_data = {
                 "Object ID": [max_id + 1],
@@ -567,18 +684,52 @@ class ExposureVector(Exposure):
         if "Secondary Object Type" in self.exposure_db.columns:
             return list(self.exposure_db["Secondary Object Type"].unique())
 
-    def get_max_potential_damage_columns(self):
+    def get_max_potential_damage_columns(self) -> List[str]:
+        """Returns the maximum potential damage columns in <exposure_db>
+
+        Returns
+        -------
+        List[str]
+            The maximum potential damage columns in <exposure_db>
+        """
         return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
 
-    def get_damage_function_columns(self):
+    def get_damage_function_columns(self) -> List[str]:
+        """Returns the damage function columns in <exposure_db>
+
+        Returns
+        -------
+        List[str]
+            The damage function columns in <exposure_db>
+        """
         return [c for c in self.exposure_db.columns if "Damage Function:" in c]
 
     def select_objects(
         self,
-        type: Optional[str] = None,
-        non_building_names: Optional[list[str]] = None,
+        primary_object_type: Optional[List[str]] = None,
+        non_building_names: Optional[List[str]] = None,
         return_gdf: bool = False,
-    ) -> gpd.GeoDataFrame:
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Filters the Exposure Database by <primary_object_type> and
+        <non_building_names>
+
+        Parameters
+        ----------
+        primary_object_type : Optional[List[str]], optional
+            Only select assets from this/these primary object type(s).
+            Can be any primary object type in a list or 'all', by default None
+            (also selecting all)
+        non_building_names : Optional[list[str]], optional
+            The names of the , by default None
+        return_gdf : bool, optional
+            If True the function returns a GeoDataFrame, if False the function
+            returns a Dataframe, by default False
+
+        Returns
+        -------
+        objects : Union[pd.DataFrame, gpd.GeoDataFrame]
+            The filtered (Geo)DataFrame.
+        """
         objects = self.exposure_db
 
         if non_building_names:
@@ -586,9 +737,11 @@ class ExposureVector(Exposure):
                 ~objects["Primary Object Type"].isin(non_building_names), :
             ]
 
-        if type:
-            if str(type).lower() != "all":
-                objects = objects.loc[objects["Primary Object Type"] == type, :]
+        if primary_object_type:
+            if str(primary_object_type).lower() != "all":
+                objects = objects.loc[
+                    objects["Primary Object Type"].isin(primary_object_type), :
+                ]
 
         if return_gdf:
             objects = self.df_to_gdf(objects, crs=self.crs)
@@ -607,6 +760,27 @@ class ExposureVector(Exposure):
         objectids: Optional[List[int]] = None,
     ) -> list[Any]:
         """Get ids of objects that are affected by the measure.
+
+        Parameters
+        ----------
+        selection_type : str
+            Type of selection, either 'all', 'aggregation_area',
+            'polygon', or 'list'.
+        property_type : Optional[str], optional
+            _description_, by default None
+        non_building_names : Optional[List[str]], optional
+            _description_, by default None
+        aggregation : Optional[str], optional
+            _description_, by default None
+        aggregation_area_name : Optional[str], optional
+            _description_, by default None
+        polygon_file : Optional[str], optional
+            _description_, by default None
+        list_file : Optional[str], optional
+            _description_, by default None
+        objectids : Optional[List[int]], optional
+            _description_, by default None
+
         Returns
         -------
         list[Any]
@@ -652,6 +826,17 @@ class ExposureVector(Exposure):
         self.exposure_geoms = exposure_geoms
 
     @staticmethod
+    def get_geom_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
+        # TODO decide if this is the best way
+        gdf = gpd.GeoDataFrame(
+            df[["Object ID"]],
+            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
+            crs=crs,
+        )
+        gdf.rename(columns={"Object ID": "object_id"}, inplace=True)
+        return gdf
+
+    @staticmethod
     def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
         gdf = gpd.GeoDataFrame(
             df,
@@ -661,6 +846,7 @@ class ExposureVector(Exposure):
         return gdf
 
     def check_required_columns(self):
+        """Checks whether the <_REQUIRED_COLUMNS> are in the <exposure_db>."""
         for col in self._REQUIRED_COLUMNS:
             try:
                 assert col in self.exposure_db.columns
@@ -704,7 +890,8 @@ class ExposureVector(Exposure):
         gpd.GeoDataFrame
             _description_
 
-        Note: It is assumed that the datum/DEM with which the geom file is created is the same as that of the exposure data
+        Note: It is assumed that the datum/DEM with which the geom file is created is
+        the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
         reference_shp = gpd.read_file(path_ref)  # Vector
@@ -723,8 +910,9 @@ class ExposureVector(Exposure):
         )
         modified_objects_gdf["value"] = modified_objects_gdf[attr_ref]
 
-        # Sort and add the elevation to the shp values, append to the exposure dataframe.
-        # To be able to append the values from the GeoDataFrame to the DataFrame, it must be sorted on the Object ID.
+        # Sort and add the elevation to the shp values, append to the exposure dataframe
+        # To be able to append the values from the GeoDataFrame to the DataFrame, it
+        # must be sorted on the Object ID.
         modified_objects_gdf = (
             modified_objects_gdf.groupby("Object ID")
             .max("value")
