@@ -435,25 +435,28 @@ class FiatModel(GridModel):
             The user's unique Census key that they got from the census.gov website
             (https://api.census.gov/data/key_signup.html) to be able to download the
             Census data
-        path : str
+        path : Union[str, Path]
             The path to the codebook excel
         state_abbreviation : str
             The abbreviation of the US state one would like to use in the analysis
         """
-        # TODO: Read the SVI table
 
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
         # Call functionalities of SVI
         svi.set_up_census_key(census_key)
+        #svi.read_dataset(path_dataset)
         svi.variable_code_csv_to_pd_df(path)
         svi.set_up_download_codes()
         svi.set_up_state_code(state_abbreviation)
         svi.download_census_data()
         svi.rename_census_data("Census_code_withE", "Census_variable_name")
-        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
-        svi.processing_svi_data()
+        svi.identify_no_data()
+        svi.check_nan_variable_columns()
+        svi.print_missing_variables("Census_variable_name", "Indicator_code")
+        translation_variable_to_indicator = svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data(translation_variable_to_indicator)
         svi.normalization_svi_data()
         svi.domain_scores()
         svi.composite_scores()
