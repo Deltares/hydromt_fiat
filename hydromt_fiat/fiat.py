@@ -17,7 +17,8 @@ from .workflows.vulnerability import Vulnerability
 from .workflows.exposure_vector import ExposureVector
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.hazard import *
-from hydromt_sfincs import SfincsModel
+
+# from hydromt_sfincs import SfincsModel
 
 from . import DATADIR
 
@@ -169,6 +170,7 @@ class FiatModel(GridModel):
         # Process the vulnerability data
         vulnerability = Vulnerability(
             unit,
+            self.logger,
         )
 
         # Depending on what the input is, another function is chosen to generate the
@@ -201,6 +203,7 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         ground_floor_height_unit: str,
+        occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -220,6 +223,13 @@ class FiatModel(GridModel):
             height to the assets.
         ground_floor_height_unit : str
             The unit of the ground_floor_height
+        occupancy_type_field : Union[str, None], optional
+            The name of the field in the occupancy type data that contains the
+            occupancy type, by default None (this means that the occupancy type data
+            only contains one column with the occupancy type).
+        extraction_method : str, optional
+            The method that should be used to extract the hazard values from the
+            hazard maps, by default "centroid".
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
@@ -238,6 +248,7 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
+                occupancy_type_field,
             )
 
         # Link the damage functions to assets
@@ -282,13 +293,13 @@ class FiatModel(GridModel):
         rp: str,
         crs: Union[int, str],
         nodata: Union[int, None],
-        var:int,
-        chunks: Union[int,str],
+        var: int,
+        chunks: Union[int, str],
         risk_output: bool = True,
         hazard_type: str = "flooding",
         name_catalog: str = "flood_maps",
         maps_id: str = "RP",
-    ):  
+    ):
         """_summary_
 
         Parameters
@@ -315,16 +326,30 @@ class FiatModel(GridModel):
             _description_, by default "flood_maps"
         maps_id : str, optional
             _description_, by default "RP"
-        """        
-        
-        params_lists, params = get_parameters(map_fn,map_type,chunks,rp,crs,nodata,var,)
+        """
 
-        check_parameters(params_lists,params,self,)
+        params_lists, params = get_parameters(
+            map_fn,
+            map_type,
+            chunks,
+            rp,
+            crs,
+            nodata,
+            var,
+        )
 
-        list_names   = []
-        for idx, da_map_fn in enumerate(params_lists['map_fn_lst']):
-            kwargs, da_name, da_map_fn, da_type = read_floodmaps(list_names,da_map_fn, idx, params_lists, params)
-            da = load_floodmaps(self,da_map_fn,name_catalog, da_name, **kwargs)
+        check_parameters(
+            params_lists,
+            params,
+            self,
+        )
+
+        list_names = []
+        for idx, da_map_fn in enumerate(params_lists["map_fn_lst"]):
+            kwargs, da_name, da_map_fn, da_type = read_floodmaps(
+                list_names, da_map_fn, idx, params_lists, params
+            )
+            da = load_floodmaps(self, da_map_fn, name_catalog, da_name, **kwargs)
 
             # # reading from path
             # if da_map_fn.stem:
@@ -348,7 +373,18 @@ class FiatModel(GridModel):
             #     else:
             #         da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)
 
-            da_rp, list_rp = checking_floodmaps(risk_output, self, da, da_name,da_map_fn, da_type, idx, params_lists, params, **kwargs)
+            da_rp, list_rp = checking_floodmaps(
+                risk_output,
+                self,
+                da,
+                da_name,
+                da_map_fn,
+                da_type,
+                idx,
+                params_lists,
+                params,
+                **kwargs,
+            )
             self.set_config(
                 "hazard",
                 da_type,
@@ -361,8 +397,12 @@ class FiatModel(GridModel):
                     "crs": str(da.raster.crs),
                     "nodata": str(da.raster.nodata),
                     # "var": None if "var_lst" not in locals() else self.var_lst[idx],
-                    "var": None if not 'var_lst' in params_lists else str(params_lists['var_lst'][idx]),
-                    "chunks": "auto" if chunks == "auto" else str(params_lists['chunks_lst'][idx]),
+                    "var": None
+                    if "var_lst" not in params_lists
+                    else str(params_lists["var_lst"][idx]),
+                    "chunks": "auto"
+                    if chunks == "auto"
+                    else str(params_lists["chunks_lst"][idx]),
                 },
             )
 
@@ -373,29 +413,30 @@ class FiatModel(GridModel):
         if risk_output:
             maps = self.maps
             list_keys = list(maps.keys())
-            maps_0 = maps[list_keys[0]].rename('risk')
+            maps_0 = maps[list_keys[0]].rename("risk")
             list_keys.pop(0)
 
             for idx, x in enumerate(list_keys):
                 key_name = list_keys[idx]
                 layer = maps[key_name]
-                maps_0 = xr.concat([maps_0, layer], dim='rp') 
+                maps_0 = xr.concat([maps_0, layer], dim="rp")
 
-            new_da = maps_0.to_dataset(name='RISK')
-            new_da.attrs = {  "returnperiod": list(list_rp),
-                            "type":params_lists['map_type_lst'],
-                            'name':list_names,
-                            "Analysis": "Risk"}  
+            new_da = maps_0.to_dataset(name="RISK")
+            new_da.attrs = {
+                "returnperiod": list(list_rp),
+                "type": params_lists["map_type_lst"],
+                "name": list_names,
+                "Analysis": "Risk",
+            }
 
             self.hazard = new_da
-            self.set_maps(self.hazard, 'HydroMT_Fiat_hazard')
+            self.set_maps(self.hazard, "HydroMT_Fiat_hazard")
 
             list_maps = list(self.maps.keys())
 
             if risk_output:
                 for item in list_maps[:-1]:
                     self.maps.pop(item)
-
 
         # self.set_config(
         #     "hazard",
