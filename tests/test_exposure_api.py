@@ -1,5 +1,4 @@
 import time
-from re import S
 
 from hydromt_fiat.api.exposure import ExposureViewModel
 
@@ -9,8 +8,5 @@ from hydromt_fiat.api.exposure import ExposureViewModel
 
 print(time.time_ns())
 a = ExposureViewModel()
-print(time.time_ns())
-time.sleep(2)
-print(time.time_ns())
-S = ExposureViewModel()
-print(time.time_ns())
+a.exposure_model.asset_locations = "nsi"
+print(a)

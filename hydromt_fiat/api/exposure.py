@@ -35,20 +35,28 @@ class Singleton(object):
 
 class ExposureViewModel(Singleton):
     def __init__(self):
-        self.interest_area: str
-        self.exposure_model: ExposureVector
+        self.exposure_model = ExposureVector(
+            asset_locations="",
+            occupancy_type="",
+            max_potential_damage=-999,
+            ground_floor_height=-999,
+            gfh_units=Units.feet,
+            extraction_method=ExtractionMethod.centroid,
+        )
 
-    def draw_area(self, *args):
-        # set self.interest_area to file name generated with draw_area
+    def create_interest_area(self, *args):
+        # create entry in datacatalog
+        # and write to database
         ...
 
-    def upload(self, *args):
-        # check if file exists
-        if args == "file":
-            # copy file over to database
-            # create file in database and set self.interest_area
+    def upload_area(self, *args):
+        # create entry in datacatalog
+        # and write to database
+        ...
 
-            ...
+    def set_asset_location(self, *args):
+        # self.set_asset_loca
+        ...
 
     def create_location_source(self, *args):
         if args == "file":
