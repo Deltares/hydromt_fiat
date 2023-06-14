@@ -23,9 +23,9 @@ class HydroMtViewModel(Singleton):
     data_catalog: DataCatalog
     database: IDatabase
 
-    def __init__(self, database_path: Path, catalog_path: str):
-        HydroMtViewModel.database = LocalDatabase.create_database(database_path)
-        HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
+    def __init__(self, database_path: str, catalog_path: str):
+        HydroMtViewModel.database = LocalDatabase.create_database(Path(database_path))
+        HydroMtViewModel.data_catalog = DataCatalog(Path(catalog_path))
         HydroMtViewModel.database.write(Path(catalog_path))
 
         self.exposure_vm = ExposureViewModel(
