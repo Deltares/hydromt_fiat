@@ -4,7 +4,7 @@ import geopandas as gpd
 from ast import literal_eval
 import os
 import xarray as xr
-from hydromt_sfincs import SfincsModel
+#from hydromt_sfincs import SfincsModel
 
 def get_parameters(
     map_fn,
