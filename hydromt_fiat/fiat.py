@@ -17,7 +17,8 @@ from .workflows.vulnerability import Vulnerability
 from .workflows.exposure_vector import ExposureVector
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.hazard import *
-from hydromt_sfincs import SfincsModel
+
+# from hydromt_sfincs import SfincsModel
 
 from . import DATADIR
 
@@ -169,6 +170,7 @@ class FiatModel(GridModel):
         # Process the vulnerability data
         vulnerability = Vulnerability(
             unit,
+            self.logger,
         )
 
         # Depending on what the input is, another function is chosen to generate the
@@ -201,6 +203,7 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         ground_floor_height_unit: str,
+        occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -220,6 +223,13 @@ class FiatModel(GridModel):
             height to the assets.
         ground_floor_height_unit : str
             The unit of the ground_floor_height
+        occupancy_type_field : Union[str, None], optional
+            The name of the field in the occupancy type data that contains the
+            occupancy type, by default None (this means that the occupancy type data
+            only contains one column with the occupancy type).
+        extraction_method : str, optional
+            The method that should be used to extract the hazard values from the
+            hazard maps, by default "centroid".
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
@@ -238,6 +248,7 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
+                occupancy_type_field,
             )
 
         # Link the damage functions to assets
