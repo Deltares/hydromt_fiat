@@ -1,11 +1,9 @@
-import time
 from pathlib import Path
 from typing import Union
 
 from pydantic import BaseModel
 
-from hydromt_fiat.api.exposure import ExposureViewModel
-from hydromt_fiat.api.util_types import ExtractionMethod, Units
+from hydromt_fiat.api.data_types import ExtractionMethod, Units
 
 # filepath = Path(__file__).parent / "exposure.toml"
 # obj = ConfigHandler.load_file(filepath)
