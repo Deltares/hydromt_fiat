@@ -28,8 +28,9 @@ class HydroMtViewModel(Singleton):
         self.vulnerability_vm = VulnerabilityViewModel()
         self.hazard_vm = HazardViewModel()
 
-        HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
         HydroMtViewModel.database = LocalDatabase.create_database(database_path)
+        HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
+        HydroMtViewModel.database.write(Path(catalog_path))
 
     def run_hydromt_fiat(self):
         # create ini file
