@@ -10,7 +10,7 @@ from os.path import join, basename
 import glob
 
 from shapely.geometry import box
-from typing import Union
+from typing import Union, List
 
 from .config import Config
 from .workflows.vulnerability import Vulnerability
@@ -55,6 +55,40 @@ class FiatModel(GridModel):
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
 
+    def setup_global_settings(self, crs: str):
+        """Setup Delft-FIAT global settings.
+
+        Parameters
+        ----------
+        crs : str
+            The CRS of the model.
+        """
+        self.set_config("global.crs", crs)
+
+    def setup_output(
+        self,
+        output_dir: str = "output",
+        output_csv_name: str = "output.csv",
+        output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+    ) -> None:
+        """Setup Delft-FIAT output folder and files.
+
+        Parameters
+        ----------
+        output_dir : str, optional
+            The name of the output directory, by default "output".
+        output_csv_name : str, optional
+            The name of the output csv file, by default "output.csv".
+        output_vector_name : Union[str, List[str]], optional
+            The name of the output vector file, by default "spatial.gpkg".
+        """
+        self.set_config("output", output_dir)
+        self.set_config("output.csv.name", output_csv_name)
+        if isinstance(output_vector_name, str):
+            output_vector_name = [output_vector_name]
+        for i, name in enumerate(output_vector_name):
+            self.set_config(f"output.vector.name{str(i+1)}", name)
+
     def setup_basemaps(
         self,
         region,
@@ -88,11 +122,19 @@ class FiatModel(GridModel):
         # Set the model region geometry (to be accessed through the shortcut self.region).
         self.set_geoms(geom, "region")
 
+        # Set the region crs
+        if geom.crs:
+            self.region.set_crs(geom.crs)
+        else:
+            self.region.set_crs(4326)
+
     def setup_vulnerability(
         self,
         vulnerability_fn: Union[str, Path],
         vulnerability_identifiers_and_linking_fn: Union[str, Path],
         unit: str,
+        functions_mean: Union[str, List[str], None] = "default",
+        functions_max: Union[str, List[str], None] = None,
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
@@ -106,6 +148,14 @@ class FiatModel(GridModel):
             exposure categories.
         unit : str
             The unit of the vulnerability functions.
+        functions_mean : Union[str, List[str], None], optional
+            The name(s) of the vulnerability functions that should use the mean hazard
+            value when using the area extraction method, by default "default" (this
+            means that all vulnerability functions are using mean).
+        functions_max : Union[str, List[str], None], optional
+            The name(s) of the vulnerability functions that should use the maximum
+            hazard value when using the area extraction method, by default None (this
+            means that all vulnerability functions are using mean).
         """
 
         # Read the vulnerability data
@@ -117,7 +167,9 @@ class FiatModel(GridModel):
         )
 
         # Process the vulnerability data
-        vulnerability = Vulnerability(unit)
+        vulnerability = Vulnerability(
+            unit,
+        )
 
         # Depending on what the input is, another function is chosen to generate the
         # vulnerability curves file for Delft-FIAT.
@@ -126,11 +178,21 @@ class FiatModel(GridModel):
             df_identifiers_linking=vf_ids_and_linking_df,
         )
 
+        # Set the area extraction method for the vulnerability curves
+        vulnerability.set_area_extraction_methods(
+            functions_mean=functions_mean, functions_max=functions_max
+        )
+
         # Add the vulnerability curves to tables property
         self.set_tables(df=vulnerability.get_table(), name="vulnerability_curves")
 
         # Also add the identifiers
         self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
+
+        # Update config
+        self.set_config(
+            "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
+        )
 
     def setup_exposure_vector(
         self,
@@ -138,7 +200,7 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        ground_flood_height_unit: str,
+        ground_floor_height_unit: str,
         extraction_method: str = "centroid",
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -156,16 +218,26 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        ground_flood_height_unit : str
+        ground_floor_height_unit : str
             The unit of the ground_floor_height
         """
-        self.exposure = ExposureVector(self.data_catalog, self.region)
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_from_single_source(
                 asset_locations, ground_floor_height, extraction_method
+            )
+        else:
+            # The source for the asset locations, occupancy type and maximum potential
+            # damage is different, use three sources to create the exposure data.
+            self.exposure.setup_from_multiple_sources(
+                asset_locations,
+                occupancy_type,
+                max_potential_damage,
+                ground_floor_height,
+                extraction_method,
             )
 
         # Link the damage functions to assets
@@ -182,10 +254,20 @@ class FiatModel(GridModel):
         # Add to tables
         self.set_tables(df=self.exposure.exposure_db, name="exposure")
 
+        # Add to the geoms
+        self.set_geoms(
+            geom=self.exposure.get_geom_gdf(
+                self._tables["exposure"], self.exposure.crs
+            ),
+            name="exposure",
+        )
+
         # Update config
-        self.set_config("exposure.type", "vector")
-        self.set_config("exposure.crs", self.exposure.crs)
-        self.set_config("exposure.dbase_file", "./exposure/exposure.csv")
+        self.set_config("exposure.vector.csv", "./exposure/exposure.csv")
+        self.set_config("exposure.vector.crs", self.exposure.crs)
+        self.set_config(
+            "exposure.vector.file1", "./exposure/exposure.gpkg"
+        )  # TODO: update if we have more than one file
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -359,25 +441,28 @@ class FiatModel(GridModel):
             The user's unique Census key that they got from the census.gov website
             (https://api.census.gov/data/key_signup.html) to be able to download the
             Census data
-        path : str
+        path : Union[str, Path]
             The path to the codebook excel
         state_abbreviation : str
             The abbreviation of the US state one would like to use in the analysis
         """
-        # TODO: Read the SVI table
 
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
         # Call functionalities of SVI
         svi.set_up_census_key(census_key)
+        #svi.read_dataset(path_dataset)
         svi.variable_code_csv_to_pd_df(path)
         svi.set_up_download_codes()
         svi.set_up_state_code(state_abbreviation)
         svi.download_census_data()
         svi.rename_census_data("Census_code_withE", "Census_variable_name")
-        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
-        svi.processing_svi_data()
+        svi.identify_no_data()
+        svi.check_nan_variable_columns()
+        svi.print_missing_variables("Census_variable_name", "Indicator_code")
+        translation_variable_to_indicator = svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data(translation_variable_to_indicator)
         svi.normalization_svi_data()
         svi.domain_scores()
         svi.composite_scores()
@@ -458,7 +543,7 @@ class FiatModel(GridModel):
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
-            self.write_geoms(fn="exposure/{name}.geojson")
+            self.write_geoms(fn="exposure/{name}.gpkg")
         if self._tables:
             self.write_tables()
 
