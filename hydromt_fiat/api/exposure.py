@@ -1,6 +1,4 @@
-from typing import Dict, Optional, cast
-
-import geopandas as gpd
+from typing import Dict, Optional
 
 from .data_types import (
     Category,
@@ -50,8 +48,7 @@ class ExposureViewModel:
         elif input_source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
             # make calls to backend to derive file meta info such as crs, data type and driver
-            crs: str = cast(str, gpd.read_file(input_source).crs.to_epsg())
-
+            crs: str = "4326"
             # save keymaps to database
 
             entry = DataCatalogEntry(
