@@ -1,7 +1,6 @@
-from ast import Dict
 from pathlib import Path
 from typing import Union
-from xml.dom.expatbuilder import ExpatBuilder
+import geopandas as gpd
 
 from pydantic import BaseModel
 
@@ -41,13 +40,15 @@ class ExposureViewModel(Singleton):
         filepath = kwargs.get("filepath")
         # make calls to backend to deduce data_type, driver, crs
 
-        entry_data_catalog = DataCatalogEntry(
+        # create data catalog entry
+        DataCatalogEntry(
             path=filepath,
-            data_type="",
-            driver="",
-            crs="",
+            data_type="GeoDataFrame",
+            driver="vector",
+            crs=4326,
             meta={"category": Category.exposure},
         )
+
         # create entry in datacatalog in database
         ...
 
@@ -61,34 +62,43 @@ class ExposureViewModel(Singleton):
     #         crs="",
     #         meta={"category": Category.exposure},
     #     )
-        
+
     #     # self.set_asset_loca
     #     ...
 
     def create_location_source(self, **kwargs):
         location_source: str = kwargs.get("variable", "NSI")
         fiat_key_maps: dict | None = kwargs.get("keys", None)
-        
+
         if location_source == "NSI":
-            # make calls to backend to derive file meta info such as crs, data type and driver
-            # make backend calls to create translation file
-            
-  
+            # NSI is already defined in the data catalog
+            # Add NSI to the configuration file
+
             ...
-        elif (location_source == "file" and fiat_key_maps is not None):
+        elif location_source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
             # make calls to backend to derive file meta info such as crs, data type and driver
+            crs = gpd.read_file(location_source).crs.to_epsg()
+
+            DataCatalogEntry(
+                path=location_source,
+                data_type="GeoDataFrame",
+                driver="vector",
+                crs=crs,
+                translation_fn="",  # the path to the fiat_key_maps file
+                meta={"category": Category.exposure},
+            )
             # make backend calls to create translation file with fiat_key_maps
             ...
-            
+
         # save translation file in data base
         # create data catalog entry
-        new_entry = DataCatalogEntry(
+        DataCatalogEntry(
             path=location_source,
             data_type="",
             driver="",
             crs="",
-            translation_fn=""
+            translation_fn="",
             meta={"category": Category.exposure},
         )
 
