@@ -1,6 +1,6 @@
 
 meta:
-  root: d:/hydromt_fiat/hydromt_fiat/data
+  root: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability 
 
 NSI:
     path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"
@@ -33,7 +33,7 @@ hazus_max_potential_damages:
       category: vulnerability
 
 social_vulnerability:
-    path: social_vulnerability/census_vulnerability_data_codebook.csv
+    path: census_vulnerability_data_codebook.xlsx
     data_type: DataFrame
     driver: xlsx
     meta:

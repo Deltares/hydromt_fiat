@@ -424,7 +424,7 @@ class FiatModel(GridModel):
         # self.config["hazard"] = hazard_settings
 
     def setup_social_vulnerability_index(
-        self, path_dataset, path_shp: None, census_key: str, path: Union[str, Path], state_abbreviation: str
+        self, census_key: str, codebook_fn: Union[str, Path], state_abbreviation: str, user_dataset_fn: str = None, blockgroup_fn : str = None
     ):
         """Setup the social vulnerability index for the vector exposure data for
         Delft-FIAT.
@@ -447,13 +447,13 @@ class FiatModel(GridModel):
         svi = SocialVulnerabilityIndex(self.data_catalog, self.logger)
 
         # Call functionalities of SVI
-        svi.read_dataset(path_dataset)
-        #svi.set_up_census_key(census_key)
-        svi.variable_code_csv_to_pd_df(path)
-        #svi.set_up_download_codes()
-        #svi.set_up_state_code(state_abbreviation)
-        #svi.download_census_data()
-        #svi.rename_census_data("Census_code_withE", "Census_variable_name")
+        #svi.read_dataset(user_dataset_fn)
+        svi.set_up_census_key(census_key)
+        svi.variable_code_csv_to_pd_df(codebook_fn)
+        svi.set_up_download_codes()
+        svi.set_up_state_code(state_abbreviation)
+        svi.download_census_data()
+        svi.rename_census_data("Census_code_withE", "Census_variable_name")
         svi.identify_no_data()
         svi.check_nan_variable_columns("Census_variable_name", "Indicator_code")
         svi.check_zeroes_variable_rows()
@@ -463,7 +463,7 @@ class FiatModel(GridModel):
         svi.domain_scores()
         svi.composite_scores()
         svi.match_geo_ID()
-        svi.load_shp_geom(path_shp)
+        svi.load_shp_geom(blockgroup_fn)
         svi.merge_svi_data_shp()
         
         
@@ -473,9 +473,9 @@ class FiatModel(GridModel):
         
         
         #TODO: geometries toevoegen aan de dataset met API
-        #we now use the shape download function by the census, the user needs to download their own shape data
+        #we now use the shape download function by the census, the user needs to download their own shape data.They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
         # #wfs python get request -> geometries 
-        # The user needs to specify a shapefile. They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
+        
         # this link can be used: https://github.com/datamade/census
 
 

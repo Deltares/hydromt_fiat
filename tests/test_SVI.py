@@ -4,29 +4,44 @@ from hydromt.config import configread
 from pathlib import Path
 import pytest
 
+EXAMPLEDIR = Path().absolute() / "local_test_database"
+DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
-DATASET = Path("C:\python\hydromt_fiat\local_test_database")
 _cases = {
     "Test_SVI": {
-        "folder": "test_hazard",
-        "ini": "test_SVI.ini",
-        "catalog": "fiat_catalog_hazard.yml",
-    },
-}
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
+        "folder": "Test_SVI",
+        "configuration": {"setup_social_vulnerability_index": {"census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9",
+                                                               "codebook_fn":"social_vulnerability",
+                                                               "state_abbreviation":"SC",
+                                                               "blockgroup_fn":"blockgroup_shp_data"}
+
+            }}}
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
 # @pytest.mark.skip(reason="Needs to be updated")
 def test_SVI(case):
     # Read model in examples folder.
-    root = DATASET.joinpath(_cases[case]["folder"])
+    root = EXAMPLEDIR.joinpath(_cases[case]["folder"])
     logger = setuplog("hydromt_fiat", log_level=10)
-    config_fn = DATASET.joinpath(_cases[case]["ini"])
-    data_libs = DATASET.joinpath(_cases[case]["catalog"])
-
+    data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
     hyfm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
-    config = configread(config_fn)
+    #config = configread(_cases[case]["configuration"])
 
-    hyfm.build(opt=config)
+    # Now we will add data from the user to the data catalog.
+    to_add = {
+        "blockgroup_shp_data": {
+            "path": str(EXAMPLEDIR /"Social_Vulnerability/tl_2022_45_bg.shp"),
+            "data_type": "GeoDataFrame",
+            "driver": "vector",
+            "crs": 4326,
+            "category": "social_vulnerability",
+        }
+    }
+
+    hyfm.data_catalog.from_dict(to_add)
+    hyfm.build(opt=_cases[case]["configuration"])
 
     assert hyfm
+    print("hi")
