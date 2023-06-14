@@ -1,29 +1,25 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
+from pathlib import Path
 
 
-class IDatabase(ABCMeta):
-    
-    def __init__(self):
-        self.location: str
-    
+class IDatabase(ABC):
     @abstractmethod
+    def __init__(self, *args: str):
+        raise NotImplementedError
+
     @classmethod
-    def create_database(cls):
-        raise NotImplementedError
-        
-    
     @abstractmethod
-    def add_file(self):
+    def create_database(cls, drive_path: Path) -> object:
         raise NotImplementedError
-        
+
     @abstractmethod
-    def delete_file(self):
+    def write(self, filepath: Path) -> None:
         raise NotImplementedError
-    
+
     @abstractmethod
-    def copy_file(self):
+    def delete(self, filename: str) -> None:
         raise NotImplementedError
-    
+
     @abstractmethod
-    def select_file(self):
-        raise NotImplementedError        raise NotImplementedError
+    def get_file(self, filename: str) -> Path | None:
+        raise NotImplementedError

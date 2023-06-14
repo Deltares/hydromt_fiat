@@ -1,8 +1,6 @@
-class Hazard(BaseModel):
-    hazard_map_fn: Union[str, Path]
-    hazard_type: str
-    return_period: Optional[Union[int, None]] = None
-    crs: Optional[str] = None
-    no_data: Optional[int] = -9999
-    var: Optional[Union[str, None]] = None
-    chunks: Optional[Union[int, str]] = "auto"
+from hydromt_fiat.api.data_types import HazardIni
+
+
+class HazardViewModel:
+    def __init__(self):
+        self.hazard_model = HazardIni(hazard_map_fn="", hazard_type="")
