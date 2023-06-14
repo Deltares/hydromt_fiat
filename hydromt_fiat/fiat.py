@@ -288,181 +288,157 @@ class FiatModel(GridModel):
 
     def setup_hazard(
         self,
-        map_fn: str,
-        map_type: str,
-        rp: str,
-        crs: Union[int, str],
-        nodata: Union[int, None],
-        var: int,
-        chunks: Union[int, str],
-        risk_output: bool = True,
-        hazard_type: str = "flooding",
+        map_fn:       Union[str, Path, list[str], list[Path]],
+        map_type:     Union[str, list[str]],
+        rp:           Union[int, list[int], None] = None,
+        crs:          Union[int, str, list[int], list[str], None] = None,
+        nodata:       Union[int, list[int], None] = None,
+        var:          Union[str, list[str], None] = None,
+        chunks:       Union[int, str, list[int]] = "auto",
         name_catalog: str = "flood_maps",
-        maps_id: str = "RP",
-    ):
-        """_summary_
+        hazard_type:  str = "flooding",
+        risk_output:  bool = False,
+    )-> None:
+        """Set up hazard maps. This component integrates multiple checks for the maps
 
         Parameters
         ----------
-        map_fn : str
-            _description_
-        map_type : str
-            _description_
-        rp : str
-            _description_
-        crs : Union[int, str]
-            _description_
-        nodata : Union[int, None]
-            _description_
-        var : int
-            _description_
-        chunks : Union[int,str]
-            _description_
-        risk_output : bool, optional
-            _description_, by default True
-        hazard_type : str, optional
-            _description_, by default "flooding"
+        map_fn : Union[str, Path, list[str], list[Path]]
+            The data catalog key or list of keys from where to retrieve the 
+            hazard maps. This can also be a path or list of paths to take files 
+            directly from a local database.
+        map_type : Union[str, list[str]]
+            The data type of each map speficied in map_fn. In case a single 
+            map type applies for all the elements a single string can be provided.
+        rp : Union[int, list[int], None], optional.
+            The return period (rp) type of each map speficied in map_fn in case a 
+            risk output is required. If the rp is not provided and risk 
+            output is required the workflow will try to retrieve the rp from the 
+            files's name, by default None.
+        crs : Union[int, str, list[int], list[str], None], optional
+            The projection (crs) required in EPSG code of each of the maps provided. In 
+            case a single crs applies for all the elements a single value can be 
+            provided as code or string (e.g. "EPSG:4326"). If not provided, then the crs
+            will be taken from orginal maps metadata, by default None.
+        nodata : Union[int, list[int], None], optional
+            The no data values in the rasters arrays. In case a single no data applies 
+            for all the elements a single value can be provided as integer, by default 
+            None.
+        var : Union[str, list[str], None], optional
+            The name of the variable to be selected in case a netCDF file is provided 
+            as input, by default None.
+        chunks : Union[int, str, list[int]], optional
+            The chuck region per map. In case a single no data applies for all the 
+            elements a single value can be provided as integer. If "auto"is provided 
+            the auto setting will be provided by default "auto"
         name_catalog : str, optional
-            _description_, by default "flood_maps"
-        maps_id : str, optional
-            _description_, by default "RP"
-        """
+            Name of the data catalog to take the hazard maps from, by default "flood_maps"
+        hazard_type : str, optional
+            Type of hazard to be studied, by default "flooding"
+        risk_output : bool, optional
+            The parameter that defines if a risk analysis is required, by default False
+        """   
+        # check parameters types and size, and existance of provided files of maps
+        params = check_parameters_type(map_fn,map_type,rp,crs,nodata,var,chunks)
+        check_parameters_size(params)
+        check_files(params,self.root)
 
-        params_lists, params = get_parameters(
-            map_fn,
-            map_type,
-            chunks,
-            rp,
-            crs,
-            nodata,
-            var,
-        )
+        rp_list = []
+        map_name_lst = []
 
-        check_parameters(
-            params_lists,
-            params,
-            self,
-        )
+        # retrieve maps information from parameters and datacatalog 
+        # load maps in memory and check them and save the with st_map function
+        for idx, da_map_fn in enumerate(params['map_fn_lst']):
+            da_map_fn, da_name, da_type = read_floodmaps(params, da_map_fn, idx)
 
-        list_names = []
-        for idx, da_map_fn in enumerate(params_lists["map_fn_lst"]):
-            kwargs, da_name, da_map_fn, da_type = read_floodmaps(
-                list_names, da_map_fn, idx, params_lists, params
-            )
-            da = load_floodmaps(self, da_map_fn, name_catalog, da_name, **kwargs)
+            # load flood maps to memory
+            #da = load_floodmaps(self.data_catalog, self.region,da_map_fn,da_name,name_catalog)
+            # reading from path
+            if da_map_fn.stem:
+                if da_map_fn.stem == "sfincs_map":
+                    sfincs_root = os.path.dirname(da_map_fn)
+                    sfincs_model = SfincsModel(sfincs_root, mode="r")
+                    sfincs_model.read_results()
+                    # save sfincs map as GeoTIFF
+                    # result_list = list(sfincs_model.results.keys())
+                    # sfincs_model.write_raster("results.zsmax", compress="LZW")
+                    da =  sfincs_model.results['zsmax']
+                    da.encoding["_FillValue"] = None
+                else:
+                    if not self.region.empty:
+                        da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region)
+                    else:
+                        da = self.data_catalog.get_rasterdataset(da_map_fn)
+            # reading from the datacatalog
+            else:
+                if not self.region.empty:
+                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name, geom=self.region)
+                else:
+                    da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)            
+            
+            # check masp projection, null data, and grids
+            check_maps_metadata(self.staticmaps, params, da, da_name, idx)
+            
+            # check maps return periods
+            da_rp = check_maps_rp(params, da,da_name,idx,risk_output)
+            
+            # chek if maps are unique
+            #TODO: check if providing methods like self.get_config can be used
+            #TODO: create a new funtion to check uniqueness trhough files names
+            #check_maps_uniquenes(self.get_config,self.staticmaps,params,da,da_map_fn,da_name,da_type,da_rp,idx)
 
-            # # reading from path
-            # if da_map_fn.stem:
-            #     if da_map_fn.stem == "sfincs_map":
-            #         sfincs_root = os.path.dirname(da_map_fn)
-            #         sfincs_model = SfincsModel(sfincs_root, mode="r")
-            #         sfincs_model.read_results()
-            #         result_list = list(sfincs_model.results.keys())
-            #         sfincs_model.write_raster("results.zsmax", compress="LZW")
-            #         da =  sfincs_model.results['zsmax']
-            #         da.encoding["_FillValue"] = None
-            #     else:
-            #         if not self.region.empty:
-            #             da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region, **kwargs)
-            #         else:
-            #             da = self.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
-            # # reading from the datacatalog
-            # else:
-            #     if not self.region.empty:
-            #         da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name, geom=self.region)
-            #     else:
-            #         da = self.data_catalog.get_rasterdataset(name_catalog, variables=da_name)
-
-            da_rp, list_rp = checking_floodmaps(
-                risk_output,
-                self,
-                da,
-                da_name,
-                da_map_fn,
-                da_type,
-                idx,
-                params_lists,
-                params,
-                **kwargs,
-            )
-            self.set_config(
-                "hazard",
-                da_type,
-                da_name,
-                {
-                    "usage": "True",
-                    "map_fn": str(da_map_fn),
-                    "map_type": str(da_type),
-                    "rp": str(da_rp),
-                    "crs": str(da.raster.crs),
-                    "nodata": str(da.raster.nodata),
-                    # "var": None if "var_lst" not in locals() else self.var_lst[idx],
-                    "var": None
-                    if "var_lst" not in params_lists
-                    else str(params_lists["var_lst"][idx]),
-                    "chunks": "auto"
-                    if chunks == "auto"
-                    else str(params_lists["chunks_lst"][idx]),
-                },
-            )
+            rp_list.append(da_rp)
+            map_name_lst.append(da_name)
 
             self.set_maps(da, da_name)
             post = f"(rp {da_rp})" if risk_output else ""
             self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
 
+        check_map_uniqueness(map_name_lst)
+        # in case risk_output is required maps are put in a netcdf with a raster with 
+        # an extra dimension 'rp' accounting for return period
+        # select first risk maps
         if risk_output:
-            maps = self.maps
-            list_keys = list(maps.keys())
-            maps_0 = maps[list_keys[0]].rename("risk")
+            list_keys = list(self.maps.keys())
+            first_map = self.maps[list_keys[0]].rename('risk_datarray')
             list_keys.pop(0)
 
+            # add additional risk maps
             for idx, x in enumerate(list_keys):
-                key_name = list_keys[idx]
-                layer = maps[key_name]
-                maps_0 = xr.concat([maps_0, layer], dim="rp")
+                key_name  = list_keys[idx]
+                layer     = self.maps[key_name]
+                first_map = xr.concat([first_map, layer], dim='rp') 
 
-            new_da = maps_0.to_dataset(name="RISK")
-            new_da.attrs = {
-                "returnperiod": list(list_rp),
-                "type": params_lists["map_type_lst"],
-                "name": list_names,
-                "Analysis": "Risk",
-            }
-
-            self.hazard = new_da
-            self.set_maps(self.hazard, "HydroMT_Fiat_hazard")
-
+            # convert to a dataset to be able to write attributes when writing the maps 
+            # in the ouput folders. If datarray is provided attributes will not be
+            # shown in the output netcdf dataset
+            da = first_map.to_dataset(name='risk_maps')
+            da.attrs = {    "returnperiod": list(rp_list),
+                            "type":params['map_type_lst'],
+                            "name":map_name_lst,
+                            "Analysis": "risk"}
+            # load merged map into self.maps
+            self.set_maps(da)
             list_maps = list(self.maps.keys())
-
+            
+            # erase individual maps from self.maps keeping the merged map
             if risk_output:
                 for item in list_maps[:-1]:
                     self.maps.pop(item)
-
-        # self.set_config(
-        #     "hazard",
-        #     {
-        #         "file": [str(Path("hazard") / (self.maps[hazard_map].name + ".nc")) for hazard_map in self.maps.keys()]
-        #     }
-
-        # )
-
-        # # Store the hazard settings.
-        # hazard_settings = {}
-        # hazard_maps = []
-        # for hazard_map in self.maps.keys():
-        #     hazard_maps.append(
-        #         str(Path("hazard") / (self.maps[hazard_map].name + ".nc"))
-        #     )
-
-        # hazard_settings["grid_file"] = hazard_maps
-
-        # if not isinstance(rp, list):
-        #     rp = "Event"
-        # hazard_settings["return_period"] = rp
-
-        # hazard_settings["crs"] = hazard.crs
-        # hazard_settings["spatial_reference"] = map_type
-        # self.config["hazard"] = hazard_settings
+        
+        # the metadata of the hazard maps is saved in the configuration toml files
+        # this component was modified to provided the element [0] od the list
+        # in case multiple maps are required then remove [0]
+        self.set_config(
+            "hazard",
+            {
+                "file": [str(Path("hazard") / (hazard_map + ".nc")) for hazard_map in self.maps.keys()][0],
+                "crs":  ["EPSG:" + str((self.maps[hazard_map].rio.crs.to_epsg())) for hazard_map in self.maps.keys()][0],
+                "risk": risk_output,
+                "spatial_reference": "dem" if da_type == "water_depth" else "datum", 
+                "layer": [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
+            }
+        )
 
     def setup_social_vulnerability_index(
         self, census_key: str, path: Union[str, Path], state_abbreviation: str
@@ -476,25 +452,28 @@ class FiatModel(GridModel):
             The user's unique Census key that they got from the census.gov website
             (https://api.census.gov/data/key_signup.html) to be able to download the
             Census data
-        path : str
+        path : Union[str, Path]
             The path to the codebook excel
         state_abbreviation : str
             The abbreviation of the US state one would like to use in the analysis
         """
-        # TODO: Read the SVI table
 
         # Create SVI object
         svi = SocialVulnerabilityIndex(self.data_catalog, self.config)
 
         # Call functionalities of SVI
         svi.set_up_census_key(census_key)
+        #svi.read_dataset(path_dataset)
         svi.variable_code_csv_to_pd_df(path)
         svi.set_up_download_codes()
         svi.set_up_state_code(state_abbreviation)
         svi.download_census_data()
         svi.rename_census_data("Census_code_withE", "Census_variable_name")
-        svi.create_indicator_groups("Census_variable_name", "Indicator_code")
-        svi.processing_svi_data()
+        svi.identify_no_data()
+        svi.check_nan_variable_columns()
+        svi.print_missing_variables("Census_variable_name", "Indicator_code")
+        translation_variable_to_indicator = svi.create_indicator_groups("Census_variable_name", "Indicator_code")
+        svi.processing_svi_data(translation_variable_to_indicator)
         svi.normalization_svi_data()
         svi.domain_scores()
         svi.composite_scores()
