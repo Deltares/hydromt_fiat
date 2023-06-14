@@ -1,5 +1,9 @@
 from typing import Dict, Optional
 
+from hydromt import DataCatalog
+
+from hydromt_fiat.interface.database import IDatabase
+
 from .data_types import (
     Category,
     DataCatalogEntry,
@@ -10,9 +14,7 @@ from .data_types import (
 
 
 class ExposureViewModel:
-    def __init__(
-        self,
-    ):
+    def __init__(self, database: IDatabase, data_catalog: DataCatalog):
         self.exposure_model = ExposureVectorIni(
             asset_locations=" ",
             occupancy_type="",
@@ -21,21 +23,23 @@ class ExposureViewModel:
             gfh_units=Units.feet,
             extraction_method=ExtractionMethod.centroid,
         )
+        self.database: IDatabase = database
+        self.data_catalog: DataCatalog = data_catalog
 
     def create_interest_area(self, **kwargs: str):
         filepath = kwargs.get("filepath")
 
-        entry = DataCatalogEntry(
-            path=filepath,
-            data_type="GeoDataFrame",
-            driver="vector",
-            crs=4326,
-            meta={"category": Category.exposure},
-        )  # type: ignore
-        print(entry)
+        data_entry = {
+            "area_of_interest": DataCatalogEntry(
+                path=filepath,
+                data_type="GeoDataFrame",
+                driver="vector",
+                crs=4326,
+                meta={"category": Category.exposure},
+            ).dict()  # type: ignore
+        }
 
-        # create entry in datacatalog in database
-        ...
+        self.data_catalog.from_dict(data_entry)  # type: ignore
 
     def create_location_source(
         self, input_source: str, fiat_key_maps: Optional[Dict[str, str]] = None

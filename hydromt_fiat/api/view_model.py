@@ -24,13 +24,15 @@ class HydroMtViewModel(Singleton):
     database: IDatabase
 
     def __init__(self, database_path: Path, catalog_path: str):
-        self.exposure_vm = ExposureViewModel()
-        self.vulnerability_vm = VulnerabilityViewModel()
-        self.hazard_vm = HazardViewModel()
-
         HydroMtViewModel.database = LocalDatabase.create_database(database_path)
         HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
         HydroMtViewModel.database.write(Path(catalog_path))
+
+        self.exposure_vm = ExposureViewModel(
+            HydroMtViewModel.database, HydroMtViewModel.data_catalog
+        )
+        self.vulnerability_vm = VulnerabilityViewModel()
+        self.hazard_vm = HazardViewModel()
 
     def run_hydromt_fiat(self):
         # create ini file
