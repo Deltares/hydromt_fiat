@@ -19,7 +19,7 @@ from .data_types import (
 class ExposureViewModel:
     def __init__(self, database: IDatabase, data_catalog: DataCatalog):
         self.exposure_model = ExposureVectorIni(
-            asset_locations=" ",
+            asset_locations="",
             occupancy_type="",
             max_potential_damage=-999,
             ground_floor_height=-999,

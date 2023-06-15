@@ -1,5 +1,4 @@
 from enum import Enum
-from pathlib import Path
 from typing import Optional, TypedDict, Union
 
 from pydantic import BaseModel
@@ -15,19 +14,19 @@ class Units(str, Enum):
     feet = "feet"
 
 
-class Category(Enum):
+class Category(str, Enum):
     exposure = "exposure"
     hazard = "hazard"
     vulnerability = "vulnerability"
 
 
-class Driver(Enum):
+class Driver(str, Enum):
     vector = "vector"
     raster = "raster"
     xlsx = "xlsx"
 
 
-class DataType(Enum):
+class DataType(str, Enum):
     RasterDataset = "RasterDataset"
     GeoDataFrame = "GeoDataFrame"
     GeoDataset = "GeoDataset"
@@ -39,7 +38,7 @@ class Meta(TypedDict):
 
 
 class DataCatalogEntry(BaseModel):
-    path: Union[str, Path]
+    path: str
     data_type: DataType
     driver: Driver
     crs: Optional[Union[str, int]]
@@ -50,21 +49,21 @@ class DataCatalogEntry(BaseModel):
 class ModelIni(BaseModel):
     site_name: str
     scenario_name: str
-    output_dir: Union[Path, str]
+    output_dir: str
     crs: str
 
 
 class ExposureVectorIni(BaseModel):
-    asset_locations: Union[str, Path]
-    occupancy_type: Union[str, Path]
-    max_potential_damage: Union[int, Path]
-    ground_floor_height: Union[int, Path]
+    asset_locations: str
+    occupancy_type: str
+    max_potential_damage: str
+    ground_floor_height: str
     gfh_units: Units
     extraction_method: ExtractionMethod
 
 
 class HazardIni(BaseModel):
-    hazard_map_fn: Union[str, Path]
+    hazard_map_fn: str
     hazard_type: str
     return_period: Optional[Union[int, None]] = None
     crs: Optional[str] = None
@@ -77,8 +76,8 @@ class HazardIni(BaseModel):
 
 
 class VulnerabilityIni(BaseModel):
-    vulnerability_fn: Union[str, Path]
-    link_table: Union[str, Path]
+    vulnerability_fn: str
+    link_table: str
     units: Units
 
 
