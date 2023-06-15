@@ -15,7 +15,7 @@ dependencies:
   - flit>=3.2
   - gdal>=3.1
   - geopandas
-  - hydromt>=0.4.1
+  - hydromt>=0.6.0
   - jupyterlab # to run examples
   - netcdf4
   - matplotlib # to run examples
@@ -27,9 +27,13 @@ dependencies:
   - pyflwdir>=0.4.7
   - pygeos>=0.8
   - python>=3.7
+  - pydantic
   - rasterio
   - requests
   - scipy
   - xarray
   - zarr
+  pip:
+    - us
+    - census
 
