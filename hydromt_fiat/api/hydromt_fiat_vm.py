@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Any
 
-from hydromt import DataCatalog, config
+import tomli_w
+from hydromt import DataCatalog
 
 from hydromt_fiat.api.data_types import ConfigIni
 from hydromt_fiat.api.dbs_controller import LocalDatabase
@@ -56,9 +57,9 @@ class HydroMtViewModel(Singleton):
         )
 
         database_path = self.__class__.database.drive
-        config.write_ini_config(
-            database_path / "config.ini", config_ini.dict(exclude_none=True)
-        )
+
+        with open(database_path / "config.ini", "wb") as f:
+            tomli_w.dump(config_ini.dict(exclude_none=True), f)
 
 
 a = HydroMtViewModel(Path(__file__).parent, str(Path(__file__).parent / "test.yml"))
