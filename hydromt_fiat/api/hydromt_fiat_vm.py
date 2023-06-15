@@ -30,7 +30,6 @@ class HydroMtViewModel(Singleton):
         if not self.__class__.is_initialized:
             HydroMtViewModel.database = LocalDatabase.create_database(database_path)
             HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
-            # HydroMtViewModel.database.write(Path(catalog_path))
 
             self.model_vm = ModelViewModel()
             self.exposure_vm = ExposureViewModel(
