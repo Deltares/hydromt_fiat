@@ -1,10 +1,3 @@
-from pathlib import Path
-from typing import Union
-
-from pydantic import BaseModel
-
-from hydromt_fiat.api.data_types import ExtractionMethod, Units
-
 # filepath = Path(__file__).parent / "exposure.toml"
 # obj = ConfigHandler.load_file(filepath)
 
@@ -15,15 +8,28 @@ from hydromt_fiat.api.data_types import ExtractionMethod, Units
 # print(a)
 
 
-class ExposureVectorIni(BaseModel):
-    asset_locations: Union[str, Path]
-    occupancy_type: Union[str, Path]
-    max_potential_damage: Union[int, Path]
-    ground_floor_height: Union[int, Path]
-    gfh_units: Units
-    extraction_method: ExtractionMethod
+# class ExposureVectorIni(BaseModel):
+#     asset_locations: Union[str, Path]
+#     occupancy_type: Union[str, Path]
+#     max_potential_damage: Union[int, Path]
+#     ground_floor_height: Union[int, Path]
+#     gfh_units: Units
+#     extraction_method: ExtractionMethod
 
 
-a = ExposureVectorIni.parse_obj({})
+# a = ExposureVectorIni.parse_obj({})
 
+# print(a)
+
+
+def test_f(key: str, **kwargs):
+    return kwargs
+
+
+a = test_f(key="bana", sd=5, ds=4)
+print(a)
+
+a = HydroMtViewModel(Path(__file__).parent, str(Path(__file__).parent / "test.yml"))
+a.build_config_ini()
+b = HydroMtViewModel(Path(__file__).parent, str(Path(__file__).parent / "test.yml"))
 print(a)
