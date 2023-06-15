@@ -18,7 +18,8 @@ def cd(newdir: Path):
 
 class LocalDatabase(IDatabase):
     def __init__(self, drive_path: Path):
-        self.drive = drive_path
+        self.parent: Path = drive_path.parent
+        self.drive: Path = drive_path
 
     @classmethod
     def create_database(cls, drive_path: Path) -> IDatabase:

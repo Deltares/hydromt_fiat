@@ -2,11 +2,14 @@ from typing import Dict, Optional
 
 from hydromt import DataCatalog
 
+from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
 
 from .data_types import (
     Category,
     DataCatalogEntry,
+    DataType,
+    Driver,
     ExposureVectorIni,
     ExtractionMethod,
     Units,
@@ -20,30 +23,31 @@ class ExposureViewModel:
             occupancy_type="",
             max_potential_damage=-999,
             ground_floor_height=-999,
-            gfh_units=Units.feet,
+            gfh_units=Units.m.value,
             extraction_method=ExtractionMethod.centroid,
         )
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
 
     def create_interest_area(self, **kwargs: str):
-        filepath = kwargs.get("filepath")
+        fpath = kwargs.get("fpath")
+        self.database.write(fpath)
 
-        data_entry = {
-            "area_of_interest": DataCatalogEntry(
-                path=filepath,
-                data_type="GeoDataFrame",
-                driver="vector",
-                crs=4326,
-                meta={"category": Category.exposure},
-            ).dict()  # type: ignore
-        }
+        catalog_entry = make_catalog_entry(
+            name="area_of_interest",
+            path=fpath,
+            data_type=DataType.GeoDataFrame,
+            driver=Driver.vector,
+            crs=4326,
+            meta={"category": Category.exposure},
+        )
 
-        self.data_catalog.from_dict(data_entry)  # type: ignore
+        self.data_catalog.from_dict(catalog_entry)  # type: ignore
 
     def create_location_source(
         self, input_source: str, fiat_key_maps: Optional[Dict[str, str]] = None
     ):
+        # TODO: (EXPERIMENTAL) implement this callback
         if input_source == "NSI":
             # NSI is already defined in the data catalog
             # Add NSI to the configuration file
@@ -55,7 +59,7 @@ class ExposureViewModel:
             crs: str = "4326"
             # save keymaps to database
 
-            entry = DataCatalogEntry(
+            catalog_entry = DataCatalogEntry(
                 path=input_source,
                 data_type="GeoDataFrame",
                 driver="vector",
@@ -64,10 +68,11 @@ class ExposureViewModel:
                 meta={"category": Category.exposure},
             )
             # make backend calls to create translation file with fiat_key_maps
-            print(entry)
+            print(catalog_entry)
         # write to data catalog
 
     def create_extraction_map(self, *args):
+        # TODO: implement callback
         # if no exceptions, then self.exposure_model.extraction_method = args[0]
         # else if
         # make backend call to api with arguments to set extraction method per object:
@@ -76,6 +81,3 @@ class ExposureViewModel:
         # change self.exposure_model.extraction_method to file
         ...
         # change self.exposure_model.extraction_method to file
-        ...
-        ...
-        ...

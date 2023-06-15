@@ -10,7 +10,7 @@ class ExtractionMethod(str, Enum):
     area = "area"
 
 
-class Units(Enum):
+class Units(str, Enum):
     m = "meter"
     feet = "feet"
 
@@ -21,17 +21,37 @@ class Category(Enum):
     vulnerability = "vulnerability"
 
 
+class Driver(Enum):
+    vector = "vector"
+    raster = "raster"
+    xlsx = "xlsx"
+
+
+class DataType(Enum):
+    RasterDataset = "RasterDataset"
+    GeoDataFrame = "GeoDataFrame"
+    GeoDataset = "GeoDataset"
+    DataFrame = "DataFrame"
+
+
 class Meta(TypedDict):
     category: Category
 
 
 class DataCatalogEntry(BaseModel):
     path: Union[str, Path]
-    data_type: str
-    driver: str
-    crs: Optional[str]
+    data_type: DataType
+    driver: Driver
+    crs: Optional[Union[str, int]]
     translation_fn: Optional[str]
     meta: Meta
+
+
+class ModelIni(BaseModel):
+    site_name: str
+    scenario_name: str
+    output_dir: Union[Path, str]
+    crs: str
 
 
 class ExposureVectorIni(BaseModel):
@@ -60,3 +80,10 @@ class VulnerabilityIni(BaseModel):
     vulnerability_fn: Union[str, Path]
     link_table: Union[str, Path]
     units: Units
+
+
+class ConfigIni(BaseModel):
+    setup_config: ModelIni
+    setup_hazard: HazardIni
+    setup_vulnerability: VulnerabilityIni
+    setup_exposure_vector: ExposureVectorIni
