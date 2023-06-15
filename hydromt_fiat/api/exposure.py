@@ -21,7 +21,7 @@ class ExposureViewModel:
             max_potential_damage=-999,
             ground_floor_height=-999,
             gfh_units=Units.feet,
-            extraction_method=ExtractionMethod.centroid,
+            extraction_method=ExtractionMethod.centroid.value,
         )
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -35,7 +35,7 @@ class ExposureViewModel:
                 data_type="GeoDataFrame",
                 driver="vector",
                 crs=4326,
-                meta={"category": Category.exposure},
+                meta={"category": Category.exposure.value},
             ).dict()  # type: ignore
         }
 
@@ -61,7 +61,7 @@ class ExposureViewModel:
                 driver="vector",
                 crs=crs,
                 translation_fn="",  # the path to the fiat_key_maps file
-                meta={"category": Category.exposure},
+                meta={"category": Category.exposure.value},
             )
             # make backend calls to create translation file with fiat_key_maps
             print(entry)
