@@ -1,0 +1,40 @@
+meta:
+  root: C:\Users\peiter\Projects\hydromt_fiat\hydromt_fiat\data\temp_database
+NSI:
+  data_type: GeoDataFrame
+  path: https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc
+  driver: vector
+  filesystem: local
+  kwargs:
+    translation_fn: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability\attribute_linking\NSI_attributes_to_FIAT.json
+  crs: 4326
+  meta:
+    category: exposure
+hazus_max_potential_damages:
+  data_type: DataFrame
+  path: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability\max_potential_damages\damage_values_fema_hazus-inventory-technical-manual-4.2.3.xlsx
+  driver: xlsx
+  filesystem: local
+  meta:
+    category: vulnerability
+hazus_vulnerability_curves:
+  data_type: DataFrame
+  path: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability\damage_functions\flooding\AllDDF_HAZUS.xlsx
+  driver: xlsx
+  filesystem: local
+  meta:
+    category: vulnerability
+jrc_vulnerability_curves:
+  data_type: DataFrame
+  path: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability\damage_functions\flooding\JRC_damage_functions.xlsx
+  driver: xlsx
+  filesystem: local
+  meta:
+    category: vulnerability
+social_vulnerability:
+  data_type: DataFrame
+  path: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability\census_vulnerability_data_codebook.xlsx
+  driver: xlsx
+  filesystem: local
+  meta:
+    category: social_vulnerability

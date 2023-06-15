@@ -44,9 +44,9 @@ class HydroMtViewModel(Singleton):
         # TODO: delete database after hydromt_fiat has run
         ...
 
-    def build_data_catalog(self):
+    def save_data_catalog(self):
         database_path = self.__class__.database.drive
-        self.__class__.data_catalog.to_yml(database_path)
+        self.__class__.data_catalog.to_yml(database_path / "data_catalog.yml")
 
     def build_config_ini(self):
         config_ini = ConfigIni(
@@ -60,9 +60,3 @@ class HydroMtViewModel(Singleton):
 
         with open(database_path / "config.ini", "wb") as f:
             tomli_w.dump(config_ini.dict(exclude_none=True), f)
-
-
-a = HydroMtViewModel(Path(__file__).parent, str(Path(__file__).parent / "test.yml"))
-a.build_config_ini()
-b = HydroMtViewModel(Path(__file__).parent, str(Path(__file__).parent / "test.yml"))
-print(a)
