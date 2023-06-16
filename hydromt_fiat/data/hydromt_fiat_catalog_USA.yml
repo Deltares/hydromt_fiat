@@ -1,6 +1,6 @@
 
 meta:
-  root: C:\python\hydromt_fiat\local_test_database\Social_Vulnerability 
+  root: d:\hydromt_fiat\hydromt_fiat\data
 
 NSI:
     path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"
