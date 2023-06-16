@@ -11,7 +11,7 @@ class ExtractionMethod(str, Enum):
 
 class Units(str, Enum):
     m = "meter"
-    feet = "feet"
+    ft = "feet"
 
 
 class Category(str, Enum):
@@ -58,7 +58,7 @@ class ExposureVectorIni(BaseModel):
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: str
-    gfh_units: Units
+    ground_floor_height_unit: Units
     extraction_method: ExtractionMethod
 
 

@@ -1,8 +1,8 @@
-from pathlib import Path
 from typing import Any
 
 import tomli_w
 from hydromt import DataCatalog
+from pathlib import Path
 
 from hydromt_fiat.api.data_types import ConfigIni
 from hydromt_fiat.api.dbs_controller import LocalDatabase
@@ -10,6 +10,8 @@ from hydromt_fiat.api.exposure_vm import ExposureViewModel
 from hydromt_fiat.api.hazard_vm import HazardViewModel
 from hydromt_fiat.api.model_vm import ModelViewModel
 from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
+from hydromt_fiat.fiat import FiatModel
+from hydromt.log import setuplog
 
 
 class Singleton(object):
@@ -26,17 +28,34 @@ class HydroMtViewModel(Singleton):
     data_catalog: DataCatalog
     database: LocalDatabase
 
-    def __init__(self, database_path: Path, catalog_path: str):
+    def __init__(
+        self, database_path: str, catalog_path: str, hydromt_fiat_path: str = None
+    ):
         if not self.__class__.is_initialized:
+            database_path = Path(database_path)
+            catalog_path = Path(catalog_path)
+
             HydroMtViewModel.database = LocalDatabase.create_database(database_path)
             HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
 
-            self.model_vm = ModelViewModel()
-            self.exposure_vm = ExposureViewModel(
-                HydroMtViewModel.database, HydroMtViewModel.data_catalog
-            )
-            self.vulnerability_vm = VulnerabilityViewModel()
-            self.hazard_vm = HazardViewModel()
+            if hydromt_fiat_path is not None:
+                logger = setuplog("hydromt_fiat", log_level=10)
+                self.fiat_model = FiatModel(
+                    data_libs=catalog_path,
+                    root=hydromt_fiat_path,
+                    mode="w+",
+                    logger=logger,
+                )
+
+                self.model_vm = ModelViewModel()
+                self.exposure_vm = ExposureViewModel(
+                    HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
+                )
+                self.vulnerability_vm = VulnerabilityViewModel(
+                    HydroMtViewModel.data_catalog, logger
+                )
+                self.hazard_vm = HazardViewModel()
+
             self.__class__.is_initialized = True
 
     def clear_database(self):

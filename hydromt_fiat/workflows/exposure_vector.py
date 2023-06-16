@@ -118,7 +118,10 @@ class ExposureVector(Exposure):
         """
         if str(source).upper() == "NSI":
             # The NSI data is selected, so get the assets from the NSI
-            polygon = self.region.iloc[0][0]
+            self.logger.info(
+                "Downloading assets from the National Structure Inventory."
+            )
+            polygon = self.region["geometry"].iloc[0]
             source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
