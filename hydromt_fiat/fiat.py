@@ -471,9 +471,18 @@ class FiatModel(GridModel):
         self.set_tables(df=svi.pd_domain_scores_z, name="social_vulnerability_scores")
         self.set_tables(df=svi.excluded_regions, name="social_vulnerability_nodataregions")
         
-        
+        # Check if the exposure data exists
+        if self.exposure:
+            # Link the SVI score to the exposure data
+            self._tables["exposure"] #pd datafrane Object ID
+            self.geoms["exposure"] #gpd dataframe object_id
+
+            # spatial join met gelinkte data
+
+            # exposure opnieuw opslaan in self._tables
+
         #TODO: geometries toevoegen aan de dataset met API
-        #we now use the shape download function by the census, the user needs to download their own shape data.They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
+        #we now use the shape download function by the census, the user needs to download their own shape data. They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
         # #wfs python get request -> geometries 
         
         # this link can be used: https://github.com/datamade/census
