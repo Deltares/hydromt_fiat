@@ -52,7 +52,7 @@ class HydroMtViewModel(Singleton):
                     HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
                 )
                 self.vulnerability_vm = VulnerabilityViewModel(
-                    HydroMtViewModel.data_catalog, logger
+                    HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
                 )
                 self.hazard_vm = HazardViewModel()
 
