@@ -33,7 +33,7 @@ hazus_max_potential_damages:
       category: vulnerability
 
 social_vulnerability:
-    path: census_vulnerability_data_codebook.xlsx
+    path: social_vulnerability/census_vulnerability_data_codebook.xlsx
     data_type: DataFrame
     driver: xlsx
     meta:
