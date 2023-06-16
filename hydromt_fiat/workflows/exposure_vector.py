@@ -124,7 +124,7 @@ class ExposureVector(Exposure):
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
         if source_data.empty:
-            logging.warning(
+            self.logger.warning(
                 f"No assets found in the selected region from source {source}."
             )
 
@@ -148,7 +148,7 @@ class ExposureVector(Exposure):
                     attribute_translation_to_fiat[column_name]
                 ]
             except AssertionError:
-                logging.warning(
+                self.logger.warning(
                     f"Attribute {attribute_translation_to_fiat[column_name]} not "
                     f"found in {str(source)}, skipping attribute."
                 )
@@ -165,19 +165,21 @@ class ExposureVector(Exposure):
     def setup_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
-        occupancy_type: Union[str, Path],
+        occupancy_source: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        occupancy_type_field: Union[str, None] = None,
     ):
+        self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
-        self.setup_occupancy_type(occupancy_type)
+        self.setup_occupancy_type(occupancy_source, occupancy_type_field)
         self.setup_max_potential_damage(max_potential_damage)
         self.setup_ground_floor_height(ground_floor_height)
         self.setup_extraction_method(extraction_method)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
-        """Set up the asset locations.
+        """Set up the asset locations (points or polygons).
 
         Parameters
         ----------
@@ -186,13 +188,13 @@ class ExposureVector(Exposure):
             vector dataset to be used to set up the asset locations. This can be either
             a point or polygon dataset.
         """
-        logging.info("Setting up asset locations...")
+        self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
             polygon = self.region.iloc[0][0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
-                logging.warning(
+                self.logger.warning(
                     f"No assets found in the selected region from source {asset_locations}."
                 )
 
@@ -217,23 +219,42 @@ class ExposureVector(Exposure):
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         self.exposure_geoms = assets
 
-    def setup_occupancy_type(self, occupancy_type: str) -> None:
-        logging.info("Setting up occupancy type...")
-        if str(occupancy_type).upper() == "OSM":
+    def setup_occupancy_type(
+        self, occupancy_source: str, occupancy_attr: Union[str, None] = None
+    ) -> None:
+        self.logger.info("Setting up occupancy type...")
+        if str(occupancy_source).upper() == "OSM":
             polygon = self.region.iloc[0][0]
             occupancy_map = get_landuse_from_osm(polygon)
 
             if occupancy_map.empty:
-                logging.warning(
-                    f"No land use data found in the selected region from source {occupancy_type}."
+                self.logger.warning(
+                    f"No land use data found in the selected region from source {occupancy_source}."
                 )
         else:
             occupancy_map = self.data_catalog.get_geodataframe(
-                occupancy_type,
+                occupancy_source,
                 geom=gpd.GeoDataFrame(
                     data={"geometry": [self.region.iloc[0][0]]}, crs=4326
                 ),
             )  # TODO: ask Helene / hydromt people how to set the crs of self.region
+
+        # Check if the CRS of the occupancy map is the same as the exposure data
+        if occupancy_map.crs != self.crs:
+            occupancy_map = occupancy_map.to_crs(self.crs)
+            self.logger.warning(
+                "The CRS of the occupancy map is not the same as that "
+                "of the exposure data. The occupancy map has been "
+                "reprojected to the CRS of the exposure data before "
+                "doing the spatial join."
+            )
+
+        # Select only the column that contains the occupancy type
+        if not occupancy_attr:
+            occupancy_attr = [occupancy_map.columns[0]]
+
+        occupancy_attr = ["geometry"] + [occupancy_attr]
+        occupancy_map = occupancy_map[occupancy_attr]
 
         # Spatially join the exposure data with the occupancy map
         self.exposure_db = gpd.sjoin(
@@ -277,7 +298,7 @@ class ExposureVector(Exposure):
         print(damage_cols)
         NotImplemented
         # # The measure is to buy out selected properties. #TODO revise
-        # logging.info(
+        # self.logger.info(
         #     f"Setup the maximum potential damage of {len(objectids)} properties."
         # )
 
@@ -307,11 +328,11 @@ class ExposureVector(Exposure):
             A DataFrame containing the values of the maximum potential damage that
             should be updated.
         """
-        logging.info(
+        self.logger.info(
             f"Updating the maximum potential damage of {len(updated_max_potential_damages.index)} properties."
         )
         if "Object ID" not in updated_max_potential_damages.columns:
-            logging.warning(
+            self.logger.warning(
                 "Trying to update the maximum potential damages but no 'Object ID' column is found in the updated_max_potential_damages variable."
             )
             return
@@ -361,7 +382,7 @@ class ExposureVector(Exposure):
         # ground floor height attr already exist, update relative to a reference file or datum
         # Check if the Ground Floor Height column already exists
         if "Ground Floor Height" not in self.exposure_db.columns:
-            logging.warning(
+            self.logger.warning(
                 "Trying to update the Ground Floor Height but the attribute does not yet exist in the exposure data."
             )
             return
@@ -370,13 +391,13 @@ class ExposureVector(Exposure):
         idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
-        logging.info(
+        self.logger.info(
             f"Setting the ground floor height of {len(idx)} properties to {raise_by}."
         )
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
-            logging.info(
+            self.logger.info(
                 "Setting the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
@@ -386,7 +407,7 @@ class ExposureVector(Exposure):
 
         elif height_reference.lower() == "geom":
             # Elevate the objects relative to the surface water elevation map that the user submitted.
-            logging.info(
+            self.logger.info(
                 f"Setting the ground floor height of the properties relative to {Path(path_ref).stem}, with column {attr_ref}."
             )
 
@@ -405,7 +426,7 @@ class ExposureVector(Exposure):
             NotImplemented
 
         else:
-            logging.warning(
+            self.logger.warning(
                 "The height reference of the Ground Floor Height is set to "
                 f"'{height_reference}'. "
                 "This is not one of the allowed height references. Set the height "
@@ -435,7 +456,7 @@ class ExposureVector(Exposure):
         vulnerability : Vulnerability
             The Vulnerability object from the FiatModel.
         """
-        logging.info(
+        self.logger.info(
             f"Floodproofing {len(objectids)} properties for {floodproof_to} "
             f"{vulnerability.unit} of water."
         )
@@ -539,7 +560,7 @@ class ExposureVector(Exposure):
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
         """
-        logging.info(
+        self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
             "of the current total exposure objects, using the "
             f"geometry/geometries from {geom_file}."
@@ -588,7 +609,7 @@ class ExposureVector(Exposure):
         # This ID is used to join the shapefile to the exposure data.
         join_id_name = "FID"
         if join_id_name not in new_area.columns:
-            logging.info(
+            self.logger.info(
                 'The unique ID column in the New Development Area is not named "FID", '
                 'therefore, a new unique identifyer named "FID" is added.'
             )
@@ -639,12 +660,12 @@ class ExposureVector(Exposure):
 
         if elevation_reference == "datum":
             new_objects["Ground Floor Height"] = ground_floor_height
-            logging.info(
+            self.logger.info(
                 f"The elevation of the new development area is {ground_floor_height} ft"
                 " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
-            logging.info(
+            self.logger.info(
                 f"The elevation of the new development area is {ground_floor_height} ft"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
@@ -941,7 +962,7 @@ class ExposureVector(Exposure):
             exposure_to_modify.loc[to_change, "Ground Floor Height"]
             - original_df.loc[to_change, "Ground Floor Height"]
         )
-        logging.info(
+        self.logger.info(
             f"Raised {no_builds_to_change} properties with an average of {avg_raise}."
         )
 
