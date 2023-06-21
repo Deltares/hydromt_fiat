@@ -236,11 +236,8 @@ class ExposureVector(Exposure):
                 )
         else:
             occupancy_map = self.data_catalog.get_geodataframe(
-                occupancy_source,
-                geom=gpd.GeoDataFrame(
-                    data={"geometry": [self.region.iloc[0][0]]}, crs=4326
-                ),
-            )  # TODO: ask Helene / hydromt people how to set the crs of self.region
+                occupancy_source, geom=self.region
+            )
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:

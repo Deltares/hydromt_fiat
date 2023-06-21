@@ -3,14 +3,39 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import geopandas as gpd
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
 )
+DATADIR = Path().absolute() / "hydromt_fiat" / "data"
+
+_region = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    [
+                        [-80.040669180437476, 32.932227398745702],
+                        [-80.044919133930321, 32.725193950022899],
+                        [-79.777779200094443, 32.708194136051524],
+                        [-79.769279293108767, 32.934655943598756],
+                        [-79.77049356553529, 32.934655943598756],
+                        [-80.040669180437476, 32.932227398745702],
+                    ]
+                ],
+                "type": "Polygon",
+            },
+        }
+    ],
+}
 
 _cases = {
     "integration_hazard": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_hazard_v2",
         "configuration": {
             "setup_global_settings": {"crs": "epsg:4326"},
@@ -54,6 +79,7 @@ _cases = {
                 "risk_output": True,
             },
         },
+        "region": _region,
     },
 }
 
@@ -69,6 +95,6 @@ def test_hazard(case):
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 
     fm = FiatModel(root=root, mode="w", data_libs=[data_catalog_yml], logger=logger)
-    region = fm.data_catalog.get_geodataframe("region", variables=None)
+    region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()

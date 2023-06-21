@@ -464,12 +464,16 @@ class FiatModel(GridModel):
         )
 
         # Set the configurations for a multiband netcdf
-        self.set_config(
-            "hazard.multiband.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
-        )
+        if risk_output:
+            self.set_config(
+                "hazard.multiband.subset",
+                [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
+            )
 
-        # TODO: set the hazard.multiband.var_as_band in the configuration file
+            self.set_config(
+                "hazard.multiband.var_as_band",
+                risk_output,
+            )
 
     def setup_social_vulnerability_index(
         self,
