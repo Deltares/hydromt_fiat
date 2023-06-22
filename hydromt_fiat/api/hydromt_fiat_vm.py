@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union, List
 
 import tomli_w
 from hydromt import DataCatalog
@@ -29,11 +29,13 @@ class HydroMtViewModel(Singleton):
     database: LocalDatabase
 
     def __init__(
-        self, database_path: str, catalog_path: str, hydromt_fiat_path: str = None
+        self,
+        database_path: str,
+        catalog_path: Union[List, str],
+        hydromt_fiat_path: str = None,
     ):
         if not self.__class__.is_initialized:
             database_path = Path(database_path)
-            catalog_path = Path(catalog_path)
 
             HydroMtViewModel.database = LocalDatabase.create_database(database_path)
             HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
