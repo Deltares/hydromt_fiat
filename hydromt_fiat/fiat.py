@@ -628,7 +628,8 @@ class FiatModel(GridModel):
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
-            self.write_geoms(fn="exposure/{name}.gpkg")
+            kwargs = {"driver": "GPKG"}
+            self.write_geoms(fn="exposure/{name}.gpkg", kwargs=kwargs)
         if self._tables:
             self.write_tables()
 
