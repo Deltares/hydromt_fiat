@@ -460,7 +460,7 @@ class FiatModel(GridModel):
         )
         self.set_config("hazard.risk", risk_output)
         self.set_config(
-            "hazard.spatial_reference", "dem" if da_type == "water_depth" else "datum"
+            "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
         )
 
         # Set the configurations for a multiband netcdf
