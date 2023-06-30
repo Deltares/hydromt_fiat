@@ -1,27 +1,25 @@
 """Implement fiat model class"""
 
-from hydromt.models.model_grid import GridModel
-import logging
-import geopandas as gpd
-import pandas as pd
-import hydromt
-from pathlib import Path
-from os.path import join, basename
 import csv
 import glob
+import logging
+from os.path import basename, join
+from pathlib import Path
+from typing import List, Optional, Union
 
+import geopandas as gpd
+import hydromt
+import pandas as pd
+from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
-from typing import Union, List, Optional
-
-from .config import Config
-from .workflows.vulnerability import Vulnerability
-from .workflows.exposure_vector import ExposureVector
-from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
-from .workflows.hazard import *
 
 # from hydromt_sfincs import SfincsModel
-
 from . import DATADIR
+from .config import Config
+from .workflows.exposure_vector import ExposureVector
+from .workflows.hazard import *
+from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from .workflows.vulnerability import Vulnerability
 
 __all__ = ["FiatModel"]
 
@@ -595,7 +593,10 @@ class FiatModel(GridModel):
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn)
-            self._tables["vulnerability_curves"] = self.vulnerability.get_table()
+            (
+                self._tables["vulnerability_curves"],
+                _,
+            ) = self.vulnerability.get_table_and_metadata()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
