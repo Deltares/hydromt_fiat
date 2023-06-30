@@ -10,6 +10,7 @@ from hydromt_fiat.api.exposure_vm import ExposureViewModel
 from hydromt_fiat.api.hazard_vm import HazardViewModel
 from hydromt_fiat.api.model_vm import ModelViewModel
 from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
+from hydromt_fiat.interface.database import IDatabase
 
 
 class Singleton(object):
@@ -24,7 +25,7 @@ class Singleton(object):
 class HydroMtViewModel(Singleton):
     is_initialized: bool = False
     data_catalog: DataCatalog
-    database: LocalDatabase
+    database: IDatabase
 
     def __init__(self, database_path: Path, catalog_path: str):
         if not self.__class__.is_initialized:
