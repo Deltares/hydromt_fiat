@@ -23,8 +23,10 @@ dependencies:
   - numba
   - numpy
   - openpyxl
+  - osmnx
   - pandas
   - pip
+  - pydantic
   - pyflwdir>=0.4.7
   - pygeos>=0.8
   - pytest # tests
@@ -39,3 +41,6 @@ dependencies:
   - xarray
   - xlsxwriter
   - zarr
+  pip:
+    - us
+    - census

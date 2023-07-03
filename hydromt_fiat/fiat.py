@@ -460,7 +460,7 @@ class FiatModel(GridModel):
         )
         self.set_config("hazard.risk", risk_output)
         self.set_config(
-            "hazard.spatial_reference", "dem" if da_type == "water_depth" else "datum"
+            "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
         )
 
         # Set the configurations for a multiband netcdf
@@ -630,8 +630,7 @@ class FiatModel(GridModel):
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")
         if self.geoms:
-            kwargs = {"driver": "GPKG"}
-            self.write_geoms(fn="exposure/{name}.gpkg", kwargs=kwargs)
+            self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:
             self.write_tables()
 
