@@ -14,7 +14,6 @@ from hydromt.models.model_grid import GridModel
 from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
-# from hydromt_sfincs import SfincsModel
 from . import DATADIR
 from .config import Config
 from .workflows.exposure_vector import ExposureVector
@@ -607,7 +606,7 @@ class FiatModel(GridModel):
         exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
-            self.exposure = ExposureVector(crs=self.get_config("exposure.geom.crs"))
+            self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
             self.exposure.read(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
