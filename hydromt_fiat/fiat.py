@@ -11,6 +11,7 @@ import geopandas as gpd
 import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
+from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
 # from hydromt_sfincs import SfincsModel
@@ -568,6 +569,8 @@ class FiatModel(GridModel):
         # Read the tables exposure and vulnerability
         self.read_tables()
 
+        # Read the exposure geoms
+
     def _configread(self, fn):
         """Parse Delft-FIAT configuration toml file to dict."""
         # Read the fiat configuration toml file.
@@ -589,10 +592,11 @@ class FiatModel(GridModel):
         self.logger.info("Reading model table files.")
 
         # Start with vulnerability table
-        vulnerability_fn = Path(self.root) / self.get_config("vulnerability.dbase_file")
+        vulnerability_fn = Path(self.root) / self.get_config("vulnerability.file")
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn)
+            self.vulnerability.set_area_extraction_methods()
             (
                 self._tables["vulnerability_curves"],
                 _,
@@ -601,10 +605,10 @@ class FiatModel(GridModel):
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = Path(self.root) / self.get_config("exposure.dbase_file")
+        exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
-            self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
+            self.exposure = ExposureVector(crs=self.get_config("exposure.geom.crs"))
             self.exposure.read(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
