@@ -607,7 +607,7 @@ class FiatModel(GridModel):
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
-            self.exposure.read(exposure_fn)
+            self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
@@ -656,12 +656,12 @@ class FiatModel(GridModel):
             if name == "vulnerability_curves":
                 # The default location and save settings of the vulnerability curves
                 fn = "vulnerability/vulnerability_curves.csv"
-                kwargs = {"mode": "a", "index": False, "header": False}
+                kwargs = {"mode": "a", "index": False}
 
                 # The vulnerability curves are written out differently because of
                 # the metadata
                 path = Path(self.root) / fn
-                with open(path, "w") as f:
+                with open(path, "w", newline="") as f:
                     writer = csv.writer(f)
 
                     # First write the metadata
