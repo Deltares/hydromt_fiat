@@ -595,10 +595,11 @@ class FiatModel(GridModel):
         vulnerability_fn = Path(self.root) / self.get_config("vulnerability.file")
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
-            self.vulnerability = Vulnerability(fn=vulnerability_fn)
-            self._tables[
-                "vulnerability_curves"
-            ] = self.vulnerability.get_table_and_metadata()
+            self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
+            (
+                self._tables["vulnerability_curves"],
+                _,
+            ) = self.vulnerability.get_table_and_metadata()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
@@ -606,7 +607,9 @@ class FiatModel(GridModel):
         exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
-            self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
+            self.exposure = ExposureVector(
+                crs=self.get_config("exposure.geom.crs"), logger=self.logger
+            )
             self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
@@ -626,7 +629,10 @@ class FiatModel(GridModel):
         """Read the geometries for the exposure data."""
         if self.exposure:
             self.logger.info("Reading exposure geometries.")
-            self.exposure.read_geoms()
+            exposure_fn = Path(self.root) / self.get_config(
+                "exposure.geom.file1"
+            )  # TODO: adjust for multiple files
+            self.exposure.read_geoms(exposure_fn)
             self.set_geoms(
                 geom=self.exposure.exposure_geoms,
                 name="exposure",
