@@ -5,10 +5,11 @@ from pathlib import Path
 import pytest
 from hydromt.log import setuplog
 
-DATASET     = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+DATASET = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
 
 _cases = {
-
     "fiat_objects": {
         "folder": "test_hazard_1",
         "ini": "test_hazard.ini",
@@ -18,7 +19,7 @@ _cases = {
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_Hazard(case):
+def test_hazard(case):
     # Read model in examples folder.
     root = DATASET.joinpath(_cases[case]["folder"])
     config_fn = DATASET.joinpath(_cases[case]["ini"])
@@ -38,9 +39,9 @@ def test_Hazard(case):
     var = configread(config_fn)["setup_hazard"]["var"]
     chunks = configread(config_fn)["setup_hazard"]["chunks"]
     configread(config_fn)["setup_hazard"]["maps_id"]
-    name_catalog = configread(config_fn)["setup_hazard"]["name_catalog"]
-    risk_output = configread(config_fn)["setup_hazard"]["risk_output"]
-    hazard_type = configread(config_fn)["setup_config"]["hazard_type"]
+    configread(config_fn)["setup_hazard"]["name_catalog"]
+    configread(config_fn)["setup_hazard"]["risk_output"]
+    configread(config_fn)["setup_config"]["hazard_type"]
 
     param_lst, params = get_lists(
         map_fn,
@@ -57,7 +58,5 @@ def test_Hazard(case):
         params,
         hyfm,
     )
-    
+
     assert hyfm
-
-

@@ -359,7 +359,7 @@ class FiatModel(GridModel):
             # load flood maps to memory
             # da = load_floodmaps(self.data_catalog, self.region,da_map_fn,da_name,name_catalog)
             # reading from path
-            if da_map_fn.stem:
+            if isinstance(da_map_fn, Path):
                 if da_map_fn.stem == "sfincs_map":
                     sfincs_root = os.path.dirname(da_map_fn)
                     sfincs_model = SfincsModel(sfincs_root, mode="r")

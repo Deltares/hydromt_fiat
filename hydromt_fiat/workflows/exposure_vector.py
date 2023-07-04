@@ -820,7 +820,7 @@ class ExposureVector(Exposure):
         """
         if (selection_type == "aggregation_area") or (selection_type == "all"):
             buildings = self.select_objects(
-                type=property_type,
+                primary_object_type=property_type,
                 non_building_names=non_building_names,
             )
             if selection_type == "all":
@@ -834,7 +834,7 @@ class ExposureVector(Exposure):
         elif selection_type == "polygon":
             assert polygon_file is not None
             buildings = self.select_objects(
-                type=property_type,
+                primary_object_type=property_type,
                 non_building_names=non_building_names,
                 return_gdf=True,
             )
@@ -945,10 +945,13 @@ class ExposureVector(Exposure):
         # Sort and add the elevation to the shp values, append to the exposure dataframe
         # To be able to append the values from the GeoDataFrame to the DataFrame, it
         # must be sorted on the Object ID.
+        identifier = (
+            "Object ID" if "Object ID" in modified_objects_gdf.columns else "object_id"
+        )
         modified_objects_gdf = (
-            modified_objects_gdf.groupby("Object ID")
+            modified_objects_gdf.groupby(identifier)
             .max("value")
-            .sort_values(by=["Object ID"])
+            .sort_values(by=[identifier])
         )
         exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"]).set_index(
             "Object ID", drop=False
