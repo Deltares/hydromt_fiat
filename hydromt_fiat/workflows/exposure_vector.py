@@ -82,7 +82,7 @@ class ExposureVector(Exposure):
         self.exposure_geoms = gpd.GeoDataFrame()
         self.source = gpd.GeoDataFrame()
 
-    def read(self, fn: Union[str, Path]):
+    def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
 
         Parameters
@@ -94,6 +94,16 @@ class ExposureVector(Exposure):
         self.exposure_db = pd.read_csv(
             fn, delimiter=csv_delimiter, dtype=self._CSV_COLUMN_DATATYPES, engine="c"
         )
+
+    def read_geoms(self, fn: Union[str, Path]):
+        """Read the Delft-FIAT exposure geoms.
+
+        Parameters
+        ----------
+        fn : Union[str, Path]
+            Path to the exposure geoms.
+        """
+        self.exposure_geoms = gpd.read_file(fn)
 
     def setup_from_single_source(
         self,
@@ -411,7 +421,8 @@ class ExposureVector(Exposure):
                 f"Setting the ground floor height of the properties relative to {Path(path_ref).stem}, with column {attr_ref}."
             )
 
-            self.get_geoms_from_xy()  # TODO see if this can only be done once when necessary
+            if self.exposure_geoms.empty:
+                self.get_geoms_from_xy()
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
                 self.exposure_geoms.iloc[idx, :],

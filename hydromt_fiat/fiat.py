@@ -570,6 +570,9 @@ class FiatModel(GridModel):
         # Read the tables exposure and vulnerability
         self.read_tables()
 
+        # Read the geometries
+        self.read_geoms()
+
     def _configread(self, fn):
         """Parse Delft-FIAT configuration toml file to dict."""
         # Read the fiat configuration toml file.
@@ -606,7 +609,7 @@ class FiatModel(GridModel):
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
-            self.exposure.read(exposure_fn)
+            self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
@@ -620,6 +623,16 @@ class FiatModel(GridModel):
                 name = basename(fn).split(".")[0]
                 tbl = pd.read_csv(fn)
                 self.set_tables(tbl, name=name)
+
+    def read_geoms(self):
+        """Read the geometries for the exposure data."""
+        if self.exposure:
+            self.logger.info("Reading exposure geometries.")
+            self.exposure.read_geoms()
+            self.set_geoms(
+                geom=self.exposure.exposure_geoms,
+                name="exposure",
+            )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
