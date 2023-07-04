@@ -1,27 +1,26 @@
 """Implement fiat model class"""
 
-from hydromt.models.model_grid import GridModel
-import logging
-import geopandas as gpd
-import pandas as pd
-import hydromt
-from pathlib import Path
-from os.path import join, basename
 import csv
 import glob
+import logging
+from os.path import basename, join
+from pathlib import Path
+from typing import List, Optional, Union
 
+import geopandas as gpd
+import hydromt
+import pandas as pd
+from hydromt.models.model_grid import GridModel
+from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
-from typing import Union, List, Optional
-
-from .config import Config
-from .workflows.vulnerability import Vulnerability
-from .workflows.exposure_vector import ExposureVector
-from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
-from .workflows.hazard import *
 
 # from hydromt_sfincs import SfincsModel
-
 from . import DATADIR
+from .config import Config
+from .workflows.exposure_vector import ExposureVector
+from .workflows.hazard import *
+from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from .workflows.vulnerability import Vulnerability
 
 __all__ = ["FiatModel"]
 
@@ -570,6 +569,8 @@ class FiatModel(GridModel):
         # Read the tables exposure and vulnerability
         self.read_tables()
 
+        # Read the exposure geoms
+
     def _configread(self, fn):
         """Parse Delft-FIAT configuration toml file to dict."""
         # Read the fiat configuration toml file.
@@ -591,19 +592,23 @@ class FiatModel(GridModel):
         self.logger.info("Reading model table files.")
 
         # Start with vulnerability table
-        vulnerability_fn = Path(self.root) / self.get_config("vulnerability.dbase_file")
+        vulnerability_fn = Path(self.root) / self.get_config("vulnerability.file")
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn)
-            self._tables["vulnerability_curves"] = self.vulnerability.get_table()
+            self.vulnerability.set_area_extraction_methods()
+            (
+                self._tables["vulnerability_curves"],
+                _,
+            ) = self.vulnerability.get_table_and_metadata()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = Path(self.root) / self.get_config("exposure.dbase_file")
+        exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
-            self.exposure = ExposureVector(crs=self.get_config("exposure.crs"))
+            self.exposure = ExposureVector(crs=self.get_config("exposure.geom.crs"))
             self.exposure.read(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db
         else:
