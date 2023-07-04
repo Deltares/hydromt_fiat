@@ -10,7 +10,7 @@ DATASET = Path(
 )
 
 _cases = {
-    "fiat_objects": {
+    "test_hazard": {
         "folder": "test_hazard_1",
         "ini": "test_hazard.ini",
         "catalog": "fiat_catalog.yml",

@@ -387,6 +387,8 @@ class FiatModel(GridModel):
                         name_catalog, variables=da_name
                     )
 
+            da = da.raster.gdal_compliant()
+
             # check masp projection, null data, and grids
             check_maps_metadata(self.staticmaps, params, da, da_name, idx)
 
