@@ -118,3 +118,4 @@ venv.bak/
 /local_test_database
 
 /examples/data/miami_dade_landuse.gpkg
+cache
