@@ -56,15 +56,15 @@ def test_hazard(case):
 
     mode = "risk"
     map_path = Path("C:/Users/fuentesm/CISNE/Deltares/FloodAdapt/tests/test_database/charleston/output/simulations/current_test_set_no_measures/")
-    mode = "single"
-    map_path = Path("C:/Users/fuentesm/CISNE/Deltares/FloodAdapt/tests/test_database/charleston/output/simulations/current_extreme12ft_no_measures/overland")
+    # mode = "single"
+    # map_path = Path("C:/Users/fuentesm/CISNE/Deltares/FloodAdapt/tests/test_database/charleston/output/simulations/current_extreme12ft_no_measures/overland")
 
     map_fn = []
 
     if mode == "risk":
         # check for netcdf
         for file in os.listdir(str(map_path)):
-            if file.endswith(".nc"):
+            if file.endswith("_maps.nc"):
                 map_fn.append(map_path.joinpath(file))
         risk_output = True
         var = "risk_map"

@@ -476,8 +476,6 @@ class FiatModel(GridModel):
             risk_output,
         )
 
-
-
     def setup_social_vulnerability_index(
         self,
         census_key: str,
