@@ -346,19 +346,6 @@ class FiatModel(GridModel):
             The parameter that defines if a risk analysis is required, by default False
         """
         # check parameters types and size, and existance of provided files of maps
-        map_fn = ""
-        if mode == "risk":
-            # check for netcdf
-            for file in os.listdir(str(map_path)):
-                if file.endswith(".nc"):
-                    map_fn = map_path.joinpath(file)
-
-            self.set_config("hazard.return_periods", [5, 10, 15, 20, 25, 30])
-            self.set_config("hazard.risk", True)
-
-        elif mode == "single_event":
-            map_fn = map_path.joinpath("sfincs_map.nc")
-            self.set_config("hazard.risk", False)
 
         params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks)
         check_parameters_size(params)
