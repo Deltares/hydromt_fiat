@@ -3,6 +3,7 @@
 import csv
 import glob
 import logging
+import os
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Union
@@ -293,7 +294,8 @@ class FiatModel(GridModel):
 
     def setup_hazard(
         self,
-        map_fn: Union[str, Path, list[str], list[Path]],
+        map_path: Union[str, Path, list[str], list[Path]],
+        mode: str,
         map_type: Union[str, list[str]],
         rp: Union[int, list[int], None] = None,
         crs: Union[int, str, list[int], list[str], None] = None,
@@ -344,6 +346,20 @@ class FiatModel(GridModel):
             The parameter that defines if a risk analysis is required, by default False
         """
         # check parameters types and size, and existance of provided files of maps
+        map_fn = ""
+        if mode == "risk":
+            # check for netcdf
+            for file in os.listdir(str(map_path)):
+                if file.endswith(".nc"):
+                    map_fn = map_path.joinpath(file)
+
+            self.set_config("hazard.return_periods", [5, 10, 15, 20, 25, 30])
+            self.set_config("hazard.risk", True)
+
+        elif mode == "single":
+            map_fn = map_path.joinpath("sfincs_map.nc")
+            self.set_config("hazard.risk", False)
+
         params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks)
         check_parameters_size(params)
         check_files(params, self.root)
@@ -376,6 +392,8 @@ class FiatModel(GridModel):
                         )
                     else:
                         da = self.data_catalog.get_rasterdataset(da_map_fn)
+
+                    da.encoding["_FillValue"] = None
             # reading from the datacatalog
             else:
                 if not self.region.empty:
@@ -460,7 +478,7 @@ class FiatModel(GridModel):
                 for hazard_map in self.maps.keys()
             ][0],
         )
-        self.set_config("hazard.risk", risk_output)
+
         self.set_config(
             "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
         )
