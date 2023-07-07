@@ -356,7 +356,7 @@ class FiatModel(GridModel):
             self.set_config("hazard.return_periods", [5, 10, 15, 20, 25, 30])
             self.set_config("hazard.risk", True)
 
-        elif mode == "single":
+        elif mode == "single_event":
             map_fn = map_path.joinpath("sfincs_map.nc")
             self.set_config("hazard.risk", False)
 
@@ -455,9 +455,9 @@ class FiatModel(GridModel):
             list_maps = list(self.maps.keys())
 
             # erase individual maps from self.maps keeping the merged map
-            if risk_output:
-                for item in list_maps[:-1]:
-                    self.maps.pop(item)
+
+            for item in list_maps[:-1]:
+                self.maps.pop(item)
 
         # the metadata of the hazard maps is saved in the configuration toml files
         # this component was modified to provided the element [0] od the list
