@@ -302,7 +302,7 @@ class FiatModel(GridModel):
         nodata: Union[int, list[int], None] = None,
         var: Union[str, list[str], None] = None,
         chunks: Union[int, str, list[int]] = "auto",
-        name_catalog: str = "flood_maps",
+        name_catalog: Union[str, None] = "flood_maps",
         hazard_type: str = "flooding",
         risk_output: bool = False,
     ) -> None:
@@ -371,7 +371,7 @@ class FiatModel(GridModel):
                     # result_list = list(sfincs_model.results.keys())
                     # sfincs_model.write_raster("results.zsmax", compress="LZW")
                     da = sfincs_model.results["zsmax"]
-                    da.encoding["_FillValue"] = None
+
                 else:
                     if not self.region.empty:
                         da = self.data_catalog.get_rasterdataset(
@@ -392,6 +392,7 @@ class FiatModel(GridModel):
                         name_catalog, variables=da_name
                     )
 
+            da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
 
             # check masp projection, null data, and grids
@@ -442,9 +443,10 @@ class FiatModel(GridModel):
             list_maps = list(self.maps.keys())
 
             # erase individual maps from self.maps keeping the merged map
-
             for item in list_maps[:-1]:
                 self.maps.pop(item)
+
+            self.set_config("hazard.retrun_period", rp_list)
 
         # the metadata of the hazard maps is saved in the configuration toml files
         # this component was modified to provided the element [0] od the list
@@ -466,6 +468,17 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
+        )
+
+        # Set the configurations for a multiband netcdf
+        self.set_config(
+            "hazard.multiband.subset",
+            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
+        )
+
+        self.set_config(
+            "hazard.multiband.var_as_band",
+            risk_output,
         )
 
     def setup_social_vulnerability_index(
