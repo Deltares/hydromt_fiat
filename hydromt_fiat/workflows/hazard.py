@@ -259,6 +259,7 @@ def read_floodmaps(
         kwargs.update(variables=da_var)
 
     return da_map_fn, da_name, da_type
+
 def load_floodmaps(
     data_catalog: DataCatalog,
     region: gpd.GeoDataFrame,
