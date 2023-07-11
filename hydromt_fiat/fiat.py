@@ -294,8 +294,7 @@ class FiatModel(GridModel):
 
     def setup_hazard(
         self,
-        map_path: Union[str, Path, list[str], list[Path]],
-        mode: str,
+        map_fn: Union[str, Path, list[str], list[Path]],
         map_type: Union[str, list[str]],
         rp: Union[int, list[int], None] = None,
         crs: Union[int, str, list[int], list[str], None] = None,
@@ -446,7 +445,7 @@ class FiatModel(GridModel):
             for item in list_maps[:-1]:
                 self.maps.pop(item)
 
-            self.set_config("hazard.retrun_period", rp_list)
+            self.set_config("hazard.return_periods", rp_list)
 
         # the metadata of the hazard maps is saved in the configuration toml files
         # this component was modified to provided the element [0] od the list
@@ -478,6 +477,11 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.multiband.var_as_band",
+            risk_output,
+        )
+
+        self.set_config(
+            "hazard.risk",
             risk_output,
         )
 
