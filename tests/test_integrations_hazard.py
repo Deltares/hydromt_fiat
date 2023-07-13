@@ -55,6 +55,7 @@ def test_hazard(case):
     #     }
     # }
 
+    # for these test data sfincs output data is required in local files
     # uncomment to test event analysis from sfincs output
     # mode = "single"
     # map_path = Path("C:/Users/fuentesm/CISNE/Deltares/FloodAdapt/tests/test_database/charleston/output/simulations/current_extreme12ft_no_measures/overland")
