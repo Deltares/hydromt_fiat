@@ -49,7 +49,7 @@ _cases = {
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
-                "scale": 0.01,
+                "step_size": 0.01,
             },
             "setup_exposure_vector": {
                 "asset_locations": "NSI",
@@ -90,7 +90,7 @@ _cases = {
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
-                "scale": 0.01,
+                "step_size": 0.01,
             },
             "setup_exposure_vector": {
                 "asset_locations": "NSI",
