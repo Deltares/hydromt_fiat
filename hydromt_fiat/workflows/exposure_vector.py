@@ -738,7 +738,7 @@ class ExposureVector(Exposure):
 
     def select_objects(
         self,
-        primary_object_type: Optional[List[str]] = None,
+        primary_object_type: Optional[Union[str, List[str]]] = None,
         non_building_names: Optional[List[str]] = None,
         return_gdf: bool = False,
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
@@ -747,7 +747,7 @@ class ExposureVector(Exposure):
 
         Parameters
         ----------
-        primary_object_type : Optional[List[str]], optional
+        primary_object_type : Optional[Union[str, List[str]]], optional
             Only select assets from this/these primary object type(s).
             Can be any primary object type in a list or 'all', by default None
             (also selecting all)
