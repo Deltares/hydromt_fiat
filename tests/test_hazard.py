@@ -18,7 +18,6 @@ _cases = {
 }
 
 
-@pytest.mark.skip(reason="Not correctly implemented yet")
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
     # Read model in examples folder.
@@ -39,25 +38,11 @@ def test_hazard(case):
     nodata = configread(config_fn)["setup_hazard"]["nodata"]
     var = configread(config_fn)["setup_hazard"]["var"]
     chunks = configread(config_fn)["setup_hazard"]["chunks"]
-    configread(config_fn)["setup_hazard"]["maps_id"]
     configread(config_fn)["setup_hazard"]["name_catalog"]
     configread(config_fn)["setup_hazard"]["risk_output"]
     configread(config_fn)["setup_config"]["hazard_type"]
 
-    param_lst, params = get_lists(
-        map_fn,
-        map_type,
-        chunks,
-        rp,
-        crs,
-        nodata,
-        var,
-    )
+    params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks)
+    check_parameters_size(params)
 
-    check_parameters(
-        param_lst,
-        params,
-        hyfm,
-    )
-
-    assert hyfm
+    assert params

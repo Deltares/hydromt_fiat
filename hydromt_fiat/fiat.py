@@ -370,21 +370,25 @@ class FiatModel(GridModel):
                     # result_list = list(sfincs_model.results.keys())
                     # sfincs_model.write_raster("results.zsmax", compress="LZW")
                     da = sfincs_model.results["zsmax"]
-
+                    # da = da.squeeze('timemax').drop('timemax')
+                    da = da.isel(timemax=0).drop('timemax')
+                    
                 else:
                     if not self.region.empty:
-                        da = self.data_catalog.get_rasterdataset(
-                            da_map_fn, geom=self.region
-                        )
+                        # da = self.data_catalog.get_rasterdataset(
+                        #     da_map_fn, geom=self.region
+                        # )
+                        da = self.data_catalog.get_rasterdataset(da_map_fn)
                     else:
                         da = self.data_catalog.get_rasterdataset(da_map_fn)
-
-                    da.encoding["_FillValue"] = None
             # reading from the datacatalog
             else:
                 if not self.region.empty:
+                    # da = self.data_catalog.get_rasterdataset(
+                    #     name_catalog, variables=da_name, geom=self.region
+                    # )
                     da = self.data_catalog.get_rasterdataset(
-                        name_catalog, variables=da_name, geom=self.region
+                        name_catalog, variables=da_name
                     )
                 else:
                     da = self.data_catalog.get_rasterdataset(
