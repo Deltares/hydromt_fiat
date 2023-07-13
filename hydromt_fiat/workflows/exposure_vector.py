@@ -1,20 +1,22 @@
-from .vulnerability import Vulnerability
-from .utils import detect_delimiter
-from .exposure import Exposure
+import json
+import logging
+from pathlib import Path
+from typing import Any, List, Optional, Union
+
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+from hydromt.data_catalog import DataCatalog
+
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
 )
 
-from hydromt.data_catalog import DataCatalog
-import geopandas as gpd
-import pandas as pd
-import numpy as np
-from pathlib import Path
-import json
-from typing import Union, List, Any, Optional
-import logging
+from .exposure import Exposure
+from .utils import detect_delimiter
+from .vulnerability import Vulnerability
 
 
 class ExposureVector(Exposure):
@@ -772,7 +774,7 @@ class ExposureVector(Exposure):
         if primary_object_type:
             if str(primary_object_type).lower() != "all":
                 objects = objects.loc[
-                    objects["Primary Object Type"].isin(primary_object_type), :
+                    objects["Primary Object Type"].isin([primary_object_type]), :
                 ]
 
         if return_gdf:
