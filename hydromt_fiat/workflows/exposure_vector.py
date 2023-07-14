@@ -29,9 +29,6 @@ class ExposureVector(Exposure):
         "X Coordinate",
         "Y Coordinate",
         "Ground Elevation",
-        "Object-Location Shapefile Path",
-        "Object-Location Join ID",
-        "Join Attribute Field",
     ]
     _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
 
@@ -52,9 +49,6 @@ class ExposureVector(Exposure):
         "Max Potential Damage: Structure": float,
         "Max Potential Damage: Content": float,
         "Max Potential Damage: Other": float,
-        "Object-Location Shapefile Path": str,
-        "Object-Location Join ID": float,
-        "Join Attribute Field": str,
     }
 
     def __init__(
@@ -81,7 +75,7 @@ class ExposureVector(Exposure):
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
         )
         self.exposure_db = pd.DataFrame()
-        self.exposure_geoms = gpd.GeoDataFrame()
+        self.exposure_geoms = list()  # A list of GeoDataFrames
         self.source = gpd.GeoDataFrame()
 
     def read_table(self, fn: Union[str, Path]):
@@ -97,15 +91,18 @@ class ExposureVector(Exposure):
             fn, delimiter=csv_delimiter, dtype=self._CSV_COLUMN_DATATYPES, engine="c"
         )
 
-    def read_geoms(self, fn: Union[str, Path]):
+    def read_geoms(self, fn: Union[List[str], List[Path], str, Path]):
         """Read the Delft-FIAT exposure geoms.
 
         Parameters
         ----------
-        fn : Union[str, Path]
-            Path to the exposure geoms.
+        fn : Union[List[str], List[Path], str, Path]
+            One or multiple paths to the exposure geoms.
         """
-        self.exposure_geoms = gpd.read_file(fn)
+        if isinstance(fn, str) or isinstance(fn, Path):
+            fn = [fn]
+
+        self.exposure_geoms = [gpd.read_file(f) for f in fn]
 
     def setup_from_single_source(
         self,
@@ -177,6 +174,9 @@ class ExposureVector(Exposure):
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
+        # Set the geoms
+        self.get_geom_gdf(self._tables["exposure"], self.exposure.crs)
+
     def setup_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
@@ -232,7 +232,7 @@ class ExposureVector(Exposure):
                 assets["Object ID"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
-        self.exposure_geoms = assets
+        self.exposure_geoms.append(assets)
 
     def setup_occupancy_type(
         self, occupancy_source: str, occupancy_attr: Union[str, None] = None
@@ -269,9 +269,13 @@ class ExposureVector(Exposure):
         occupancy_map = occupancy_map[occupancy_attr]
 
         # Spatially join the exposure data with the occupancy map
-        self.exposure_db = gpd.sjoin(
-            self.exposure_geoms, occupancy_map, how="left", op="intersects"
-        )
+        if len(self.exposure_geoms) == 1:
+            self.exposure_db = gpd.sjoin(
+                self.exposure_geoms[0], occupancy_map, how="left", op="intersects"
+            )
+        else:
+            print("NotImplemented for multiple exposure geoms")
+            NotImplemented
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
@@ -395,7 +399,8 @@ class ExposureVector(Exposure):
         # Check if the Ground Floor Height column already exists
         if "Ground Floor Height" not in self.exposure_db.columns:
             self.logger.warning(
-                "Trying to update the Ground Floor Height but the attribute does not yet exist in the exposure data."
+                "Trying to update the Ground Floor Height but the attribute does not "
+                "yet exist in the exposure data."
             )
             return
 
@@ -418,20 +423,27 @@ class ExposureVector(Exposure):
             ].iloc[idx, :] = raise_by
 
         elif height_reference.lower() == "geom":
-            # Elevate the objects relative to the surface water elevation map that the user submitted.
+            # Elevate the objects relative to the surface water elevation map that the
+            # user submitted.
             self.logger.info(
-                f"Setting the ground floor height of the properties relative to {Path(path_ref).stem}, with column {attr_ref}."
+                "Setting the ground floor height of the properties relative to "
+                f"{Path(path_ref).stem}, with column {attr_ref}."
             )
 
-            if self.exposure_geoms.empty:
-                self.get_geoms_from_xy()
+            if len(self.exposure_geoms) == 0:
+                self.set_exposure_geoms_from_xy()
+
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
-                self.exposure_geoms.iloc[idx, :],
+                self.exposure_geoms[0].iloc[idx, :],
                 path_ref,
                 attr_ref,
                 raise_by,
                 self.crs,
+            )
+            self.logger.warning(
+                "set_height_relative_to_reference can for now only be used for the "
+                "original exposure data."
             )
 
         elif height_reference.lower() == "table":
@@ -618,36 +630,39 @@ class ExposureVector(Exposure):
             new_area.geometry.area.sum()
         )  # TODO: reproject to a projected CRS if this is a geographic CRS?
 
-        # There should be an attribute 'FID' in the new development area shapefile.
+        # There should be an attribute 'Object ID' in the new development area shapefile.
         # This ID is used to join the shapefile to the exposure data.
-        join_id_name = "FID"
+        join_id_name = "Object ID"
         if join_id_name not in new_area.columns:
-            self.logger.info(
-                'The unique ID column in the New Development Area is not named "FID", '
-                'therefore, a new unique identifyer named "FID" is added.'
+            self.logger.debug(
+                'The unique ID column in the New Development Area is not named "Object ID", '
+                'therefore, a new unique identifyer named "Object ID" is added.'
             )
             new_area[join_id_name] = range(len(new_area.index))
-            new_area.to_file(geom_file)
 
         max_id = self.exposure_db["Object ID"].max()
+        new_geoms_ids = []
         for i in range(len(new_area.index)):
-            perc_damages = new_area.geometry.iloc[i].area / total_area
-            # TODO: Alert the user that the ground elevation is set to 0.
-            # Take ground elevation from DEM?
+            new_geom = new_area.geometry.iloc[i]
+            new_id = max_id + 1
+
+            perc_damages = new_geom.area / total_area
+            # Alert the user that the ground elevation is set to 0.
+            # TODO: Take ground elevation from DEM?
             # For water level calculation this will not take into account the
-            # non-flooded cells separately, just averaged
-            # Reduction factor for the part of the area is not build-up?
+            # non-flooded cells separately, just averaged over the whole area.
+            self.logger.warning("The ground elevation is set to 0.")
+
+            # Idea: Reduction factor for the part of the area is not build-up?
+
             dict_new_objects_data = {
-                "Object ID": [max_id + 1],
-                "Object Name": ["New development area: " + str(max_id + 1)],
+                "Object ID": [new_id],
+                "Object Name": ["New development area: " + str(new_id)],
                 "Primary Object Type": ["New development area"],
                 "Secondary Object Type": ["New development area"],
-                "Extraction Method": ["AREA"],
+                "Extraction Method": ["area"],
                 "Ground Floor Height": [0],
                 "Ground Elevation": [0],
-                "Object-Location Shapefile Path": [str(geom_file)],
-                "Object-Location Join ID": [new_area["FID"].iloc[i]],
-                "Join Attribute Field": [join_id_name],
             }
             dict_new_objects_data.update(
                 {
@@ -666,6 +681,7 @@ class ExposureVector(Exposure):
                 }
             )
             new_objects.append(pd.DataFrame(dict_new_objects_data))
+            new_geoms_ids.append((new_geom, new_id))
             max_id += 1
 
         new_objects = pd.concat(new_objects)
@@ -683,24 +699,25 @@ class ExposureVector(Exposure):
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
-            new_objects_geoms = new_area.merge(
-                new_objects[["Object-Location Join ID", "Object ID"]],
-                how="left",
-                left_on="FID",
-                right_on="Object-Location Join ID",
-            )[["Object ID", "geometry"]]
+            _new_exposure_geoms = gpd.GeoDataFrame(
+                data=new_geoms_ids, columns=["geometry", "Object ID"], crs=self.crs
+            )
             new_objects = self.set_height_relative_to_reference(
                 new_objects,
-                new_objects_geoms,
+                _new_exposure_geoms,
                 path_ref,
                 attr_ref,
                 ground_floor_height,
                 self.crs,
             )
 
+        # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True
         )
+
+        # Update the exposure_geoms
+        self.exposure_geoms.append(_new_exposure_geoms)
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
@@ -847,17 +864,21 @@ class ExposureVector(Exposure):
 
         return list(ids)
 
-    def get_geoms_from_xy(self):
-        # TODO see if and how this can be merged with the df_to_gdf function
-        exposure_geoms = gpd.GeoDataFrame(
-            {
-                "Object ID": self.exposure_db["Object ID"],
-                "geometry": gpd.points_from_xy(
-                    self.exposure_db["X Coordinate"], self.exposure_db["Y Coordinate"]
-                ),
-            }
-        )
-        self.exposure_geoms = exposure_geoms
+    def set_exposure_geoms_from_xy(self):
+        if not (
+            self.exposure_db["X Coordinate"].isna().any()
+            and self.exposure_db["Y Coordinate"].isna().any()
+        ):
+            exposure_geoms = gpd.GeoDataFrame(
+                {
+                    "Object ID": self.exposure_db["Object ID"],
+                    "geometry": gpd.points_from_xy(
+                        self.exposure_db["X Coordinate"],
+                        self.exposure_db["Y Coordinate"],
+                    ),
+                }
+            )
+        self.exposure_geoms.append(exposure_geoms)
 
     @staticmethod
     def get_geom_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
@@ -867,7 +888,6 @@ class ExposureVector(Exposure):
             geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
             crs=crs,
         )
-        gdf.rename(columns={"Object ID": "object_id"}, inplace=True)
         return gdf
 
     @staticmethod

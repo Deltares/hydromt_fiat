@@ -86,9 +86,13 @@ class ExposureViewModel:
             secondary_object_types = (
                 exposure.exposure_db["Secondary Object Type"].unique().tolist()
             )
-            exposure.get_geoms_from_xy()
+            exposure.set_exposure_geoms_from_xy()
 
-            return exposure.exposure_geoms, primary_object_types, secondary_object_types
+            return (
+                exposure.exposure_geoms[0],
+                primary_object_types,
+                secondary_object_types,
+            )
 
         elif input_source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database

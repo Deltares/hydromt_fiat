@@ -55,6 +55,7 @@ class FiatModel(GridModel):
         )
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
+        self.vulnerability = None
         self.vulnerability_metadata = list()
 
     def setup_global_settings(self, crs: str):
@@ -137,7 +138,7 @@ class FiatModel(GridModel):
         unit: str,
         functions_mean: Union[str, List[str], None] = "default",
         functions_max: Union[str, List[str], None] = None,
-        scale: Optional[float] = None,
+        step_size: Optional[float] = None,
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
@@ -170,25 +171,25 @@ class FiatModel(GridModel):
         )
 
         # Process the vulnerability data
-        vulnerability = Vulnerability(
+        self.vulnerability = Vulnerability(
             unit,
             self.logger,
         )
 
         # Depending on what the input is, another function is chosen to generate the
         # vulnerability curves file for Delft-FIAT.
-        vulnerability.get_vulnerability_functions_from_one_file(
+        self.vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
             df_identifiers_linking=vf_ids_and_linking_df,
         )
 
         # Set the area extraction method for the vulnerability curves
-        vulnerability.set_area_extraction_methods(
+        self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
 
         # Add the vulnerability curves to tables property
-        df, self.vulnerability_metadata = vulnerability.get_table_and_metadata()
+        df, self.vulnerability_metadata = self.vulnerability.get_table_and_metadata()
         self.set_tables(df=df, name="vulnerability_curves")
 
         # Also add the identifiers
@@ -199,8 +200,8 @@ class FiatModel(GridModel):
             "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
         )
 
-        if scale:
-            self.set_config("vulnerability.scale", scale)
+        if step_size:
+            self.set_config("vulnerability.step_size", step_size)
 
     def setup_exposure_vector(
         self,
@@ -371,8 +372,8 @@ class FiatModel(GridModel):
                     # sfincs_model.write_raster("results.zsmax", compress="LZW")
                     da = sfincs_model.results["zsmax"]
                     # da = da.squeeze('timemax').drop('timemax')
-                    da = da.isel(timemax=0).drop('timemax')
-                    
+                    da = da.isel(timemax=0).drop("timemax")
+
                 else:
                     if not self.region.empty:
                         # da = self.data_catalog.get_rasterdataset(
@@ -569,6 +570,43 @@ class FiatModel(GridModel):
 
         # this link can be used: https://github.com/datamade/census
 
+    # Update functions
+    def update_all(self):
+        # self.update_config()
+        self.update_tables()
+        self.update_geoms()
+        # self.update_maps()
+
+    def update_config(self):
+        NotImplemented
+
+    def update_tables(self):
+        # Update the exposure data tables
+        if self.exposure:
+            self.set_tables(df=self.exposure.exposure_db, name="exposure")
+
+        # Update the vulnerability data tables
+        if self.vulnerability:
+            (
+                df,
+                self.vulnerability_metadata,
+            ) = self.vulnerability.get_table_and_metadata()
+            self.set_tables(df=df, name="vulnerability_curves")
+
+        # TODO: Also add the vulnerability identifiers table?
+
+    def update_geoms(self):
+        # Update the exposure data geoms
+        if self.exposure and "exposure" in self._tables:
+            for geom in self.exposure.exposure_geoms:
+                self.set_geoms(geom=geom, name="exposure")
+
+        if not self.region.empty:
+            self.set_geoms(self.region, "region")
+
+    def update_maps(self):
+        NotImplemented
+
     # I/O
     def read(self):
         """Method to read the complete model schematization and configuration from file."""
@@ -645,14 +683,21 @@ class FiatModel(GridModel):
         """Read the geometries for the exposure data."""
         if self.exposure:
             self.logger.info("Reading exposure geometries.")
-            exposure_fn = Path(self.root) / self.get_config(
-                "exposure.geom.file1"
-            )  # TODO: adjust for multiple files
+            exposure_files = [
+                k for k in self.config["exposure"]["geom"].keys() if "file" in k
+            ]
+            exposure_fn = [
+                Path(self.root) / self.get_config(f"exposure.geom.{f}")
+                for f in exposure_files
+            ]
             self.exposure.read_geoms(exposure_fn)
-            self.set_geoms(
-                geom=self.exposure.exposure_geoms,
-                name="exposure",
-            )
+
+            exposure_names = [f.stem for f in exposure_fn]
+            for name, geom in zip(exposure_names, self.exposure.exposure_geoms):
+                self.set_geoms(
+                    geom=geom,
+                    name=name,
+                )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
