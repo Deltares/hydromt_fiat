@@ -2,6 +2,7 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 from pathlib import Path
 import pytest
+import shutil
 
 EXAMPLEDIR = Path().absolute() / "local_test_database"
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
@@ -27,6 +28,8 @@ _cases = {
 def test_SVI(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["folder"])
+    if root.exists():
+        shutil.rmtree(root)
     logger = setuplog("hydromt_fiat", log_level=10)
     data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
     hyfm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
