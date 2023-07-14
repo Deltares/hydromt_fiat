@@ -572,6 +572,7 @@ class FiatModel(GridModel):
 
     # Update functions
     def update_all(self):
+        self.logger.info("Updating all data objects...")
         # self.update_config()
         self.update_tables()
         self.update_geoms()
@@ -701,6 +702,7 @@ class FiatModel(GridModel):
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
+        self.update_all()
         self.logger.info(f"Writing model data to {self.root}")
 
         if self.config:  # try to read default if not yet set
