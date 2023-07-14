@@ -547,12 +547,12 @@ class FiatModel(GridModel):
         # Check if the exposure data exists
         if self.exposure:
             # Link the SVI score to the exposure data
-            self._tables["exposure"]  # pd dataframe Object ID
-            self.geoms["exposure"]  # gpd dataframe object_id
+            self._tables["exposure"]  # pd dataframe
+            self.geoms["exposure"]  # gpd dataframe
             self._tables["exposure"].sort_values("Object ID")
-            self.geoms["exposure"].sort_values("object_id")
+            self.geoms["exposure"].sort_values("Object ID")
             exposure_geoms = self._tables["exposure"].merge(
-                self.geoms["exposure"], left_on="Object ID", right_on="object_id"
+                self.geoms["exposure"], on="Object ID"
             )
             exposure_geoms_gpd = gpd.GeoDataFrame(exposure_geoms)
             svi_exp_joined = gpd.sjoin(

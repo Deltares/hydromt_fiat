@@ -4,13 +4,15 @@ from pathlib import Path
 import pytest
 import shutil
 
-EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
+DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
     "update_max_potential_damage": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_read",
-        "ini": EXAMPLEDIR / "test_read.ini",
         "new_root": EXAMPLEDIR / "test_update_max_potential_damage",
     },
 }

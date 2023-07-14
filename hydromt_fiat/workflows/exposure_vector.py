@@ -102,7 +102,8 @@ class ExposureVector(Exposure):
         if isinstance(fn, str) or isinstance(fn, Path):
             fn = [fn]
 
-        self.exposure_geoms = [gpd.read_file(f) for f in fn]
+        for f in fn:
+            self.set_exposure_geoms(gpd.read_file(f))
 
     def setup_from_single_source(
         self,
@@ -175,7 +176,7 @@ class ExposureVector(Exposure):
         self.setup_extraction_method(extraction_method)
 
         # Set the geoms
-        self.get_geom_gdf(self._tables["exposure"], self.exposure.crs)
+        self.set_exposure_geoms(self.get_geom_gdf(self.exposure_db, self.crs))
 
     def setup_from_multiple_sources(
         self,
@@ -232,7 +233,12 @@ class ExposureVector(Exposure):
                 assets["Object ID"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
-        self.exposure_geoms.append(assets)
+        self.set_exposure_geoms(assets)
+
+    def set_exposure_geoms(self, gdf: gpd.GeoDataFrame) -> None:
+        """Append a GeoDataFrame to the exposure geometries `exposure_geoms`."""
+        self.logger.info("Setting exposure geometries...")
+        self.exposure_geoms.append(gdf)
 
     def setup_occupancy_type(
         self, occupancy_source: str, occupancy_attr: Union[str, None] = None
@@ -684,8 +690,14 @@ class ExposureVector(Exposure):
             new_geoms_ids.append((new_geom, new_id))
             max_id += 1
 
+        # Make one DataFrame from the list of new object DataFrames
         new_objects = pd.concat(new_objects)
         new_objects.reset_index(inplace=True, drop=True)
+
+        # Create a new GeoDataFrame with the new geometries and the Object ID
+        _new_exposure_geoms = gpd.GeoDataFrame(
+            data=new_geoms_ids, columns=["geometry", "Object ID"], crs=self.crs
+        )
 
         if elevation_reference == "datum":
             new_objects["Ground Floor Height"] = ground_floor_height
@@ -698,9 +710,6 @@ class ExposureVector(Exposure):
                 f"The elevation of the new development area is {ground_floor_height} ft"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
-            )
-            _new_exposure_geoms = gpd.GeoDataFrame(
-                data=new_geoms_ids, columns=["geometry", "Object ID"], crs=self.crs
             )
             new_objects = self.set_height_relative_to_reference(
                 new_objects,
@@ -717,7 +726,7 @@ class ExposureVector(Exposure):
         )
 
         # Update the exposure_geoms
-        self.exposure_geoms.append(_new_exposure_geoms)
+        self.set_exposure_geoms(_new_exposure_geoms)
 
     def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
         linking_dict = dict(
@@ -878,7 +887,7 @@ class ExposureVector(Exposure):
                     ),
                 }
             )
-        self.exposure_geoms.append(exposure_geoms)
+        self.set_exposure_geoms(exposure_geoms)
 
     @staticmethod
     def get_geom_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
