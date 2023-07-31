@@ -573,13 +573,9 @@ class FiatModel(GridModel):
     # Update functions
     def update_all(self):
         self.logger.info("Updating all data objects...")
-        # self.update_config()
         self.update_tables()
         self.update_geoms()
         # self.update_maps()
-
-    def update_config(self):
-        NotImplemented
 
     def update_tables(self):
         # Update the exposure data tables
@@ -599,8 +595,13 @@ class FiatModel(GridModel):
     def update_geoms(self):
         # Update the exposure data geoms
         if self.exposure and "exposure" in self._tables:
-            for geom in self.exposure.exposure_geoms:
-                self.set_geoms(geom=geom, name="exposure")
+            for i, geom in enumerate(self.exposure.exposure_geoms):
+                file_suffix = i if i > 0 else ""
+                self.set_geoms(geom=geom, name=f"exposure{file_suffix}")
+                self.set_config(
+                    f"exposure.geom.file{str(i+1)}",
+                    f"./exposure/exposure{file_suffix}.gpkg",
+                )
 
         if not self.region.empty:
             self.set_geoms(self.region, "region")
