@@ -4,7 +4,9 @@ from pathlib import Path
 import pytest
 import shutil
 
-EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
@@ -44,7 +46,7 @@ def test_setup_new_composite_areas_datum(case):
         percent_growth=10,
         geom_file=str(_cases[case]["composite_areas"]),
         ground_floor_height=2,
-        damage_types=["Structure"],
+        damage_types=["Structure", "Content"],
         vulnerability=fm.vulnerability,
         elevation_reference=_cases[case]["type"],
         path_ref=_cases[case]["path_ref"],
