@@ -1,6 +1,5 @@
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
-from hydromt.config import configread
 from pathlib import Path
 import pytest
 import shutil
@@ -36,11 +35,12 @@ _cases = {
         "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "folder": "Test_SVI",
         "region": _region,
-        "configuration": { 
-            "setup_global_settings": {"crs": "epsg:4326"
-            },
+        "configuration": {
+            "setup_global_settings": {"crs": "epsg:4326"},
             "setup_output": {
-                "output_dir": "output","output_csv_name": "output.csv","output_vector_name": "spatial.gpkg"
+                "output_dir": "output",
+                "output_csv_name": "output.csv",
+                "output_vector_name": "spatial.gpkg",
             },
             "setup_vulnerability": {
                 "vulnerability_fn": "hazus_vulnerability_curves",
@@ -50,21 +50,21 @@ _cases = {
                 "unit": "feet",
             },
             "setup_exposure_vector": {
-                    "asset_locations": "NSI",
-                    "occupancy_type": "NSI",
-                    "max_potential_damage": "NSI",
-                    "ground_floor_height": 1,
-                    "ground_floor_height_unit": "ft",
+                "asset_locations": "NSI",
+                "occupancy_type": "NSI",
+                "max_potential_damage": "NSI",
+                "ground_floor_height": 1,
+                "ground_floor_height_unit": "ft",
             },
             "setup_social_vulnerability_index": {
-                "census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9","codebook_fn":"social_vulnerability","state_abbreviation":"SC","blockgroup_fn":"blockgroup_shp_data"
+                "census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9",
+                "codebook_fn": "social_vulnerability",
+                "state_abbreviation": "SC",
+                "blockgroup_fn": "blockgroup_shp_data",
             },
-
-
-                    }
-            }
-        }
-
+        },
+    }
+}
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
@@ -81,7 +81,12 @@ def test_SVI_exposure(case):
     # Now we will add data from the user to the data catalog.
     to_add = {
         "blockgroup_shp_data": {
-            "path": str(EXAMPLEDIR /"Social_Vulnerability/tl_2022_45_bg.shp"),
+            "path": str(
+                DATADIR
+                / "social_vulnerability"
+                / "test_blockgroup_shp"
+                / "tl_2022_45_bg.shp"
+            ),
             "data_type": "GeoDataFrame",
             "driver": "vector",
             "crs": 4326,
@@ -95,4 +100,3 @@ def test_SVI_exposure(case):
     hyfm.build(region={"geom": region}, opt=_cases[case]["configuration"])
 
     assert hyfm
-    print("hi")

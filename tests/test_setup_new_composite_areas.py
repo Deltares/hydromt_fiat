@@ -4,13 +4,15 @@ from pathlib import Path
 import pytest
 import shutil
 
-EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
+DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
     "setup_new_composite_area_datum": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_read",
-        "ini": EXAMPLEDIR / "test_read.ini",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_datum",
         "composite_areas": EXAMPLEDIR / "test_read" / "new_development_area_test.gpkg",
         "type": "datum",
@@ -18,9 +20,8 @@ _cases = {
         "attr_ref": None,
     },
     "setup_new_composite_area_geom": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_read",
-        "ini": EXAMPLEDIR / "test_read.ini",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_geom",
         "composite_areas": EXAMPLEDIR / "test_read" / "new_development_area_test.gpkg",
         "type": "geom",
@@ -45,7 +46,7 @@ def test_setup_new_composite_areas_datum(case):
         percent_growth=10,
         geom_file=str(_cases[case]["composite_areas"]),
         ground_floor_height=2,
-        damage_types=["Structure"],
+        damage_types=["Structure", "Content"],
         vulnerability=fm.vulnerability,
         elevation_reference=_cases[case]["type"],
         path_ref=_cases[case]["path_ref"],

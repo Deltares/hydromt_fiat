@@ -16,6 +16,7 @@ dependencies:
   - gdal>=3.1
   - geopandas
   - hydromt
+  - hydromt_sfincs
   - jupyterlab  # to run examples
   - netcdf4
   - matplotlib # to run examples

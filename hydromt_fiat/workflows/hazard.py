@@ -260,7 +260,6 @@ def read_floodmaps(
 
     return da_map_fn, da_name, da_type
 
-
 def load_floodmaps(
     data_catalog: DataCatalog,
     region: gpd.GeoDataFrame,
@@ -316,6 +315,62 @@ def load_floodmaps(
             da = data_catalog.get_rasterdataset(name_catalog, variables=da_name)
 
     return da
+
+# def load_floodmaps(
+#     data_catalog: DataCatalog,
+#     region: gpd.GeoDataFrame,
+#     da_map_fn: Union[str, Path],
+#     da_name: str,
+#     name_catalog: str = "flood_maps",
+#     **kwargs,
+# ) -> xr.DataArray:
+#     """Load flood maps in memory from datacatalog or a local path
+
+#     Parameters
+#     ----------
+#     data_catalog : DataCatalog
+#         Data catalog object from model.
+#     region : gpd.GeoDataFrame
+#         Region of the model.
+#     da_map_fn : Union[str, Path]
+#         Path as string or key name in datacatalog of the hazard a specific hazard
+#         map idx.
+#     da_name : str
+#         File name of a specific hazard map.
+#     name_catalog : str, optional
+#         Name of data catalog item to take the flood maps from, by default "flood_maps".
+
+#     Returns
+#     -------
+#     xr.DataArray
+#         Hazard map to be loaded to the model's maps
+#     """
+
+#     # reading from path
+#     if da_map_fn.stem:
+#         if da_map_fn.stem == "sfincs_map":
+#             sfincs_root = os.path.dirname(da_map_fn)
+#             sfincs_model = SfincsModel(sfincs_root, mode="r")
+#             sfincs_model.read_results()
+#             # result_list = list(sfincs_model.results.keys())
+#             # sfincs_model.write_raster("results.zsmax", compress="LZW")
+#             da = sfincs_model.results["zsmax"]
+#             da.encoding["_FillValue"] = None
+#         else:
+#             if not region.empty:
+#                 da = data_catalog.get_rasterdataset(da_map_fn, geom=region, **kwargs)
+#             else:
+#                 da = data_catalog.get_rasterdataset(da_map_fn, **kwargs)
+#     # reading from the datacatalog
+#     else:
+#         if not region.empty:
+#             da = data_catalog.get_rasterdataset(
+#                 name_catalog, variables=da_name, geom=region
+#             )
+#         else:
+#             da = data_catalog.get_rasterdataset(name_catalog, variables=da_name)
+
+#     return da
 
 
 def check_maps_metadata(
