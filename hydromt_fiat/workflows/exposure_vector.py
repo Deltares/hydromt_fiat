@@ -26,8 +26,6 @@ class ExposureVector(Exposure):
         "Object Name",
         "Primary Object Type",
         "Secondary Object Type",
-        "X Coordinate",
-        "Y Coordinate",
         "Ground Elevation",
     ]
     _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
@@ -37,18 +35,14 @@ class ExposureVector(Exposure):
         "Object Name": str,
         "Primary Object Type": str,
         "Secondary Object Type": str,
-        "X Coordinate": float,
-        "Y Coordinate": float,
         "Extraction Method": str,
         "Aggregation Label": str,
         "Damage Function: Structure": str,
         "Damage Function: Content": str,
-        "Damage Function: Other": str,
         "Ground Flood Height": float,
         "Ground Elevation": float,
         "Max Potential Damage: Structure": float,
         "Max Potential Damage: Content": float,
-        "Max Potential Damage: Other": float,
     }
 
     def __init__(
@@ -175,8 +169,8 @@ class ExposureVector(Exposure):
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-        # Set the geoms
-        self.set_exposure_geoms(self.get_geom_gdf(self.exposure_db, self.crs))
+        # Set the geoms from the X and Y coordinates
+        self.set_exposure_geoms_from_xy()
 
     def setup_from_multiple_sources(
         self,
@@ -804,7 +798,7 @@ class ExposureVector(Exposure):
                 ]
 
         if return_gdf:
-            objects = self.df_to_gdf(objects, crs=self.crs)
+            objects = self.get_full_gdf(objects)
 
         return objects
 
@@ -885,28 +879,21 @@ class ExposureVector(Exposure):
                         self.exposure_db["X Coordinate"],
                         self.exposure_db["Y Coordinate"],
                     ),
-                }
+                },
+                crs=self.crs,
             )
         self.set_exposure_geoms(exposure_geoms)
 
-    @staticmethod
-    def get_geom_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
-        # TODO decide if this is the best way
-        gdf = gpd.GeoDataFrame(
-            df[["Object ID"]],
-            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
-            crs=crs,
-        )
-        return gdf
-
-    @staticmethod
-    def df_to_gdf(df: pd.DataFrame, crs: str) -> gpd.GeoDataFrame:
-        gdf = gpd.GeoDataFrame(
-            df,
-            geometry=gpd.points_from_xy(df["X Coordinate"], df["Y Coordinate"]),
-            crs=crs,
-        )
-        return gdf
+    def get_full_gdf(self, df: pd.DataFrame) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
+        # Check how many exposure geoms there are
+        if len(self.exposure_geoms) == 1:
+            gdf = self.exposure_geoms[0].merge(df, on="Object ID", how="left")
+            return gdf
+        if len(self.exposure_geoms) > 1:
+            gdf_list = []
+            for i in range(len(self.exposure_geoms)):
+                gdf_list.append(self.exposure_geoms[i].merge(df, on="Object ID", how="left"))
+            return gdf_list
 
     def check_required_columns(self):
         """Checks whether the <_REQUIRED_COLUMNS> are in the <exposure_db>."""

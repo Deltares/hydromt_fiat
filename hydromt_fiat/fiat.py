@@ -270,22 +270,14 @@ class FiatModel(GridModel):
         self.exposure.check_required_columns()
 
         # Add to tables
-        self.set_tables(df=self.exposure.exposure_db, name="exposure")
+        self.update_tables()
 
-        # Add to the geoms
-        self.set_geoms(
-            geom=self.exposure.get_geom_gdf(
-                self._tables["exposure"], self.exposure.crs
-            ),
-            name="exposure",
-        )
+        # Add to the geoms and the config
+        self.update_geoms()
 
-        # Update config
+        # Update the other config settings
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
-        self.set_config(
-            "exposure.geom.file1", "./exposure/exposure.gpkg"
-        )  # TODO: update if we have more than one file
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
