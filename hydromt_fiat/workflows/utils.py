@@ -10,3 +10,23 @@ def detect_delimiter(csvFile):
             return ","
     # default delimiter
     return ","
+
+
+def find_utm_projection(bbox, crs="epsg:4326"):
+    """Find the UTM projection for a bounding box.
+    
+    Parameters
+    ----------
+    bbox : list
+        The bounding box in WGS84 coordinates.
+    crs : str, optional
+        The coordinate reference system of the bounding box, by default "epsg:4326".
+
+    Returns
+    -------
+    str
+        The UTM projection as an EPSG code.
+    """
+    ...
+
+

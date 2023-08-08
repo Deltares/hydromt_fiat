@@ -14,8 +14,9 @@ from hydromt_fiat.data_apis.open_street_maps import (
     get_landuse_from_osm,
 )
 
+from .damage_values import preprocess_jrc_damage_values
 from .exposure import Exposure
-from .utils import detect_delimiter
+from .utils import detect_delimiter, find_utm_projection
 from .vulnerability import Vulnerability
 
 
@@ -180,11 +181,13 @@ class ExposureVector(Exposure):
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
         occupancy_type_field: Union[str, None] = None,
+        damage_types: Union[List[str], None] = None,
+        country: Union[str, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_type_field)
-        self.setup_max_potential_damage(max_potential_damage)
+        self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(ground_floor_height)
         self.setup_extraction_method(extraction_method)
 
@@ -235,17 +238,12 @@ class ExposureVector(Exposure):
         self.exposure_geoms.append(gdf)
 
     def setup_occupancy_type(
-        self, occupancy_source: str, occupancy_attr: Union[str, None] = None
+        self, occupancy_source: str, occupancy_attr: Optional[List[str]] = []
     ) -> None:
-        self.logger.info("Setting up occupancy type...")
+        self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
-            polygon = self.region.iloc[0][0]
-            occupancy_map = get_landuse_from_osm(polygon)
-
-            if occupancy_map.empty:
-                self.logger.warning(
-                    f"No land use data found in the selected region from source {occupancy_source}."
-                )
+            occupancy_map = self.setup_occupancy_type_from_osm()
+            occupancy_attr = ["Primary Object Type", "Secondary Object Type"]
         else:
             occupancy_map = self.data_catalog.get_geodataframe(
                 occupancy_source, geom=self.region
@@ -262,10 +260,15 @@ class ExposureVector(Exposure):
             )
 
         # Select only the column that contains the occupancy type
-        if not occupancy_attr:
-            occupancy_attr = [occupancy_map.columns[0]]
+        if len(occupancy_attr) == 0:
+            occupancy_attr = [
+                c for c in occupancy_map.columns if "landuse" in c.lower()
+            ]
+            self.logger.info(
+                f"No occupancy attribute specified, using '{occupancy_attr}'."
+            )
 
-        occupancy_attr = ["geometry"] + [occupancy_attr]
+        occupancy_attr = ["geometry"] + occupancy_attr
         occupancy_map = occupancy_map[occupancy_attr]
 
         # Spatially join the exposure data with the occupancy map
@@ -273,9 +276,82 @@ class ExposureVector(Exposure):
             self.exposure_db = gpd.sjoin(
                 self.exposure_geoms[0], occupancy_map, how="left", op="intersects"
             )
+            del self.exposure_db["geometry"]
         else:
-            print("NotImplemented for multiple exposure geoms")
+            print(
+                "NotImplemented the spatial join of the exposure data with the "
+                "occupancy map the for multiple exposure geoms"
+            )
             NotImplemented
+
+    def setup_occupancy_type_from_osm(self) -> None:
+        # We assume that the OSM land use data contains an attribute 'landuse' that
+        # contains the land use type.
+        occupancy_attribute = "landuse"
+
+        # Get the land use from OSM
+        polygon = self.region.iloc[0][0]
+        occupancy_map = get_landuse_from_osm(polygon)
+
+        if occupancy_map.empty:
+            self.logger.warning(
+                "No land use data found in the selected region from source 'OSM'."
+            )
+
+        # Log the unique landuse types
+        self.logger.info(
+            "The following unique landuse types are found in the OSM data: "
+            f"{list(occupancy_map[occupancy_attribute].unique())}"
+        )
+
+        # Map the landuse types to types used in the JRC global vulnerability curves
+        # and the JRC global damage values
+        landuse_to_jrc_mapping = {
+            "commercial": "commercial",
+            "construction": "",
+            "fairground": "commercial",
+            "industrial": "industrial",
+            "residential": "residential",
+            "retail": "commercial",
+            "institutional": "commercial",
+            "aquaculture": "",
+            "allotments": "agriculture",
+            "farmland": "agriculture",
+            "farmyard": "agriculture",
+            "animal_keeping": "agriculture",
+            "flowerbed": "",
+            "forest": "",
+            "greenhouse_horticulture": "agriculture",
+            "meadow": "",
+            "orchard": "agriculture",
+            "plant_nursery": "agriculture",
+            "vineyard": "agriculture",
+            "basin": "",
+            "salt_pond": "",
+            "grass": "",
+            "brownfield": "",
+            "cemetary": "",
+            "depot": "",
+            "garages": "",
+            "greenfield": "",
+            "landfill": "",
+            "military": "",
+            "port": "industrial",
+            "quarry": "",
+            "railway": "",
+            "recreation_ground": "",
+            "religious": "",
+            "village_green": "",
+            "winter_sports": "",
+            "street": "",
+        }
+
+        occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
+            landuse_to_jrc_mapping
+        )
+        occupancy_map["Secondary Object Type"] = occupancy_map[occupancy_attribute]
+
+        return occupancy_map
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
@@ -303,34 +379,38 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        objectids: Union[List[int], str],
-        damage_types: Union[List[str], str],
         max_potential_damage: Union[List[float], float],
+        damage_types: Union[List[str], str, None] = None,
+        country: Union[str, None] = None,
     ):
-        # TODO: implement that the max pot damage can be set from scratch from a single
-        # value or by doing a spatial join and taking from a column
-        damage_cols = self.get_max_potential_damage_columns()
+        if max_potential_damage == "jrc_damage_values":
+            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+            if country is None:
+                country = "World"
+                self.logger.warning(
+                    f"No country specified, using the '{country}' JRC damage values."
+                )
 
-        print(damage_cols)
-        NotImplemented
-        # # The measure is to buy out selected properties. #TODO revise
-        # self.logger.info(
-        #     f"Setup the maximum potential damage of {len(objectids)} properties."
-        # )
+            damage_values = preprocess_jrc_damage_values(damage_source, country)
 
-        # # Get the Object IDs to buy out
-        # idx = self.get_object_ids(objectids=objectids)
+            # Set the damage values to the exposure data
+            if damage_types is None:
+                damage_types = ["total"]
 
-        # # Get the columns that contain the maximum potential damage
-        # if damage_types.lower() == "all":
-        #     damage_cols = [
-        #         c for c in self.exposure_db.columns if "Max Potential Damage:" in c
-        #     ]
-        # else:
-        #     damage_cols = [f"Max Potential Damage: {t}" for t in damage_types]
-
-        # # Set the maximum potential damage of the objects to buy out to zero
-        # self.exposure_db[damage_cols].iloc[idx, :] = max_potential_damage
+            for damage_type in damage_types:
+                gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
+                gdf["area"] = gdf["geometry"].area
+                gdf.crs
+                self.exposure_db[
+                    f"Max Potential Damage: {damage_type.capitalize()}"
+                ] = [
+                    damage_values[f"{damage_type}_{building_type}"]
+                    for building_type in list(gdf["Primary Object Type"], gdf["area"])
+                ]
+        else:
+            NotImplemented
+            # TODO: Implement other ways of setting the max potential damage, e.g. from a
+            # vector file or from a table.
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -884,7 +964,9 @@ class ExposureVector(Exposure):
             )
         self.set_exposure_geoms(exposure_geoms)
 
-    def get_full_gdf(self, df: pd.DataFrame) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
+    def get_full_gdf(
+        self, df: pd.DataFrame
+    ) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
             gdf = self.exposure_geoms[0].merge(df, on="Object ID", how="left")
@@ -892,7 +974,9 @@ class ExposureVector(Exposure):
         if len(self.exposure_geoms) > 1:
             gdf_list = []
             for i in range(len(self.exposure_geoms)):
-                gdf_list.append(self.exposure_geoms[i].merge(df, on="Object ID", how="left"))
+                gdf_list.append(
+                    self.exposure_geoms[i].merge(df, on="Object ID", how="left")
+                )
             return gdf_list
 
     def check_required_columns(self):

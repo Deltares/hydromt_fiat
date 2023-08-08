@@ -5,7 +5,7 @@ from shapely.geometry import Polygon
 
 def get_assets_from_osm(polygon: Polygon):
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
-    footprints = ox.geometries.geometries_from_polygon(
+    footprints = ox.features.features_from_polygon(
         polygon, tags
     )  # then we query the data
 
@@ -27,7 +27,7 @@ def get_assets_from_osm(polygon: Polygon):
 
 def get_landuse_from_osm(polygon: Polygon):
     tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
-    landuse = ox.geometries.geometries_from_polygon(
+    landuse = ox.features.features_from_polygon(
         polygon, tags
     )  # then we query the data
 

@@ -139,6 +139,7 @@ class FiatModel(GridModel):
         functions_mean: Union[str, List[str], None] = "default",
         functions_max: Union[str, List[str], None] = None,
         step_size: Optional[float] = None,
+        continent: Optional[str] = None,
     ) -> None:
         """Setup the vulnerability curves from various possible inputs.
 
@@ -170,17 +171,25 @@ class FiatModel(GridModel):
             vulnerability_identifiers_and_linking_fn
         )
 
+        # If the JRC vulnerability curves are used, the continent needs to be specified
+        if vulnerability_identifiers_and_linking_fn == "jrc_vulnerability_curves_linking":
+            assert (
+                continent is not None
+            ), "Please specify the continent when using the JRC vulnerability curves."
+            vf_ids_and_linking_df["continent"] = continent.lower()
+
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
             unit,
             self.logger,
         )
 
-        # Depending on what the input is, another function is chosen to generate the
+        # Depending on what the input is, another function is ran to generate the
         # vulnerability curves file for Delft-FIAT.
         self.vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
             df_identifiers_linking=vf_ids_and_linking_df,
+            continent=continent,
         )
 
         # Set the area extraction method for the vulnerability curves
@@ -212,6 +221,8 @@ class FiatModel(GridModel):
         ground_floor_height_unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
+        damage_types: Union[List[str], None] = None,
+        country: Union[str, None] = None,
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
 
@@ -256,6 +267,8 @@ class FiatModel(GridModel):
                 ground_floor_height,
                 extraction_method,
                 occupancy_type_field,
+                damage_types=damage_types,
+                country=country
             )
 
         # Link the damage functions to assets
