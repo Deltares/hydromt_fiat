@@ -1,0 +1,14 @@
+
+meta:
+  root: C:\Repositories\hydromt_fiat\hydromt_fiat\data
+
+jrc_vulnerability_curves:
+    path: damage_functions/flooding/JRC_damage_functions.xlsx
+    data_type: DataFrame
+    driver: xlsx
+    meta:
+      category: vulnerability
+      description: JRC depth-damage functions for flooding
+      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+      paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+      paper_doi: https://dx.doi.org/10.2760/16510
