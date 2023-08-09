@@ -23,6 +23,7 @@ dependencies:
   - numba
   - numpy
   - openpyxl
+  - osmnx
   - pandas
   - pip
   - pyflwdir>=0.4.7
