@@ -7,6 +7,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
+from hydromt.gis_utils import utm_crs
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.data_apis.open_street_maps import (
@@ -16,7 +17,7 @@ from hydromt_fiat.data_apis.open_street_maps import (
 
 from .damage_values import preprocess_jrc_damage_values
 from .exposure import Exposure
-from .utils import detect_delimiter, find_utm_projection
+from .utils import detect_delimiter
 from .vulnerability import Vulnerability
 
 
@@ -276,13 +277,42 @@ class ExposureVector(Exposure):
             self.exposure_db = gpd.sjoin(
                 self.exposure_geoms[0], occupancy_map, how="left", op="intersects"
             )
-            del self.exposure_db["geometry"]
         else:
             print(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
             NotImplemented
+
+        # Remove the objects that do not have a Primary Object Type, that were not
+        # overlapping with the land use map, or that had a land use type of 'nan'.
+        nr_without_primary_object_type = len(
+            self.exposure_db.loc[self.exposure_db["Primary Object Type"] == ""].index
+        )
+        self.logger.warning(
+            f"{nr_without_primary_object_type} objects do not have a Primary Object "
+            "Type and will be removed from the exposure data."
+        )
+        self.exposure_db = self.exposure_db.loc[
+            self.exposure_db["Primary Object Type"] != ""
+        ]
+
+        nr_without_landuse = len(
+            self.exposure_db.loc[self.exposure_db["Primary Object Type"].isna()].index
+        )
+        self.logger.warning(
+            f"{nr_without_landuse} objects were not overlapping with the "
+            "land use data and will be removed from the exposure data."
+        )
+        self.exposure_db = self.exposure_db.loc[
+            self.exposure_db["Primary Object Type"].notna()
+        ]
+
+        # Update the exposure geoms
+        self.exposure_geoms[0] = self.exposure_db[["Object ID", "geometry"]]
+
+        # Remove the geometry column from the exposure database
+        del self.exposure_db["geometry"]
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -315,17 +345,17 @@ class ExposureVector(Exposure):
             "retail": "commercial",
             "institutional": "commercial",
             "aquaculture": "",
-            "allotments": "agriculture",
-            "farmland": "agriculture",
-            "farmyard": "agriculture",
-            "animal_keeping": "agriculture",
+            "allotments": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
+            "farmland": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
+            "farmyard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
+            "animal_keeping": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
             "flowerbed": "",
             "forest": "",
-            "greenhouse_horticulture": "agriculture",
+            "greenhouse_horticulture": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
             "meadow": "",
-            "orchard": "agriculture",
-            "plant_nursery": "agriculture",
-            "vineyard": "agriculture",
+            "orchard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
+            "plant_nursery": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
+            "vineyard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
             "basin": "",
             "salt_pond": "",
             "grass": "",
@@ -398,14 +428,26 @@ class ExposureVector(Exposure):
                 damage_types = ["total"]
 
             for damage_type in damage_types:
-                gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-                gdf["area"] = gdf["geometry"].area
-                gdf.crs
+                gdf = self.get_full_gdf(self.exposure_db)[
+                    ["Primary Object Type", "geometry"]
+                ]
+                if gdf.crs.is_geographic:
+                    # If the CRS is geographic, reproject to the nearest UTM zone
+                    nearest_utm = utm_crs(gdf.total_bounds)
+                    gdf_utm = gdf.to_crs(nearest_utm)
+                    gdf["area"] = gdf_utm["geometry"].area
+                elif gdf.crs.is_projected:
+                    # If the CRS is projected, calculate the area in the same CRS
+                    gdf["area"] = gdf["geometry"].area
+
+                # Calculate the maximum potential damage for each object and per damage type
                 self.exposure_db[
                     f"Max Potential Damage: {damage_type.capitalize()}"
                 ] = [
-                    damage_values[f"{damage_type}_{building_type}"]
-                    for building_type in list(gdf["Primary Object Type"], gdf["area"])
+                    damage_values[f"{damage_type.lower()}_{building_type}"] * square_meters
+                    for building_type, square_meters in zip(
+                        list(gdf["Primary Object Type"]), list(gdf["area"])
+                    )
                 ]
         else:
             NotImplemented
@@ -802,13 +844,27 @@ class ExposureVector(Exposure):
         # Update the exposure_geoms
         self.set_exposure_geoms(_new_exposure_geoms)
 
-    def link_exposure_vulnerability(self, exposure_linking_table: pd.DataFrame):
+    def link_exposure_vulnerability(
+        self,
+        exposure_linking_table: pd.DataFrame,
+        damage_types: Optional[List[str]] = ["Structure", "Content"],
+    ):
         linking_dict = dict(
             zip(exposure_linking_table["Link"], exposure_linking_table["Name"])
         )
-        self.exposure_db["Damage Function: Structure"] = self.exposure_db[
-            "Secondary Object Type"
-        ].map(linking_dict)
+
+        # Find the column to link the exposure data to the vulnerability data
+        if set(self.exposure_db["Primary Object Type"].unique()) == set(linking_dict.keys()):
+            linking_column = "Primary Object Type"
+        elif set(self.exposure_db["Secondary Object Type"].unique()) == set(
+            linking_dict.keys()
+        ):
+            linking_column = "Secondary Object Type"
+
+        for damage_type in damage_types:
+            self.exposure_db[f"Damage Function: {damage_type.capitalize()}"] = self.exposure_db[
+                linking_column
+            ].map(linking_dict)
 
     def get_primary_object_type(self):
         if "Primary Object Type" in self.exposure_db.columns:
@@ -969,15 +1025,17 @@ class ExposureVector(Exposure):
     ) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            gdf = self.exposure_geoms[0].merge(df, on="Object ID", how="left")
-            return gdf
-        if len(self.exposure_geoms) > 1:
+            assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
+            df["geometry"] = self.exposure_geoms[0]["geometry"]
+            gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
+        elif len(self.exposure_geoms) > 1:
             gdf_list = []
             for i in range(len(self.exposure_geoms)):
                 gdf_list.append(
                     self.exposure_geoms[i].merge(df, on="Object ID", how="left")
                 )
-            return gdf_list
+            gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
+        return gdf
 
     def check_required_columns(self):
         """Checks whether the <_REQUIRED_COLUMNS> are in the <exposure_db>."""

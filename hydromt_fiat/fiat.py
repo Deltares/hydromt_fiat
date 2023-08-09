@@ -221,7 +221,7 @@ class FiatModel(GridModel):
         ground_floor_height_unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
-        damage_types: Union[List[str], None] = None,
+        damage_types: Union[List[str], None] = ['Structure', 'Content'],
         country: Union[str, None] = None,
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -279,7 +279,7 @@ class FiatModel(GridModel):
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_vector' function. Error message: {e}"
             )
-        self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df)
+        self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df, damage_types)
         self.exposure.check_required_columns()
 
         # Add to tables
