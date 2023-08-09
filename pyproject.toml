@@ -11,8 +11,9 @@ authors = [
 	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
 ]
+requires-python = ">=3.8"
 dependencies = [
-    "hydromt =0.7.1",
+    "hydromt ~=0.7.1",
     "hydromt_sfincs",
     "geopandas >=0.8",
     "numpy",
@@ -21,12 +22,11 @@ dependencies = [
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic =1.10.9",
+	"pydantic ~=1.10.9",
 	"osmnx",
 	"census",
 	"us"
 ]
-requires-python = ">=3.8"
 readme = "README.rst"
 classifiers = [
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
