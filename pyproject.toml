@@ -21,7 +21,7 @@ dependencies = [
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic",
+	"pydantic=1.10.9",
 	"osmnx",
 	"census",
 	"us"

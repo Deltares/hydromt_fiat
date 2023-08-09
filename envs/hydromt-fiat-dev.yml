@@ -27,14 +27,13 @@ dependencies:
   - osmnx
   - pandas
   - pip
-  - pydantic
+  - pydantic=1.10.9
   - pyflwdir>=0.4.7
   - pygeos>=0.8
   - pytest # tests
   - pytest-cov # tests
   - pytest-benchmark # tests
   - python>=3.7
-  - rasterio
   - requests
   - scipy
   - sphinx # docs
