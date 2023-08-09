@@ -12,16 +12,16 @@ authors = [
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
 ]
 dependencies = [
-    "hydromt=0.7.1",
+    "hydromt =0.7.1",
     "hydromt_sfincs",
-    "geopandas>=0.8",
+    "geopandas >=0.8",
     "numpy",
     "pandas",
     "pygeos",
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic=1.10.9",
+	"pydantic =1.10.9",
 	"osmnx",
 	"census",
 	"us"
