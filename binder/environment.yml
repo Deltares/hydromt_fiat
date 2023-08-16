@@ -4,38 +4,24 @@ channels:
   - conda-forge
 
 dependencies:
-  - affine
   - click
   - black
-  - bottleneck
-  - cartopy # to run examples
   - dask
-  - descartes # to run examples
-  - entrypoints
-  - flit>=3.2
   - gdal>=3.1
   - geopandas
   - hydromt>=0.7.1
   - hydromt_sfincs
-  - jupyterlab # to run examples
-  - netcdf4
-  - matplotlib # to run examples
-  - numba
   - numpy
-  - openpyxl
   - osmnx
   - pandas
   - pip
-  - pyflwdir>=0.4.7
   - pygeos>=0.8
-  - python>=3.7
-  - pydantic
+  - python=3.10
+  - pydantic=1.10.9
   - pytest
   - requests
-  - scipy
   - xarray
-  - zarr
-  pip:
+  - pip:
     - us
     - census
 
