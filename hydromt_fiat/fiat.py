@@ -170,6 +170,8 @@ class FiatModel(GridModel):
         vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
+        # Add the vulnerability linking table to the tables object
+        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # If the JRC vulnerability curves are used, the continent needs to be specified
         if vulnerability_identifiers_and_linking_fn == "jrc_vulnerability_curves_linking":
@@ -196,13 +198,6 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
-
-        # Add the vulnerability curves to tables property
-        df, self.vulnerability_metadata = self.vulnerability.get_table_and_metadata()
-        self.set_tables(df=df, name="vulnerability_curves")
-
-        # Also add the identifiers
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -281,12 +276,6 @@ class FiatModel(GridModel):
             )
         self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df, damage_types)
         self.exposure.check_required_columns()
-
-        # Add to tables
-        self.update_tables()
-
-        # Add to the geoms and the config
-        self.update_geoms()
 
         # Update the other config settings
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
@@ -595,8 +584,6 @@ class FiatModel(GridModel):
             ) = self.vulnerability.get_table_and_metadata()
             self.set_tables(df=df, name="vulnerability_curves")
 
-        # TODO: Also add the vulnerability identifiers table?
-
     def update_geoms(self):
         # Update the exposure data geoms
         if self.exposure and "exposure" in self._tables:
@@ -750,7 +737,7 @@ class FiatModel(GridModel):
             elif name == "vulnerability_identifiers":
                 # The default location and save settings of the vulnerability curves
                 fn = "vulnerability/vulnerability_identifiers.csv"
-                kwargs = dict()
+                kwargs = {"index": False}
             elif "social_vulnerability" in name:
                 fn = f"exposure/{name}.csv"
                 kwargs = {"index": False}

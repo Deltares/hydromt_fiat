@@ -855,11 +855,15 @@ class ExposureVector(Exposure):
         )
 
         # Find the column to link the exposure data to the vulnerability data
-        if set(self.exposure_db["Primary Object Type"].unique()) == set(linking_dict.keys()):
+        unique_types_primary = set(self.exposure_db["Primary Object Type"].unique())
+        unique_types_secondary = set(self.exposure_db["Secondary Object Type"].unique())
+        unique_linking_types = set(linking_dict.keys())
+
+        # Check if the linking column is the Primary Object Type or the Secondary
+        # Object Type
+        if unique_types_primary.issubset(unique_linking_types):
             linking_column = "Primary Object Type"
-        elif set(self.exposure_db["Secondary Object Type"].unique()) == set(
-            linking_dict.keys()
-        ):
+        elif unique_types_secondary.issubset(unique_linking_types):
             linking_column = "Secondary Object Type"
 
         for damage_type in damage_types:
