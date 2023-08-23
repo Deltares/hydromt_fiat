@@ -3,6 +3,7 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import pandas as pd
 
 EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
 
@@ -29,6 +30,8 @@ def test_raise_ground_floor_height(case):
 
     fm.read()
 
+    exposure_original = fm.exposure.exposure_db
+
     objectids = fm.exposure.get_object_ids(selection_type="all")
     fm.exposure.raise_ground_floor_height(
         raise_by=2,
@@ -43,3 +46,18 @@ def test_raise_ground_floor_height(case):
 
     fm.set_root(_cases[case]["new_root"])
     fm.write()
+
+    exposure_modified = pd.read_csv(
+        _cases[case]["new_root"] / "exposure" / "exposure.csv"
+    )
+
+    # check if buildings are raised
+    assert all(
+        gfh1 + ge1 <= gfh2 + ge2
+        for gfh1, ge1, gfh2, ge2 in zip(
+            exposure_original["Ground Floor Height"],
+            exposure_original["Ground Elevation"],
+            exposure_modified["Ground Floor Height"],
+            exposure_modified["Ground Elevation"],
+        )
+    )

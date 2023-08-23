@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
 from hydromt.gis_utils import utm_crs
+from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.data_apis.open_street_maps import (
@@ -445,7 +446,8 @@ class ExposureVector(Exposure):
                 self.exposure_db[
                     f"Max Potential Damage: {damage_type.capitalize()}"
                 ] = [
-                    damage_values[f"{damage_type.lower()}_{building_type}"] * square_meters
+                    damage_values[f"{damage_type.lower()}_{building_type}"]
+                    * square_meters
                     for building_type, square_meters in zip(
                         list(gdf["Primary Object Type"]), list(gdf["area"])
                     )
@@ -532,13 +534,13 @@ class ExposureVector(Exposure):
 
         # Log the number of objects that are being raised.
         self.logger.info(
-            f"Setting the ground floor height of {len(idx)} properties to {raise_by}."
-        )
+            f"Raising the ground floor height of {len(idx)} properties to {raise_by}."
+        ) #TODO: add the unit of the ground floor height
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
             self.logger.info(
-                "Setting the ground floor height of the properties relative to Datum."
+                "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
                 self.exposure_db["Ground Floor Height"] < raise_by,
@@ -549,8 +551,8 @@ class ExposureVector(Exposure):
             # Elevate the objects relative to the surface water elevation map that the
             # user submitted.
             self.logger.info(
-                "Setting the ground floor height of the properties relative to "
-                f"{Path(path_ref).stem}, with column {attr_ref}."
+                "Raising the ground floor height of the properties relative to "
+                f"{Path(path_ref).name}, with column {attr_ref}."
             )
 
             if len(self.exposure_geoms) == 0:
@@ -564,7 +566,7 @@ class ExposureVector(Exposure):
                 raise_by,
                 self.crs,
             )
-            self.logger.warning(
+            self.logger.info(
                 "set_height_relative_to_reference can for now only be used for the "
                 "original exposure data."
             )
@@ -867,9 +869,9 @@ class ExposureVector(Exposure):
             linking_column = "Secondary Object Type"
 
         for damage_type in damage_types:
-            self.exposure_db[f"Damage Function: {damage_type.capitalize()}"] = self.exposure_db[
-                linking_column
-            ].map(linking_dict)
+            self.exposure_db[
+                f"Damage Function: {damage_type.capitalize()}"
+            ] = self.exposure_db[linking_column].map(linking_dict)
 
     def get_primary_object_type(self):
         if "Primary Object Type" in self.exposure_db.columns:
@@ -1094,7 +1096,7 @@ class ExposureVector(Exposure):
         reference_shp = gpd.read_file(path_ref)  # Vector
 
         # Reproject the input flood map if necessary
-        if str(reference_shp.crs).upper() != str(out_crs).upper():
+        if reference_shp.crs != CRS.from_user_input(out_crs):
             reference_shp = reference_shp.to_crs(
                 out_crs
             )  # TODO: make sure that the exposure_geoms file is projected in the out_crs (this doesn't happen now)
@@ -1105,7 +1107,6 @@ class ExposureVector(Exposure):
             reference_shp[[attr_ref, "geometry"]],
             how="left",
         )
-        modified_objects_gdf["value"] = modified_objects_gdf[attr_ref]
 
         # Sort and add the elevation to the shp values, append to the exposure dataframe
         # To be able to append the values from the GeoDataFrame to the DataFrame, it
@@ -1113,24 +1114,34 @@ class ExposureVector(Exposure):
         identifier = (
             "Object ID" if "Object ID" in modified_objects_gdf.columns else "object_id"
         )
+
+        # Group by the identifier and take the maximum value of the attribute reference
+        # to avoid duplicates in the case of overlapping polygons in the data used
+        # as reference.
         modified_objects_gdf = (
             modified_objects_gdf.groupby(identifier)
-            .max("value")
+            .max(attr_ref)
             .sort_values(by=[identifier])
         )
         exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"]).set_index(
             "Object ID", drop=False
         )
 
-        # Find indices of properties that are bellow the required level
-        to_change = (
+        # Find indices of properties that are below the required level
+        properties_below_level = (
             exposure_to_modify.loc[:, "Ground Floor Height"]
             + exposure_to_modify.loc[:, "Ground Elevation"]
-            < modified_objects_gdf.loc[:, "value"] + raise_by
+            < modified_objects_gdf.loc[:, attr_ref] + raise_by
         )
+        properties_no_reference_level = (modified_objects_gdf[attr_ref].isna())
+        to_change = properties_below_level & ~properties_no_reference_level
+
+        self.logger.info(f"{properties_no_reference_level.sum()} properties have no "
+                         "reference height level. These properties are not raised.")
+
         original_df = exposure_to_modify.copy()  # to be used for metrics
         exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
-            modified_objects_gdf.loc[to_change, "value"]
+            modified_objects_gdf.loc[to_change, attr_ref]
             + raise_by
             - exposure_to_modify.loc[to_change, "Ground Elevation"]
         )
