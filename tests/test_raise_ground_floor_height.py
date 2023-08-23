@@ -27,9 +27,9 @@ def test_raise_ground_floor_height(case):
     logger = setuplog("hydromt_fiat", log_level=10)
 
     fm = FiatModel(root=root, mode="r", logger=logger)
-
     fm.read()
 
+    # store original exposure
     exposure_original = fm.exposure.exposure_db
 
     objectids = fm.exposure.get_object_ids(selection_type="all")
@@ -47,6 +47,7 @@ def test_raise_ground_floor_height(case):
     fm.set_root(_cases[case]["new_root"])
     fm.write()
 
+    # read modified exposure
     exposure_modified = pd.read_csv(
         _cases[case]["new_root"] / "exposure" / "exposure.csv"
     )

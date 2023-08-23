@@ -3,6 +3,7 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import pandas as pd
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
@@ -26,7 +27,6 @@ def test_truncate_damage_function(case):
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 
     fm = FiatModel(root=root, mode="r", data_libs=[data_catalog_yml], logger=logger)
-
     fm.read()
 
     objectids_to_modify = [573783433, 573782415, 574268223, 574486724, 573785893]
@@ -36,6 +36,13 @@ def test_truncate_damage_function(case):
             "Damage Function: Structure",
         ].unique()
     )
+
+    # store original exposure
+    exposure_original = fm.exposure.exposure_db
+    exposure_original_selection = exposure_original.loc[
+        exposure_original["Object ID"].isin(objectids_to_modify)
+    ]
+
     fm.exposure.truncate_damage_function(
         objectids=objectids_to_modify,
         floodproof_to=2.5,
@@ -48,3 +55,16 @@ def test_truncate_damage_function(case):
 
     fm.set_root(_cases[case]["new_root"])
     fm.write()
+
+    # read modified exposure
+    exposure_modified = pd.read_csv(
+        _cases[case]["new_root"] / "exposure" / "exposure.csv"
+    )
+    exposure_modified_selection = exposure_modified.loc[
+        exposure_modified["Object ID"].isin(objectids_to_modify)
+    ]
+
+    assert all(
+        exposure_modified_selection["Damage Function: Structure"]
+        != exposure_original_selection["Damage Function: Structure"]
+    )

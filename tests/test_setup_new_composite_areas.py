@@ -3,6 +3,7 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import pandas as pd
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
@@ -39,8 +40,10 @@ def test_setup_new_composite_areas_datum(case):
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 
     fm = FiatModel(root=root, mode="r", data_libs=[data_catalog_yml], logger=logger)
-
     fm.read()
+
+    # store original exposure
+    exposure_original = fm.exposure.exposure_db
 
     fm.exposure.setup_new_composite_areas(
         percent_growth=10,
@@ -58,3 +61,11 @@ def test_setup_new_composite_areas_datum(case):
 
     fm.set_root(_cases[case]["new_root"])
     fm.write()
+
+    # read modified exposure
+    exposure_modified = pd.read_csv(
+        _cases[case]["new_root"] / "exposure" / "exposure.csv"
+    )
+
+    # check if the new development area was added
+    assert len(exposure_modified) > len(exposure_original)
