@@ -234,7 +234,7 @@ class FiatModel(GridModel):
         ground_floor_height_unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
-        damage_types: Union[List[str], None] = ['Structure', 'Content'],
+        damage_types: Union[List[str], None] = ['structure', 'content'],
         country: Union[str, None] = None,
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.

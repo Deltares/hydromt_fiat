@@ -70,16 +70,55 @@ def preprocess_jrc_damage_values(
         # Get the JRC base value for the building type
         jrc_base_value = jrc_base_damage_values[building_type].values[0]
 
-        # Calculate the adjusted damage value for structure and content and total damage
-        damage_values[f"structure_{building_type}"] = (
-            jrc_base_value * cc_vs_dv * (1 - up) * mu
+        # Calculate the adjusted damage value for structure, content and total damage
+        damage_values[building_type] = {
+            "structure": (jrc_base_value * cc_vs_dv * (1 - up) * mu),
+            "content": ((jrc_base_value * cc_vs_dv * (1 - up) * mu) * mdci),
+            "total": (
+                (jrc_base_value * cc_vs_dv * (1 - up) * mu)
+                + ((jrc_base_value * cc_vs_dv * (1 - up) * mu) * mdci)
+            ),
+        }
+
+    return damage_values
+
+
+def preprocess_hazus_damage_values(hazus_table: pd.DataFrame) -> dict:
+    """Preprocess the Hazus damage values data.
+
+    Parameters
+    ----------
+    hazus_table : pd.DataFrame
+        The Hazus damage values data.
+
+    Returns
+    -------
+    dict
+        The preprocessed Hazus damage values data.
+    """
+    # Calculate the content damages per occupancy type
+    hazus_table["content"] = (
+        hazus_table["Maximum structure damage [$/sq.ft] (2018)"]
+        * hazus_table["Maximum content damages [% of maximum structural damages]"]
+        / 100
+    )
+
+    # Rename the long names for structure damage values and the occupancy types
+    # to shorter names
+    hazus_table.rename(
+        columns={
+            "Maximum structure damage [$/sq.ft] (2018)": "structure",
+            "Occupancy/utility type": "occupancy",
+        },
+        inplace=True,
+    )
+
+    # Get the damage values for the different damage types
+    damage_values = {
+        occ: {"structure": struc, "content": cont}
+        for occ, struc, cont in zip(
+            hazus_table["occupancy"], hazus_table["structure"], hazus_table["content"]
         )
-        damage_values[f"content_{building_type}"] = (
-            damage_values[f"structure_{building_type}"] * mdci
-        )
-        damage_values[f"total_{building_type}"] = (
-            damage_values[f"structure_{building_type}"]
-            + damage_values[f"content_{building_type}"]
-        )
+    }
 
     return damage_values

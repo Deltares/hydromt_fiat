@@ -16,7 +16,7 @@ from hydromt_fiat.data_apis.open_street_maps import (
     get_landuse_from_osm,
 )
 
-from .damage_values import preprocess_jrc_damage_values
+from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
 from .exposure import Exposure
 from .utils import detect_delimiter
 from .vulnerability import Vulnerability
@@ -240,17 +240,19 @@ class ExposureVector(Exposure):
         self.logger.info("Setting exposure geometries...")
         self.exposure_geoms.append(gdf)
 
-    def setup_occupancy_type(
-        self, occupancy_source: str, occupancy_attr: Optional[List[str]] = []
-    ) -> None:
+    def setup_occupancy_type(self, occupancy_source: str, occupancy_attr: str) -> None:
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
             occupancy_map = self.setup_occupancy_type_from_osm()
-            occupancy_attr = ["Primary Object Type", "Secondary Object Type"]
+            occupancy_types = ["Primary Object Type", "Secondary Object Type"]
         else:
             occupancy_map = self.data_catalog.get_geodataframe(
                 occupancy_source, geom=self.region
             )
+            occupancy_map.rename(
+                columns={occupancy_attr: "Primary Object Type"}, inplace=True
+            )
+            occupancy_types = ["Primary Object Type"]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:
@@ -258,26 +260,19 @@ class ExposureVector(Exposure):
             self.logger.warning(
                 "The CRS of the occupancy map is not the same as that "
                 "of the exposure data. The occupancy map has been "
-                "reprojected to the CRS of the exposure data before "
+                f"reprojected to the CRS of the exposure data ({self.crs}) before "
                 "doing the spatial join."
             )
 
-        # Select only the column that contains the occupancy type
-        if len(occupancy_attr) == 0:
-            occupancy_attr = [
-                c for c in occupancy_map.columns if "landuse" in c.lower()
-            ]
-            self.logger.info(
-                f"No occupancy attribute specified, using '{occupancy_attr}'."
-            )
-
-        occupancy_attr = ["geometry"] + occupancy_attr
-        occupancy_map = occupancy_map[occupancy_attr]
+        to_keep = ["geometry"] + occupancy_types
 
         # Spatially join the exposure data with the occupancy map
         if len(self.exposure_geoms) == 1:
             self.exposure_db = gpd.sjoin(
-                self.exposure_geoms[0], occupancy_map, how="left", op="intersects"
+                self.exposure_geoms[0],
+                occupancy_map[to_keep],
+                how="left",
+                op="intersects",
             )
         else:
             print(
@@ -425,37 +420,43 @@ class ExposureVector(Exposure):
 
             damage_values = preprocess_jrc_damage_values(damage_source, country)
 
-            # Set the damage values to the exposure data
-            if damage_types is None:
-                damage_types = ["total"]
-
-            for damage_type in damage_types:
-                gdf = self.get_full_gdf(self.exposure_db)[
-                    ["Primary Object Type", "geometry"]
-                ]
-                if gdf.crs.is_geographic:
-                    # If the CRS is geographic, reproject to the nearest UTM zone
-                    nearest_utm = utm_crs(gdf.total_bounds)
-                    gdf_utm = gdf.to_crs(nearest_utm)
-                    gdf["area"] = gdf_utm["geometry"].area
-                elif gdf.crs.is_projected:
-                    # If the CRS is projected, calculate the area in the same CRS
-                    gdf["area"] = gdf["geometry"].area
-
-                # Calculate the maximum potential damage for each object and per damage type
-                self.exposure_db[
-                    f"Max Potential Damage: {damage_type.capitalize()}"
-                ] = [
-                    damage_values[f"{damage_type.lower()}_{building_type}"]
-                    * square_meters
-                    for building_type, square_meters in zip(
-                        list(gdf["Primary Object Type"]), list(gdf["area"])
-                    )
-                ]
+        elif max_potential_damage == "hazus_max_potential_damages":
+            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+            damage_values = preprocess_hazus_damage_values(damage_source)
         else:
             NotImplemented
             # TODO: Implement other ways of setting the max potential damage, e.g. from a
             # vector file or from a table.
+
+        # Calculate the area of each object
+        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
+        if gdf.crs.is_geographic:
+            # If the CRS is geographic, reproject to the nearest UTM zone
+            nearest_utm = utm_crs(gdf.total_bounds)
+            gdf_utm = gdf.to_crs(nearest_utm)
+            gdf["area"] = gdf_utm["geometry"].area
+        elif gdf.crs.is_projected:
+            # If the CRS is projected, calculate the area in the same CRS
+            gdf["area"] = gdf["geometry"].area
+
+        # Set the damage values to the exposure data
+        if damage_types is None:
+            damage_types = ["total"]
+
+        for damage_type in damage_types:
+            # Calculate the maximum potential damage for each object and per damage type
+            try:
+                self.exposure_db[
+                    f"Max Potential Damage: {damage_type.capitalize()}"
+                ] = [
+                    damage_values[building_type][damage_type.lower()] * square_meters
+                    for building_type, square_meters in zip(
+                        gdf["Primary Object Type"], gdf["area"]
+                    )
+                ]
+            except KeyError as e:
+                self.logger.warning(f"Not found in the {max_potential_damage} damage "
+                                    f"value data: {e}")
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -535,7 +536,7 @@ class ExposureVector(Exposure):
         # Log the number of objects that are being raised.
         self.logger.info(
             f"Raising the ground floor height of {len(idx)} properties to {raise_by}."
-        ) #TODO: add the unit of the ground floor height
+        )  # TODO: add the unit of the ground floor height
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
@@ -1133,11 +1134,13 @@ class ExposureVector(Exposure):
             + exposure_to_modify.loc[:, "Ground Elevation"]
             < modified_objects_gdf.loc[:, attr_ref] + raise_by
         )
-        properties_no_reference_level = (modified_objects_gdf[attr_ref].isna())
+        properties_no_reference_level = modified_objects_gdf[attr_ref].isna()
         to_change = properties_below_level & ~properties_no_reference_level
 
-        self.logger.info(f"{properties_no_reference_level.sum()} properties have no "
-                         "reference height level. These properties are not raised.")
+        self.logger.info(
+            f"{properties_no_reference_level.sum()} properties have no "
+            "reference height level. These properties are not raised."
+        )
 
         original_df = exposure_to_modify.copy()  # to be used for metrics
         exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
