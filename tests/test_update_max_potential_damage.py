@@ -3,6 +3,7 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import pandas as pd
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
@@ -53,3 +54,18 @@ def test_update_max_potential_damage(case):
 
     fm.set_root(_cases[case]["new_root"])
     fm.write()
+
+    # read modified exposure
+    exposure_modified = pd.read_csv(
+        _cases[case]["new_root"] / "exposure" / "exposure.csv"
+    )
+
+    # check if the max potential damage is updated
+    updated_max_pot_damage.reset_index(inplace=True, drop=True)
+    updated_max_pot_damage["Object Name"] = updated_max_pot_damage["Object Name"].astype(int)
+    pd.testing.assert_frame_equal(
+        updated_max_pot_damage,
+        exposure_modified,
+        check_dtype=False,
+        check_column_type=False,
+    )

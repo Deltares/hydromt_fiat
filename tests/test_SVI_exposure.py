@@ -96,7 +96,7 @@ def test_SVI_exposure(case):
         }
     }
 
-    region = gpd.GeoDataFrame.from_features(_cases[case]["region"])
+    region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
 
     hyfm.data_catalog.from_dict(to_add)
     hyfm.build(region={"geom": region}, opt=_cases[case]["configuration"])
