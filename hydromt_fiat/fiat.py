@@ -207,6 +207,24 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
+    def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], unit: str) -> None:
+        """Setup the vulnerability curves from one or multiple csv files.
+
+        Parameters
+        ----------
+            csv_fn : str
+                The full path to the folder which holds the single vulnerability curves.
+            unit : str
+                The unit of the water depth column for all vulnerability functions
+                (e.g. meter).
+        """
+        # Process the vulnerability data
+        self.vulnerability = Vulnerability(
+            unit,
+            self.logger,
+        )
+        self.vulnerability.from_csv(csv_fn)
+
     def setup_exposure_vector(
         self,
         asset_locations: Union[str, Path],
