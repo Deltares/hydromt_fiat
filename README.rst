@@ -1,4 +1,4 @@
-hydroMT-fiat: FIAT plugin for hydroMT
+HydroMT-FIAT: Delft-FIAT plugin for HydroMT
 #########################################
 
 .. image:: https://codecov.io/gh/Deltares/hydromt_fiat/branch/main/graph/badge.svg
@@ -23,33 +23,31 @@ hydroMT-fiat: FIAT plugin for hydroMT
 hydroMT_ is a python package, developed by Deltares, to build and analyze hydro models.
 It provides a generic model api with attributes to access the model schematization,
 (dynamic) forcing data, results and states. This plugin provides an implementation 
-for the FIAT_ model.
+for the Delft-FIAT_ model.
 
 
 .. _hydromt: https://deltares.github.io/hydromt
-.. _FIAT: https://storymaps.arcgis.com/stories/687a256881b94bf6ad20677543bb8cf2
+.. _Delft-FIAT: https://www.deltares.nl/en/software-and-data/products/delft-fiat-flood-impact-assessment-tool
 
 
 Installation
 ------------
 
-hydroMT-fiat is available from pypi and will be added to conda-forge (in progress).
+HydroMT-FIAT is available from pypi and will be added to conda-forge (in progress).
 
-To install hydromt_fiat using pip do:
+To install hydromt_fiat for usage, do:
 
 .. code-block:: console
 
   pip install hydromt_fiat
 
-We recommend installing a hydromt-fiat environment including the hydromt_fiat package
-based on the environment.yml file. This environment will install all package dependencies 
-including the core of hydroMT_.
+For developing on HydroMT-FIAT, do:
 
 .. code-block:: console
 
-  conda env create -f binder/environment.yml
+  conda env create -f envs/hydromt-fiat-dev.yml
   conda activate hydromt-fiat
-  pip install hydromt_fiat
+  pip install -e .
 
 Documentation
 -------------
