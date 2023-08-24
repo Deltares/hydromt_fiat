@@ -103,3 +103,6 @@ def test_hazard(case):
     # fm.build(region={"geom": region}, opt=opt)
     fm.build(region={"geom": region}, opt=configuration)
     fm.write()
+
+    # Check if the hazard folder exists
+    assert root.joinpath("hazard").exists()

@@ -146,3 +146,17 @@ def test_integration(case):
     region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()
+
+    # Check if the exposure data exists
+    assert root.joinpath("exposure", "exposure.gpkg").exists()
+    assert root.joinpath("exposure", "exposure.csv").exists()
+    assert root.joinpath("exposure", "region.gpkg").exists()
+
+    # Check if the vulnerability data exists
+    assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
+
+    # Check if the hazard folder exists
+    assert root.joinpath("hazard").exists()
+
+    # Check if the output data folder exists
+    assert root.joinpath("output").exists()
