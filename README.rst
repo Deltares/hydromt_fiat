@@ -46,7 +46,7 @@ For developing on HydroMT-FIAT, do:
 .. code-block:: console
 
   conda env create -f envs/hydromt-fiat-dev.yml
-  conda activate hydromt-fiat
+  conda activate hydromt-fiat-dev
   pip install -e .
 
 Documentation
