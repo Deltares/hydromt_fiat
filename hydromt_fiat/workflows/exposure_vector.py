@@ -929,6 +929,8 @@ class ExposureVector(Exposure):
             The filtered (Geo)DataFrame.
         """
         objects = self.exposure_db
+        if return_gdf:
+            objects = self.get_full_gdf(objects)
 
         if non_building_names:
             objects = objects.loc[
@@ -940,9 +942,6 @@ class ExposureVector(Exposure):
                 objects = objects.loc[
                     objects["Primary Object Type"].isin([primary_object_type]), :
                 ]
-
-        if return_gdf:
-            objects = self.get_full_gdf(objects)
 
         return objects
 
