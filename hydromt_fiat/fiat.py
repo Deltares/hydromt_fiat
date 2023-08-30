@@ -31,7 +31,7 @@ class FiatModel(GridModel):
     """General and basic API for the FIAT model in hydroMT."""
 
     _NAME = "fiat"
-    _CONF = "fiat_configuration.ini"
+    _CONF = "settings.toml"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
