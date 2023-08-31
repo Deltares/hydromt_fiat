@@ -203,6 +203,7 @@ class FiatModel(GridModel):
         self.set_config(
             "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
         )
+        self.set_config("vulnerability.unit", unit)
 
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
@@ -231,7 +232,7 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        ground_floor_height_unit: str,
+        unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
         damage_types: Union[List[str], None] = ['structure', 'content'],
@@ -252,7 +253,7 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        ground_floor_height_unit : str
+        unit : str
             The unit of the ground_floor_height
         occupancy_type_field : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
@@ -298,6 +299,7 @@ class FiatModel(GridModel):
         # Update the other config settings
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
+        self.set_config("exposure.geom.unit", unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
