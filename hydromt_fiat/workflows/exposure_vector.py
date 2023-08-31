@@ -145,7 +145,7 @@ class ExposureVector(Exposure):
         # Read the json file that holds a dictionary of names of the source_data coupled
         # to Delft-FIAT names
         with open(
-            self.data_catalog.sources[source].kwargs["translation_fn"]
+            self.data_catalog.sources[source].driver_kwargs["translation_fn"]
         ) as json_file:
             attribute_translation_to_fiat = json_file.read()
         attribute_translation_to_fiat = json.loads(attribute_translation_to_fiat)
