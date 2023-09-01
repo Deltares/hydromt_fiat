@@ -54,6 +54,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
+        unit: str = "m",
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -74,6 +75,7 @@ class ExposureVector(Exposure):
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
         self.source = gpd.GeoDataFrame()
+        self.unit = unit
 
     def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
