@@ -31,7 +31,7 @@ class FiatModel(GridModel):
     """General and basic API for the FIAT model in hydroMT."""
 
     _NAME = "fiat"
-    _CONF = "fiat_configuration.ini"
+    _CONF = "settings.toml"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
@@ -174,7 +174,10 @@ class FiatModel(GridModel):
         self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # If the JRC vulnerability curves are used, the continent needs to be specified
-        if vulnerability_identifiers_and_linking_fn == "jrc_vulnerability_curves_linking":
+        if (
+            vulnerability_identifiers_and_linking_fn
+            == "jrc_vulnerability_curves_linking"
+        ):
             assert (
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
@@ -203,6 +206,7 @@ class FiatModel(GridModel):
         self.set_config(
             "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
         )
+        self.set_config("vulnerability.unit", unit)
 
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
@@ -231,10 +235,10 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        ground_floor_height_unit: str,
+        unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
-        damage_types: Union[List[str], None] = ['structure', 'content'],
+        damage_types: Union[List[str], None] = ["structure", "content"],
         country: Union[str, None] = None,
     ) -> None:
         """Setup vector exposure data for Delft-FIAT.
@@ -252,7 +256,7 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        ground_floor_height_unit : str
+        unit : str
             The unit of the ground_floor_height
         occupancy_type_field : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
@@ -281,7 +285,7 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_type_field,
                 damage_types=damage_types,
-                country=country
+                country=country,
             )
 
         # Link the damage functions to assets
@@ -292,12 +296,15 @@ class FiatModel(GridModel):
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_vector' function. Error message: {e}"
             )
-        self.exposure.link_exposure_vulnerability(self.vf_ids_and_linking_df, damage_types)
+        self.exposure.link_exposure_vulnerability(
+            self.vf_ids_and_linking_df, damage_types
+        )
         self.exposure.check_required_columns()
 
         # Update the other config settings
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
+        self.set_config("exposure.geom.unit", unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -314,9 +321,9 @@ class FiatModel(GridModel):
         nodata: Union[int, list[int], None] = None,
         var: Union[str, list[str], None] = None,
         chunks: Union[int, str, list[int]] = "auto",
-        name_catalog: Union[str, None] = "flood_maps",
         hazard_type: str = "flooding",
         risk_output: bool = False,
+        unit_conversion_factor: float = 1.0,
     ) -> None:
         """Set up hazard maps. This component integrates multiple checks for the maps
 
@@ -350,8 +357,6 @@ class FiatModel(GridModel):
             The chuck region per map. In case a single no data applies for all the
             elements a single value can be provided as integer. If "auto"is provided
             the auto setting will be provided by default "auto"
-        name_catalog : str, optional
-            Name of the data catalog to take the hazard maps from, by default "flood_maps"
         hazard_type : str, optional
             Type of hazard to be studied, by default "flooding"
         risk_output : bool, optional
@@ -377,7 +382,7 @@ class FiatModel(GridModel):
             if isinstance(da_map_fn, Path):
                 if da_map_fn.stem == "sfincs_map":
                     sfincs_root = os.path.dirname(da_map_fn)
-                    sfincs_model = SfincsModel(sfincs_root, mode="r")
+                    sfincs_model = SfincsModel(sfincs_root, mode="r", logger=self.logger)
                     sfincs_model.read_results()
                     # save sfincs map as GeoTIFF
                     # result_list = list(sfincs_model.results.keys())
@@ -385,6 +390,10 @@ class FiatModel(GridModel):
                     da = sfincs_model.results["zsmax"]
                     # da = da.squeeze('timemax').drop('timemax')
                     da = da.isel(timemax=0).drop("timemax")
+
+                    # Convert to units of the exposure data if required
+                    if self.exposure.unit != da.units:
+                        da = da * unit_conversion_factor
 
                 else:
                     if not self.region.empty:
@@ -401,11 +410,11 @@ class FiatModel(GridModel):
                     #     name_catalog, variables=da_name, geom=self.region
                     # )
                     da = self.data_catalog.get_rasterdataset(
-                        name_catalog, variables=da_name
+                        map_fn, variables=da_name
                     )
                 else:
                     da = self.data_catalog.get_rasterdataset(
-                        name_catalog, variables=da_name
+                        map_fn, variables=da_name
                     )
 
             da.encoding["_FillValue"] = None
@@ -674,7 +683,9 @@ class FiatModel(GridModel):
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(
-                crs=self.get_config("exposure.geom.crs"), logger=self.logger
+                crs=self.get_config("exposure.geom.crs"),
+                logger=self.logger,
+                unit=self.get_config("exposure.geom.unit"),
             )
             self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db

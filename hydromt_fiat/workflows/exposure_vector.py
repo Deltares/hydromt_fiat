@@ -54,6 +54,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
+        unit: str = "m",
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -74,6 +75,7 @@ class ExposureVector(Exposure):
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
         self.source = gpd.GeoDataFrame()
+        self.unit = unit
 
     def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
@@ -145,7 +147,7 @@ class ExposureVector(Exposure):
         # Read the json file that holds a dictionary of names of the source_data coupled
         # to Delft-FIAT names
         with open(
-            self.data_catalog.sources[source].kwargs["translation_fn"]
+            self.data_catalog.sources[source].driver_kwargs["translation_fn"]
         ) as json_file:
             attribute_translation_to_fiat = json_file.read()
         attribute_translation_to_fiat = json.loads(attribute_translation_to_fiat)
