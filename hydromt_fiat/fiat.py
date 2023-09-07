@@ -715,13 +715,6 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-            exposure_names = [f.stem for f in exposure_fn]
-            for name, geom in zip(exposure_names, self.exposure.exposure_geoms):
-                self.set_geoms(
-                    geom=geom,
-                    name=name,
-                )
-
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
         self.update_all()
