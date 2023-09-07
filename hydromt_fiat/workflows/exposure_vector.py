@@ -102,7 +102,7 @@ class ExposureVector(Exposure):
             fn = [fn]
 
         for f in fn:
-            self.set_exposure_geoms(gpd.read_file(f))
+            self.set_exposure_geoms(gpd.read_file(f, engine="pyogrio"))
 
     def setup_from_single_source(
         self,
@@ -749,7 +749,7 @@ class ExposureVector(Exposure):
         )
 
         # Add the new development area as an object to the Exposure Modification file.
-        new_area = gpd.read_file(geom_file)
+        new_area = gpd.read_file(geom_file, engine="pyogrio")
         # check_crs(new_area, geom_file)  #TODO implement again
         new_objects = []
 
@@ -1005,7 +1005,7 @@ class ExposureVector(Exposure):
                 non_building_names=non_building_names,
                 return_gdf=True,
             )
-            polygon = gpd.read_file(polygon_file)
+            polygon = gpd.read_file(polygon_file, engine="pyogrio")
             ids = gpd.sjoin(buildings, polygon)["Object ID"]
         elif selection_type == "list":
             ids = objectids
@@ -1095,7 +1095,7 @@ class ExposureVector(Exposure):
         the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
-        reference_shp = gpd.read_file(path_ref)  # Vector
+        reference_shp = gpd.read_file(path_ref, engine="pyogrio")  # Vector
 
         # Reproject the input flood map if necessary
         if reference_shp.crs != CRS.from_user_input(out_crs):
