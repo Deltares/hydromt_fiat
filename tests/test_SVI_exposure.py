@@ -78,13 +78,13 @@ def test_SVI_exposure(case):
         shutil.rmtree(root)
     logger = setuplog("hydromt_fiat", log_level=10)
     data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
-    hyfm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
+    fm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
 
     # Now we will add data from the user to the data catalog.
     to_add = {
         "blockgroup_shp_data": {
             "path": str(
-                DATADIR
+                EXAMPLEDIR
                 / "social_vulnerability"
                 / "test_blockgroup_shp"
                 / "tl_2022_45_bg.shp"
@@ -98,7 +98,15 @@ def test_SVI_exposure(case):
 
     region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
 
-    hyfm.data_catalog.from_dict(to_add)
-    hyfm.build(region={"geom": region}, opt=_cases[case]["configuration"])
+    fm.data_catalog.from_dict(to_add)
+    fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
 
-    assert hyfm
+    fm.write()
+
+    assert fm
+    
+    # Check if the exposure data exists
+    assert root.joinpath("exposure", "exposure.gpkg").exists()
+    assert root.joinpath("exposure", "exposure.csv").exists()
+    assert root.joinpath("exposure", "region.gpkg").exists()
+

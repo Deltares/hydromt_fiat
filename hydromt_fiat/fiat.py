@@ -299,6 +299,7 @@ class FiatModel(GridModel):
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
 
+
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
         This function will be implemented at a later stage.
@@ -553,26 +554,24 @@ class FiatModel(GridModel):
         svi.merge_svi_data_shp()
 
         # store the relevant tables coming out of the social vulnerability module
-        self.set_tables(df=svi.pd_domain_scores_z, name="social_vulnerability_scores")
+        self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
         # self.set_tables(df=svi.excluded_regions, name="social_vulnerability_nodataregions")
 
         # Check if the exposure data exists
         if self.exposure:
             # Link the SVI score to the exposure data
-            self._tables["exposure"]  # pd dataframe
-            self.geoms["exposure"]  # gpd dataframe
-            self._tables["exposure"].sort_values("Object ID")
-            self.geoms["exposure"].sort_values("Object ID")
-            exposure_geoms = self._tables["exposure"].merge(
-                self.geoms["exposure"], on="Object ID"
-            )
-            exposure_geoms_gpd = gpd.GeoDataFrame(exposure_geoms)
+            exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
+            exposure_data.sort_values("Object ID")
+            
+            if svi.svi_data_shp.crs != exposure_data.crs:
+                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace = True)
+
             svi_exp_joined = gpd.sjoin(
-                exposure_geoms_gpd, svi.svi_data_shp, how="inner", op="within"
+                exposure_data, svi.svi_data_shp, how="left"
             )
-            svi_exp_joined = svi_exp_joined.drop(columns="geometry")
+            svi_exp_joined.drop(columns=['geometry'], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
-            self._tables["exposure"] = svi_exp_joined
+            self.exposure.exposure_db = svi_exp_joined
 
         # exposure opnieuw opslaan in self._tables
 

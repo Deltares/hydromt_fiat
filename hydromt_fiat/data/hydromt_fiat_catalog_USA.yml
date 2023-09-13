@@ -1,6 +1,6 @@
 
 meta:
-  root: C:\Repositories\hydromt_fiat\hydromt_fiat\data
+  root: C:\python\hydromt_fiat\hydromt_fiat\data
 
 NSI:
     path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"
