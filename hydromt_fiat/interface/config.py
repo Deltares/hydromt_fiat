@@ -12,9 +12,18 @@ class SpatialReference(str, Enum):
     datum = "datum"
 
 
+class OutputCsv(BaseModel):
+    name: str
+
+
+class OutputGeom(BaseModel):
+    name1: str
+
+
 class OutputModel(BaseModel):
-    output_dir: str
-    crs: str
+    path: str
+    csv: OutputCsv
+    geom: OutputGeom
 
 
 class HazardModel(BaseModel):
@@ -26,13 +35,22 @@ class HazardModel(BaseModel):
     layer: Optional[str]
 
 
-class ExposureModel(BaseModel):
-    dbase_file: str
+class ExposureGeomModel(BaseModel):
+    csv: str
     crs: str
+    file1: str
+    file2: str
+    unit: str
+
+
+class ExposureModel(BaseModel):
+    geom: ExposureGeomModel
 
 
 class VulnerabilityModel(BaseModel):
-    dbase_file: str
+    file: str
+    step_size: float
+    unit: str
 
 
 class ConfigModel(BaseModel):

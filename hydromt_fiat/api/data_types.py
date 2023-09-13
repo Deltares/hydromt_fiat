@@ -58,7 +58,7 @@ class ExposureVectorIni(BaseModel):
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: str
-    ground_floor_height_unit: Units
+    unit: Units
     extraction_method: ExtractionMethod
 
 
