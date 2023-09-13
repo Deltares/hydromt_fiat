@@ -430,13 +430,18 @@ class FiatModel(GridModel):
             # TODO: check if providing methods like self.get_config can be used
             # TODO: create a new funtion to check uniqueness trhough files names
             # check_maps_uniquenes(self.get_config,self.staticmaps,params,da,da_map_fn,da_name,da_type,da_rp,idx)
-
-            rp_list.append(da_rp)
-            map_name_lst.append(da_name)
-
-            self.set_maps(da, da_name)
+            
             post = f"(rp {da_rp})" if risk_output else ""
             self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
+            
+            rp_list.append(da_rp)
+
+            # If a risk calculation is required and the map comes from sfincs, they 
+            # have the same name so give another name
+            if risk_output and da_map_fn.stem == "sfincs_map":
+                da_name = da_name + f"_{str(da_rp)}"
+            map_name_lst.append(da_name)
+            self.set_maps(da, da_name)
 
         check_map_uniqueness(map_name_lst)
         # in case risk_output is required maps are put in a netcdf with a raster with
