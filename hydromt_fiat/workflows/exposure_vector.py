@@ -457,8 +457,10 @@ class ExposureVector(Exposure):
                     )
                 ]
             except KeyError as e:
-                self.logger.warning(f"Not found in the {max_potential_damage} damage "
-                                    f"value data: {e}")
+                self.logger.warning(
+                    f"Not found in the {max_potential_damage} damage "
+                    f"value data: {e}"
+                )
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -550,7 +552,7 @@ class ExposureVector(Exposure):
                 "Ground Floor Height",
             ].iloc[idx, :] = raise_by
 
-        elif height_reference.lower() == "geom":
+        elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
             # user submitted.
             self.logger.info(
@@ -564,6 +566,7 @@ class ExposureVector(Exposure):
             self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
                 self.exposure_db.iloc[idx, :],
                 self.exposure_geoms[0].iloc[idx, :],
+                height_reference,
                 path_ref,
                 attr_ref,
                 raise_by,
@@ -573,10 +576,6 @@ class ExposureVector(Exposure):
                 "set_height_relative_to_reference can for now only be used for the "
                 "original exposure data."
             )
-
-        elif height_reference.lower() == "table":
-            # Input a CSV with Object IDs and elevations
-            NotImplemented
 
         else:
             self.logger.warning(
@@ -836,6 +835,7 @@ class ExposureVector(Exposure):
             new_objects = self.set_height_relative_to_reference(
                 new_objects,
                 _new_exposure_geoms,
+                elevation_reference,
                 path_ref,
                 attr_ref,
                 ground_floor_height,
@@ -1064,6 +1064,7 @@ class ExposureVector(Exposure):
         self,
         exposure_to_modify: pd.DataFrame,
         exposure_geoms: gpd.GeoDataFrame,
+        height_reference: str,
         path_ref: str,
         attr_ref: str,
         raise_by: Union[int, float],
@@ -1076,6 +1077,8 @@ class ExposureVector(Exposure):
         exposure_to_modify : pd.DataFrame
             _description_
         exposure_geoms : gpd.GeoDataFrame
+            _description_
+        height_reference : str
             _description_
         path_ref : str
             _description_
@@ -1095,36 +1098,54 @@ class ExposureVector(Exposure):
         the same as that of the exposure data
         """
         # Add the different options of input data: vector, raster, table
-        reference_shp = gpd.read_file(path_ref, engine="pyogrio")  # Vector
+        if height_reference == "geom":
+            reference_shp = gpd.read_file(path_ref, engine="pyogrio")  # Vector
 
-        # Reproject the input flood map if necessary
-        if reference_shp.crs != CRS.from_user_input(out_crs):
-            reference_shp = reference_shp.to_crs(
-                out_crs
-            )  # TODO: make sure that the exposure_geoms file is projected in the out_crs (this doesn't happen now)
+            # Reproject the input flood map if necessary
+            if reference_shp.crs != CRS.from_user_input(out_crs):
+                reference_shp = reference_shp.to_crs(
+                    out_crs
+                )  # TODO: make sure that the exposure_geoms file is projected in the out_crs (this doesn't happen now)
 
-        # Spatially join the data
-        modified_objects_gdf = gpd.sjoin(
-            exposure_geoms,
-            reference_shp[[attr_ref, "geometry"]],
-            how="left",
-        )
+            # Spatially join the data
+            modified_objects_gdf = gpd.sjoin(
+                exposure_geoms,
+                reference_shp[[attr_ref, "geometry"]],
+                how="left",
+            )
 
-        # Sort and add the elevation to the shp values, append to the exposure dataframe
-        # To be able to append the values from the GeoDataFrame to the DataFrame, it
-        # must be sorted on the Object ID.
-        identifier = (
-            "Object ID" if "Object ID" in modified_objects_gdf.columns else "object_id"
-        )
+            # Sort and add the elevation to the shp values, append to the exposure dataframe
+            # To be able to append the values from the GeoDataFrame to the DataFrame, it
+            # must be sorted on the Object ID.
+            identifier = (
+                "Object ID"
+                if "Object ID" in modified_objects_gdf.columns
+                else "object_id"
+            )
 
-        # Group by the identifier and take the maximum value of the attribute reference
-        # to avoid duplicates in the case of overlapping polygons in the data used
-        # as reference.
-        modified_objects_gdf = (
-            modified_objects_gdf.groupby(identifier)
-            .max(attr_ref)
-            .sort_values(by=[identifier])
-        )
+            # Group by the identifier and take the maximum value of the attribute reference
+            # to avoid duplicates in the case of overlapping polygons in the data used
+            # as reference.
+            modified_objects_gdf = (
+                modified_objects_gdf.groupby(identifier)
+                .max(attr_ref)
+                .sort_values(by=[identifier])
+            )
+
+        elif height_reference == "table":
+            # Add table
+            reference_table = pd.read_csv(path_ref)  # Vector
+            # Join the data based on "Object ID"
+            modified_objects_gdf = pd.merge(
+                exposure_geoms,
+                reference_table[["Object ID", attr_ref]],
+                on="Object ID",
+                how="left",
+            )
+            modified_objects_gdf = modified_objects_gdf.sort_values(
+                by=["Object ID"]
+            ).set_index("Object ID", drop=False)
+
         exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"]).set_index(
             "Object ID", drop=False
         )
