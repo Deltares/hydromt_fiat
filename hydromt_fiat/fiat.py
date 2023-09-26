@@ -21,6 +21,10 @@ from .workflows.exposure_vector import ExposureVector
 from .workflows.hazard import *
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
+from .workflows.aggregation_areas import join_exposure_aggregation_area
+from .workflows.aggregation_areas_multiple import (
+    join_exposure_aggregation_multiple_areas,
+)
 
 __all__ = ["FiatModel"]
 
@@ -306,7 +310,6 @@ class FiatModel(GridModel):
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
 
-
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
         This function will be implemented at a later stage.
@@ -574,14 +577,12 @@ class FiatModel(GridModel):
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
             exposure_data.sort_values("Object ID")
-            
-            if svi.svi_data_shp.crs != exposure_data.crs:
-                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace = True)
 
-            svi_exp_joined = gpd.sjoin(
-                exposure_data, svi.svi_data_shp, how="left"
-            )
-            svi_exp_joined.drop(columns=['geometry'], inplace=True)
+            if svi.svi_data_shp.crs != exposure_data.crs:
+                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
+
+            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp, how="left")
+            svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
 
@@ -593,7 +594,30 @@ class FiatModel(GridModel):
 
         # this link can be used: https://github.com/datamade/census
 
+    def setup_aggregation_areas(
+        self,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_aggregation_area(
+            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
+
+    def setup_aggregation_areas_multiple(
+        self,
+        aggregation_area_fn: Union[List[str], str, List[Path], Path],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_aggregation_multiple_areas(
+            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
+
     # Update functions
+
     def update_all(self):
         self.logger.info("Updating all data objects...")
         self.update_tables()
