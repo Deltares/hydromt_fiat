@@ -61,6 +61,7 @@ def check_parameters_type(
     dict
         Dictionary with the parameters and list of parameters used in setup_hazard.
     """
+    #TODO: remove this function
     params = dict()
 
     params["map_fn"] = map_fn

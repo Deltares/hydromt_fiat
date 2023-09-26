@@ -365,9 +365,9 @@ class FiatModel(GridModel):
         """
         # check parameters types and size, and existance of provided files of maps
 
-        params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks)
-        check_parameters_size(params)
-        check_files(params, self.root)
+        params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks) #TODO: remove this function
+        check_parameters_size(params)  # map_fn, map_type, rp, crs, nodata, var, chunks
+        check_files(params, self.root)  # This function is probably redundant
 
         rp_list = []
         map_name_lst = []
@@ -447,6 +447,7 @@ class FiatModel(GridModel):
         # an extra dimension 'rp' accounting for return period
         # select first risk maps
         if risk_output:
+            # TODO: put the code below in a separate function in hazard.py
             list_keys = list(self.maps.keys())
             first_map = self.maps[list_keys[0]].rename("risk_datarray")
             list_keys.pop(0)

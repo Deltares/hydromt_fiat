@@ -8,52 +8,53 @@ import os
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-) 
+)
 
 _cases = {
-    "integration": {
+    "event_map": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_hazard",
-        "ini": EXAMPLEDIR / "test_hazard_unique.ini",
+        "dir": "test_event_map",
+        "configuration": {
+        "setup_hazard": {
+            "map_fn": [
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_100_maps.nc",
+            ],
+            "map_type": "water_depth",
+            "rp": None,
+            "crs": None,
+            "nodata": -99999,
+            "var": "zsmax",
+            "risk_output": False,
+        }
+    }
+    },
+    "risk_maps": {
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_risk_maps",
+        "configuration": {
+        "setup_hazard": {
+            "map_fn": [
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_100_maps.nc",
+                "MULTIPLE FILES"
+            ],
+            "map_type": "water_depth",
+            "rp": [],
+            "crs": None,
+            "nodata": -99999,
+            "var": "zsmax",
+            "risk_output": False,
+        }
+    }
     },
 }
+
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
-    if root.exists:
+    if root.exists():
         shutil.rmtree(root)
-
-    # uncomment to test event analysis from geotiff file
-    configuration = {
-        "setup_hazard": {   
-            "map_fn":   ["P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif"],       
-            "map_type": "water_depth",                                                            
-            "rp":       None,            				    	                             
-            "crs":      None,  						                              
-            "nodata":   -99999,             				                                 
-            "var":      None,							                              
-            "chunks":   "auto",  						                             
-            "name_catalog": None,
-            "risk_output": False,	
-        }
-    }
-
-    # uncomment to test risk analysis from geotiff file
-    # configuration = {
-    #     "setup_hazard": {   
-    #         "map_fn":   ["P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=5_max_flood_depth.tif"],       
-    #         "map_type": "water_depth",                                                            
-    #         "rp":       None,            				    	                             
-    #         "crs":      None,  						                              
-    #         "nodata":   -99999,             				                                 
-    #         "var":      None,							                              
-    #         "chunks":   "auto",  						                             
-    #         "name_catalog": None,
-    #         "risk_output": True,	
-    #     }
-    # }
 
     # for these test data sfincs output data is required in local files
     # uncomment to test event analysis from sfincs output
@@ -80,7 +81,7 @@ def test_hazard(case):
     #     var = "zsmax"
 
     # configuration = {
-    #     "setup_hazard": {   
+    #     "setup_hazard": {
     #         "map_fn":   map_fn,                                                     # absolute or relative (with respect to the configuration.ini) path to the hazard file
     #         "map_type": "water_depth",                                              # description of the hazard file type
     #         "rp":       None,            				                              # hazard return period in years, required for a risk calculation (optional)
@@ -89,19 +90,17 @@ def test_hazard(case):
     #         "var":      var,							                              # hazard variable name in NetCDF input files (optional)
     #         "chunks":   "auto",  						                              # chunk sizes along each dimension used to load the hazard file into a dask array (default is 'auto') (optional)
     #         "name_catalog": None,
-    #         "risk_output":  risk_output,	
+    #         "risk_output":  risk_output,
     #     }
     # }
-
 
     logger = setuplog("hydromt_fiat", log_level=10)
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 
     fm = FiatModel(root=root, mode="w", data_libs=[data_catalog_yml], logger=logger)
     region = fm.data_catalog.get_geodataframe("region", variables=None)
-    # opt = configread(_cases[case]["ini"])
-    # fm.build(region={"geom": region}, opt=opt)
-    fm.build(region={"geom": region}, opt=configuration)
+    
+    fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()
 
     # Check if the hazard folder exists
