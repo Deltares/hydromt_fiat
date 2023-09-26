@@ -34,5 +34,5 @@ def get_assets_from_nsi(url: str, polygon: Polygon) -> gpd.GeoDataFrame:
     post_response = nsi_post_request(url, polygon)
     if post_response is None:
         return gpd.GeoDataFrame()
-    source_data = gpd.read_file(post_response.text, driver="GeoJSON")
+    source_data = gpd.read_file(post_response.text, driver="GeoJSON", engine="pyogrio")
     return source_data

@@ -383,7 +383,9 @@ class FiatModel(GridModel):
             if isinstance(da_map_fn, Path):
                 if da_map_fn.stem == "sfincs_map":
                     sfincs_root = os.path.dirname(da_map_fn)
-                    sfincs_model = SfincsModel(sfincs_root, mode="r", logger=self.logger)
+                    sfincs_model = SfincsModel(
+                        sfincs_root, mode="r", logger=self.logger
+                    )
                     sfincs_model.read_results()
                     # save sfincs map as GeoTIFF
                     # result_list = list(sfincs_model.results.keys())
@@ -410,13 +412,9 @@ class FiatModel(GridModel):
                     # da = self.data_catalog.get_rasterdataset(
                     #     name_catalog, variables=da_name, geom=self.region
                     # )
-                    da = self.data_catalog.get_rasterdataset(
-                        map_fn, variables=da_name
-                    )
+                    da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
                 else:
-                    da = self.data_catalog.get_rasterdataset(
-                        map_fn, variables=da_name
-                    )
+                    da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
@@ -432,12 +430,17 @@ class FiatModel(GridModel):
             # TODO: create a new funtion to check uniqueness trhough files names
             # check_maps_uniquenes(self.get_config,self.staticmaps,params,da,da_map_fn,da_name,da_type,da_rp,idx)
 
-            rp_list.append(da_rp)
-            map_name_lst.append(da_name)
-
-            self.set_maps(da, da_name)
             post = f"(rp {da_rp})" if risk_output else ""
             self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
+
+            rp_list.append(da_rp)
+
+            # If a risk calculation is required and the map comes from sfincs, they
+            # have the same name so give another name
+            if risk_output and da_map_fn.stem == "sfincs_map":
+                da_name = da_name + f"_{str(da_rp)}"
+            map_name_lst.append(da_name)
+            self.set_maps(da, da_name)
 
         check_map_uniqueness(map_name_lst)
         # in case risk_output is required maps are put in a netcdf with a raster with
@@ -498,12 +501,12 @@ class FiatModel(GridModel):
 
         # Set the configurations for a multiband netcdf
         self.set_config(
-            "hazard.multiband.subset",
+            "hazard.settings.subset",
             [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
         )
 
         self.set_config(
-            "hazard.multiband.var_as_band",
+            "hazard.settings.var_as_band",
             risk_output,
         )
 

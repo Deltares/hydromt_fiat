@@ -19,6 +19,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pygeos",
+    "pyogrio",
     "tomli-w",
     "tomli",
     "xarray",
