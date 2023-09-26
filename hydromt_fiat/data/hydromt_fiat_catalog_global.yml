@@ -1,7 +1,4 @@
 
-meta:
-  root: C:\Repositories\hydromt_fiat\hydromt_fiat\data
-
 jrc_vulnerability_curves:
     path: damage_functions/flooding/JRC_damage_functions.csv
     data_type: DataFrame

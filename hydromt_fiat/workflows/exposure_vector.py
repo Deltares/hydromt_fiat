@@ -856,7 +856,7 @@ class ExposureVector(Exposure):
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
         linking_dict = dict(
-            zip(exposure_linking_table["Link"], exposure_linking_table["Name"])
+            zip(exposure_linking_table["Exposure Link"], exposure_linking_table["FIAT Damage Function Name"])
         )
 
         # Find the column to link the exposure data to the vulnerability data
