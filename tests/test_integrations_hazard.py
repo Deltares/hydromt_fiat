@@ -34,15 +34,17 @@ _cases = {
         "configuration": {
         "setup_hazard": {
             "map_fn": [
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_1_maps.nc",
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_50_maps.nc",
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_10_maps.nc",
                 r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_100_maps.nc",
-                "MULTIPLE FILES"
             ],
             "map_type": "water_depth",
-            "rp": [],
+            "rp": None,
             "crs": None,
             "nodata": -99999,
             "var": "zsmax",
-            "risk_output": False,
+            "risk_output": True,
         }
     }
     },

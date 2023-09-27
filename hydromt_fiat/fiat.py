@@ -326,7 +326,8 @@ class FiatModel(GridModel):
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
     ) -> None:
-        """Set up hazard maps. This component integrates multiple checks for the maps
+        """Set up hazard maps. This component integrates multiple checks for the hazard 
+        maps.
 
         Parameters
         ----------
@@ -446,22 +447,51 @@ class FiatModel(GridModel):
         # in case risk_output is required maps are put in a netcdf with a raster with
         # an extra dimension 'rp' accounting for return period
         # select first risk maps
+
+
+        # Order return periods and maps
+        my_dict = {}
+        for rp, name in zip(rp_list, map_name_lst):
+            my_dict[rp] = name
+        sorted_keys = sorted(rp_list, reverse=False)
+        my_dict = {key: my_dict[key] for key in sorted_keys}
+
+
+
         if risk_output:
             # TODO: put the code below in a separate function in hazard.py
+            layer_list = []
             list_keys = list(self.maps.keys())
-            first_map = self.maps[list_keys[0]].rename("risk_datarray")
-            list_keys.pop(0)
+            
+            for key, value in my_dict.items():
+                layer = self.maps[value].rename(key)
+                layer_list.append(layer)
 
-            # add additional risk maps
-            for idx, x in enumerate(list_keys):
-                key_name = list_keys[idx]
-                layer = self.maps[key_name]
-                first_map = xr.concat([first_map, layer], dim="rp")
+
+            # for idx, x in enumerate(list_keys):
+            #     key_name = list_keys[idx]
+            #     layer = self.maps[key_name].rename(rp_list[idx])
+            #     layer_list.append(layer)
+
+            da = xr.merge(layer_list)
+
+            # list_keys = list(self.maps.keys())
+            # first_map = self.maps[list_keys[0]].rename(rp_list[0])
+            # list_keys.pop(0)
+            # rp_list.pop(0)
+
+            # # add additional risk maps
+            # for idx, x in enumerate(list_keys):
+            #     key_name = list_keys[idx]
+            #     layer = self.maps[key_name].rename(rp_list[idx])
+            #     #first_map = xr.concat([first_map, layer], dim="rp")
+            #     first_map = xr.merge([first_map, layer])
 
             # convert to a dataset to be able to write attributes when writing the maps
             # in the ouput folders. If datarray is provided attributes will not be
             # shown in the output netcdf dataset
-            da = first_map.to_dataset(name="risk_maps")
+            
+            # da = first_map.to_dataset(name="risk_maps")
             da.attrs = {
                 "returnperiod": list(rp_list),
                 "type": params["map_type_lst"],
