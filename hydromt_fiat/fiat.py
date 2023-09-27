@@ -265,6 +265,13 @@ class FiatModel(GridModel):
         extraction_method : str, optional
             The method that should be used to extract the hazard values from the
             hazard maps, by default "centroid".
+        damage_types : Union[List[str], None], optional
+            The damage types that should be used for the exposure data, by default
+            ["structure", "content"]. The damage types are used to link the
+            vulnerability functions to the exposure data.
+        country : Union[str, None], optional
+            The country that is used for the exposure data, by default None. This is
+            only required when using the JRC vulnerability curves.
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
