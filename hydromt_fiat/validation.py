@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def check_dir_exist(dir, name=None):
     """ """
 
@@ -7,7 +8,8 @@ def check_dir_exist(dir, name=None):
         raise TypeError(
             f"The directory indicated by the '{name}' parameter does not exist."
         )
-    
+
+
 def check_file_exist(root, param_lst, name=None):
     root = Path(root)
     param_lst = [Path(p) for p in param_lst]
@@ -38,12 +40,13 @@ def check_file_exist(root, param_lst, name=None):
                 else:
                     assert isinstance(param_lst[param_idx], Path)
             except AssertionError:
-                    raise TypeError(
-                        f"The file indicated by the '{name}' parameter does not"
-                        f" exist in the directory '{root}'."
-                    )
-            
-#TODO: Improve this tool without calling model.get_congif(input_dir)
+                raise TypeError(
+                    f"The file indicated by the '{name}' parameter does not"
+                    f" exist in the directory '{root}'."
+                )
+
+
+# TODO: Improve this tool without calling model.get_congif(input_dir)
 # def check_file_exist(get_config, root, param_lst, name=None, input_dir=None):
 #     root = Path(root)
 #     param_lst = [Path(p) for p in param_lst]
@@ -96,8 +99,8 @@ def check_file_exist(root, param_lst, name=None):
 #                         f"'{get_config(input_dir)}'."
 #                     )
 
-def check_uniqueness(map_name_lst):
 
+def check_uniqueness(map_name_lst):
     def check_duplicates(lst):
         unique_elements = set()
         for element in lst:
@@ -105,15 +108,14 @@ def check_uniqueness(map_name_lst):
                 return True  # Found a duplicate
             unique_elements.add(element)
         return False  # No duplicates found
-    
+
     check = check_duplicates(map_name_lst)
 
-    if check: 
-            raise ValueError(
-            f"The filenames of the hazard maps should be unique."
-        )
+    if check:
+        raise ValueError(f"The filenames of the hazard maps should be unique.")
 
-#TODO: Improve this tool without calling model. Just checking the maps names
+
+# TODO: Improve this tool without calling model. Just checking the maps names
 # def check_uniqueness(model, *args, file_type=None, filename=None):
 #     """ """
 
@@ -136,6 +138,7 @@ def check_uniqueness(map_name_lst):
 #             ):
 #                 raise ValueError(f"Each model input layers must be unique.")
 
+
 def check_param_type(param, name=None, types=None):
     """ """
 
@@ -154,6 +157,7 @@ def check_param_type(param, name=None, types=None):
                 f"The '{name}' parameter should be a of {types}, received a "
                 f"{type(i)} instead."
             )
+
 
 def get_param(param_lst, map_fn_lst, file_type, filename, i, param_name):
     """ """

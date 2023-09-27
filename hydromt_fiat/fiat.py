@@ -306,7 +306,6 @@ class FiatModel(GridModel):
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
 
-
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
         This function will be implemented at a later stage.
@@ -574,14 +573,12 @@ class FiatModel(GridModel):
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
             exposure_data.sort_values("Object ID")
-            
-            if svi.svi_data_shp.crs != exposure_data.crs:
-                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace = True)
 
-            svi_exp_joined = gpd.sjoin(
-                exposure_data, svi.svi_data_shp, how="left"
-            )
-            svi_exp_joined.drop(columns=['geometry'], inplace=True)
+            if svi.svi_data_shp.crs != exposure_data.crs:
+                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
+
+            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp, how="left")
+            svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
 
@@ -616,12 +613,16 @@ class FiatModel(GridModel):
     def update_geoms(self):
         # Update the exposure data geoms
         if self.exposure and "exposure" in self._tables:
-            for i, geom in enumerate(self.exposure.exposure_geoms):
-                file_suffix = i if i > 0 else ""
-                self.set_geoms(geom=geom, name=f"exposure{file_suffix}")
+            for i, geom_and_name in enumerate(
+                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+            ):
+                geom = geom_and_name[0]
+                name = geom_and_name[1]
+
+                self.set_geoms(geom=geom, name=name)
                 self.set_config(
                     f"exposure.geom.file{str(i+1)}",
-                    f"./exposure/exposure{file_suffix}.gpkg",
+                    f"./exposure/{name}.gpkg",
                 )
 
         if not self.region.empty:
@@ -632,7 +633,8 @@ class FiatModel(GridModel):
 
     # I/O
     def read(self):
-        """Method to read the complete model schematization and configuration from file."""
+        """Method to read the complete model schematization and configuration from
+        file."""
         self.logger.info(f"Reading model data from {self.root}")
 
         # Read the configuration file
@@ -653,13 +655,6 @@ class FiatModel(GridModel):
         # Read the fiat configuration toml file.
         config = Config()
         return config.load_file(fn)
-
-    def check_path_exists(self, fn):
-        """TODO: decide to use this or another function (check_file_exist in py)"""
-        path = Path(fn)
-        self.logger.debug(f"Reading file {str(path.name)}")
-        if not fn.is_file():
-            logging.warning(f"File {fn} does not exist!")
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""

@@ -104,9 +104,8 @@ def test_SVI_exposure(case):
     fm.write()
 
     assert fm
-    
+
     # Check if the exposure data exists
     assert root.joinpath("exposure", "exposure.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
     assert root.joinpath("exposure", "region.gpkg").exists()
-

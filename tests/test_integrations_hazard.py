@@ -8,7 +8,7 @@ import os
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-) 
+)
 
 _cases = {
     "integration": {
@@ -17,6 +17,7 @@ _cases = {
         "ini": EXAMPLEDIR / "test_hazard_unique.ini",
     },
 }
+
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
@@ -27,31 +28,33 @@ def test_hazard(case):
 
     # uncomment to test event analysis from geotiff file
     configuration = {
-        "setup_hazard": {   
-            "map_fn":   ["P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif"],       
-            "map_type": "water_depth",                                                            
-            "rp":       None,            				    	                             
-            "crs":      None,  						                              
-            "nodata":   -99999,             				                                 
-            "var":      None,							                              
-            "chunks":   "auto",  						                             
+        "setup_hazard": {
+            "map_fn": [
+                "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif"
+            ],
+            "map_type": "water_depth",
+            "rp": None,
+            "crs": None,
+            "nodata": -99999,
+            "var": None,
+            "chunks": "auto",
             "name_catalog": None,
-            "risk_output": False,	
+            "risk_output": False,
         }
     }
 
     # uncomment to test risk analysis from geotiff file
     # configuration = {
-    #     "setup_hazard": {   
-    #         "map_fn":   ["P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=5_max_flood_depth.tif"],       
-    #         "map_type": "water_depth",                                                            
-    #         "rp":       None,            				    	                             
-    #         "crs":      None,  						                              
-    #         "nodata":   -99999,             				                                 
-    #         "var":      None,							                              
-    #         "chunks":   "auto",  						                             
+    #     "setup_hazard": {
+    #         "map_fn":   ["P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif", "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=5_max_flood_depth.tif"],
+    #         "map_type": "water_depth",
+    #         "rp":       None,
+    #         "crs":      None,
+    #         "nodata":   -99999,
+    #         "var":      None,
+    #         "chunks":   "auto",
     #         "name_catalog": None,
-    #         "risk_output": True,	
+    #         "risk_output": True,
     #     }
     # }
 
@@ -80,7 +83,7 @@ def test_hazard(case):
     #     var = "zsmax"
 
     # configuration = {
-    #     "setup_hazard": {   
+    #     "setup_hazard": {
     #         "map_fn":   map_fn,                                                     # absolute or relative (with respect to the configuration.ini) path to the hazard file
     #         "map_type": "water_depth",                                              # description of the hazard file type
     #         "rp":       None,            				                              # hazard return period in years, required for a risk calculation (optional)
@@ -89,10 +92,9 @@ def test_hazard(case):
     #         "var":      var,							                              # hazard variable name in NetCDF input files (optional)
     #         "chunks":   "auto",  						                              # chunk sizes along each dimension used to load the hazard file into a dask array (default is 'auto') (optional)
     #         "name_catalog": None,
-    #         "risk_output":  risk_output,	
+    #         "risk_output":  risk_output,
     #     }
     # }
-
 
     logger = setuplog("hydromt_fiat", log_level=10)
     data_catalog_yml = str(_cases[case]["data_catalogue"])

@@ -203,7 +203,7 @@ html_context = {
     "github_url": "https://github.com",  # or your GitHub Enterprise interprise
     "github_user": "Deltares",
     "github_repo": "hydromt_fiat",
-    "github_version": "main", 
+    "github_version": "main",
     "doc_path": "docs",
     "default_mode": "light",
 }
