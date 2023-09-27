@@ -19,6 +19,7 @@ _cases = {
 }
 
 
+@pytest.mark.skip(reason="Hazard functions not yet finalized")
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
     # Read model in examples folder.

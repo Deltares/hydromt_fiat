@@ -105,7 +105,7 @@ class ExposureVector(Exposure):
             self.set_geom_names(Path(f).stem)
             self.set_exposure_geoms(gpd.read_file(f, engine="pyogrio"))
 
-    def setup_from_single_source(
+    def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
@@ -179,7 +179,10 @@ class ExposureVector(Exposure):
         # Set the geoms from the X and Y coordinates
         self.set_exposure_geoms_from_xy()
 
-    def setup_from_multiple_sources(
+        # Set the name to the geom_names
+        self.set_geom_names("buildings")
+
+    def setup_buildings_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
         occupancy_source: Union[str, Path],
@@ -1052,7 +1055,6 @@ class ExposureVector(Exposure):
                 },
                 crs=self.crs,
             )
-        self.set_geom_names("exposure_points")
         self.set_exposure_geoms(exposure_geoms)
 
     def get_full_gdf(

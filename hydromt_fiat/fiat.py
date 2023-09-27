@@ -271,13 +271,13 @@ class FiatModel(GridModel):
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            self.exposure.setup_from_single_source(
+            self.exposure.setup_buildings_from_single_source(
                 asset_locations, ground_floor_height, extraction_method
             )
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
-            self.exposure.setup_from_multiple_sources(
+            self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,
                 max_potential_damage,
@@ -581,14 +581,6 @@ class FiatModel(GridModel):
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
-
-        # exposure opnieuw opslaan in self._tables
-
-        # TODO: geometries toevoegen aan de dataset met API
-        # we now use the shape download function by the census, the user needs to download their own shape data. They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
-        # #wfs python get request -> geometries
-
-        # this link can be used: https://github.com/datamade/census
 
     # Update functions
     def update_all(self):

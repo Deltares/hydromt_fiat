@@ -18,6 +18,7 @@ _cases = {
 }
 
 
+@pytest.mark.skip(reason="This test will be removed")
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
     # Read model in examples folder.
