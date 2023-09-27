@@ -31,15 +31,16 @@ _cases = {
         },
     },
     "aggregation_test_2": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint2"),
+        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint3"),
         "configuration": {
             "setup_aggregation_areas_multiple": {
                 "aggregation_area_fn": [
                     r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones.gpkg",
                     r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones2.gpkg",
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones3.gpkg"
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE"],
-                "label_names": ["Zoning_map", "Land_use_map"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName"],
+                "label_names": ["Zoning_map", "Land_use_map","Horse"],
             }
         },
     },
