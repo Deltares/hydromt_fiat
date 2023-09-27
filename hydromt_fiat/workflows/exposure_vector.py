@@ -858,11 +858,19 @@ class ExposureVector(Exposure):
         linking_dict = dict(
             zip(exposure_linking_table["Exposure Link"], exposure_linking_table["FIAT Damage Function Name"])
         )
+        unique_linking_types = set(linking_dict.keys())
 
         # Find the column to link the exposure data to the vulnerability data
-        unique_types_primary = set(self.exposure_db["Primary Object Type"].unique())
-        unique_types_secondary = set(self.exposure_db["Secondary Object Type"].unique())
-        unique_linking_types = set(linking_dict.keys())
+        unique_types_primary = set(["/%NO TYPES AVAILABLE/%"])
+        if "Primary Object Type" in self.exposure_db.columns:
+            unique_types_primary = set(self.exposure_db["Primary Object Type"].unique())
+        
+        unique_types_secondary = set(["/%NO TYPES AVAILABLE/%"])
+        if "Secondary Object Type" in self.exposure_db.columns:
+            unique_types_secondary = set(self.exposure_db["Secondary Object Type"].unique())
+        
+        # TODO: remove the types that do not have a match and warn the user
+        # do not assign any damage function to this asset type
 
         # Check if the linking column is the Primary Object Type or the Secondary
         # Object Type
