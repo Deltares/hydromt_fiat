@@ -1,3 +1,4 @@
+============
 Introduction
 ============
 
@@ -7,8 +8,7 @@ from the rich set of tools of the `HydroMT package <https://github.com/Deltares/
 
 This plugin assists the FIAT modeller in:
 
-- Quickly setting up a Delft-FIAT model based on existing hazard maps, global and user-input exposure layers, 
-and global, US national, or user-input vulnerability curves.
+- Quickly setting up a Delft-FIAT model based on existing hazard maps, global and user-input exposure layers, and global, US national, or user-input vulnerability curves.
 - Creating a Social Vulnerability Index (SVI) based on US Census or user-input data.
 - Adjusting and updating components of a Delft-FIAT model and their associated parameters in a consistent way.
 

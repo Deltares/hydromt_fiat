@@ -12,7 +12,7 @@ It details the different steps and explains how to use HydroMT to easily get sta
 
 For detailed information on HydroMT itself, you can visit the `core documentation <https://deltares.github.io/hydromt/>`_.
 
-Documentation
+Overview
 =============
 
 **Getting Started**
@@ -32,17 +32,7 @@ Documentation
 
 **User Guide**
 
-* :doc:`user_guide/fiat`
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: User Guide
-
-   user_guide/fiat
-
-**Data Sources**
-
+* :doc:`user_guide/user_guide_overview`
 * :doc:`data/data_sources`
 
 .. toctree::
@@ -50,12 +40,12 @@ Documentation
    :hidden:
    :caption: User Guide
 
+   user_guide/user_guide_overview
    data/data_sources
 
 **References & Help**
 
 * :doc:`api/api_index`
-* :doc:`contributing`
 * :doc:`changelog`
 
 .. toctree::
@@ -64,9 +54,14 @@ Documentation
    :caption: References & Help
 
    api/api_index
-   contributing
    changelog
 
+
+Contributing
+------------
+
+To contribute to HydroMT and the plugin plugin, please follow the 
+`HydroMT contribution guidelines <https://deltares.github.io/hydromt/latest/contributing.html>`_.
 
 License
 -------

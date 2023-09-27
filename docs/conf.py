@@ -22,10 +22,8 @@ from distutils.dir_util import copy_tree
 
 import numpy as np
 import sphinx_autosummary_accessors
-from click.testing import CliRunner
 
 import hydromt_fiat
-from hydromt.cli.main import main as hydromt_cli
 
 # here = os.path.dirname(__file__)
 # sys.path.insert(0, os.path.abspath(os.path.join(here, "..")))
@@ -326,4 +324,4 @@ nbsphinx_prolog = r"""
 """
 
 # Allow errors in notebooks
-nbsphinx_allow_errors = True
+# nbsphinx_allow_errors = True
