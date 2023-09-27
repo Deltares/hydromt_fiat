@@ -7,13 +7,13 @@ dependencies:
   - pip
   - pip:
     - census
+    - us
   - click
   - black
   - gdal>=3.1
   - geopandas
   - hydromt
   - hydromt_sfincs
-  - nbsphinx  # docs
   - numpy
   - osmnx
   - pandas
@@ -23,8 +23,6 @@ dependencies:
   - pytest # tests
   - python=3.10
   - requests
-  - sphinx # docs
-  - sphinx_rtd_theme # docs
   - xarray
   - tomli-w
   - tomli
