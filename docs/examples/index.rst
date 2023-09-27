@@ -5,4 +5,11 @@ Examples
 
 .. include:: ../_examples/README.rst
 
-# TODO add notebook examples
+
+----------------------
+Offline example access
+----------------------
+Below you can access some of the main examples and go through them in an off-line manner. More examples will be added soon.
+
+1. `Creating a Delft-FIAT model anywhere in the world from OSM and JRC data <../_examples/global_OSM_JRC.ipynb>`_
+

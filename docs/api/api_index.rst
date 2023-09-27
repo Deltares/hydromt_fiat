@@ -1,13 +1,10 @@
 .. currentmodule:: hydromt_fiat
 
+.. _api_model:
+
 =============
 API reference
 =============
-
-.. _api_model:
-
-FIAT model class
-================
 
 Initialize
 ----------

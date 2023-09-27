@@ -1,5 +1,5 @@
-HydroMT-FIAT: Delft-FIAT plugin for HydroMT
-#########################################
+HydroMT-FIAT: HydroMT plugin for Delft-FIAT
+############################################
 
 .. image:: https://codecov.io/gh/Deltares/hydromt_fiat/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/Deltares/hydromt_fiat
@@ -20,7 +20,7 @@ HydroMT-FIAT: Delft-FIAT plugin for HydroMT
     :target: https://mybinder.org/v2/gh/Deltares/hydromt_fiat/main?urlpath=lab/tree/examples
 
 
-hydroMT_ is a python package, developed by Deltares, to build and analyze hydro models.
+HydroMT_ is a python package, developed by Deltares, to build and analyze hydro models.
 It provides a generic model api with attributes to access the model schematization,
 (dynamic) forcing data, results and states. This plugin provides an implementation 
 for the Delft-FIAT_ model.
@@ -52,12 +52,12 @@ For developing on HydroMT-FIAT, do:
 Documentation
 -------------
 
-Learn more about the hydroMT_fiat plugin in its `online documentation <https://deltares.github.io/hydromt_fiat/>`_
+Learn more about the HydroMT-FIAT plugin in its `online documentation <https://deltares.github.io/hydromt_fiat/>`_
 
 Contributing
 ------------
 
-You can find information about contributing to hydroMT at our `Contributing page <https://deltares.github.io/hydromt_fiat/latest/contributing.html>`_.
+You can find information about contributing to HydroMT at our `Contributing page <https://deltares.github.io/hydromt/latest/dev/contributing>`_.
 
 License
 -------
