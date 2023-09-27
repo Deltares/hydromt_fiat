@@ -1,3 +1,6 @@
+.. _nsi:
+
+==================================
 National Structure Inventory (USA)
 ==================================
 
@@ -6,12 +9,12 @@ of the `National Structure Inventory <https://www.hec.usace.army.mil/confluence/
 user can access the data through providing 'NSI' in the configuration file as such::
 
     [setup_exposure_vector]
-    asset_locations = NSI
-    occupancy_type = NSI
-    max_potential_damage = NSI
+    asset_locations = "NSI"
+    occupancy_type = "NSI"
+    max_potential_damage = "NSI"
 
 The following attributes for Delft-FIAT (left-hand side) will be filled with data from the 
-corresponding NSI fields (right-hand side).
+corresponding NSI fields (right-hand side).::
 
     "Object ID": "fd_id",
     "Object Name": "fd_id",

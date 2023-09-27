@@ -5,7 +5,7 @@
 FIAT model components
 =======================
 
-With the hydromt_fiat plugin, you can easily work with Delft-FIAT model schematizations. 
+With the HydroMT-FIAT plugin, you can easily work with Delft-FIAT model schematizations. 
 This plugin helps you preparing or updating several model components of a Delft-FIAT model 
 such as the hazard, exposure and vulnerability data.
 
@@ -14,11 +14,10 @@ configuration (.yml file) with model components_ and, optionally,
 a model region_ (a bounding box `bbox` or hazard map `grid`) and
 a data_catalog_ (.yml) file should be prepared. 
 
-
 The Delft-FIAT model components are available from the HydroMT Command Line and Python Interfaces and 
 allow you to configure HydroMT in order to build or update Delft-FIAT model schematizations.
 
-For python users all FIAT attributes and methods are available, see :ref:`api_model`
+For python users, all FIAT attributes and methods are available, see :ref:`api_model`
 
 .. _components:
 
