@@ -44,8 +44,8 @@ _cases = {
                 "output_vector_name": "spatial.gpkg",
             },
             "setup_vulnerability": {
-                "vulnerability_fn": "hazus_vulnerability_curves",
-                "vulnerability_identifiers_and_linking_fn": ".\\examples\\data\\vulnerability_test_file_input.csv",
+                "vulnerability_fn": "default_vulnerability_curves",
+                "vulnerability_identifiers_and_linking_fn": "default_vulnerability_curves",
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
@@ -85,8 +85,8 @@ _cases = {
                 "output_vector_name": "spatial.gpkg",
             },
             "setup_vulnerability": {
-                "vulnerability_fn": "hazus_vulnerability_curves",
-                "vulnerability_identifiers_and_linking_fn": ".\\examples\\data\\vulnerability_test_file_input.csv",
+                "vulnerability_fn": "default_vulnerability_curves",
+                "vulnerability_identifiers_and_linking_fn": "default_vulnerability_curves",
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
