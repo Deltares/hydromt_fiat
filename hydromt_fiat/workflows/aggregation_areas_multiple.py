@@ -4,6 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 
+    
 # Make a function add several aggregation areas
 def join_exposure_aggregation_multiple_areas(
     exposure_gdf: gpd.GeoDataFrame,
@@ -54,11 +55,18 @@ def join_exposure_aggregation_multiple_areas(
                 gdf.drop(columns=attribute, inplace=True)
         gdf = gdf.merge(aggregated, on="Object ID")
         dataframes_no_duplicates.append(gdf)
-
-        # aggregated = resulting_dataframes[2].groupby('Object ID')['ZoneName'].agg(list).reset_index()
-        # resulting_dataframes[2].drop_duplicates(subset='Object ID', keep='first', inplace=True)
-        # resulting_dataframes[2] = resulting_dataframes[2].merge(aggregated, on='Object ID')
-
+    def process_value(value):
+        if isinstance(value, list) and len(value) == 1:
+            return value[0]
+        else:
+            return value
+    for gdf in dataframes_no_duplicates:
+        for attr in attribute_names:
+            if attr in gdf.columns:
+                selected_attribute = attr
+                break
+        gdf[selected_attribute] = gdf[selected_attribute].apply(process_value)
+            
         ## Rename the 'aggregation_attribute' column to 'new_column_name'. Put in Documentation that the order the user put the label name must be the order of the gdf
     count = 0
     for gdf in dataframes_no_duplicates:
