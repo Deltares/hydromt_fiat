@@ -682,6 +682,7 @@ class FiatModel(GridModel):
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
                 unit=self.get_config("exposure.geom.unit"),
+                data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db

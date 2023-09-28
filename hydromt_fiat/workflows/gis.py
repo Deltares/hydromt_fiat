@@ -1,5 +1,5 @@
 import geopandas as gpd
-from hydromt.gis_utils import utm_crs
+from hydromt.gis_utils import utm_crs, nearest_merge, nearest
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -57,6 +57,91 @@ def sjoin_largest_area(
     return gdf
 
 
+def check_geometry_type(gdf: gpd.GeoDataFrame) -> str:
+    """Check if the geometry type of a GeoDataFrame is homogeneous.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        The GeoDataFrame to check.
+
+    Raises
+    ------
+    ValueError
+        If the geometry type of the GeoDataFrame is not homogeneous.
+    """
+    if len(gdf.geom_type.unique()) > 1:
+        raise ValueError(
+            "The geometry type of the GeoDataFrame is not homogeneous. "
+            f"Geometry types found: {gdf.geom_type.unique()}"
+        )
+    else:
+        return gdf.geom_type.unique()[0]
+
+
 def get_crs_str_from_gdf(gdf_crs: gpd.GeoDataFrame.crs) -> str:
     source_data_authority = gdf_crs.to_authority()
     return source_data_authority[0] + ":" + source_data_authority[1]
+
+
+def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.GeoDataFrame:
+    gdf_merged = nearest_merge(
+        gdf1=left_gdf, gdf2=right_gdf, columns=[attribute_name], max_dist=max_dist
+    )
+    print(gdf_merged.columns)
+
+    # TODO: clean up the geodataframe (remove unnecessary columns, etc.)
+    
+    
+def join_spatial_data(
+    left_gdf: gpd.GeoDataFrame,
+    right_gdf: gpd.GeoDataFrame,
+    attribute_name: str,
+    method: str,
+    max_dist: float = 10,
+) -> gpd.GeoDataFrame:
+    """Join two GeoDataFrames based on their spatial relationship.
+
+    Parameters
+    ----------
+    left_gdf : gpd.GeoDataFrame
+        The GeoDataFrame to which the data from the right GeoDataFrame will be joined.
+    right_gdf : gpd.GeoDataFrame
+        The GeoDataFrame from which the data will be joined to the left GeoDataFrame.
+    attribute_name : str
+        The name of the attribute that will be joined.
+    method : str
+        The method that will be used to join the data. Either "nearest" or
+        "intersection".
+    max_dist : float, optional
+        The maximum distance for the nearest join measured in meters, by default 
+        10 (meters).
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The joined GeoDataFrame.
+    """
+    left_gdf_type = check_geometry_type(left_gdf)
+    right_gdf_type = check_geometry_type(right_gdf)
+
+    if method == "nearest":
+        if (left_gdf_type == "Point") and (right_gdf_type == "Point"):
+            gdf = join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist)
+    elif method == "intersection":
+        if left_gdf_type == "Polygon":
+            gdf = sjoin_largest_area(left_gdf, right_gdf)
+        elif left_gdf_type == "Point":
+            # TODO: create a separate function for this?
+            gdf = gpd.sjoin(left_gdf, right_gdf, how="left", predicate="intersects")
+        else:
+            raise NotImplementedError(
+                f"Join method {method} is not implemented for geometry type "
+                f"{left_gdf_type}"
+            )
+    else:
+        raise NotImplementedError(f"Join method {method} is not implemented")
+
+    # TODO: use the data from the new column to update the original column
+
+    return gdf

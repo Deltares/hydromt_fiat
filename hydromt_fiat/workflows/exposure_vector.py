@@ -19,7 +19,7 @@ from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage
 from .exposure import Exposure
 from .utils import detect_delimiter
 from .vulnerability import Vulnerability
-from .gis import get_area, sjoin_largest_area, get_crs_str_from_gdf
+from .gis import get_area, sjoin_largest_area, get_crs_str_from_gdf, join_spatial_data
 
 
 class ExposureVector(Exposure):
@@ -412,8 +412,33 @@ class ExposureVector(Exposure):
 
     def setup_ground_floor_height(
         self,
-        ground_floor_height: Union[int, float, None, str, Path],
+        ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
     ) -> None:
+        """Set the ground floor height of the exposure data. This function overwrites 
+        the existing Ground Floor Height column if it already exists.
+
+        Parameters
+        ----------
+        ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
+            A number to set the Ground Floor Height of all assets to the same value, a
+            path to a file that contains the Ground Floor Height of each asset, or a
+            list of paths to files that contain the Ground Floor Height of each asset, 
+            in the order of preference (the first item in the list gets the highest 
+            priority in assigning the values).
+        attr_name : Union[str, List[str]], optional
+            The name of the attribute that contains the Ground Floor Height in the
+            file(s) that are submitted. If multiple `ground_floor_height` files are
+            submitted, the attribute names are linked to the files in the same order as
+            the files are submitted. By default None.
+        method : Union[str, List[str]], optional
+            The method to use to assign the Ground Floor Height to the assets. If 
+            multiple `ground_floor_height` files are submitted, the methods are linked
+            to the files in the same order as the files are submitted. The method can 
+            be either 'nearest' (nearest neighbor) or 'intersection'. By default 
+            'nearest'.
+        """
         # Set the ground floor height column.
         # If the Ground Floor Height is input as a number, assign all objects with
         # the same Ground Floor Height.
@@ -422,14 +447,19 @@ class ExposureVector(Exposure):
                 ground_floor_height, float
             ):
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif isinstance(ground_floor_height, str):
-                # TODO: implement the option to add the ground floor height from a file.
+            elif isinstance(ground_floor_height, str) or isinstance(ground_floor_height, Path):
+                # A single file is used to assign the ground floor height to the assets
+                gfh = self.data_catalog.get_geodataframe(ground_floor_height)
+                gdf = self.get_full_gdf(self.exposure_db)
+                gdf = join_spatial_data(gdf, gfh, attr_name, method)
+            elif isinstance(ground_floor_height, list):
+                # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
         else:
             # Set the Ground Floor Height to 0 if the user did not specify any
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
-
+    
     def setup_max_potential_damage(
         self,
         max_potential_damage: Union[List[float], float],
