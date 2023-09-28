@@ -27,9 +27,7 @@ def get_assets_from_osm(polygon: Polygon):
 
 def get_landuse_from_osm(polygon: Polygon):
     tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
-    landuse = ox.features.features_from_polygon(
-        polygon, tags
-    )  # then we query the data
+    landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data
 
     if landuse.empty:
         logging.warning("No land use data found from OSM")

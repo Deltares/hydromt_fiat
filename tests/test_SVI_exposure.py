@@ -100,13 +100,15 @@ def test_SVI_exposure(case):
 
     fm.data_catalog.from_dict(to_add)
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
-
     fm.write()
 
-    assert fm
-    
     # Check if the exposure data exists
-    assert root.joinpath("exposure", "exposure.gpkg").exists()
+    assert root.joinpath("exposure", "buildings.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
     assert root.joinpath("exposure", "region.gpkg").exists()
 
+    # Check if the social vulnerability data exists
+    assert root.joinpath("exposure", "social_vulnerability_scores.csv").exists()
+
+    # Check if the vulnerability data exists
+    assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
