@@ -7,7 +7,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
-from hydromt.gis_utils import utm_crs
 from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
@@ -20,6 +19,7 @@ from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage
 from .exposure import Exposure
 from .utils import detect_delimiter
 from .vulnerability import Vulnerability
+from .gis import get_area, sjoin_largest_area, get_crs_str_from_gdf
 
 
 class ExposureVector(Exposure):
@@ -229,8 +229,7 @@ class ExposureVector(Exposure):
             )
 
         # Set the CRS of the exposure data
-        source_data_authority = assets.crs.to_authority()
-        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+        self.crs = get_crs_str_from_gdf(assets.crs)
 
         # Check if the 'Object ID' column exists and if so, is unique
         if "Object ID" not in assets.columns:
@@ -299,13 +298,7 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
             # occupancy_map.
-            gdf = gpd.overlay(
-                self.exposure_geoms[0], occupancy_map[to_keep], how="intersection"
-            )
-            gdf["area"] = gdf.geometry.area
-            gdf.sort_values(by="area", inplace=True)
-            gdf.drop_duplicates(subset="Object ID", keep="last", inplace=True)
-            gdf.drop(columns=["area"], inplace=True)
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
@@ -463,14 +456,7 @@ class ExposureVector(Exposure):
 
         # Calculate the area of each object
         gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        if gdf.crs.is_geographic:
-            # If the CRS is geographic, reproject to the nearest UTM zone
-            nearest_utm = utm_crs(gdf.total_bounds)
-            gdf_utm = gdf.to_crs(nearest_utm)
-            gdf["area"] = gdf_utm["geometry"].area
-        elif gdf.crs.is_projected:
-            # If the CRS is projected, calculate the area in the same CRS
-            gdf["area"] = gdf["geometry"].area
+        gdf = get_area(gdf)
 
         # Set the damage values to the exposure data
         if damage_types is None:
@@ -911,7 +897,7 @@ class ExposureVector(Exposure):
             len_diff_secondary_linking_types = 100000
             if "Primary Object Type" in self.exposure_db.columns:
                 unique_types_primary = set(
-                    self.exposure_db["Primary Object Type"].unique()
+                    self.get_primary_object_type()
                 )
                 diff_primary_linking_types = unique_types_primary - unique_linking_types
                 len_diff_primary_linking_types = len(diff_primary_linking_types)
@@ -919,7 +905,7 @@ class ExposureVector(Exposure):
             unique_types_secondary = set()
             if "Secondary Object Type" in self.exposure_db.columns:
                 unique_types_secondary = set(
-                    self.exposure_db["Secondary Object Type"].unique()
+                    self.get_secondary_object_type()
                 )
                 diff_secondary_linking_types = (
                     unique_types_secondary - unique_linking_types
