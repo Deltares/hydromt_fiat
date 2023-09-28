@@ -16,7 +16,6 @@ dependencies:
 - packaging
 - pandas
 - pip
-- pygeos>=0.8
 - pyogrio
 - pydata-sphinx-theme
 - rasterio
