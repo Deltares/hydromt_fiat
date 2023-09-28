@@ -85,13 +85,35 @@ def get_crs_str_from_gdf(gdf_crs: gpd.GeoDataFrame.crs) -> str:
 
 
 def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.GeoDataFrame:
+    """Join two GeoDataFrames based on the nearest distance between their points.
+    
+    Parameters
+    ----------
+    left_gdf : gpd.GeoDataFrame
+        The GeoDataFrame to which the data from the right GeoDataFrame will be joined.
+    right_gdf : gpd.GeoDataFrame
+        The GeoDataFrame from which the data will be joined to the left GeoDataFrame.
+    attribute_name : str
+        The name of the attribute that will be joined.
+    max_dist : float
+        The maximum distance for the nearest join measured in meters.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The joined GeoDataFrame.
+    """    
+    # Use the HydroMT function nearest_merge to join the geodataframes
     gdf_merged = nearest_merge(
         gdf1=left_gdf, gdf2=right_gdf, columns=[attribute_name], max_dist=max_dist
     )
-    print(gdf_merged.columns)
 
-    # TODO: clean up the geodataframe (remove unnecessary columns, etc.)
+    # Clean up the geodataframe (remove unnecessary columns)
+    del gdf_merged["distance_right"]
+    del gdf_merged["index_right"]
     
+    return gdf_merged
+
     
 def join_spatial_data(
     left_gdf: gpd.GeoDataFrame,

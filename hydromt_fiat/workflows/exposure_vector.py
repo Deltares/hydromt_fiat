@@ -452,6 +452,7 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(gdf, gfh, attr_name, method)
+                gdf.loc[gdf[attr_name].notna(), "Ground Floor Height"] = gdf.loc[gdf[attr_name].notna(), attr_name]
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
