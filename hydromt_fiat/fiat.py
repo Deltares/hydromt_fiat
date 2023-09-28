@@ -21,10 +21,8 @@ from .workflows.exposure_vector import ExposureVector
 from .workflows.hazard import *
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
-from .workflows.aggregation_areas import join_exposure_aggregation_area
-from .workflows.aggregation_areas_multiple import (
-    join_exposure_aggregation_multiple_areas,
-)
+from .workflows.aggregation_areas import join_exposure_aggregation_areas
+
 
 __all__ = ["FiatModel"]
 
@@ -601,18 +599,7 @@ class FiatModel(GridModel):
         label_names: Union[List[str], str],
     ):
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_area(
-            exposure_gdf, aggregation_area_fn, attribute_names, label_names
-        )
-
-    def setup_aggregation_areas_multiple(
-        self,
-        aggregation_area_fn: Union[List[str], str, List[Path], Path],
-        attribute_names: Union[List[str], str],
-        label_names: Union[List[str], str],
-    ):
-        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_multiple_areas(
+        self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
 
