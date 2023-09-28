@@ -217,7 +217,8 @@ class ExposureVector(Exposure):
 
             if assets.empty:
                 self.logger.warning(
-                    f"No assets found in the selected region from source {asset_locations}."
+                    "No assets found in the selected region from source "
+                    f"{asset_locations}."
                 )
 
             # Rename the osmid column to Object ID
@@ -334,8 +335,6 @@ class ExposureVector(Exposure):
 
             # Update the exposure database
             self.exposure_db = gdf.copy()
-
-            print(self.exposure_db.columns)
         else:
             print(
                 "NotImplemented the spatial join of the exposure data with the "
@@ -420,15 +419,17 @@ class ExposureVector(Exposure):
 
     def setup_ground_floor_height(
         self,
-        ground_floor_height: Union[int, float],
+        ground_floor_height: Union[int, float, None, str, Path],
     ) -> None:
         # Set the ground floor height column.
         # If the Ground Floor Height is input as a number, assign all objects with
         # the same Ground Floor Height.
         if ground_floor_height:
-            if type(ground_floor_height) == int or type(ground_floor_height) == float:
+            if isinstance(ground_floor_height, int) or isinstance(
+                ground_floor_height, float
+            ):
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif type(ground_floor_height) == str:
+            elif isinstance(ground_floor_height, str):
                 # TODO: implement the option to add the ground floor height from a file.
                 NotImplemented
         else:
@@ -1126,6 +1127,10 @@ class ExposureVector(Exposure):
     def get_full_gdf(
         self, df: pd.DataFrame
     ) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
+        # Create a copy from the dataframe to ensure the values are not changed in the
+        # original dataframe
+        df = df.copy()
+
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
             assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
