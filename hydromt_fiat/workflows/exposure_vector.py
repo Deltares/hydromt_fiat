@@ -74,8 +74,8 @@ class ExposureVector(Exposure):
         )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
-        self.source = gpd.GeoDataFrame()
         self.unit = unit
+        self._geom_names = list()  # A list of (original) names of the geometry (files)
 
     def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
@@ -102,9 +102,10 @@ class ExposureVector(Exposure):
             fn = [fn]
 
         for f in fn:
+            self.set_geom_names(Path(f).stem)
             self.set_exposure_geoms(gpd.read_file(f, engine="pyogrio"))
 
-    def setup_from_single_source(
+    def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
@@ -178,7 +179,10 @@ class ExposureVector(Exposure):
         # Set the geoms from the X and Y coordinates
         self.set_exposure_geoms_from_xy()
 
-    def setup_from_multiple_sources(
+        # Set the name to the geom_names
+        self.set_geom_names("buildings")
+
+    def setup_buildings_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
         occupancy_source: Union[str, Path],
@@ -235,7 +239,28 @@ class ExposureVector(Exposure):
                 assets["Object ID"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
+        # and set the geom name
         self.set_exposure_geoms(assets)
+        self.set_geom_names("buildings")
+
+    def set_geom_names(self, name: str) -> None:
+        """Append a name to the list of geometry names `geom_names`."""
+        self.logger.info(f"Setting geometry name to {name}...")
+        self._geom_names.append(name)
+
+    @property
+    def geom_names(self) -> List[str]:
+        """Returns a list with the geom names."""
+        if len(self._geom_names) > 0 and len(self.exposure_geoms) > 0:
+            return self._geom_names
+        elif len(self._geom_names) == 0 and len(self.exposure_geoms) == 1:
+            return ["exposure"]
+        else:
+            self.logger.warning(
+                "No geometry names found, returning a list with the default names "
+                "'exposure_X'."
+            )
+            return [f"exposure_{i}" for i in range(len(self.exposure_geoms))]
 
     def set_exposure_geoms(self, gdf: gpd.GeoDataFrame) -> None:
         """Append a GeoDataFrame to the exposure geometries `exposure_geoms`."""
@@ -856,7 +881,10 @@ class ExposureVector(Exposure):
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
         linking_dict = dict(
-            zip(exposure_linking_table["Exposure Link"], exposure_linking_table["FIAT Damage Function Name"])
+            zip(
+                exposure_linking_table["Exposure Link"],
+                exposure_linking_table["FIAT Damage Function Name"],
+            )
         )
 
         # Find the column to link the exposure data to the vulnerability data
