@@ -21,6 +21,8 @@ from .workflows.exposure_vector import ExposureVector
 from .workflows.hazard import *
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
+from .workflows.aggregation_areas import join_exposure_aggregation_areas
+
 
 __all__ = ["FiatModel"]
 
@@ -588,6 +590,17 @@ class FiatModel(GridModel):
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
+
+    def setup_aggregation_areas(
+        self,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_aggregation_areas(
+            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
 
     # Update functions
     def update_all(self):
