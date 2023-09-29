@@ -1,5 +1,6 @@
 import geopandas as gpd
-from hydromt.gis_utils import utm_crs, nearest_merge, nearest
+from hydromt.gis_utils import utm_crs, nearest_merge
+from typing import List
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -84,6 +85,26 @@ def get_crs_str_from_gdf(gdf_crs: gpd.GeoDataFrame.crs) -> str:
     return source_data_authority[0] + ":" + source_data_authority[1]
 
 
+def clean_up_gdf(gdf: gpd.GeoDataFrame, columns: List[str]) -> gpd.GeoDataFrame:
+    """Clean up a GeoDataFrame by removing unnecessary columns.
+
+    Parameters
+    ----------
+    gdf : gpd.GeoDataFrame
+        The GeoDataFrame to clean up.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The cleaned up GeoDataFrame.
+    """
+    # Remove unnecessary columns
+    for col in columns:
+        del gdf[col]
+
+    return gdf
+
+
 def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.GeoDataFrame:
     """Join two GeoDataFrames based on the nearest distance between their points.
     
@@ -109,9 +130,17 @@ def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.Ge
     )
 
     # Clean up the geodataframe (remove unnecessary columns)
-    del gdf_merged["distance_right"]
-    del gdf_merged["index_right"]
+    gdf_merged = clean_up_gdf(gdf_merged, ["distance_right", "index_right"])
     
+    return gdf_merged
+
+
+def intersect_points_polygons(left_gdf, right_gdf, attribute_name) -> gpd.GeoDataFrame:
+    gdf_merged = gpd.sjoin(left_gdf, right_gdf, how="left", predicate="intersects")
+
+    # Clean up the geodataframe (remove unnecessary columns)
+    gdf_merged = clean_up_gdf(gdf_merged, ["index_right"])
+
     return gdf_merged
 
     
@@ -144,26 +173,45 @@ def join_spatial_data(
     gpd.GeoDataFrame
         The joined GeoDataFrame.
     """
+    assert left_gdf.crs == right_gdf.crs, (
+            "The CRS of the GeoDataFrames to join do not match. "
+            f"Left CRS: {get_crs_str_from_gdf(left_gdf.crs)}, "
+            f"Right CRS: {get_crs_str_from_gdf(right_gdf.crs)}"
+        )
+
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)
 
+    assert (left_gdf_type == "Polygon") or (left_gdf_type == "Point"), (
+            "The left GeoDataFrame should contain either polygons or points."
+        )
+
+    assert (right_gdf_type == "Polygon") or (right_gdf_type == "Point"), (
+        "The right GeoDataFrame should contain either polygons or points."
+    )
+
     if method == "nearest":
-        if (left_gdf_type == "Point") and (right_gdf_type == "Point"):
-            gdf = join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist)
-    elif method == "intersection":
         if left_gdf_type == "Polygon":
+            left_gdf_geom_original = left_gdf.geometry
+            left_gdf.geometry = left_gdf.geometry.centroid
+        
+        if right_gdf_type == "Polygon":
+            right_gdf.geometry = right_gdf.geometry.centroid
+        
+        gdf = join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist)
+        left_gdf.geometry = left_gdf_geom_original # TODO: Check if this works well
+    
+    elif method == "intersection":
+        if (left_gdf_type == "Polygon") and (right_gdf_type == "Polygon"):
             gdf = sjoin_largest_area(left_gdf, right_gdf)
-        elif left_gdf_type == "Point":
-            # TODO: create a separate function for this?
-            gdf = gpd.sjoin(left_gdf, right_gdf, how="left", predicate="intersects")
+        elif (left_gdf_type == "Point") and (right_gdf_type == "Polygon"):
+            gdf = intersect_points_polygons(left_gdf, right_gdf, attribute_name)
         else:
             raise NotImplementedError(
-                f"Join method {method} is not implemented for geometry type "
-                f"{left_gdf_type}"
+                f"Join method {method} is not implemented for joining data of geometry "
+                f"type {left_gdf_type} and {right_gdf_type}"
             )
     else:
         raise NotImplementedError(f"Join method {method} is not implemented")
-
-    # TODO: use the data from the new column to update the original column
 
     return gdf

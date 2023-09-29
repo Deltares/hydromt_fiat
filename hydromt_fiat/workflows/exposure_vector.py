@@ -416,7 +416,7 @@ class ExposureVector(Exposure):
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
     ) -> None:
-        """Set the ground floor height of the exposure data. This function overwrites 
+        """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
 
         Parameters
@@ -424,8 +424,8 @@ class ExposureVector(Exposure):
         ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
             A number to set the Ground Floor Height of all assets to the same value, a
             path to a file that contains the Ground Floor Height of each asset, or a
-            list of paths to files that contain the Ground Floor Height of each asset, 
-            in the order of preference (the first item in the list gets the highest 
+            list of paths to files that contain the Ground Floor Height of each asset,
+            in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
         attr_name : Union[str, List[str]], optional
             The name of the attribute that contains the Ground Floor Height in the
@@ -433,26 +433,27 @@ class ExposureVector(Exposure):
             submitted, the attribute names are linked to the files in the same order as
             the files are submitted. By default None.
         method : Union[str, List[str]], optional
-            The method to use to assign the Ground Floor Height to the assets. If 
+            The method to use to assign the Ground Floor Height to the assets. If
             multiple `ground_floor_height` files are submitted, the methods are linked
-            to the files in the same order as the files are submitted. The method can 
-            be either 'nearest' (nearest neighbor) or 'intersection'. By default 
+            to the files in the same order as the files are submitted. The method can
+            be either 'nearest' (nearest neighbor) or 'intersection'. By default
             'nearest'.
         """
-        # Set the ground floor height column.
-        # If the Ground Floor Height is input as a number, assign all objects with
-        # the same Ground Floor Height.
         if ground_floor_height:
             if isinstance(ground_floor_height, int) or isinstance(
                 ground_floor_height, float
             ):
+                # If the Ground Floor Height is input as a number, assign all objects with
+                # the same Ground Floor Height.
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif isinstance(ground_floor_height, str) or isinstance(ground_floor_height, Path):
+            elif isinstance(ground_floor_height, str) or isinstance(
+                ground_floor_height, Path
+            ):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(gdf, gfh, attr_name, method)
-                gdf.loc[gdf[attr_name].notna(), "Ground Floor Height"] = gdf.loc[gdf[attr_name].notna(), attr_name]
+                gdf = self._set_values_from_other_column(gdf, "Ground Floor Height", attr_name)
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
@@ -460,7 +461,7 @@ class ExposureVector(Exposure):
             # Set the Ground Floor Height to 0 if the user did not specify any
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
-    
+
     def setup_max_potential_damage(
         self,
         max_potential_damage: Union[List[float], float],
@@ -927,17 +928,13 @@ class ExposureVector(Exposure):
             len_diff_primary_linking_types = 100000
             len_diff_secondary_linking_types = 100000
             if "Primary Object Type" in self.exposure_db.columns:
-                unique_types_primary = set(
-                    self.get_primary_object_type()
-                )
+                unique_types_primary = set(self.get_primary_object_type())
                 diff_primary_linking_types = unique_types_primary - unique_linking_types
                 len_diff_primary_linking_types = len(diff_primary_linking_types)
 
             unique_types_secondary = set()
             if "Secondary Object Type" in self.exposure_db.columns:
-                unique_types_secondary = set(
-                    self.get_secondary_object_type()
-                )
+                unique_types_secondary = set(self.get_secondary_object_type())
                 diff_secondary_linking_types = (
                     unique_types_secondary - unique_linking_types
                 )
@@ -1298,3 +1295,16 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    @staticmethod
+    def _set_values_from_other_column(
+        df: Union[pd.DataFrame, gpd.GeoDataFrame], col_to_set: str, col_to_copy: str
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Sets the values of <col_to_set> to where the values of <col_to_copy> are 
+        nan and deletes <col_to_copy>.
+        """
+        df.loc[df[col_to_copy].notna(), col_to_set] = df.loc[
+            df[col_to_copy].notna(), col_to_copy
+        ]
+        del df[col_to_copy]
+        return df
