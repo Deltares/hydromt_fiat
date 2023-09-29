@@ -17,12 +17,16 @@ The Delft-FIAT model methods are available from the HydroMT Command Line and Pyt
 allow you to build or update Delft-FIAT model schematizations.
 
 Built-in data sources are available for the exposure and vulnerability components, see the available 
-data_sources_.
+:ref:`data_sources`.
 
 For python users, all FIAT attributes and methods are available, see the :ref:`api_model`.
 
 Exposure
 =======================
+
+Vector data
+-----------------------
+
 Exposure data can be build from a data_catalog_, a data API key, or by supplying an absolute path 
 to local data on the user's machine. The `asset_locations`, `occupancy_type`, and `max_potential_damage` 
 data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `ground_floor_height` can currently 
@@ -41,10 +45,14 @@ See below how the `setup_exposure_vector` method can be used to build or update 
 The following method is used to build or update the **exposure** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_exposure_vector
+
+For more information, see the :ref:`exposure_vector`.
+
+Raster data
+-----------------------
+This option will be implemented at a later stage.
+
 
 Vulnerability
 =======================
@@ -71,46 +79,47 @@ See below how the `setup_vulnerability` method can be used to build or update th
 The following methods can be used to build or update the **vulnerability** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_vulnerability
    FiatModel.setup_vulnerability_from_csv
 
+For more information, see the :ref:`vulnerability`.
 
 Hazard
 =======================
 The following methods can be used to build or update the **hazard** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_hazard
    
+For more information, see the :ref:`hazard`.
 
 Social Vulnerability Index
 ===========================
 The following methods can be used to build or update the **Social Vulnerability Index** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_social_vulnerability_index
 
+For more information, see the :ref:`svi`.
 
 Output and run settings
 ========================
 The following methods are available to set up the **output and run settings** for Delft-FIAT:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_global_settings
    FiatModel.setup_output
 
 
 .. _data_catalog: https://deltares.github.io/hydromt/latest/user_guide/data_prepare_cat.html
 .. _region: https://deltares.github.io/hydromt/latest/user_guide/cli.html#region-options
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Modules
+
+   exposure_vector
+   vulnerability
+   hazard
+   social_vulnerability_index
