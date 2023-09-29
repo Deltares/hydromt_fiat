@@ -72,8 +72,8 @@ It can happen that in the aggregation files polygons overlap. In this case **FIA
    Object ID   Zone
    
    1           Base Zone 1
-   2           Land Use 1, Land Use 3    >  two zones in the land-use aggregation file overlap and geometry to falls 
-                                            into both zones
+   2           Land Use 1, Land Use 3    >  two zones (polygons) in the land-use aggregation file overlap and object 
+                                            falls into both zones
    3           Land Use 2
 
 
