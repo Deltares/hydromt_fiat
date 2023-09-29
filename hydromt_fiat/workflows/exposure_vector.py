@@ -74,8 +74,8 @@ class ExposureVector(Exposure):
         )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
-        self.source = gpd.GeoDataFrame()
         self.unit = unit
+        self._geom_names = list()  # A list of (original) names of the geometry (files)
 
     def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
@@ -102,9 +102,10 @@ class ExposureVector(Exposure):
             fn = [fn]
 
         for f in fn:
+            self.set_geom_names(Path(f).stem)
             self.set_exposure_geoms(gpd.read_file(f, engine="pyogrio"))
 
-    def setup_from_single_source(
+    def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
@@ -178,7 +179,10 @@ class ExposureVector(Exposure):
         # Set the geoms from the X and Y coordinates
         self.set_exposure_geoms_from_xy()
 
-    def setup_from_multiple_sources(
+        # Set the name to the geom_names
+        self.set_geom_names("buildings")
+
+    def setup_buildings_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
         occupancy_source: Union[str, Path],
@@ -208,12 +212,13 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.iloc[0][0]
+            polygon = self.region.iloc[0].values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
                 self.logger.warning(
-                    f"No assets found in the selected region from source {asset_locations}."
+                    "No assets found in the selected region from source "
+                    f"{asset_locations}."
                 )
 
             # Rename the osmid column to Object ID
@@ -235,7 +240,28 @@ class ExposureVector(Exposure):
                 assets["Object ID"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
+        # and set the geom name
         self.set_exposure_geoms(assets)
+        self.set_geom_names("buildings")
+
+    def set_geom_names(self, name: str) -> None:
+        """Append a name to the list of geometry names `geom_names`."""
+        self.logger.info(f"Setting geometry name to {name}...")
+        self._geom_names.append(name)
+
+    @property
+    def geom_names(self) -> List[str]:
+        """Returns a list with the geom names."""
+        if len(self._geom_names) > 0 and len(self.exposure_geoms) > 0:
+            return self._geom_names
+        elif len(self._geom_names) == 0 and len(self.exposure_geoms) == 1:
+            return ["exposure"]
+        else:
+            self.logger.warning(
+                "No geometry names found, returning a list with the default names "
+                "'exposure_X'."
+            )
+            return [f"exposure_{i}" for i in range(len(self.exposure_geoms))]
 
     def set_exposure_geoms(self, gdf: gpd.GeoDataFrame) -> None:
         """Append a GeoDataFrame to the exposure geometries `exposure_geoms`."""
@@ -270,48 +296,51 @@ class ExposureVector(Exposure):
 
         # Spatially join the exposure data with the occupancy map
         if len(self.exposure_geoms) == 1:
-            self.exposure_db = gpd.sjoin(
-                self.exposure_geoms[0],
-                occupancy_map[to_keep],
-                how="left",
-                op="intersects",
+            # If there is only one exposure geom, do the spatial join with the
+            # occupancy_map. Only take the largest overlapping object from the
+            # occupancy_map.
+            gdf = gpd.overlay(
+                self.exposure_geoms[0], occupancy_map[to_keep], how="intersection"
             )
+            gdf["area"] = gdf.geometry.area
+            gdf.sort_values(by="area", inplace=True)
+            gdf.drop_duplicates(subset="Object ID", keep="last", inplace=True)
+            gdf.drop(columns=["area"], inplace=True)
+
+            # Remove the objects that do not have a Primary Object Type, that were not
+            # overlapping with the land use map, or that had a land use type of 'nan'.
+            nr_without_primary_object_type = len(
+                gdf.loc[gdf["Primary Object Type"] == ""].index
+            )
+            if nr_without_primary_object_type > 0:
+                self.logger.warning(
+                    f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                    "Type and will be removed from the exposure data."
+                )
+            gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+
+            nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
+            if nr_without_landuse > 0:
+                self.logger.warning(
+                    f"{nr_without_landuse} objects were not overlapping with the "
+                    "land use data and will be removed from the exposure data."
+                )
+            gdf = gdf.loc[gdf["Primary Object Type"].notna()]
+
+            # Update the exposure geoms
+            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+
+            # Remove the geometry column from the exposure database
+            del gdf["geometry"]
+
+            # Update the exposure database
+            self.exposure_db = gdf.copy()
         else:
             print(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
             NotImplemented
-
-        # Remove the objects that do not have a Primary Object Type, that were not
-        # overlapping with the land use map, or that had a land use type of 'nan'.
-        nr_without_primary_object_type = len(
-            self.exposure_db.loc[self.exposure_db["Primary Object Type"] == ""].index
-        )
-        self.logger.warning(
-            f"{nr_without_primary_object_type} objects do not have a Primary Object "
-            "Type and will be removed from the exposure data."
-        )
-        self.exposure_db = self.exposure_db.loc[
-            self.exposure_db["Primary Object Type"] != ""
-        ]
-
-        nr_without_landuse = len(
-            self.exposure_db.loc[self.exposure_db["Primary Object Type"].isna()].index
-        )
-        self.logger.warning(
-            f"{nr_without_landuse} objects were not overlapping with the "
-            "land use data and will be removed from the exposure data."
-        )
-        self.exposure_db = self.exposure_db.loc[
-            self.exposure_db["Primary Object Type"].notna()
-        ]
-
-        # Update the exposure geoms
-        self.exposure_geoms[0] = self.exposure_db[["Object ID", "geometry"]]
-
-        # Remove the geometry column from the exposure database
-        del self.exposure_db["geometry"]
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -390,15 +419,17 @@ class ExposureVector(Exposure):
 
     def setup_ground_floor_height(
         self,
-        ground_floor_height: Union[int, float],
+        ground_floor_height: Union[int, float, None, str, Path],
     ) -> None:
         # Set the ground floor height column.
         # If the Ground Floor Height is input as a number, assign all objects with
         # the same Ground Floor Height.
         if ground_floor_height:
-            if type(ground_floor_height) == int or type(ground_floor_height) == float:
+            if isinstance(ground_floor_height, int) or isinstance(
+                ground_floor_height, float
+            ):
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif type(ground_floor_height) == str:
+            elif isinstance(ground_floor_height, str):
                 # TODO: implement the option to add the ground floor height from a file.
                 NotImplemented
         else:
@@ -855,26 +886,90 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
-        linking_dict = dict(
-            zip(exposure_linking_table["Link"], exposure_linking_table["Name"])
-        )
-
-        # Find the column to link the exposure data to the vulnerability data
-        unique_types_primary = set(self.exposure_db["Primary Object Type"].unique())
-        unique_types_secondary = set(self.exposure_db["Secondary Object Type"].unique())
-        unique_linking_types = set(linking_dict.keys())
-
-        # Check if the linking column is the Primary Object Type or the Secondary
-        # Object Type
-        if unique_types_primary.issubset(unique_linking_types):
-            linking_column = "Primary Object Type"
-        elif unique_types_secondary.issubset(unique_linking_types):
-            linking_column = "Secondary Object Type"
-
         for damage_type in damage_types:
+            linking_per_damage_type = exposure_linking_table.loc[
+                exposure_linking_table["Damage Type"] == damage_type, :
+            ]
+
+            # Create a dictionary that links the exposure data to the vulnerability data
+            linking_dict = dict(
+                zip(
+                    linking_per_damage_type["Exposure Link"],
+                    linking_per_damage_type["FIAT Damage Function Name"],
+                )
+            )
+            unique_linking_types = set(linking_dict.keys())
+
+            # Find the column to link the exposure data to the vulnerability data
+            unique_types_primary = set()
+
+            # Set the variables below to large numbers to ensure when there is no
+            # Primary Object Type or Secondary Object Type column in the exposure data
+            # that the available column is used to link the exposure data to the
+            # vulnerability data.
+            len_diff_primary_linking_types = 100000
+            len_diff_secondary_linking_types = 100000
+            if "Primary Object Type" in self.exposure_db.columns:
+                unique_types_primary = set(
+                    self.exposure_db["Primary Object Type"].unique()
+                )
+                diff_primary_linking_types = unique_types_primary - unique_linking_types
+                len_diff_primary_linking_types = len(diff_primary_linking_types)
+
+            unique_types_secondary = set()
+            if "Secondary Object Type" in self.exposure_db.columns:
+                unique_types_secondary = set(
+                    self.exposure_db["Secondary Object Type"].unique()
+                )
+                diff_secondary_linking_types = (
+                    unique_types_secondary - unique_linking_types
+                )
+                len_diff_secondary_linking_types = len(diff_secondary_linking_types)
+
+            # Check if the linking column is the Primary Object Type or the Secondary
+            # Object Type
+            if (len(unique_types_primary) > 0) and (
+                unique_types_primary.issubset(unique_linking_types)
+            ):
+                linking_column = "Primary Object Type"
+            elif (len(unique_types_secondary) > 0) and (
+                unique_types_secondary.issubset(unique_linking_types)
+            ):
+                linking_column = "Secondary Object Type"
+            else:
+                if (
+                    len_diff_primary_linking_types < len_diff_secondary_linking_types
+                ) and (len(unique_types_primary) > 0):
+                    linking_column = "Primary Object Type"
+                    self.logger.warning(
+                        "There are "
+                        f"{str(len_diff_primary_linking_types)} primary"
+                        " object types that are not in the linking "
+                        "table and will not have a damage function "
+                        f"assigned for {damage_type} damages: "
+                        f"{str(list(diff_primary_linking_types))}"
+                    )
+                elif (
+                    len_diff_secondary_linking_types < len_diff_primary_linking_types
+                ) and (len(unique_types_secondary) > 0):
+                    linking_column = "Secondary Object Type"
+                    self.logger.warning(
+                        "There are "
+                        f"{str(len(diff_secondary_linking_types))} "
+                        "secondary object types that are not in the "
+                        "linking table and will not have a damage "
+                        f"function assigned for {damage_type} damages: "
+                        f"{str(list(diff_secondary_linking_types))}"
+                    )
+
             self.exposure_db[
                 f"Damage Function: {damage_type.capitalize()}"
             ] = self.exposure_db[linking_column].map(linking_dict)
+
+            self.logger.info(
+                f"The {linking_column} was used to link the exposure data to the "
+                f"vulnerability curves for {damage_type} damages."
+            )
 
     def get_primary_object_type(self):
         if "Primary Object Type" in self.exposure_db.columns:
@@ -1032,6 +1127,10 @@ class ExposureVector(Exposure):
     def get_full_gdf(
         self, df: pd.DataFrame
     ) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
+        # Create a copy from the dataframe to ensure the values are not changed in the
+        # original dataframe
+        df = df.copy()
+
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
             assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])

@@ -44,8 +44,8 @@ _cases = {
                 "output_vector_name": "spatial.gpkg",
             },
             "setup_vulnerability": {
-                "vulnerability_fn": "hazus_vulnerability_curves",
-                "vulnerability_identifiers_and_linking_fn": ".\\examples\\data\\vulnerability_test_file_input.csv",
+                "vulnerability_fn": "default_vulnerability_curves",
+                "vulnerability_identifiers_and_linking_fn": "default_hazus_iwr_linking",
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
@@ -68,7 +68,6 @@ _cases = {
                 "nodata": -99999,  # value that is assigned as nodata (optional)
                 "var": None,  # hazard variable name in NetCDF input files (optional)
                 "chunks": "auto",  # chunk sizes along each dimension used to load the hazard file into a dask array (default is 'auto') (optional)
-                "name_catalog": "flood_maps",
                 "risk_output": False,
             },
         },
@@ -85,8 +84,8 @@ _cases = {
                 "output_vector_name": "spatial.gpkg",
             },
             "setup_vulnerability": {
-                "vulnerability_fn": "hazus_vulnerability_curves",
-                "vulnerability_identifiers_and_linking_fn": ".\\examples\\data\\vulnerability_test_file_input.csv",
+                "vulnerability_fn": "default_vulnerability_curves",
+                "vulnerability_identifiers_and_linking_fn": "default_hazus_iwr_linking",
                 "functions_mean": "default",
                 "functions_max": ["AGR1"],
                 "unit": "feet",
@@ -123,7 +122,6 @@ _cases = {
                 "nodata": -99999,  # value that is assigned as nodata (optional)
                 "var": None,  # hazard variable name in NetCDF input files (optional)
                 "chunks": "auto",  # chunk sizes along each dimension used to load the hazard file into a dask array (default is 'auto') (optional)
-                "name_catalog": "flood_maps",
                 "risk_output": True,
             },
         },
@@ -148,7 +146,7 @@ def test_integration(case):
     fm.write()
 
     # Check if the exposure data exists
-    assert root.joinpath("exposure", "exposure.gpkg").exists()
+    assert root.joinpath("exposure", "buildings.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
     assert root.joinpath("exposure", "region.gpkg").exists()
 

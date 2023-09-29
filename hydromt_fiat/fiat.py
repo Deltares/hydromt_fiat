@@ -267,19 +267,26 @@ class FiatModel(GridModel):
         extraction_method : str, optional
             The method that should be used to extract the hazard values from the
             hazard maps, by default "centroid".
+        damage_types : Union[List[str], None], optional
+            The damage types that should be used for the exposure data, by default
+            ["structure", "content"]. The damage types are used to link the
+            vulnerability functions to the exposure data.
+        country : Union[str, None], optional
+            The country that is used for the exposure data, by default None. This is
+            only required when using the JRC vulnerability curves.
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            self.exposure.setup_from_single_source(
+            self.exposure.setup_buildings_from_single_source(
                 asset_locations, ground_floor_height, extraction_method
             )
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
-            self.exposure.setup_from_multiple_sources(
+            self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,
                 max_potential_damage,
@@ -584,14 +591,6 @@ class FiatModel(GridModel):
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
 
-        # exposure opnieuw opslaan in self._tables
-
-        # TODO: geometries toevoegen aan de dataset met API
-        # we now use the shape download function by the census, the user needs to download their own shape data. They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
-        # #wfs python get request -> geometries
-
-        # this link can be used: https://github.com/datamade/census
-
     def setup_aggregation_areas(
         self,
         aggregation_area_fn: Union[List[str], List[Path], str, Path],
@@ -604,7 +603,6 @@ class FiatModel(GridModel):
         )
 
     # Update functions
-
     def update_all(self):
         self.logger.info("Updating all data objects...")
         self.update_tables()
@@ -627,12 +625,16 @@ class FiatModel(GridModel):
     def update_geoms(self):
         # Update the exposure data geoms
         if self.exposure and "exposure" in self._tables:
-            for i, geom in enumerate(self.exposure.exposure_geoms):
-                file_suffix = i if i > 0 else ""
-                self.set_geoms(geom=geom, name=f"exposure{file_suffix}")
+            for i, geom_and_name in enumerate(
+                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+            ):
+                geom = geom_and_name[0]
+                name = geom_and_name[1]
+
+                self.set_geoms(geom=geom, name=name)
                 self.set_config(
                     f"exposure.geom.file{str(i+1)}",
-                    f"./exposure/exposure{file_suffix}.gpkg",
+                    f"./exposure/{name}.gpkg",
                 )
 
         if not self.region.empty:
@@ -643,7 +645,8 @@ class FiatModel(GridModel):
 
     # I/O
     def read(self):
-        """Method to read the complete model schematization and configuration from file."""
+        """Method to read the complete model schematization and configuration from
+        file."""
         self.logger.info(f"Reading model data from {self.root}")
 
         # Read the configuration file
@@ -664,13 +667,6 @@ class FiatModel(GridModel):
         # Read the fiat configuration toml file.
         config = Config()
         return config.load_file(fn)
-
-    def check_path_exists(self, fn):
-        """TODO: decide to use this or another function (check_file_exist in py)"""
-        path = Path(fn)
-        self.logger.debug(f"Reading file {str(path.name)}")
-        if not fn.is_file():
-            logging.warning(f"File {fn} does not exist!")
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""

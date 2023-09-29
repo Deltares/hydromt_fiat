@@ -22,10 +22,8 @@ from distutils.dir_util import copy_tree
 
 import numpy as np
 import sphinx_autosummary_accessors
-from click.testing import CliRunner
 
 import hydromt_fiat
-from hydromt.cli.main import main as hydromt_cli
 
 # here = os.path.dirname(__file__)
 # sys.path.insert(0, os.path.abspath(os.path.join(here, "..")))
@@ -103,17 +101,6 @@ copy_tree("../examples", "_examples")
 if not os.path.isdir("_generated"):
     os.makedirs("_generated")
 
-# -- Generate cli help docs ----------------------------------------------
-
-cli_build = CliRunner().invoke(hydromt_cli, ["build", "--help"])
-cli2rst(cli_build.output, r"_generated/cli_build.rst")
-
-cli_update = CliRunner().invoke(hydromt_cli, ["update", "--help"])
-cli2rst(cli_update.output, r"_generated/cli_update.rst")
-
-cli_clip = CliRunner().invoke(hydromt_cli, ["clip", "--help"])
-cli2rst(cli_clip.output, r"_generated/cli_clip.rst")
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -174,7 +161,7 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
-html_logo = "_static/hydromt-icon.svg"
+html_logo = "_static/fiat.png"
 autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 autoclass_content = "both"
 
@@ -216,7 +203,7 @@ html_context = {
     "github_url": "https://github.com",  # or your GitHub Enterprise interprise
     "github_user": "Deltares",
     "github_repo": "hydromt_fiat",
-    "github_version": "main",  # FIXME
+    "github_version": "main",
     "doc_path": "docs",
     "default_mode": "light",
 }
@@ -305,17 +292,6 @@ texinfo_documents = [
     ),
 ]
 
-# FIXME exception while evaluating only directive expression: chunk after expression
-# nbsphinx_prolog = r"""
-# {% set docname = env.doc2path(env.docname, base=None) %}
-# .. only:: html
-#     .. role:: raw-html(raw)
-#         :format: html
-#     .. note::
-#         | This page was generated from `{{ docname }}`__.
-#         | Interactive online version: :raw-html:`<a href="https://mybinder.org/v2/gh/Deltares/hydromt/main?urlpath=lab/tree/examples/{{ docname }}"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom"></a>`
-#         __ https://github.com/Deltares/hydromt/blob/main/examples/{{ docname }}
-# """
 
 # -- INTERSPHINX -----------------------------------------------------------
 
@@ -346,3 +322,6 @@ nbsphinx_prolog = r"""
             <a href="https://mybinder.org/v2/gh/Deltares/hydromt/main?urlpath=lab/tree/examples/{{ docname|e }}" target="_blank" rel="noopener noreferrer"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"></a>
         </div>
 """
+
+# Allow errors in notebooks
+# nbsphinx_allow_errors = True

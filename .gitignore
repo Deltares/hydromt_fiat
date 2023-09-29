@@ -120,3 +120,5 @@ venv.bak/
 /examples/data/miami_dade_landuse.gpkg
 cache
 /examples/FIAT_database
+hydromt_fiat/data/damage_functions/flooding/AllDDF_HAZUS_fractions.xlsx
+hydromt_fiat/data/damage_functions/flooding/~$AllDDF_HAZUS_fractions.xlsx

@@ -8,11 +8,11 @@ and analyse hydro models. It provides a generic model api with attributes to acc
 
 This plugin provides an implementation for the 
 `Delft-FIAT <https://github.com/Deltares/Delft-FIAT>`_ flood impact assessment tool. 
-It details the different steps and explains how to  use HydroMT to easily get started and work on your own FIAT model.
+It details the different steps and explains how to use HydroMT to easily get started and work on your own FIAT model.
 
 For detailed information on HydroMT itself, you can visit the `core documentation <https://deltares.github.io/hydromt/>`_.
 
-Documentation
+Overview
 =============
 
 **Getting Started**
@@ -32,23 +32,20 @@ Documentation
 
 **User Guide**
 
-* :doc:`user_guide/fiat`
-* :doc:`user_guide/fiat_flood`
-
+* :doc:`user_guide/user_guide_overview`
+* :doc:`data/data_sources`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
    :caption: User Guide
 
-   user_guide/fiat
-   user_guide/fiat_flood
-
+   user_guide/user_guide_overview
+   data/data_sources
 
 **References & Help**
 
 * :doc:`api/api_index`
-* :doc:`contributing`
 * :doc:`changelog`
 
 .. toctree::
@@ -57,9 +54,14 @@ Documentation
    :caption: References & Help
 
    api/api_index
-   contributing
    changelog
 
+
+Contributing
+------------
+
+To contribute to HydroMT and the plugin plugin, please follow the 
+`HydroMT contribution guidelines <https://deltares.github.io/hydromt/latest/contributing.html>`_.
 
 License
 -------

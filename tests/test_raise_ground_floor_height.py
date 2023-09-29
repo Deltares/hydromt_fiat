@@ -5,7 +5,9 @@ import pytest
 import shutil
 import pandas as pd
 
-EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
 
 _cases = {
     "raise_ground_floor_height": {

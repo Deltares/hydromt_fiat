@@ -1,7 +1,4 @@
 
-meta:
-  root: C:\python\hydromt_fiat\hydromt_fiat\data
-
 NSI:
     path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"
     data_type: GeoDataFrame
@@ -11,12 +8,13 @@ NSI:
     meta:
       category: exposure
 
-hazus_vulnerability_curves:
-    path: damage_functions/flooding/AllDDF_HAZUS.xlsx
+default_vulnerability_curves:
+    path: damage_functions/flooding/Hazus_IWR_curves.csv
     data_type: DataFrame
-    driver: xlsx
+    driver: csv
     meta:
       category: vulnerability
+      source: HAZUS SQL database, USACE-IWR and FEMA expert elicitation curves. The source of these curves is the Draft Report Nonresidential Flood Depth-Damage Functions Derived from Expert Elicitation, April 2009, Revised 2013. FEMA Contract Number HSFEHQ-06-D-0162. Task Order HSFEHQ-08-J-0014. Not for distribution, but data shared by USACE.
 
 jrc_vulnerability_curves:
     path: damage_functions/flooding/JRC_damage_functions.xlsx
@@ -39,3 +37,9 @@ social_vulnerability:
     meta:
       category: social_vulnerability
 
+default_hazus_iwr_linking:
+  path: vulnerability_linking/default_hazus_iwr_curve_linking.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    category: vulnerability

@@ -260,6 +260,7 @@ def read_floodmaps(
 
     return da_map_fn, da_name, da_type
 
+
 def load_floodmaps(
     data_catalog: DataCatalog,
     region: gpd.GeoDataFrame,
@@ -315,6 +316,7 @@ def load_floodmaps(
             da = data_catalog.get_rasterdataset(name_catalog, variables=da_name)
 
     return da
+
 
 # def load_floodmaps(
 #     data_catalog: DataCatalog,
