@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 import geopandas as gpd
 import pandas as pd
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_area
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_multiple_areas
 
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
@@ -33,14 +34,15 @@ _cases = {
     "aggregation_test_2": {
         "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint3"),
         "configuration": {
-            "setup_aggregation_areas_multiple": {
+            "setup_aggregation_areas": {
                 "aggregation_area_fn": [
                     r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones.gpkg",
                     r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones2.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones3.gpkg"
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones3.gpkg",
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones4.gpkg"
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName"],
-                "label_names": ["Zoning_map", "Land_use_map","Horse"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName","ACCOM"],
+                "label_names": ["Zoning_map", "Land_use_map","Horse","Accomodation_Zone"],
             }
         },
     },
