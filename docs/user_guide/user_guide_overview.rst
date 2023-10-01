@@ -48,32 +48,32 @@ The following method is used to build or update the **exposure** data:
 
 Aggregation Zones
 =======================
-Sometimes it's desirable to aggregate the exposure data into zones such as land-use, fifferent residential zones and so forth. To do so it is possible to include these aggregation zones in the exposure file. Your aggregation zone should be in form of a vector file (e.g. *.shp* or *.gpkg*). If you want to create several aggregation zones you must provide one vector file for each zone. 
+Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. **FIAT** has a tool to include these aggregation zones during the creation of the exposure.csv file. To do so the aggregation zone should be in form of a vector file (e.g. *.shp* or *.gpkg*). If you want to create several aggregation zones you must provide one vector file for each zone. 
 To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT** . This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.  
-To prepare your data create a yaml-file (*.yml*) with the following information (case-sensitive)::
+To prepare your data create a yaml-file (*.yml*) with the following information (case-sensitive)
+SHOULD THIS BE PART OF THE CONFIGURATION OR DATA_CATALOG.YAML?   
 
- [Set-up yaml file]
+Input yaml file: 
+   - **aggregation_area_fn**: Path to the aggregation file
+   - **attribute_names**: Name of the zone attribute in your file (case-sensitive)
+   - **label_names**: Desired aggregation label for newly created aggregation zone
 
- aggregation_area_fn: C:\Users\....base_zone_aggregation.shp (exchange this path with your path)
- attribute_names: ZONE_BASE (exchange this name with the zone attribute name in your file)
- label_names: Base Zone (exchange this label name with the desired label name)
+In case you want to add several aggregation zones, you can provide several aggregation files in a comma-separated list. Make sure that the input for each variable (file path, attribute name, label name) follows the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
 
-In case you want to add several aggregation files, you can provide the input in a comma-separated list. Make sure that the input for each variable follows the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
-   
+   [Example two aggregation zone files]
    aggregation_area_fn:  C:\Users\...base_zone_aggregation.shp, C:\Users\...land_use_aggregation.shp 
    attribute_names: ZONE_BASE, LAND_USE
    label_names: Base Zone, Land Use
    
-
-Save the yaml file and set up the fiat model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation zone(s). 
+Save the yaml file and set up the **FIAT** model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation zone(s). 
 
 It can happen that in the aggregation files polygons overlap. In this case **FIAT** will merge the information for the affected Object ID and assign both aggregation zones to the object.::
 
    Object ID   Zone
    
    1           Base Zone 1
-   2           Land Use 1, Land Use 3    >  two zones in the land-use aggregation file overlap and geometry to falls 
-                                            into both zones
+   2           Land Use 1, Land Use 3    >  two zones (polygons) in the land-use aggregation file overlap and object 
+                                            falls into both zones
    3           Land Use 2
 
 
