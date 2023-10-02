@@ -36,10 +36,10 @@ _cases = {
         "configuration": {
             "setup_aggregation_areas": {
                 "aggregation_area_fn": [
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones2.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones3.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones4.gpkg"
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\land_use.gpkg",
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\future_land_use.gpkg",
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\horse_carriage_track.gpkg",
+                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\accomodation_type.gpkg"
                 ],
                 "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName","ACCOM"],
                 "label_names": ["Zoning_map", "Land_use_map","Horse","Accomodation_Zone"],
