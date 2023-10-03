@@ -1,25 +1,25 @@
 cases:
   test1_single_aggregation:
-    new_root: examples/data/Aggregation_zones_example/output/aggregation_zones_test1
+    new_root: C:/Users/rautenba/hydromt_fiat/examples/data/Aggregation_zones_example/output/aggregation_zones_test1
     configuration:
       setup_aggregation_areas:
-       aggregation_area_fn: examples/data/Aggregation_zones_example/Aggregation_zones/base_zones.gpkg
+       aggregation_area_fn: C:/Users/rautenba/hydromt_fiat/examples/data/aggregation_zones_example/aggregation_zones/base_zones.gpkg
        attribute_names: ZONE_BASE
        label_names: Base_zones
 
   test2_multiple_aggregation:
-    new_root: examples/data/Aggregation_zones_example/output/aggregation_zones_test2
+    new_root: C:/Users/rautenba/hydromt_fiat/examples/data/Aggregation_zones_example/output/aggregation_zones_test2
     configuration:
       setup_aggregation_areas:
         aggregation_area_fn:
-          - examples/data/Aggregation_zones_example/Aggregation_zones/base_zones.gpkg
-          - examples/data/Aggregation_zones_example/Aggregation_zones/land_use.gpkg
-          - examples/data/Aggregation_zones_example/Aggregation_zones/horse_carriage_track.gpkg
+          - C:/Users/rautenba/hydromt_fiat/examples/data/aggregation_zones_example/aggregation_zones/base_zones.gpkg
+          - C:/Users/rautenba/hydromt_fiat/examples/data/aggregation_zones_example/aggregation_zones/land_use.gpkg
+          - C:/Users/rautenba/hydromt_fiat/examples/data/aggregation_zones_example/aggregation_zones/accomodation_type.gpkg
         attribute_names: 
           - ZONE_BASE
           - LAND_USE
-          - ZoneName
+          - ACCOM
         label_names:
           - Base_zones
           - Land_use
-          - Horse_carriage_tracks
+          - Accommodation_type
