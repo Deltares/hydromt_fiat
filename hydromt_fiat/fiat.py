@@ -364,58 +364,35 @@ class FiatModel(GridModel):
         risk_output : bool, optional
             The parameter that defines if a risk analysis is required, by default False
         """
-        # check parameters types and size, and existance of provided files of maps
-
-        params = check_parameters_type(map_fn, map_type, rp, crs, nodata, var, chunks) #TODO: remove this function
-        check_parameters_size(params)  # map_fn, map_type, rp, crs, nodata, var, chunks
-        check_files(params, self.root)  # This function is probably redundant
-
+        # create lists of maps and their parameters to be able to iterate over them 
+        params = create_lists(map_fn, map_type, rp, crs, nodata, var, chunks)
+        check_lists_size(params)  
+ 
         rp_list = []
         map_name_lst = []
 
-        # retrieve maps information from parameters and datacatalog
-        # load maps in memory and check them and save the with st_map function
         for idx, da_map_fn in enumerate(params["map_fn_lst"]):
-            da_map_fn, da_name, da_type = read_floodmaps(params, da_map_fn, idx)
+            # read maps and retrieve their attributes
+            da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
 
-            # load flood maps to memory
-            # da = load_floodmaps(self.data_catalog, self.region,da_map_fn,da_name,name_catalog)
-            # reading from path
-            if isinstance(da_map_fn, Path):
-                if da_map_fn.stem == "sfincs_map":
-                    sfincs_root = os.path.dirname(da_map_fn)
-                    sfincs_model = SfincsModel(
-                        sfincs_root, mode="r", logger=self.logger
-                    )
-                    sfincs_model.read_results()
-                    # save sfincs map as GeoTIFF
-                    # result_list = list(sfincs_model.results.keys())
-                    # sfincs_model.write_raster("results.zsmax", compress="LZW")
-                    da = sfincs_model.results["zsmax"]
-                    # da = da.squeeze('timemax').drop('timemax')
-                    da = da.isel(timemax=0).drop("timemax")
+            if da_map_fn.stem == "sfincs_map":
+                sfincs_root = os.path.dirname(da_map_fn)
+                sfincs_model = SfincsModel(
+                    sfincs_root, mode="r", logger=self.logger
+                )
+                sfincs_model.read_results()
+                da = sfincs_model.results["zsmax"]
+                da = da.isel(timemax=0).drop("timemax")
+                # save sfincs map as GeoTIFF
+                # result_list = list(sfincs_model.results.keys())
+                # sfincs_model.write_raster("results.zsmax", compress="LZW")
 
-                    # Convert to units of the exposure data if required
-                    if self.exposure.unit != da.units:
-                        da = da * unit_conversion_factor
+                # Convert to units of the exposure data if required
+                # if self.exposure.unit != da.units:  #TODO: self.exposure.units is not definded in this test
+                #     da = da * unit_conversion_factor
 
-                else:
-                    if not self.region.empty:
-                        # da = self.data_catalog.get_rasterdataset(
-                        #     da_map_fn, geom=self.region
-                        # )
-                        da = self.data_catalog.get_rasterdataset(da_map_fn)
-                    else:
-                        da = self.data_catalog.get_rasterdataset(da_map_fn)
-            # reading from the datacatalog
             else:
-                if not self.region.empty:
-                    # da = self.data_catalog.get_rasterdataset(
-                    #     name_catalog, variables=da_name, geom=self.region
-                    # )
-                    da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
-                else:
-                    da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
+                da = self.data_catalog.get_rasterdataset(da_map_fn)
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
@@ -426,96 +403,60 @@ class FiatModel(GridModel):
             # check maps return periods
             da_rp = check_maps_rp(params, da, da_name, idx, risk_output)
 
-            # chek if maps are unique
-            # TODO: check if providing methods like self.get_config can be used
-            # TODO: create a new funtion to check uniqueness trhough files names
-            # check_maps_uniquenes(self.get_config,self.staticmaps,params,da,da_map_fn,da_name,da_type,da_rp,idx)
+            if risk_output and da_map_fn.stem == "sfincs_map":
+                da_name = da_name + f"_{str(da_rp)}"
 
             post = f"(rp {da_rp})" if risk_output else ""
             self.logger.info(f"Added {hazard_type} hazard map: {da_name} {post}")
 
             rp_list.append(da_rp)
-
-            # If a risk calculation is required and the map comes from sfincs, they
-            # have the same name so give another name
-            if risk_output and da_map_fn.stem == "sfincs_map":
-                da_name = da_name + f"_{str(da_rp)}"
             map_name_lst.append(da_name)
+
+            da.attrs = {
+                "returnperiod": str(da_rp),
+                "type": da_type,
+                "name": da_name,
+                "analysis": "event",
+            }
+            
+            da = da.to_dataset(name= da_name)
+
             self.set_maps(da, da_name)
 
         check_map_uniqueness(map_name_lst)
-        # in case risk_output is required maps are put in a netcdf with a raster with
-        # an extra dimension 'rp' accounting for return period
-        # select first risk maps
-
-
-        # Order return periods and maps
-        my_dict = {}
-        for rp, name in zip(rp_list, map_name_lst):
-            my_dict[rp] = name
-        sorted_keys = sorted(rp_list, reverse=False)
-        my_dict = {key: my_dict[key] for key in sorted_keys}
-
-
-
+        
+        # in case of risk analysis, create a single netcdf with multibans per rp
         if risk_output:
-            # TODO: put the code below in a separate function in hazard.py
-            layer_list = []
-            list_keys = list(self.maps.keys())
-            
-            for key, value in my_dict.items():
-                layer = self.maps[value].rename(key)
-                layer_list.append(layer)
 
+            da, sorted_rp, sorted_names = create_risk_dataset(params, rp_list, map_name_lst, self.maps) 
 
-            # for idx, x in enumerate(list_keys):
-            #     key_name = list_keys[idx]
-            #     layer = self.maps[key_name].rename(rp_list[idx])
-            #     layer_list.append(layer)
+            self.set_grid(da) 
 
-            da = xr.merge(layer_list)
-
-            # list_keys = list(self.maps.keys())
-            # first_map = self.maps[list_keys[0]].rename(rp_list[0])
-            # list_keys.pop(0)
-            # rp_list.pop(0)
-
-            # # add additional risk maps
-            # for idx, x in enumerate(list_keys):
-            #     key_name = list_keys[idx]
-            #     layer = self.maps[key_name].rename(rp_list[idx])
-            #     #first_map = xr.concat([first_map, layer], dim="rp")
-            #     first_map = xr.merge([first_map, layer])
-
-            # convert to a dataset to be able to write attributes when writing the maps
-            # in the ouput folders. If datarray is provided attributes will not be
-            # shown in the output netcdf dataset
-            
-            # da = first_map.to_dataset(name="risk_maps")
-            da.attrs = {
-                "returnperiod": list(rp_list),
-                "type": params["map_type_lst"],
-                "name": map_name_lst,
-                "Analysis": "risk",
+            self.grid.attrs = {
+                "returnperiod": sorted_rp,
+                "type": params["map_type_lst"], #TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
+                "name": sorted_names,
+                "analysis": "risk",
             }
-            # load merged map into self.maps
-            self.set_maps(da)
+
             list_maps = list(self.maps.keys())
 
-            # erase individual maps from self.maps keeping the merged map
-            for item in list_maps[:-1]:
+            for item in list_maps[:]:
                 self.maps.pop(item)
 
-            self.set_config("hazard.return_periods", rp_list)
+        # set configuration .toml file
+        self.set_config("hazard.return_periods", 
+                        str(da_rp) if not risk_output else sorted_rp 
+        )
 
-        # the metadata of the hazard maps is saved in the configuration toml files
-        # this component was modified to provided the element [0] od the list
-        # in case multiple maps are required then remove [0]
         self.set_config(
             "hazard.file",
             [
                 str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys()
+                for hazard_map in self.maps.keys() 
+            ][0] if not risk_output else 
+            [
+                str(Path("hazard") / ("risk_map" + ".nc")) 
             ][0],
         )
         self.set_config(
@@ -523,17 +464,25 @@ class FiatModel(GridModel):
             [
                 "EPSG:" + str((self.maps[hazard_map].rio.crs.to_epsg()))
                 for hazard_map in self.maps.keys()
-            ][0],
+            ][0] if not risk_output else                
+            [
+                "EPSG:" + str((self.crs.to_epsg()))
+            ][0]       
+            ,
         )
 
         self.set_config(
-            "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
+            "hazard.elevation_reference", 
+            "dem" if da_type == "water_depth" else "datum"
         )
 
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0],
+            [
+                (self.maps[hazard_map].name) 
+                for hazard_map in self.maps.keys()
+            ][0] if not risk_output else sorted_rp,
         )
 
         self.set_config(
@@ -764,6 +713,8 @@ class FiatModel(GridModel):
             self.write_config()
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc")
+        if self.grid:
+            self.write_grid(fn="hazard/risk_map.nc")
         if self.geoms:
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:
