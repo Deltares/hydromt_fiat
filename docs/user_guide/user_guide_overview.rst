@@ -68,8 +68,8 @@ Input yaml file:
 
 In case you want to add several aggregation zones, you can provide several aggregation files in a comma-separated list. Make sure that the input for each variable (file path, attribute name, label name) follows the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
 
-   [Example two aggregation zone files]
-   aggregation_area_fn:  C:\Users\...base_zone_aggregation.shp, C:\Users\...land_use_aggregation.shp 
+   [Example two aggregation zone files. Exchange relative path with your path]
+   aggregation_area_fn:  "./agg_zones/base_zone_aggregation.shp", "./agg_zones/land_use_aggregation.shp"
    attribute_names: ZONE_BASE, LAND_USE
    label_names: Base Zone, Land Use
    
