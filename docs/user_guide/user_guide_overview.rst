@@ -56,7 +56,7 @@ This option will be implemented at a later stage.
 
 Aggregation Zones
 -----------------------
-Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. **FIAT** has a tool to include these aggregation zones during the creation of the exposure.csv file. To do so the aggregation zone should be in form of a vector file (e.g. *.shp* or *.gpkg*). If you want to create several aggregation zones you must provide one vector file for each zone. 
+Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. With the aggregation labels included in the exposure.csv file, after calculating damages with `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_, the `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ can be used to automatically calculate metrics over the aggregation areas. To add aggregation labels, data in form of a vector file (e.g., *.shp* or *.gpkg*) can be used. The user can add multiple aggregation labels at once by providing a vector file for each zone. 
 To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT** . This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.  
 To prepare your data create a yaml-file (*.yml*) with the following information (case-sensitive)
 SHOULD THIS BE PART OF THE CONFIGURATION OR DATA_CATALOG.YAML?   
