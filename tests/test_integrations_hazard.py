@@ -56,8 +56,6 @@ _cases = {
         "setup_hazard": {
             "map_fn": [
                 r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP1_Final.tif",
-                # r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP10_Final.tif",
-                # r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP50_Final.tif",
             ],
             "map_type": "water_depth",
             "rp": None,
@@ -69,14 +67,33 @@ _cases = {
     }
     },
 
-    "event_kathryn": {
+    "risk_map_geotiffs": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_kathryn",
+        "dir": "test_risk_map_geotiffs",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
-                # r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\kingTide_SLR_max_flood_depth.tif",
-                r"C:\Users\fuentesm\CISNE\data_base\Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif",
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP1_Final.tif",
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP10_Final.tif",
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP50_Final.tif",
+            ],
+            "map_type": "water_depth",
+            "rp": None,
+            "crs": None,
+            "nodata": None,
+            "var": None,
+            "risk_output": True,
+        }
+    }
+    },
+
+    "event_map_geotiff_kath": {
+        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "dir": "test_event_map_geotiff_kath",
+        "configuration": {
+        "setup_hazard": {
+            "map_fn": [
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\kingTide_SLR_max_flood_depth.tif",
             ],
             "map_type": "water_depth",
             "rp": None,
@@ -88,9 +105,9 @@ _cases = {
     }
     },
 
-    "risk_kathryn": {
+    "risk_map_geotiff_kath": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_risk_kathryn",
+        "dir": "test_risk_map_geotiff_kath",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
@@ -108,9 +125,9 @@ _cases = {
     }
     },
 
-    "event_map_sfincs": {
+    "event_map_sfincs_willem": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_sfincs",
+        "dir": "test_event_map_sfincs_willem",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
@@ -125,14 +142,14 @@ _cases = {
         }
     }
     },
-
+    
     "event_map_sfincs_phanos": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_event_map_sfincs_phanos",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
-                r"C:/Users/fuentesm/CISNE/Deltares/FloodAdapt/tests/test_database/charleston/output/simulations/current_extreme12ft_no_measures/overland/sfincs_map.nc"
+                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\charleston\output\simulations\current_extreme12ft_no_measures\overland\sfincs_map.nc"
             ],
             "map_type": "water_depth",
             "rp": None,

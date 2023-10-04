@@ -388,8 +388,9 @@ class FiatModel(GridModel):
                 # sfincs_model.write_raster("results.zsmax", compress="LZW")
 
                 # Convert to units of the exposure data if required
-                # if self.exposure.unit != da.units:  #TODO: self.exposure.units is not definded in this test
-                #     da = da * unit_conversion_factor
+                if self.exposure in locals() or self.exposure in globals():                   # change to be sure that the unit information is available from the expousure dataset
+                    if self.exposure.unit != da.units:  
+                        da = da * unit_conversion_factor 
 
             else:
                 da = self.data_catalog.get_rasterdataset(da_map_fn)
