@@ -11,6 +11,7 @@ The following data sources are currently supported:
 * :doc:`national_structure_inventory`
 * :doc:`openstreetmap`
 * :doc:`jrc`
+* :doc:`hazus`
 
 .. toctree::
    :maxdepth: 1
@@ -20,3 +21,4 @@ The following data sources are currently supported:
    national_structure_inventory
    openstreetmap
    jrc
+   hazus
