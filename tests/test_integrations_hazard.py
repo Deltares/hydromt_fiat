@@ -1,10 +1,8 @@
 from hydromt_fiat.fiat import FiatModel
-from hydromt.config import configread
 from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
-import os
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
@@ -87,9 +85,9 @@ _cases = {
     }
     },
 
-    "event_map_geotiff_kath": {
+    "event_map_geotiff2": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_geotiff_kath",
+        "dir": "test_event_map_geotiff2",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
@@ -105,9 +103,9 @@ _cases = {
     }
     },
 
-    "risk_map_geotiff_kath": {
+    "risk_map_geotiff2": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_risk_map_geotiff_kath",
+        "dir": "test_risk_map_geotiff2",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
@@ -125,9 +123,9 @@ _cases = {
     }
     },
 
-    "event_map_sfincs_willem": {
+    "event_map_sfincs": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_sfincs_willem",
+        "dir": "test_event_map_sfincs",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
@@ -143,9 +141,9 @@ _cases = {
     }
     },
     
-    "event_map_sfincs_phanos": {
+    "event_map_sfincs2": {
         "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_sfincs_phanos",
+        "dir": "test_event_map_sfincs2",
         "configuration": {
         "setup_hazard": {
             "map_fn": [
