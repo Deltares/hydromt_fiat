@@ -56,8 +56,9 @@ This option will be implemented at a later stage.
 
 Aggregation Zones
 -----------------------
-Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. With the aggregation labels included in the exposure.csv file, after calculating damages with `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_, the `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ can be used to automatically calculate metrics over the aggregation areas. To add aggregation labels, data in form of a vector file (e.g., *.shp* or *.gpkg*) can be used. The user can add multiple aggregation labels at once by providing a vector file for each zone. 
-To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT** . This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.  
+In spatial analysis and urban planning the division of objects into spatial zones, such as land-use or accommodation type, is a pivotal tool to facilitate analysis and/or visualization. The `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ offers simple tools to assign aggregation labels to the exposure.csv file, after calculating damages with `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_. Subsequental, the `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ can be used to automatically calculate metrics over the aggregation areas. The user can add multiple aggregation labels at once by providing vector files for each zone (e.g., *.shp* or *.gpkg*). 
+
+To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT**. This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.
 To prepare your data create a configuration yaml-file (*.yml*) with the following information (case-sensitive)   
 
 Input yaml file: 
@@ -66,9 +67,9 @@ Input yaml file:
    - **attribute_names**: Name of the zone attribute in your file (case-sensitive)
    - **label_names**: Desired aggregation label for newly created aggregation zone
 
-In case you want to add several aggregation zones, you can provide several aggregation files in a comma-separated list. Make sure that the input for each variable (file path, attribute name, label name) follows the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
+In case the user wants to add several aggregation zones at once, multiple aggregation files can be provided in a list. Each variable (file path, attribute name, label name) must follow the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
 
-   [Example configuration yaml files for two aggregation zone files.]
+   [Example configuration yaml file for two aggregation zone files.]
 
    Title: "Base_zones and Land_use aggregation zones"
    new_root: "./fiat_model/output/aggregation_zones"
@@ -84,7 +85,7 @@ In case you want to add several aggregation zones, you can provide several aggre
          - "Base Zone"
          - "Land Use"
    
-Save the yaml file and set up the **FIAT** model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation zone(s). 
+Load the yaml file and set up the **FIAT** model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation label(s). 
 
 It can happen that in the aggregation files polygons overlap. In this case **FIAT** will merge the information for the affected Object ID and assign both aggregation zones to the object.::
 
