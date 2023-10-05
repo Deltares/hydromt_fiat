@@ -22,7 +22,7 @@ from .workflows.hazard import *
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
 from .workflows.aggregation_areas import join_exposure_aggregation_areas
-
+from .workflows.building_footprints import join_exposure_bf
 
 __all__ = ["FiatModel"]
 
@@ -600,6 +600,15 @@ class FiatModel(GridModel):
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
+    def setup_building_footprint(
+        self,
+        building_footprint_fn: Union[List[str], List[Path], str, Path],
+        attribute_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_bf(
+            exposure_gdf, building_footprint_fn, attribute_names,
         )
 
     # Update functions
