@@ -1,0 +1,22 @@
+from typing import Sequence
+from _pytest.mark.structures import ParameterSet
+from hydromt_fiat.fiat import FiatModel
+from hydromt.log import setuplog
+from pathlib import Path
+import pytest
+import geopandas as gpd
+import pandas as pd
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_multiple_areas
+
+from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+
+import shutil
+
+# Load Datagit 
+EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data")
+Building_Footprint = [Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprints.gpkg")]
+
+bf_id  = "BF_FID"
+
