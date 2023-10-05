@@ -12,6 +12,10 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 import shutil
 
+# set pyogrio as default engine
+gpd.options.io_engine = "pyogrio"
+
+#Datasource: https://github.com/microsoft/USBuildingFootprints
 EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data")
 
 #Create test
@@ -19,9 +23,9 @@ _cases = {
     "bf_test_1": {
         "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\output"),
         "configuration": {
-            "setup_building_footprints": {
-                "building_footprints_fn": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"),
-                "attribute_name": "B_footprint",
+            "setup_building_footprint": {
+                "building_footprint_fn": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"),
+                "attribute_names": "B_footprint",
                 }
         },
     }
