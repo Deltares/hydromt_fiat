@@ -8,41 +8,38 @@ import geopandas as gpd
 import pandas as pd
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_multiple_areas
-
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-
 import shutil
 
 # set pyogrio as default engine
 gpd.options.io_engine = "pyogrio"
 
 # Load Data
-EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model")
+EXAMPLEDIR = Path(r"C:\Users\rautenba\hydromt_fiat\examples\data\aggregation_zones_example")
 
 _cases = {
     "aggregation_test_1": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint"),
+        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\20230927_Hydromt_Fiat_Sprint\FIAT_model\test1_output"),
         "configuration": {
             "setup_aggregation_areas": {
-                "aggregation_area_fn": r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones.gpkg",
+                "aggregation_area_fn": r"C:\Users\rautenba\hydromt_fiat\examples\data\aggregation_zones_example\aggregation_zones\base_zones.gpkg",
                 "attribute_names": "ZONE_BASE",
                 "label_names": "Zoning_map",
             }
         },
     },
     "aggregation_test_2": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint3"),
+        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\20230927_Hydromt_Fiat_Sprint\FIAT_model\test2_output"),
         "configuration": {
             "setup_aggregation_areas": {
                 "aggregation_area_fn": [
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\land_use.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\future_land_use.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\horse_carriage_track.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\accomodation_type.gpkg"
+                    r"C:\Users\rautenba\hydromt_fiat\examples\data\aggregation_zones_example\aggregation_zones\base_zones.gpkg",
+                    r"C:\Users\rautenba\hydromt_fiat\examples\data\aggregation_zones_example\aggregation_zones\land_use.gpkg",
+                    r"C:\Users\rautenba\hydromt_fiat\examples\data\aggregation_zones_example\aggregation_zones\accomodation_type.gpkg"
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName","ACCOM"],
-                "label_names": ["Zoning_map", "Land_use_map","Horse","Accomodation_Zone"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE","ACCOM"],
+                "label_names": ["Zoning_map", "Land_use_map","Accomodation_Zone"],
             }
         },
     },
