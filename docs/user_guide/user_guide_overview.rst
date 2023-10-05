@@ -17,12 +17,16 @@ The Delft-FIAT model methods are available from the HydroMT Command Line and Pyt
 allow you to build or update Delft-FIAT model schematizations.
 
 Built-in data sources are available for the exposure and vulnerability components, see the available 
-data_sources_.
+:ref:`data_sources`.
 
 For python users, all FIAT attributes and methods are available, see the :ref:`api_model`.
 
 Exposure
 =======================
+
+Vector data
+-----------------------
+
 Exposure data can be build from a data_catalog_, a data API key, or by supplying an absolute path 
 to local data on the user's machine. The `asset_locations`, `occupancy_type`, and `max_potential_damage` 
 data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `ground_floor_height` can currently 
@@ -41,29 +45,44 @@ See below how the `setup_exposure_vector` method can be used to build or update 
 The following method is used to build or update the **exposure** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_exposure_vector
 
+For more information, see the :ref:`exposure_vector`.
+
+Raster data
+-----------------------
+This option will be implemented at a later stage.
+
+
 Aggregation Zones
-=======================
-Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. **FIAT** has a tool to include these aggregation zones during the creation of the exposure.csv file. To do so the aggregation zone should be in form of a vector file (e.g. *.shp* or *.gpkg*). If you want to create several aggregation zones you must provide one vector file for each zone. 
+-----------------------
+Sometimes it's desirable to aggregate the exposure data into zones such as land-use, different residential zones and so forth. With the aggregation labels included in the exposure.csv file, after calculating damages with `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_, the `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ can be used to automatically calculate metrics over the aggregation areas. To add aggregation labels, data in form of a vector file (e.g., *.shp* or *.gpkg*) can be used. The user can add multiple aggregation labels at once by providing a vector file for each zone. 
 To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT** . This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.  
-To prepare your data create a yaml-file (*.yml*) with the following information (case-sensitive)
-SHOULD THIS BE PART OF THE CONFIGURATION OR DATA_CATALOG.YAML?   
+To prepare your data create a configuration yaml-file (*.yml*) with the following information (case-sensitive)   
 
 Input yaml file: 
+   - **new_root**: Path to the output folder
    - **aggregation_area_fn**: Path to the aggregation file
    - **attribute_names**: Name of the zone attribute in your file (case-sensitive)
    - **label_names**: Desired aggregation label for newly created aggregation zone
 
 In case you want to add several aggregation zones, you can provide several aggregation files in a comma-separated list. Make sure that the input for each variable (file path, attribute name, label name) follows the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
 
-   [Example two aggregation zone files]
-   aggregation_area_fn:  C:\Users\...base_zone_aggregation.shp, C:\Users\...land_use_aggregation.shp 
-   attribute_names: ZONE_BASE, LAND_USE
-   label_names: Base Zone, Land Use
+   [Example configuration yaml files for two aggregation zone files.]
+
+   Title: "Base_zones and Land_use aggregation zones"
+   new_root: "./fiat_model/output/aggregation_zones"
+   configuration:
+     setup_aggregation_areas:
+       aggregation_area_fn:
+         - "./agg_zones/base_zone_aggregation.shp"
+         - "./agg_zones/land_use_aggregation.shp"
+       attribute_names:
+         - "ZONE_BASE"
+         - "LAND_USE"
+       label_names:
+         - "Base Zone"
+         - "Land Use"
    
 Save the yaml file and set up the **FIAT** model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation zone(s). 
 
@@ -103,46 +122,47 @@ See below how the `setup_vulnerability` method can be used to build or update th
 The following methods can be used to build or update the **vulnerability** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_vulnerability
    FiatModel.setup_vulnerability_from_csv
 
+For more information, see the :ref:`vulnerability`.
 
 Hazard
 =======================
 The following methods can be used to build or update the **hazard** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_hazard
    
+For more information, see the :ref:`hazard`.
 
 Social Vulnerability Index
 ===========================
 The following methods can be used to build or update the **Social Vulnerability Index** data:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_social_vulnerability_index
 
+For more information, see the :ref:`svi`.
 
 Output and run settings
 ========================
 The following methods are available to set up the **output and run settings** for Delft-FIAT:
 
 .. autosummary::
-   :toctree: ../_generated/
-   :nosignatures:
-
    FiatModel.setup_global_settings
    FiatModel.setup_output
 
 
 .. _data_catalog: https://deltares.github.io/hydromt/latest/user_guide/data_prepare_cat.html
 .. _region: https://deltares.github.io/hydromt/latest/user_guide/cli.html#region-options
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Modules
+
+   exposure_vector
+   vulnerability
+   hazard
+   social_vulnerability_index
