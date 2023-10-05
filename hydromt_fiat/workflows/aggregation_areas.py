@@ -41,16 +41,7 @@ def join_exposure_aggregation_multiple_areas(
         if exposure_gdf.crs != aggregation_gdf.crs:
             aggregation_gdf = aggregation_gdf.to_crs(exposure_gdf.crs)
 
-        # FG: The three lines of code below could result in a wrong column being 
-        # selected if the user has submitted aggregation area files with the same
-        # attribute names. I would suggest to add a check to make sure that the order 
-        # of the label names is the same as the order of the attribute names. If not, 
-        # the user should get an error message.
-        # selected_column = None
-        # for column_name in aggregation_gdf.columns:
-        #     if any(label_name in column_name for label_name in attribute_names):
-        #         selected_column = column_name
-
+            
         assert attribute_name in aggregation_gdf.columns, f"Attribute {attribute_name} not found in {file_path}"
 
         # If you overwrite the exposure_gdf with the joined data, you can append all 
