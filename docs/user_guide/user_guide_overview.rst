@@ -58,13 +58,13 @@ Aggregation Zones
 -----------------------
 In spatial analysis and urban planning the division of objects into spatial zones, such as land-use or accommodation type, is a pivotal tool to facilitate analysis and/or visualization. The `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ offers simple tools to assign aggregation labels to the exposure.csv file, after calculating damages with `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_. Subsequental, the `FIAT toolbox <https://github.com/Deltares/fiat_toolbox>`_ can be used to automatically calculate metrics over the aggregation areas. The user can add multiple aggregation labels at once by providing vector files for each zone (e.g., *.shp* or *.gpkg*). 
 
-To associate the original exposure data with the aggregation zones, utilize the **"join_exposure_aggregation_areas"** function provided by **FIAT**. This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.
-To prepare your data create a configuration yaml-file (*.yml*) with the following information (case-sensitive)   
+To associate the original exposure data with the aggregation zones, the **"join_exposure_aggregation_areas"** function can be utilized. This function seamlessly links each geometry in the original exposure data to its corresponding spatial aggregation zone.
+To prepare the data, an aggregation configuration file (*.yml*) must be created with the following information (case-sensitive):   
 
 Input yaml file: 
    - **new_root**: Path to the output folder
    - **aggregation_area_fn**: Path to the aggregation file
-   - **attribute_names**: Name of the zone attribute in your file (case-sensitive)
+   - **attribute_names**: Name of the zone attribute in your file 
    - **label_names**: Desired aggregation label for newly created aggregation zone
 
 In case the user wants to add several aggregation zones at once, multiple aggregation files can be provided in a list. Each variable (file path, attribute name, label name) must follow the same order to assure that attribute and label names are assigned to the correct aggregation file:: 
@@ -85,9 +85,11 @@ In case the user wants to add several aggregation zones at once, multiple aggreg
          - "Base Zone"
          - "Land Use"
    
-Load the yaml file and set up the **FIAT** model. As output you will receive a *.csv-file with your original exposure data together with the newly created aggregation label(s). 
+After loading the configuration file (*.yml*) and executing the **FIAT Hydro MT** model builder, the user receives a file (*.csv*) with the original exposure data and an additional column with the aggregation label(s) as output. The `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_ will automatically prepend "*Aggregation Label*" to the prior specified aggregation label, therefore the aggregation labels can be identified as such.
 
-It can happen that in the aggregation files polygons overlap. In this case **FIAT** will merge the information for the affected Object ID and assign both aggregation zones to the object.::
+   Aggregation Label: {label_name}
+
+*Note: It may occur that polygons overlap in the aggregation vector files. In this case the information for the affected Object ID will be merged and both aggregation zones will be assigned to the object.* ::
 
    Object ID   Zone
    
