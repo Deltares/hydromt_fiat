@@ -1,6 +1,7 @@
 import geopandas as gpd
 from typing import List, Union
 from pathlib import Path
+import math 
 
 def process_value(value):
     if isinstance(value, list) and len(value) == 1:
@@ -50,6 +51,22 @@ def join_exposure_building_footprint(
             op="intersects",
             how="left",
         )
+        # aggregate the data if duplicates exist
+        for i in range(len(exposure_gdf["B_footprint"])):
+            if math.isnan(exposure_gdf["B_footprint"].iloc[i]):
+                continue
+            elif isinstance(exposure_gdf["B_footprint"].iloc[i], float):
+                 # Convert to integer to remove decimal part
+                integer_value = int(exposure_gdf["B_footprint"].iloc[i])
+                exposure_gdf["B_footprint"].iloc[i] = str(integer_value)
+                
+
+        aggregated = (
+            exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
+        )
+        exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
+        exposure_gdf.drop(columns=attribute_name, inplace=True)
+        exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
 
         # Create a string from the list of values in the duplicated aggregation area 
         # column
