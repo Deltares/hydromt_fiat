@@ -597,18 +597,48 @@ class FiatModel(GridModel):
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
     ):
+        """_summary_
+
+        Parameters
+        ----------
+        exposure_gdf : gpd.GeoDataFrame
+            Exposure data to join the aggregation areas to as "Aggregation 
+        Label: `label_names`".
+        aggregation_area_fn : Union[List[str], List[Path], str, Path]
+            Path(s) to the aggregation area(s).
+        attribute_names : Union[List[str], str]
+            Name of the attribute(s) to join.
+        label_names : Union[List[str], str]
+            Name of the label(s) to join.
+            
+        """
+        
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
     def setup_building_footprint(
         self,
-        building_footprint_fn: Union[List[str], List[Path], str, Path],
-        attribute_names: Union[List[str], str],
+        building_footprint_fn: Union[str, Path],
+        attribute_name: str,
     ):
+        """_summary_
+
+        Parameters
+        ----------
+        exposure_gdf : gpd.GeoDataFrame
+            Exposure data to join the building footprints to as "BF_FID".
+        building_footprint_fn : Union[List[str], List[Path], str, Path]
+            Path(s) to the building footprint.
+        attribute_names : Union[List[str], str]
+            Name of the building footprint ID to join.
+        column_name: str = "BF_FID"
+            Name of building footprint in new exposure output
+        """
+
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_bf(
-            exposure_gdf, building_footprint_fn, attribute_names,
+            exposure_gdf, building_footprint_fn, attribute_name,
         )
 
     # Update functions

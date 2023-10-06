@@ -25,7 +25,7 @@ _cases = {
         "configuration": {
             "setup_building_footprint": {
                 "building_footprint_fn": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"),
-                "attribute_names": "B_footprint",
+                "attribute_name": "B_footprint",
                 }
         },
     }
