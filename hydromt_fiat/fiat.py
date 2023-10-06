@@ -15,13 +15,13 @@ from hydromt.models.model_grid import GridModel
 from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
-from . import DATADIR
-from .config import Config
-from .workflows.exposure_vector import ExposureVector
-from .workflows.hazard import *
-from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
-from .workflows.vulnerability import Vulnerability
-from .workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat import DATADIR
+from hydromt_fiat.config import Config
+from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.hazard import *  # TODO: when the hazard module is updated, explicitly mention the functions that are imported
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 
 
 __all__ = ["FiatModel"]
