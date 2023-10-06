@@ -2,6 +2,10 @@ import geopandas as gpd
 from typing import List, Union
 from pathlib import Path
 import math 
+import hydromt
+from hydromt import gis_utils
+import pandas as pd
+
 
 def process_value(value):
     if isinstance(value, list) and len(value) == 1:
@@ -49,6 +53,9 @@ def join_exposure_building_footprint(
     #Check for unique BF-FID
     assert bf_gdf[attribute_name].is_unique, f"Building footprint ID returns duplicates. Building footprint ID should be unique."
 
+    #Create fully merged gdf
+    #merged_gdf = gis_utils.nearest_merge(bf_gdf,exposure_gdf)
+
     # If you overwrite the exposure_gdf with the joined data, you can append all 
     # aggregation areas to the same exposure_gdf
     exposure_gdf = gpd.sjoin(
@@ -73,6 +80,7 @@ def join_exposure_building_footprint(
     exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
     exposure_gdf.drop(columns=attribute_name, inplace=True)
     exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
+
 
     # Create a string from the list of values in the duplicated aggregation area 
     # column
@@ -112,4 +120,51 @@ def join_exposure_bf(
     
     # Remove the geometry column from the exposure_gdf to return a dataframe
     del exposure_gdf["geometry"]
+    
     return exposure_gdf
+
+
+def nearest_neighbor_bf(
+    exposure_gdf: gpd.GeoDataFrame,
+    building_footprint_fn: Union[str, Path],
+    attribute_names: str,
+    column_name: str = "BF_FID",
+) -> gpd.GeoDataFrame:
+    
+    #this should be a dataframe
+    exposure_df = join_exposure_bf(exposure_gdf, building_footprint_fn, attribute_names)
+   
+    #Load buildings.gpkg
+    exposure_gdf= gpd.read_file(Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\exposure\buildings.gpkg"))
+
+    
+    #Mhere all good
+    #exposure_df= pd.read_csv(Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\output\exposure\exposure.csv"))
+    #exposure_gdf= gpd.read_file(Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\output\exposure\buildings.gpkg"))
+
+    
+    merged_gdf_multiple = exposure_gdf.merge(exposure_df, left_on='Object ID', right_on='Object ID', how='inner')
+    bf_gdf = gpd.read_file(building_footprint_fn)
+    #same as above only absolute path : bf_gdf = gpd.read_file(Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"))
+    
+    merged_gdf = gis_utils.nearest_merge(merged_gdf_multiple, bf_gdf, "BF_FID")
+    merged_gdf.to_file(Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\test.gpkg"))
+    value =1
+    
+    merged_gdf["index_right"] += value
+
+    # Specify the columns with NaN values and the column to use for replacement
+    column_with_nan = "BF_FID"  # Replace with the name of the column containing NaN values
+    replacement_column = "index_right"  # Replace with the name of the column to use for replacement
+
+    # Use the fillna method to replace NaN values in column1 with values from column2
+    merged_gdf[column_with_nan].fillna(merged_gdf[replacement_column], inplace=True)
+
+     ##remove the index_right column
+    if "index_right" in merged_gdf.columns:
+        del merged_gdf["index_right"]
+    
+    del merged_gdf["geometry"]
+
+    return merged_gdf
+
