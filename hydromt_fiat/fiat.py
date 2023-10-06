@@ -172,8 +172,6 @@ class FiatModel(GridModel):
         vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
-        # Add the vulnerability linking table to the tables object
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # If the JRC vulnerability curves are used, the continent needs to be specified
         if (
@@ -203,6 +201,9 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
+
+        # Add the vulnerability linking table to the tables object
+        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -532,7 +533,8 @@ class FiatModel(GridModel):
         blockgroup_fn: str = None,
     ):
         """Setup the social vulnerability index for the vector exposure data for
-        Delft-FIAT.
+        Delft-FIAT. This method has so far only been tested with US Census data
+        but aims to be generalized to other datasets as well.
 
         Parameters
         ----------
