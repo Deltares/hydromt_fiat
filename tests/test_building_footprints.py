@@ -16,15 +16,18 @@ import shutil
 gpd.options.io_engine = "pyogrio"
 
 #Datasource: https://github.com/microsoft/USBuildingFootprints
-EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data")
+
+EXAMPLEDIR = Path().resolve() / "examples" / "data" / "building_footprints"
+
+#Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data")
 
 #Create test
 _cases = {
     "bf_test_1": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\output"),
+        "new_root":  EXAMPLEDIR / "bf_test_1_output", #Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\output"),
         "configuration": {
             "setup_building_footprint": {
-                "building_footprint_fn": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"),
+                "building_footprint_fn": EXAMPLEDIR / "building_footprints" / "building_footprints.gpkg", #Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\HydroMT\Issue_Solving\#133\testcase_data\building_footprints\building_footprint.gpkg"),
                 "attribute_name": "B_footprint",
                 }
         },
