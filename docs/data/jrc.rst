@@ -5,8 +5,9 @@ JRC Global flood depth-damage functions
 ===============================================
 
 Users of **HydroMT-FIAT** can directly and easily make use of the `JRC Global flood depth-damage functions and 
-replacement values <https://publications.jrc.ec.europa.eu/repository/handle/JRC105688>`_ [1]. The user can access 
-the functions and values through providing 'JRC' in the configuration file as such::
+replacement values <https://publications.jrc.ec.europa.eu/repository/handle/JRC105688>`_ [1]. The functions and 
+values can be used only together with the `hydromt_fiat_catalog_global.yml` and 
+by providing the following values in the configuration file::
 
     [setup_vulnerability]
     vulnerability_fn = "jrc_vulnerability_curves"

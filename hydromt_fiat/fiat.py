@@ -15,12 +15,14 @@ from hydromt.models.model_grid import GridModel
 from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
-from . import DATADIR
-from .config import Config
-from .workflows.exposure_vector import ExposureVector
-from .workflows.hazard import *
-from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
-from .workflows.vulnerability import Vulnerability
+from hydromt_fiat import DATADIR
+from hydromt_fiat.config import Config
+from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.hazard import *  # TODO: when the hazard module is updated, explicitly mention the functions that are imported
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+
 
 __all__ = ["FiatModel"]
 
@@ -170,8 +172,6 @@ class FiatModel(GridModel):
         vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
-        # Add the vulnerability linking table to the tables object
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # If the JRC vulnerability curves are used, the continent needs to be specified
         if (
@@ -201,6 +201,9 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
+
+        # Add the vulnerability linking table to the tables object
+        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -530,7 +533,8 @@ class FiatModel(GridModel):
         blockgroup_fn: str = None,
     ):
         """Setup the social vulnerability index for the vector exposure data for
-        Delft-FIAT.
+        Delft-FIAT. This method has so far only been tested with US Census data
+        but aims to be generalized to other datasets as well.
 
         Parameters
         ----------
@@ -588,6 +592,17 @@ class FiatModel(GridModel):
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
+
+    def setup_aggregation_areas(
+        self,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_aggregation_areas(
+            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
 
     # Update functions
     def update_all(self):
