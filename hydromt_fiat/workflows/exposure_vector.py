@@ -15,11 +15,19 @@ from hydromt_fiat.data_apis.open_street_maps import (
     get_landuse_from_osm,
 )
 
-from hydromt_fiat.workflows.damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
+from hydromt_fiat.workflows.damage_values import (
+    preprocess_jrc_damage_values,
+    preprocess_hazus_damage_values,
+)
 from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.gis import get_area, sjoin_largest_area, get_crs_str_from_gdf, join_spatial_data
+from hydromt_fiat.workflows.gis import (
+    get_area,
+    sjoin_largest_area,
+    get_crs_str_from_gdf,
+    join_spatial_data,
+)
 
 
 class ExposureVector(Exposure):
@@ -400,7 +408,9 @@ class ExposureVector(Exposure):
         occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
             landuse_to_jrc_mapping
         )
-        occupancy_map["Secondary Object Type"] = occupancy_map[occupancy_attribute]
+        occupancy_map.rename(
+            columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
+        )
 
         return occupancy_map
 
@@ -453,7 +463,9 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(gdf, gfh, attr_name, method)
-                gdf = self._set_values_from_other_column(gdf, "Ground Floor Height", attr_name)
+                gdf = self._set_values_from_other_column(
+                    gdf, "Ground Floor Height", attr_name
+                )
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
@@ -908,6 +920,7 @@ class ExposureVector(Exposure):
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
             ]
+            assert not linking_per_damage_type.empty, f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
 
             # Create a dictionary that links the exposure data to the vulnerability data
             linking_dict = dict(
@@ -1300,7 +1313,7 @@ class ExposureVector(Exposure):
     def _set_values_from_other_column(
         df: Union[pd.DataFrame, gpd.GeoDataFrame], col_to_set: str, col_to_copy: str
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
-        """Sets the values of <col_to_set> to where the values of <col_to_copy> are 
+        """Sets the values of <col_to_set> to where the values of <col_to_copy> are
         nan and deletes <col_to_copy>.
         """
         df.loc[df[col_to_copy].notna(), col_to_set] = df.loc[
