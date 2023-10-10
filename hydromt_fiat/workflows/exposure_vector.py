@@ -16,10 +16,10 @@ from hydromt_fiat.data_apis.open_street_maps import (
     get_landuse_from_osm,
 )
 
-from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
-from .exposure import Exposure
-from .utils import detect_delimiter
-from .vulnerability import Vulnerability
+from hydromt_fiat.workflows.damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
+from hydromt_fiat.workflows.exposure import Exposure
+from hydromt_fiat.workflows.utils import detect_delimiter
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 
 class ExposureVector(Exposure):
