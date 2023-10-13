@@ -403,9 +403,6 @@ class FiatModel(GridModel):
                     # da = da.squeeze('timemax').drop('timemax')
                     da = da.isel(timemax=0).drop("timemax")
 
-                    # Convert to units of the exposure data if required
-                    if self.exposure.unit != da.units:
-                        da = da * unit_conversion_factor
 
                 else:
                     if not self.region.empty:
@@ -415,6 +412,7 @@ class FiatModel(GridModel):
                         da = self.data_catalog.get_rasterdataset(da_map_fn)
                     else:
                         da = self.data_catalog.get_rasterdataset(da_map_fn)
+                                    # Convert to units of the exposure data if required
             # reading from the datacatalog
             else:
                 if not self.region.empty:
@@ -424,7 +422,8 @@ class FiatModel(GridModel):
                     da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
                 else:
                     da = self.data_catalog.get_rasterdataset(map_fn, variables=da_name)
-
+            if self.exposure.unit != da.units:
+                da = da * unit_conversion_factor
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
 
