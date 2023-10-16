@@ -32,7 +32,8 @@ def test_building_footprints(case: ParameterSet | Sequence[object] | object):
 
     fm = FiatModel(root=_cases[case]["root"], mode="r", logger=logger)
     fm.read()
-
+    exposure_orig = fm.exposure.exposure_db.copy() 
+    
     fm.build(write=False, opt=_cases[case]["configuration"])
     fm.set_root(_cases[case]["new_root"])
     fm.write()
@@ -42,3 +43,6 @@ def test_building_footprints(case: ParameterSet | Sequence[object] | object):
 
     # Check for Object ID duplicates
     assert fm.exposure.exposure_db["Object ID"].duplicated().sum() == 0
+
+    # Check original exposure is same length new exposure
+    assert len(fm.exposure.exposure_db["Object ID"]) == len(exposure_orig["Object ID"])
