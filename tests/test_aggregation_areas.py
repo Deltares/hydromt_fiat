@@ -11,11 +11,11 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 # Load Data
-EXAMPLEDIR = Path().resolve() / "examples" / "data" / "aggregation_zones_example"
+EXAMPLEDIR = Path().resolve() / "examples" / "data" / "aggregation_zones"
 
 _cases = {
     "aggregation_test_1": {
-        "new_root": EXAMPLEDIR / "aggregation_test_1_output",
+        "new_root": EXAMPLEDIR / "fiat_model_aggregation1",
         "configuration": {
             "setup_aggregation_areas": {
                 "aggregation_area_fn": EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
@@ -25,7 +25,7 @@ _cases = {
         },
     },
     "aggregation_test_2": {
-        "new_root": EXAMPLEDIR / "aggregation_test_2_output",
+        "new_root": EXAMPLEDIR / "fiat_model_aggregation2",
         "configuration": {
             "setup_aggregation_areas": {
                 "aggregation_area_fn": [
