@@ -122,42 +122,6 @@ _cases = {
         }
     }
     },
-
-    "event_map_sfincs": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_sfincs",
-        "configuration": {
-        "setup_hazard": {
-            "map_fn": [
-                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\overland\sfincs_map.nc"
-            ],
-            "map_type": "water_depth",
-            "rp": None,
-            "crs": None,
-            "nodata": -99999,
-            "var": "zsmax",
-            "risk_output": False,
-        }
-    }
-    },
-    
-    "event_map_sfincs2": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
-        "dir": "test_event_map_sfincs2",
-        "configuration": {
-        "setup_hazard": {
-            "map_fn": [
-                r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\charleston\output\simulations\current_extreme12ft_no_measures\overland\sfincs_map.nc"
-            ],
-            "map_type": "water_depth",
-            "rp": None,
-            "crs": None,
-            "nodata": -99999,
-            "var": "zsmax",
-            "risk_output": False,
-        }
-    }
-    },
 }
 
 
