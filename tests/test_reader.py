@@ -13,20 +13,18 @@ EXAMPLEDIR = Path(
 
 _cases = {
     "read": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
         "dir": "test_read",
     },
 }
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_read_fiat_config(case):
+def test_read(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
-    data_catalog_yml = str(_cases[case]["data_catalogue"])
 
-    fm = FiatModel(root=root, mode="r", data_libs=[data_catalog_yml], logger=logger)
+    fm = FiatModel(root=root, mode="r", logger=logger)
     fm.read()
 
     # Check if the exposure object exists

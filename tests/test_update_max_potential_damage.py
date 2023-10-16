@@ -62,7 +62,9 @@ def test_update_max_potential_damage(case):
 
     # check if the max potential damage is updated
     updated_max_pot_damage.reset_index(inplace=True, drop=True)
-    updated_max_pot_damage["Object Name"] = updated_max_pot_damage["Object Name"].astype(int)
+    updated_max_pot_damage["Object Name"] = updated_max_pot_damage[
+        "Object Name"
+    ].astype(int)
     pd.testing.assert_frame_equal(
         updated_max_pot_damage,
         exposure_modified,

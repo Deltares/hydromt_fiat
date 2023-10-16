@@ -250,6 +250,7 @@ def read_maps(
 
     return da_map_fn, da_name, da_type
 
+
 def check_maps_metadata(
     maps: xr.Dataset,
     params: dict,

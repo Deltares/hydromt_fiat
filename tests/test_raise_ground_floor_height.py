@@ -5,17 +5,26 @@ import pytest
 import shutil
 import pandas as pd
 
-EXAMPLEDIR = Path("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database")
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
 
 _cases = {
-    "raise_ground_floor_height": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+    "raise_ground_floor_height_geom": {
         "dir": "test_read",
-        "ini": EXAMPLEDIR / "test_read.ini",
+        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_geom",
         "ground_floor_height_reference": EXAMPLEDIR
         / "test_read"
         / "reference_groundHeight_test.shp",
-        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height",
+        "height_reference": "geom",
+        "attr_ref": "bfe",
+    },
+    "raise_ground_floor_height_datum": {
+        "dir": "test_read",
+        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_datum",
+        "ground_floor_height_reference": None,
+        "height_reference": "datum",
+        "attr_ref": None,
     },
 }
 
@@ -36,9 +45,9 @@ def test_raise_ground_floor_height(case):
     fm.exposure.raise_ground_floor_height(
         raise_by=2,
         objectids=objectids,
-        height_reference="geom",
+        height_reference=_cases[case]["height_reference"],
         path_ref=_cases[case]["ground_floor_height_reference"],
-        attr_ref="bfe",
+        attr_ref=_cases[case]["attr_ref"],
     )
 
     if _cases[case]["new_root"].exists():

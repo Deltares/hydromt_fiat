@@ -15,18 +15,13 @@ from hydromt.models.model_grid import GridModel
 from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
-from . import DATADIR
-from .config import Config
-from .workflows.exposure_vector import ExposureVector
-from .workflows.hazard import create_lists
-from .workflows.hazard import check_lists_size
-from .workflows.hazard import read_maps
-from .workflows.hazard import check_maps_metadata
-from .workflows.hazard import check_maps_rp
-from .workflows.hazard import check_map_uniqueness
-from .workflows.hazard import create_risk_dataset
-from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
-from .workflows.vulnerability import Vulnerability
+from hydromt_fiat import DATADIR
+from hydromt_fiat.config import Config
+from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.hazard import create_lists, check_lists_size, read_maps, check_maps_metadata, check_maps_rp, check_map_uniqueness, create_risk_dataset
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 
 __all__ = ["FiatModel"]
 
@@ -176,8 +171,6 @@ class FiatModel(GridModel):
         vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
-        # Add the vulnerability linking table to the tables object
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # If the JRC vulnerability curves are used, the continent needs to be specified
         if (
@@ -207,6 +200,9 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
+
+        # Add the vulnerability linking table to the tables object
+        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -271,19 +267,26 @@ class FiatModel(GridModel):
         extraction_method : str, optional
             The method that should be used to extract the hazard values from the
             hazard maps, by default "centroid".
+        damage_types : Union[List[str], None], optional
+            The damage types that should be used for the exposure data, by default
+            ["structure", "content"]. The damage types are used to link the
+            vulnerability functions to the exposure data.
+        country : Union[str, None], optional
+            The country that is used for the exposure data, by default None. This is
+            only required when using the JRC vulnerability curves.
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
         if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
-            self.exposure.setup_from_single_source(
+            self.exposure.setup_buildings_from_single_source(
                 asset_locations, ground_floor_height, extraction_method
             )
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
-            self.exposure.setup_from_multiple_sources(
+            self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,
                 max_potential_damage,
@@ -311,7 +314,6 @@ class FiatModel(GridModel):
         self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
-
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -386,7 +388,7 @@ class FiatModel(GridModel):
             # Convert to units of the exposure data if required
             if self.exposure in locals() or self.exposure in globals():                   # change to be sure that the unit information is available from the expousure dataset
                 if self.exposure.unit != da.units:  
-                    da = da * unit_conversion_factor 
+                    da = da * unit_conversion_factor
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
@@ -498,7 +500,8 @@ class FiatModel(GridModel):
         blockgroup_fn: str = None,
     ):
         """Setup the social vulnerability index for the vector exposure data for
-        Delft-FIAT.
+        Delft-FIAT. This method has so far only been tested with US Census data
+        but aims to be generalized to other datasets as well.
 
         Parameters
         ----------
@@ -548,24 +551,25 @@ class FiatModel(GridModel):
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
             exposure_data.sort_values("Object ID")
-            
-            if svi.svi_data_shp.crs != exposure_data.crs:
-                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace = True)
 
-            svi_exp_joined = gpd.sjoin(
-                exposure_data, svi.svi_data_shp, how="left"
-            )
-            svi_exp_joined.drop(columns=['geometry'], inplace=True)
+            if svi.svi_data_shp.crs != exposure_data.crs:
+                svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
+
+            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp, how="left")
+            svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
 
-        # exposure opnieuw opslaan in self._tables
-
-        # TODO: geometries toevoegen aan de dataset met API
-        # we now use the shape download function by the census, the user needs to download their own shape data. They can download this from: https://www.census.gov/cgi-bin/geo/shapefiles/index.php
-        # #wfs python get request -> geometries
-
-        # this link can be used: https://github.com/datamade/census
+    def setup_aggregation_areas(
+        self,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        self.exposure.exposure_db = join_exposure_aggregation_areas(
+            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        )
 
     # Update functions
     def update_all(self):
@@ -590,12 +594,16 @@ class FiatModel(GridModel):
     def update_geoms(self):
         # Update the exposure data geoms
         if self.exposure and "exposure" in self._tables:
-            for i, geom in enumerate(self.exposure.exposure_geoms):
-                file_suffix = i if i > 0 else ""
-                self.set_geoms(geom=geom, name=f"exposure{file_suffix}")
+            for i, geom_and_name in enumerate(
+                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+            ):
+                geom = geom_and_name[0]
+                name = geom_and_name[1]
+
+                self.set_geoms(geom=geom, name=name)
                 self.set_config(
                     f"exposure.geom.file{str(i+1)}",
-                    f"./exposure/exposure{file_suffix}.gpkg",
+                    f"./exposure/{name}.gpkg",
                 )
 
         if not self.region.empty:
@@ -606,7 +614,8 @@ class FiatModel(GridModel):
 
     # I/O
     def read(self):
-        """Method to read the complete model schematization and configuration from file."""
+        """Method to read the complete model schematization and configuration from
+        file."""
         self.logger.info(f"Reading model data from {self.root}")
 
         # Read the configuration file
@@ -627,13 +636,6 @@ class FiatModel(GridModel):
         # Read the fiat configuration toml file.
         config = Config()
         return config.load_file(fn)
-
-    def check_path_exists(self, fn):
-        """TODO: decide to use this or another function (check_file_exist in py)"""
-        path = Path(fn)
-        self.logger.debug(f"Reading file {str(path.name)}")
-        if not fn.is_file():
-            logging.warning(f"File {fn} does not exist!")
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
@@ -662,6 +664,7 @@ class FiatModel(GridModel):
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
                 unit=self.get_config("exposure.geom.unit"),
+                data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
             self._tables["exposure"] = self.exposure.exposure_db

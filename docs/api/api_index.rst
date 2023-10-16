@@ -1,13 +1,10 @@
 .. currentmodule:: hydromt_fiat
 
+.. _api_model:
+
 =============
 API reference
 =============
-
-.. _api_model:
-
-FIAT model class
-================
 
 Initialize
 ----------
@@ -23,12 +20,22 @@ Build components
 .. autosummary::
    :toctree: ../_generated/
 
-   fiat.FiatModel.setup_config
    fiat.FiatModel.setup_basemaps
    fiat.FiatModel.setup_vulnerability
+   fiat.FiatModel.setup_vulnerability_from_csv
    fiat.FiatModel.setup_exposure_vector
    fiat.FiatModel.setup_hazard
    fiat.FiatModel.setup_social_vulnerability_index
+
+Delft-FIAT settings
+-------------------
+
+.. autosummary::
+   :toctree: ../_generated/
+
+   fiat.FiatModel.setup_config
+   fiat.FiatModel.setup_global_settings
+   fiat.FiatModel.setup_output
 
 Attributes
 ----------

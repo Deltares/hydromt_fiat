@@ -1,11 +1,22 @@
-name: Build Docs
+name: Build Documentation
 
-# We don't want pushes (or PRs) to gh-pages to kick anything off
 on:
   push:
     branches: [ main ]
+    paths:
+      - tests/*
+      - hydromt_fiat/*
+      - docs/*
+      - examples/*
+      - pyproject.toml
   pull_request:
     branches: [ main ]
+    paths:
+      - tests/*
+      - hydromt_fiat/*
+      - docs/*
+      - examples/*
+      - pyproject.toml
 
 jobs:
   # Build docs on Linux
@@ -20,43 +31,51 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      
-      # - name: Get tags
-      #   run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
 
-      - name: Setup environment
+      - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: "3.9"
-          mamba-version: "*"
-          channels: conda-forge,defaults
-          channel-priority: true
-          environment-file: envs/hydromt-fiat-dev.yml
-          activate-environment: hydromt-fiat-dev
+          python-version: "3.10"
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          channels: conda-forge
+          activate-environment: hydromt-fiat-docs
+          use-mamba: true
+
+      - name: Set cache date
+        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
+      - name: load from cache if it exists for our environment
+        uses: actions/cache@v3
+        with:
+          path: /usr/share/miniconda3/envs/hydromt-fiat-docs
+          key: docs-conda-${{ hashFiles('envs/hydromt-fiat-docs.yml') }}-${{ env.DATE }}
+        id: cache
+
+      - name: Update environment & write to cache
+        run: mamba env update -n hydromt-fiat-docs -f envs/hydromt-fiat-docs.yml
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Install hydromt-fiat
-        run: flit install
+        run: pip install .
 
-      # Move examples folder before make html for nbsphinx
       - name: Build docs
+        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         run: |
-          mv examples docs/_examples
-          pushd docs
           make html
-          popd
+
       # This overrides the version "dev" with the proper version if we're building off a
       # branch that's not main (which is confined to n.nn.x above) or on a tag.
       - name: Set doc version
-        if: ${{ github.event_name != 'push' || !contains(github.ref, 'main') }}
         run: echo "DOC_VERSION=$(python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
-        if: ${{ github.event_name != 'pull_request'}}
+        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         uses: peaceiris/actions-gh-pages@v3.8.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
-          exclude_assets: '.buildinfo,_sources/*'
+          exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
           destination_dir: ./${{ env.DOC_VERSION }}
           keep_files: false
           full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def check_dir_exist(dir, name=None):
     """ """
 
@@ -7,9 +8,8 @@ def check_dir_exist(dir, name=None):
         raise TypeError(
             f"The directory indicated by the '{name}' parameter does not exist."
         )
-    
-def check_uniqueness(map_name_lst):
 
+def check_uniqueness(map_name_lst):
     def check_duplicates(lst):
         unique_elements = set()
         for element in lst:
@@ -17,13 +17,11 @@ def check_uniqueness(map_name_lst):
                 return True  # Found a duplicate
             unique_elements.add(element)
         return False  # No duplicates found
-    
+
     check = check_duplicates(map_name_lst)
 
-    if check: 
-            raise ValueError(
-            f"The filenames of the hazard maps should be unique."
-        )
+    if check:
+        raise ValueError(f"The filenames of the hazard maps should be unique.")
 
 def get_param(param_lst, map_fn_lst, file_type, filename, i, param_name):
     """ """

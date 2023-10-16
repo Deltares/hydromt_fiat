@@ -1,65 +1,47 @@
-======================
-HydroMT plugin: FIAT
-======================
+=====================================================================
+HydroMT-FIAT: Automated and reproducible Delft-FIAT model building
+=====================================================================
 
-`HydroMT <https://github.com/Deltares/hydromt>`_ is a python package, developed by Deltares, to build 
-and analyse hydro models. It provides a generic model api with attributes to access the model schematization, 
-(dynamic) forcing data, results and states. 
+With the `HydroMT-FIAT plugin <https://github.com/Deltares/hydromt_fiat>`_, users can easily benefit 
+from the rich set of tools of the `HydroMT package <https://github.com/Deltares/hydromt>`_ to build and update 
+`Delft-FIAT <https://github.com/Deltares/Delft-FIAT>`_ models from available global and local data.
 
-This plugin provides an implementation for the 
-`Delft-FIAT <https://github.com/Deltares/Delft-FIAT>`_ flood impact assessment tool. 
-It details the different steps and explains how to  use HydroMT to easily get started and work on your own FIAT model.
+This plugin assists the FIAT modeller in:
+
+- Quickly setting up a Delft-FIAT model based on existing hazard maps, global and user-input exposure layers, and global, US national, or user-input vulnerability curves.
+- Creating a Social Vulnerability Index (SVI) based on US Census or user-input data.
+- Adjusting and updating components of a Delft-FIAT model and their associated parameters in a consistent way.
+
+The HydroMT-FIAT plugin aims to make the FIAT model building process **fast**, **modular**, and **reproducible** 
+by configuring the model building process from single *yml* file.
 
 For detailed information on HydroMT itself, you can visit the `core documentation <https://deltares.github.io/hydromt/>`_.
 
-Documentation
+
+Overview
 =============
 
 **Getting Started**
 
-* :doc:`intro`
 * :doc:`installation`
 * :doc:`examples/index`
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Getting Started
-
-   intro
-   installation
-   examples/index
-
 **User Guide**
 
-* :doc:`user_guide/fiat`
-* :doc:`user_guide/fiat_flood`
+* :doc:`user_guide/user_guide_overview`
+* :doc:`data/data_sources`
 
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: User Guide
-
-   user_guide/fiat
-   user_guide/fiat_flood
-
-
-**References & Help**
+**Technical documentation**
 
 * :doc:`api/api_index`
-* :doc:`contributing`
 * :doc:`changelog`
 
-.. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: References & Help
 
-   api/api_index
-   contributing
-   changelog
+Contributing
+------------
 
+To contribute to HydroMT and the plugin plugin, please follow the 
+`HydroMT contribution guidelines <https://deltares.github.io/hydromt/latest/contributing.html>`_.
 
 License
 -------
@@ -73,3 +55,15 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You can find the full terms of the GNU General Public License at <https://www.gnu.org/licenses/>.
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :hidden:
+
+   installation
+   examples/index
+   user_guide/user_guide_overview
+   data/data_sources
+   api/api_index
+   changelog
