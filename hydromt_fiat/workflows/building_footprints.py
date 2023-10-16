@@ -66,7 +66,7 @@ def join_exposure_building_footprints(
     aggregated = (
         joined_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
     )
-    exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
+    exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID", how = 'left')
 
     # Create a string from the list of values in the duplicated aggregation area 
     # column
