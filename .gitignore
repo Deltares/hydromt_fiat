@@ -122,3 +122,4 @@ cache
 /examples/FIAT_database
 hydromt_fiat/data/damage_functions/flooding/AllDDF_HAZUS_fractions.xlsx
 hydromt_fiat/data/damage_functions/flooding/~$AllDDF_HAZUS_fractions.xlsx
+/examples/data/building_footprints/fiat_model_bfs

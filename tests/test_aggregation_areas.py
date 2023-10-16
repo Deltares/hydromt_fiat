@@ -4,18 +4,11 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 from pathlib import Path
 import pytest
-import geopandas as gpd
-import pandas as pd
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_multiple_areas
 
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 import shutil
-
-# set pyogrio as default engine
-gpd.options.io_engine = "pyogrio"
 
 # Load Data
 EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model")

@@ -22,7 +22,7 @@ from .workflows.hazard import *
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
 from .workflows.aggregation_areas import join_exposure_aggregation_areas
-from .workflows.building_footprints import  nearest_neighbor_bf
+from .workflows.building_footprints import  join_exposure_building_footprints
 
 __all__ = ["FiatModel"]
 
@@ -637,7 +637,7 @@ class FiatModel(GridModel):
         """
 
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = nearest_neighbor_bf(
+        self.exposure.exposure_db = join_exposure_building_footprints(
             exposure_gdf, building_footprint_fn, attribute_name,
         )
 
