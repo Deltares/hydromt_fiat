@@ -456,7 +456,7 @@ class FiatModel(GridModel):
         self.set_config(
             "hazard.crs",
             [
-                "EPSG:" + str((self.maps[hazard_map].rio.crs.to_epsg()))
+                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
                 for hazard_map in self.maps.keys()
             ][0] if not risk_output else                
             [
