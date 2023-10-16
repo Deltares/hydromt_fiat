@@ -6,8 +6,6 @@ from pathlib import Path
 import pytest
 import shutil
 
-#Datasource: https://github.com/microsoft/USBuildingFootprints
-
 EXAMPLEDIR = Path().resolve() / "examples" / "data" / "building_footprints"
 
 #Create test
@@ -17,7 +15,7 @@ _cases = {
         "new_root":  EXAMPLEDIR / "fiat_model_bfs",
         "configuration": {
             "setup_building_footprint": {
-                "building_footprint_fn": EXAMPLEDIR / "building_footprints" / "building_footprints.gpkg",
+                "building_footprint_fn": EXAMPLEDIR / "building_footprints" / "building_footprints.gpkg",  # Datasource: https://github.com/microsoft/USBuildingFootprints
                 "attribute_name": "BF_FID",
                 }
         },
