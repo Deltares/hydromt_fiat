@@ -425,6 +425,7 @@ class ExposureVector(Exposure):
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
@@ -448,6 +449,9 @@ class ExposureVector(Exposure):
             to the files in the same order as the files are submitted. The method can
             be either 'nearest' (nearest neighbor) or 'intersection'. By default
             'nearest'.
+        max_dist : float
+            The maximum distance for the nearest join measured in meters, by default 
+            set to 10 meters.
         """
         if ground_floor_height:
             if isinstance(ground_floor_height, int) or isinstance(
@@ -462,7 +466,7 @@ class ExposureVector(Exposure):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
-                gdf = join_spatial_data(gdf, gfh, attr_name, method)
+                gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist)
                 gdf = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attr_name
                 )
