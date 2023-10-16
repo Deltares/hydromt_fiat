@@ -375,25 +375,12 @@ class FiatModel(GridModel):
             # read maps and retrieve their attributes
             da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
 
-            if da_map_fn.stem == "sfincs_map":
-                sfincs_root = os.path.dirname(da_map_fn)
-                sfincs_model = SfincsModel(
-                    sfincs_root, mode="r", logger=self.logger
-                )
-                sfincs_model.read_results()
-                da = sfincs_model.results["zsmax"]
-                da = da.isel(timemax=0).drop("timemax")
-                # save sfincs map as GeoTIFF
-                # result_list = list(sfincs_model.results.keys())
-                # sfincs_model.write_raster("results.zsmax", compress="LZW")
+            da = self.data_catalog.get_rasterdataset(da_map_fn)
 
-                # Convert to units of the exposure data if required
-                if self.exposure in locals() or self.exposure in globals():                   # change to be sure that the unit information is available from the expousure dataset
-                    if self.exposure.unit != da.units:  
-                        da = da * unit_conversion_factor 
-
-            else:
-                da = self.data_catalog.get_rasterdataset(da_map_fn)
+            # Convert to units of the exposure data if required
+            if self.exposure in locals() or self.exposure in globals():                   # change to be sure that the unit information is available from the expousure dataset
+                if self.exposure.unit != da.units:  
+                    da = da * unit_conversion_factor 
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
@@ -434,7 +421,7 @@ class FiatModel(GridModel):
             self.set_grid(da) 
 
             self.grid.attrs = {
-                "returnperiod": sorted_rp,
+                "rp": sorted_rp,
                 "type": params["map_type_lst"], #TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
                 "name": sorted_names,
                 "analysis": "risk",
