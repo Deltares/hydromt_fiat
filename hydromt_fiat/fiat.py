@@ -18,7 +18,13 @@ from shapely.geometry import box
 from . import DATADIR
 from .config import Config
 from .workflows.exposure_vector import ExposureVector
-from .workflows.hazard import *
+from .workflows.hazard import create_lists
+from .workflows.hazard import check_lists_size
+from .workflows.hazard import read_maps
+from .workflows.hazard import check_maps_metadata
+from .workflows.hazard import check_maps_rp
+from .workflows.hazard import check_map_uniqueness
+from .workflows.hazard import create_risk_dataset
 from .workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from .workflows.vulnerability import Vulnerability
 
