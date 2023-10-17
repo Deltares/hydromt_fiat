@@ -3,7 +3,6 @@
 import csv
 import glob
 import logging
-import os
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Union
@@ -12,7 +11,6 @@ import geopandas as gpd
 import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
-from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
 from hydromt_fiat import DATADIR
@@ -33,8 +31,8 @@ class FiatModel(GridModel):
 
     _NAME = "fiat"
     _CONF = "settings.toml"
-    _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
-    _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
+    _GEOMS = {}
+    _MAPS = {}
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _CLI_ARGS = {"region": "setup_basemaps"}
     _DATADIR = DATADIR
@@ -54,7 +52,6 @@ class FiatModel(GridModel):
             data_libs=data_libs,
             logger=logger,
         )
-        self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
         self.vulnerability = None
         self.vulnerability_metadata = list()
@@ -593,7 +590,7 @@ class FiatModel(GridModel):
 
     def update_geoms(self):
         # Update the exposure data geoms
-        if self.exposure and "exposure" in self._tables:
+        if self.exposure and "exposure" in self.tables:
             for i, geom_and_name in enumerate(
                 zip(self.exposure.exposure_geoms, self.exposure.geom_names)
             ):
@@ -639,9 +636,6 @@ class FiatModel(GridModel):
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
-        if not self._write:
-            self._tables = dict()  # start fresh in read-only mode
-
         self.logger.info("Reading model table files.")
 
         # Start with vulnerability table
@@ -649,10 +643,8 @@ class FiatModel(GridModel):
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
-            (
-                self._tables["vulnerability_curves"],
-                _,
-            ) = self.vulnerability.get_table_and_metadata()
+            table, _ = self.vulnerability.get_table_and_metadata()
+            self.set_tables(table, "vulnerability_curves")
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
@@ -667,7 +659,7 @@ class FiatModel(GridModel):
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
-            self._tables["exposure"] = self.exposure.exposure_db
+            self.set_tables(self.exposure.exposure_db, "exposure")
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
 
@@ -714,16 +706,16 @@ class FiatModel(GridModel):
             self.write_grid(fn="hazard/risk_map.nc")
         if self.geoms:
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
-        if self._tables:
+        if self.tables:
             self.write_tables()
 
     def write_tables(self) -> None:
-        if len(self._tables) == 0:
+        if len(self.tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
         self._assert_write_mode
 
-        for name in self._tables.keys():
+        for name in self.tables.keys():
             # Vulnerability
             if name == "vulnerability_curves":
                 # The default location and save settings of the vulnerability curves
@@ -764,9 +756,9 @@ class FiatModel(GridModel):
                 path.parent.mkdir(parents=True)
 
             if path.name.endswith("csv"):
-                self._tables[name].to_csv(path, **kwargs)
+                self.tables[name].to_csv(path, **kwargs)
             elif path.name.endswith("xlsx"):
-                self._tables[name].to_excel(path, **kwargs)
+                self.tables[name].to_excel(path, **kwargs)
 
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
@@ -777,8 +769,8 @@ class FiatModel(GridModel):
     @property
     def vulnerability_curves(self) -> pd.DataFrame:
         """Returns a dataframe with the damage functions."""
-        if "vulnerability_curves" in self._tables:
-            vf = self._tables["vulnerability_curves"]
+        if "vulnerability_curves" in self.tables:
+            vf = self.tables["vulnerability_curves"]
         else:
             vf = pd.DataFrame()
         return vf
@@ -786,27 +778,8 @@ class FiatModel(GridModel):
     @property
     def vf_ids_and_linking_df(self) -> pd.DataFrame:
         """Returns a dataframe with the vulnerability identifiers and linking."""
-        if "vulnerability_identifiers" in self._tables:
-            vi = self._tables["vulnerability_identifiers"]
+        if "vulnerability_identifiers" in self.tables:
+            vi = self.tables["vulnerability_identifiers"]
         else:
             vi = pd.DataFrame()
         return vi
-
-    def set_tables(self, df: pd.DataFrame, name: str) -> None:
-        """Add <pandas.DataFrame> to the tables variable.
-
-        Parameters
-        ----------
-        df : pd.DataFrame
-            New DataFrame to add
-        name : str
-            Name of the DataFrame to add
-        """
-        if not (isinstance(df, pd.DataFrame) or isinstance(df, pd.Series)):
-            raise ValueError("df type not recognized, should be pandas.DataFrame.")
-        if name in self._tables:
-            if not self._write:
-                raise IOError(f"Cannot overwrite table {name} in read-only mode")
-            elif self._read:
-                self.logger.warning(f"Overwriting table: {name}")
-        self._tables[name] = df
