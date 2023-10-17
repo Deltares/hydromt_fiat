@@ -20,7 +20,7 @@ Build components
 .. autosummary::
    :toctree: ../_generated/
 
-   fiat.FiatModel.setup_basemaps
+   fiat.FiatModel.setup_region
    fiat.FiatModel.setup_vulnerability
    fiat.FiatModel.setup_vulnerability_from_csv
    fiat.FiatModel.setup_exposure_vector

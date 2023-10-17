@@ -34,7 +34,7 @@ class FiatModel(GridModel):
     _GEOMS = {}
     _MAPS = {}
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
-    _CLI_ARGS = {"region": "setup_basemaps"}
+    _CLI_ARGS = {"region": "setup_region"}
     _DATADIR = DATADIR
 
     def __init__(
@@ -89,45 +89,6 @@ class FiatModel(GridModel):
             output_vector_name = [output_vector_name]
         for i, name in enumerate(output_vector_name):
             self.set_config(f"output.geom.name{str(i+1)}", name)
-
-    def setup_basemaps(
-        self,
-        region,
-        **kwargs,
-    ):
-        # FIXME Mario will update this function according to the one in Habitat
-        """Define the model domain that is used to clip the raster layers.
-
-        Adds model layer:
-
-        * **region** geom: A geometry with the nomenclature 'region'.
-
-        Parameters
-        ----------
-        region: dict
-            Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.
-        """
-
-        kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
-        if kind == "bbox":
-            geom = gpd.GeoDataFrame(geometry=[box(*region["bbox"])], crs=4326)
-        elif kind == "grid":
-            geom = region["grid"].raster.box
-        elif kind == "geom":
-            geom = region["geom"]
-        else:
-            raise ValueError(
-                f"Unknown region kind {kind} for FIAT, expected one of ['bbox', 'grid', 'geom']."
-            )
-
-        # Set the model region geometry (to be accessed through the shortcut self.region).
-        self.set_geoms(geom, "region")
-
-        # Set the region crs
-        if geom.crs:
-            self.region.set_crs(geom.crs)
-        else:
-            self.region.set_crs(4326)
 
     def setup_vulnerability(
         self,
