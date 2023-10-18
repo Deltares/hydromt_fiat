@@ -467,7 +467,7 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist)
-                gdf = self._set_values_from_other_column(
+                self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attr_name
                 )
             elif isinstance(ground_floor_height, list):

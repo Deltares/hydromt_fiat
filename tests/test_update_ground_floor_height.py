@@ -1,26 +1,20 @@
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
-from hydromt.gis_utils import utm_crs
 from pathlib import Path
 import pytest
 import shutil
-import geopandas as gpd
 import copy
 
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_floor_height"
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
     "update_ground_floor_height": {
-        "dir": "test_read",
+        "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_floor_height",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "ground_floor_height_file": EXAMPLEDIR
-        / "data"
-        / "ground_floor_height"
         / "fake_elevation_certificates.gpkg",
         "attribute": "FFE",
         "method": "nearest",
@@ -60,7 +54,7 @@ def test_update_ground_floor_height(case):
 
     # Check if the new ground floor height is different from the original one
     unique_gfh_new = fm.exposure.exposure_db["Ground Floor Height"].unique()
-    assert unique_gfh_original != unique_gfh_new, "The Ground Floor Height is the same"
+    assert any(unique_gfh_original != unique_gfh_new), "The Ground Floor Height is the same"
 
     # # Check if the Ground Floor Heigh attribute is set correctly
     # ground_floor_height = gpd.read_file(_cases[case]["ground_floor_height_file"])
