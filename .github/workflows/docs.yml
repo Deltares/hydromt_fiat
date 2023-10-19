@@ -42,34 +42,37 @@ jobs:
           activate-environment: hydromt-fiat-docs
           use-mamba: true
 
-      - name: load from cache
-        id: cache
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            /usr/share/miniconda3
-            ~/pycache
-            ./docs/_build
-          # the below two settings mean we'll alway srestore the cache
-          # but the cache hit output can tell us if we have to update afterwards
-          key: docs-${{ hashFiles('envs/hydromt-fiat-docs.yml')  }}
-          restore-keys: |
-            docs
+      # - name: load from cache
+      #   id: cache
+      #   uses: actions/cache/restore@v3
+      #   with:
+      #     path: |
+      #       /usr/share/miniconda3
+      #       ~/pycache
+      #       ./docs/_build
+      #     # the below two settings mean we'll alway srestore the cache
+      #     # but the cache hit output can tell us if we have to update afterwards
+      #     key: docs-${{ hashFiles('envs/hydromt-fiat-docs.yml')  }}
+      #     restore-keys: |
+      #       docs
 
-      - name: Fail on no cache restore
-        if: steps.cache.outputs.cache-matched-key == ''
-        run: |
-          echo "Failed to restore any cache. exiting..."
-          exit 1
+      # - name: Fail on no cache restore
+      #   if: steps.cache.outputs.cache-matched-key == ''
+      #   run: |
+      #     echo "Failed to restore any cache. exiting..."
+      #     exit 1
 
-      # by avoiding the mamba setup stage by loading it from cache instead we save
-      # a lot of setup time, but we do have to do our own PATH management
-      # hence the exports
-      - name: Update environment
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          export PATH=/usr/share/miniconda3/bin:$PATH
-          mamba env update -n hydromt-fiat-docs -f envs/hydromt-fiat-docs.yml
+      # # by avoiding the mamba setup stage by loading it from cache instead we save
+      # # a lot of setup time, but we do have to do our own PATH management
+      # # hence the exports
+      # - name: Update environment
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #   run: |
+      #     export PATH=/usr/share/miniconda3/bin:$PATH
+      #     mamba env update -n hydromt-fiat-docs -f envs/hydromt-fiat-docs.yml
+
+      - name: Install environment
+        run: mamba env update -n hydromt-fiat-docs -f envs/hydromt-fiat-docs.yml
 
       - name: Install hydromt-fiat
         run: pip install .
