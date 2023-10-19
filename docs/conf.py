@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# hydromt_fiat documentation build configuration file, created by
+# hydromt documentation build configuration file, created by
 # sphinx-quickstart on Wed Jul 24 15:19:00 2019.
 #
 # This file is execfile()d with the current directory set to its
@@ -17,21 +17,89 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys
-import hydromt  ## to avoid ciruclar dependency
+import shutil
+from distutils.dir_util import copy_tree
+
+import numpy as np
+import sphinx_autosummary_accessors
+
 import hydromt_fiat
 
-here = os.path.dirname(__file__)
-sys.path.insert(0, os.path.abspath(os.path.join(here, "..")))
+# here = os.path.dirname(__file__)
+# sys.path.insert(0, os.path.abspath(os.path.join(here, "..")))
 
+
+def cli2rst(output, fn):
+    with open(fn, "w") as f:
+        f.write(".. code-block:: console\n\n")
+        for line in output.split("\n"):
+            f.write(f"    {line}\n")
+
+
+def remove_dir_content(path: str) -> None:
+    for root, dirs, files in os.walk(path):
+        for f in files:
+            os.unlink(os.path.join(root, f))
+        for d in dirs:
+            shutil.rmtree(os.path.join(root, d))
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+
+
+def write_panel(f, name, content="", level=0, item="dropdown"):
+    pad = "".ljust(level * 3)
+    f.write(f"{pad}.. {item}:: {name}\n")
+    f.write("\n")
+    if content:
+        pad = "".ljust((level + 1) * 3)
+        for line in content.split("\n"):
+            f.write(f"{pad}{line}\n")
+        f.write("\n")
+
+
+def write_nested_dropdown(name, data_cat, note="", categories=[]):
+    df = data_cat.to_dataframe().sort_index().drop_duplicates("path")
+    with open(f"_generated/{name}.rst", mode="w") as f:
+        write_panel(f, name, note, level=0)
+        write_panel(f, "", level=1, item="tab-set")
+        for category in categories:
+            if category == "other":
+                sources = df.index[~np.isin(df["category"], categories)]
+            else:
+                sources = df.index[df["category"] == category]
+            if len(sources) > 0:
+                write_panel(f, category, level=2, item="tab-item")
+            for source in sources:
+                items = data_cat[source].summary().items()
+                summary = "\n".join([f":{k}: {v}" for k, v in items if k != "category"])
+                write_panel(f, source, summary, level=3)
+
+        write_panel(f, "all", level=2, item="tab-item")
+        for source in df.index.values:
+            items = data_cat[source].summary().items()
+            summary = "\n".join([f":{k}: {v}" for k, v in items])
+            write_panel(f, source, summary, level=3)
+
+
+# NOTE: the examples/ folder in the root should be copied to docs/examples/examples/ before running sphinx
 # -- Project information -----------------------------------------------------
 
-project = "hydromt_fiat"
+project = "HydroMT-FIAT"
 copyright = "Deltares"
-author = "Laurens Leunge, Dirk Eilander"
+author = "Frederique de Groen"
 
 # The short version which is displayed
 version = hydromt_fiat.__version__
+
+
+# # -- Copy notebooks to include in docs -------
+if os.path.isdir("_examples"):
+    remove_dir_content("_examples")
+os.makedirs("_examples")
+copy_tree("../examples", "_examples")
+
+if not os.path.isdir("_generated"):
+    os.makedirs("_generated")
 
 # -- General configuration ------------------------------------------------
 
@@ -43,12 +111,15 @@ version = hydromt_fiat.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.githubpages",
+    "sphinx.ext.intersphinx",
+    "sphinx_autosummary_accessors",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
@@ -56,7 +127,7 @@ extensions = [
 
 autosummary_generate = True
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ["_templates", sphinx_autosummary_accessors.templates_path]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
@@ -89,7 +160,8 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
+html_logo = "_static/fiat.png"
 autodoc_member_order = "bysource"  # overwrite default alphabetical sort
 autoclass_content = "both"
 
@@ -97,13 +169,52 @@ autoclass_content = "both"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
-html_context = {}
+html_css_files = ["theme-deltares.css"]
+html_theme_options = {
+    "show_nav_level": 2,
+    "navbar_align": "content",
+    "use_edit_page_button": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/Deltares/hydromt_fiat",  # required
+            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
+            "type": "url",
+        },
+        {
+            "name": "Deltares",
+            "url": "https://www.deltares.nl/en/",
+            "icon": "_static/deltares-blue.svg",
+            "type": "local",
+        },
+    ],
+    "logo": {
+        "text": "HydroMT-FIAT",
+    },
+    "navbar_end": ["navbar-icon-links"],  # remove dark mode switch
+}
+
+html_context = {
+    "github_url": "https://github.com",  # or your GitHub Enterprise interprise
+    "github_user": "Deltares",
+    "github_repo": "hydromt_fiat",
+    "github_version": "main",
+    "doc_path": "docs",
+    "default_mode": "light",
+}
+
+remove_from_toctrees = ["_generated/*"]
+
+# no sidebar in api section
+# html_sidebars = {
+#   "api": [],
+#   "_generated/*": []
+# }
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -117,11 +228,13 @@ html_context = {}
 #     ]
 # }
 
+# The name of an image file (relative to this directory) to place at the top
+# of the sidebar.
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "hydromt_fiat_doc"
+htmlhelp_basename = "hydromt_doc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -147,8 +260,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "hydromt_fiat.tex",
-        "HydroMT fiat plugin Documentation",
+        "hydromt.tex",
+        "HydroMT Documentation",
         [author],
         "manual",
     ),
@@ -159,7 +272,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "hydromt_fiat", "HydroMT fiat Documentation", [author], 1)]
+man_pages = [(master_doc, "hydromt", "HydroMT Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -170,11 +283,45 @@ man_pages = [(master_doc, "hydromt_fiat", "HydroMT fiat Documentation", [author]
 texinfo_documents = [
     (
         master_doc,
-        "hydromt_fiat",
-        "HydroMT fiat Documentation",
+        "hydromt",
+        "HydroMT-FIAT Documentation",
         author,
-        "HydroMT fiat",
-        "Build and analyze fiat models like a data-wizard.",
+        "HydroMT-FIAT",
+        "Automated and reproducible model building for Delft-FIAT",
         "Miscellaneous",
     ),
 ]
+
+
+# -- INTERSPHINX -----------------------------------------------------------
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    # "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy", None),
+    # "numba": ("https://numba.pydata.org/numba-doc/latest", None),
+    # "matplotlib": ("https://matplotlib.org/stable/", None),
+    # "dask": ("https://docs.dask.org/en/latest", None),
+    "geopandas": ("https://geopandas.org/en/stable", None),
+    "xarray": ("https://docs.xarray.dev/en/stable", None),
+}
+
+# -- NBSPHINX --------------------------------------------------------------
+
+# This is processed by Jinja2 and inserted before each notebook
+nbsphinx_prolog = r"""
+{% set docname = env.doc2path(env.docname, base=None).split('\\')[-1].split('/')[-1] %}
+
+.. TIP::
+
+    .. raw:: html
+
+        <div>
+            For an interactive online version click here:
+            <a href="https://mybinder.org/v2/gh/Deltares/hydromt/main?urlpath=lab/tree/examples/{{ docname|e }}" target="_blank" rel="noopener noreferrer"><img alt="Binder badge" src="https://mybinder.org/badge_logo.svg"></a>
+        </div>
+"""
+
+# Allow errors in notebooks
+# nbsphinx_allow_errors = True

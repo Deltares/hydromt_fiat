@@ -7,29 +7,34 @@ name = "hydromt_fiat"
 authors = [
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
 	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
-	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
 	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
 	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
+	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
 ]
+requires-python = ">=3.8"
 dependencies = [
-    "hydromt >=0.4.1",
-    "geopandas >=0.8",
+    "hydromt==0.8.0",
+    "hydromt_sfincs",
+    "geopandas",
     "numpy",
     "pandas",
-    "pygeos",
-    "rasterio",
+    "pyogrio",
+    "tomli-w",
+    "tomli",
     "xarray",
-	"pydantic"
+	"pydantic==1.10.9",
+	"osmnx",
+	"census",
+	"us"
 ]
-requires-python = ">=3.8" # fix tests to support older versions
 readme = "README.rst"
 classifiers = [
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Hydrology",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Topic :: Scientific/Engineering :: Climate impact",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
 dynamic = ['version', 'description']

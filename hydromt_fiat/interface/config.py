@@ -5,13 +5,6 @@ from enum import Enum
 from pydantic import BaseModel
 
 
-class Mode(str, Enum):
-    """Class describing the accepted input for the variable mode in the configuration file"""
-
-    event = "event"
-    risk = "risk"
-
-
 class SpatialReference(str, Enum):
     """Class describing the accepted input for the variable spatial_reference in the configuration file"""
 
@@ -19,26 +12,45 @@ class SpatialReference(str, Enum):
     datum = "datum"
 
 
+class OutputCsv(BaseModel):
+    name: str
+
+
+class OutputGeom(BaseModel):
+    name1: str
+
+
 class OutputModel(BaseModel):
-    output_dir: str
-    crs: str
+    path: str
+    csv: OutputCsv
+    geom: OutputGeom
 
 
 class HazardModel(BaseModel):
-    grid_file: str
+    file: str
     crs: str
-    mode: Mode
+    risk: bool
     return_periods: Optional[List[int]]
     spatial_reference: SpatialReference
+    layer: Optional[str]
+
+
+class ExposureGeomModel(BaseModel):
+    csv: str
+    crs: str
+    file1: str
+    file2: str
+    unit: str
 
 
 class ExposureModel(BaseModel):
-    dbase_file: str
-    crs: str
+    geom: ExposureGeomModel
 
 
 class VulnerabilityModel(BaseModel):
-    dbase_file: str
+    file: str
+    step_size: float
+    unit: str
 
 
 class ConfigModel(BaseModel):

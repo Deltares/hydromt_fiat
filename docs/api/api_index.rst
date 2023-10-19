@@ -1,13 +1,10 @@
 .. currentmodule:: hydromt_fiat
 
+.. _api_model:
+
 =============
 API reference
 =============
-
-.. _api_model:
-
-FIAT model class
-================
 
 Initialize
 ----------
@@ -23,11 +20,22 @@ Build components
 .. autosummary::
    :toctree: ../_generated/
 
-   fiat.FiatModel.setup_config
    fiat.FiatModel.setup_basemaps
+   fiat.FiatModel.setup_vulnerability
+   fiat.FiatModel.setup_vulnerability_from_csv
+   fiat.FiatModel.setup_exposure_vector
    fiat.FiatModel.setup_hazard
-   fiat.FiatModel.setup_exposure_buildings
-   fiat.FiatModel.scale_exposure
+   fiat.FiatModel.setup_social_vulnerability_index
+
+Delft-FIAT settings
+-------------------
+
+.. autosummary::
+   :toctree: ../_generated/
+
+   fiat.FiatModel.setup_config
+   fiat.FiatModel.setup_global_settings
+   fiat.FiatModel.setup_output
 
 Attributes
 ----------
@@ -40,8 +48,8 @@ Attributes
    fiat.FiatModel.res
    fiat.FiatModel.root
    fiat.FiatModel.config
-   fiat.FiatModel.staticmaps
-   fiat.FiatModel.staticgeoms
+   fiat.FiatModel.maps
+   fiat.FiatModel.geoms
 
 High level methods
 ------------------
@@ -66,14 +74,10 @@ General methods
    fiat.FiatModel.read_config
    fiat.FiatModel.write_config
 
-   fiat.FiatModel.set_staticmaps
-   fiat.FiatModel.read_staticmaps
-   fiat.FiatModel.write_staticmaps
+   fiat.FiatModel.set_maps
+   fiat.FiatModel.read_maps
+   fiat.FiatModel.write_maps
 
-   fiat.FiatModel.set_staticgeoms
-   fiat.FiatModel.read_staticgeoms
-   fiat.FiatModel.write_staticgeoms
-
-   fiat.FiatModel.set_forcing
-   fiat.FiatModel.read_forcing
-   fiat.FiatModel.write_forcing
+   fiat.FiatModel.set_geoms
+   fiat.FiatModel.read_geoms
+   fiat.FiatModel.write_geoms

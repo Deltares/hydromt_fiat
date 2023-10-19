@@ -1,387 +1,449 @@
-from hydromt_fiat.validation import Validation
+from hydromt_fiat.validation import *
 from pathlib import Path
 import geopandas as gpd
 from ast import literal_eval
 import os
 import xarray as xr
 
+# from hydromt_sfincs import SfincsModel
 
-class Hazard:
-    def __init__(self):
-        self.crs = ""
-        self.check = Validation()
+# from hydromt_sfincs import SfincsModel
+from typing import Union
+from typing import Tuple
+from hydromt.data_catalog import DataCatalog
+import geopandas as gpd
+
+
+def create_lists(
+    map_fn: Union[str, Path, list[str], list[Path]],
+    map_type: Union[str, list[str]],
+    rp: Union[int, list[int], None] = None,
+    crs: Union[int, str, list[int], list[str], None] = None,
+    nodata: Union[int, list[int], None] = None,
+    var: Union[str, list[str], None] = None,
+    chunks: Union[int, str, list[int]] = "auto",
+) -> dict:
+    """Make list out of the parameters provided in the setup hazard maps.
+
+    Parameters
+    ----------
+    map_fn : Union[str, Path, list[str], list[Path]]
+        The data catalog key or list of keys from where to retrieve the
+        hazard maps. This can also be a path or list of paths to take files
+        directly from a local database.
+    map_type : Union[str, list[str]]
+        The data type of each map speficied in map_fn. In case a single
+        map type applies for all the elements a single string can be provided.
+    rp : Union[int, list[int], None], optional.
+        The return period (rp) type of each map speficied in map_fn in case a
+        risk output is required. If the rp is not provided and risk
+        output is required the workflow will try to retrieve the rp from the
+        files's name, by default None.
+    crs : Union[int, str, list[int], list[str], None], optional
+        The projection (crs) required in EPSG code of each of the maps provided. In
+        case a single crs applies for all the elements a single value can be
+        provided as code or string (e.g. "EPSG:4326"). If not provided, then the crs
+        will be taken from orginal maps metadata, by default None.
+    nodata : Union[int, list[int], None], optional
+        The no data values in the rasters arrays. In case a single no data applies
+        for all the elements a single value can be provided as integer, by default
+        None.
+    var : Union[str, list[str], None], optional
+        The name of the variable to be selected in case a netCDF file is provided
+        as input, by default None.
+    chunks : Union[int, str, list[int]], optional
+        The chuck region per map. In case a single no data applies for all the
+        elements a single value can be provided as integer. If "auto"is provided
+        the auto setting will be provided by default "auto".
+
+    Returns
+    -------
+    dict
+        Dictionary with the parameters and list of parameters used in setup_hazard.
+    """
+    params = dict()
+
+    params["map_fn"] = map_fn
+    params["map_type"] = map_type
+    params["chunks"] = chunks
+    params["rp"] = rp
+    params["crs"] = crs
+    params["nodata"] = nodata
+    params["var"] = var
+
+    def check_list(param, name):
+        params_lst = [param] if not isinstance(param, list) else param
+        params[name + "_lst"] = params_lst
+        return
     
-    def checkInputs(
-        self,
-        model_fiat,
-        map_fn,
-        map_type,
-        chunks,
-        rp,
-        crs,
-        nodata,
-        var,
+    check_list(map_fn, name="map_fn")
+    check_list(map_type, name="map_type")
+
+    if chunks != "auto":
+        check_list(chunks, name="chunks")
+    if rp is not None:
+        check_list(rp, name="rp")
+    if crs is not None:
+        check_list(crs, name="crs")
+    if nodata is not None:
+        check_list(nodata, name="nodata")
+    if var is not None:
+        check_list(var, name="var")
+    return params
+
+
+def check_lists_size(
+    params: dict,
+):
+    """Check that list of parameters are of the same size in case multiple maps are
+    provided to ensure all the maps have their corresponding metadata to process. In
+    case the same metadata applies for all the maps a one item list can be provided.
+    This excludes return period 'rp'which requires to be defined explicitly per map
+    or set to None to try to retrieve the return period from the map names.
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary with the parameters and list of parameters used in setup_hazard.
+
+    Raises
+    ------
+    IndexError
+        Error will be displayed in case metadata is missing in the loaded maps or is
+        less than the number of maps.
+    """
+    # load dictionary variables
+    chunks = params["chunks"]
+    rp = params["rp"]
+    crs = params["crs"]
+    nodata = params["nodata"]
+    var = params["var"]
+
+    # for key, value in params.items():
+    #     globals()[key] = value
+
+    def error_message(variable_list):
+        raise IndexError(
+            f"The number of '{variable_list}' parameters should match with the number of 'map_fn' parameters."
+        )
+        # TODO: check what type of error is better to apply in this case
+        # raise TypeError(f"The number of '{variable_list}' parameters should match with the number of 'map_fn' parameters.")
+
+    # Checks the hazard input parameter types.
+
+    # Checks map type list
+    if not len(params["map_type_lst"]) == 1 and not len(params["map_type_lst"]) == len(
+        params["map_fn_lst"]
     ):
-        
-        # Checks the hazard input parameter types.
-        # Checks map path list
-        self.map_fn_lst   = [map_fn]  if isinstance(map_fn, (str, Path)) else map_fn
-        self.check.check_param_type(self.map_fn_lst, name="map_fn", types=(str, Path))
-        # Checks map path list
-        self.map_type_lst = [map_type] if isinstance(map_type, (str, Path)) else map_type
-        self.check.check_param_type(self.map_type_lst, name="map_type", types=str)
-        if not len(self.map_type_lst) == 1 and not len(self.map_type_lst) == len(self.map_fn_lst):
-            raise IndexError(
-                "The number of 'map_type' parameters should match with the number of "
-                "'map_fn' parameters."
+        error_message("map_type")
+
+    # Checks the chunk list. The list must be equal to the number of maps.
+    if chunks != "auto":
+        if not len(params["chunks_lst"]) == 1 and not len(params["chunks_lst"]) == len(
+            params["map_fn_lst"]
+        ):
+            error_message("chunks")
+
+    # Checks the return period list. The list must be equal to the number of maps.
+    if rp is not None:
+        if not len(params["rp_lst"]) == len(params["map_fn_lst"]):
+            error_message("rp")
+
+    # Checks the projection list
+    if crs is not None:
+        if not len(params["crs_lst"]) == 1 and not len(params["crs_lst"]) == len(
+            params["map_fn_lst"]
+        ):
+            error_message("crs")
+
+    # Checks the no data list
+    if nodata is not None:
+        if not len(params["nodata_lst"]) == 1 and not len(params["nodata_lst"]) == len(
+            params["map_fn_lst"]
+        ):
+            error_message("nodata")
+
+    # Checks the var list
+    if var is not None:
+        if not len(params["var_lst"]) == 1 and not len(params["var_lst"]) == len(
+            params["map_fn_lst"]
+        ):
+            error_message("var")
+
+def read_maps(
+    params: dict,
+    da_map_fn: str,
+    idx: int,
+    **kwargs,
+) -> Tuple[Union[str, Path], str, str]:
+    """Read names and types of flood maps. Converts to a Path object
+    the path provided as String
+
+    Parameters
+    ----------
+    params : dict
+        Dictionary with the parameters and list of parameters used in setup_hazard.
+    da_map_fn : str
+        Path as string or key name in datacatalog of the hazard a specific hazard
+        map idx.
+    idx : int
+        Index of a specific hazard map in the list of maps.
+
+    Returns
+    -------
+    Tuple[Union[str, Path], str, str]
+        Returns a Path or key name in datacatalog of the hazard of a specific hazard
+        map idx, a string of the hazard map file name, and a string of the hazard type
+
+    Raises
+    ------
+    ValueError
+        Rises an error in case a netcdf file is provided withouth indicating the
+        name of the layer
+    """
+
+    # load dictionary variables
+    chunks = params["chunks"]
+    var = params["var"]
+    map_fn_lst = params["map_fn_lst"]
+    map_type_lst = params["map_type_lst"]
+
+    # check existance of path
+    if os.path.exists(da_map_fn):
+        da_map_fn = Path(da_map_fn)
+        da_name   = da_map_fn.stem
+        da_suffix = da_map_fn.suffix
+    else:
+        raise ValueError(
+            f"The map {da_map_fn} could not be found."
+        )
+
+    # retrieve data type
+    da_type = get_param(
+        map_type_lst, 
+        map_fn_lst, 
+        "hazard", 
+        da_name, 
+        idx, 
+        "map type"
+        )
+
+    # get chuck area for the map
+    kwargs.update(chunks=chunks if chunks == "auto" else params["chunks_lst"][idx])
+
+    # check if we are providing a NetCDF file
+    if da_suffix == ".nc":
+        if var is None:
+            raise ValueError(
+                "The 'var' parameter is required when reading NetCDF data."
             )
-        # Checks the chunk list. The list must be equal to the number of maps.
-        if chunks != "auto":
-            self.chunks_lst = [chunks] if isinstance(chunks, (int, dict)) else chunks
-            self.check.check_param_type(self.chunks_lst, name="chunks", types=(int, dict))
-            if not len(self.chunks_lst) == 1 and not len(self.chunks_lst) == len(self.map_fn_lst):
-                raise IndexError(
-                    "The number of 'chunks' parameters should match with the number of "
-                    "'map_fn' parameters."
-                )
-        # Checks the return period list. The list must be equal to the number of maps.   
-        if rp is not None:
-            rp_lst_check = True 
-            self.rp_lst = [rp] if isinstance(rp, (int, float)) else rp
-            self.check.check_param_type(self.rp_lst, name="rp", types=(float, int))
-            if not len(self.rp_lst) == len(self.map_fn_lst):
-                raise IndexError(
-                    "The number of 'rp' parameters should match with the number of "
-                    "'map_fn' parameters."
-                )
-        # Checks the projection list 
-        if crs is not None:
-            self.crs_lst = [str(crs)] if isinstance(crs, (int, str)) else crs
-            self.check.check_param_type(self.crs_lst, name="crs", types=(int, str))
-            if not len(self.crs_lst) == 1 and not len(self.crs_lst) == len(self.map_fn_lst):
-                raise IndexError(
-                    "The number of 'crs' parameters should match with the number of "
-                    "'map_fn' parameters."
-                )
-        # Checks the no data list  
-        if nodata is not None:
-            self.nodata_lst = [nodata] if isinstance(nodata, (float, int)) else nodata
-            self.check.check_param_type(self.nodata_lst, name="nodata", types=(float, int))
-            if not len(self.nodata_lst) == 1 and not len(self.nodata_lst) == len(self.map_fn_lst):
-                raise IndexError(
-                    "The number of 'nodata' parameters should match with the number of "
-                    "'map_fn' parameters."
-                )
-         # Checks the var list    
-        if var is not None:
-            self.var_lst = [var] if isinstance(var, str) else var
-            self.check.check_param_type(self.var_lst, name="var", types=str)
-            if not len(self.var_lst) == 1 and not len(self.var_lst) == len(self.map_fn_lst):
-                raise IndexError(
-                    "The number of 'var' parameters should match with the number of "
-                    "'map_fn' parameters."
-                )
+        # retrieve variable name from parameter lists
+        da_var = get_param(
+            params["var_lst"],
+            map_fn_lst,
+            "hazard",
+            da_name,
+            idx,
+            "NetCDF variable",
+        )
+        kwargs.update(variables=da_var)
 
-        # Check if the hazard input files exist.
-        self.check.check_file_exist(model_fiat.root, param_lst=self.map_fn_lst, name="map_fn")
+    return da_map_fn, da_name, da_type
 
 
-    def readMaps(
-        self,
-        model_fiat,
-        name_catalog,
-        hazard_type,
-        risk_output,
-        crs,
-        nodata,
-        var,
-        chunks,
-        region=gpd.GeoDataFrame(),
-        **kwargs,
-    ):
-     
-        #This list of names should be provided to have the maps in order
-        # catalog         = model_fiat.data_catalog.get_rasterdataset(name_catalog)
-        # self.map_fn_lst = [i for i in list(catalog.variables) if maps_id in i]
-        
-        # Read the hazard map(s) and add to config and staticmaps.
-        list_rp = []
-        list_names = []
+def check_maps_metadata(
+    maps: xr.Dataset,
+    params: dict,
+    da: xr.DataArray,
+    da_name: str,
+    idx: int,
+):
+    """Check projection, null data and grids of a hazard map
 
-        for idx, da_map_fn in enumerate(self.map_fn_lst):
-            # Check if it is a path or a name from the catalog 
+    Parameters
+    ----------
+    maps : xr.Dataset
+        Dataset where the maps are saved.
+    params : dict
+        Dictionary with the parameters and list of parameters used in setup_hazard.
+    da : xr.DataArray
+        Hazard map to be loaded to the model's maps.
+    da_name : str
+        File name of a specific hazard map.
+    idx : int
+        Index of a specific hazard map in the list of maps.
 
-            if os.path.exists(da_map_fn):
-                da_map_fn = Path(da_map_fn)
-                da_name = da_map_fn.stem
-                da_suffix = da_map_fn.suffix
-                list_names.append(da_name)
+    Raises
+    ------
+    ValueError
+        Error in case the hazard map has no coordinate reference system assigned.
+    ValueError
+        Error in case the hazard map has no nodata value assigned.
+    ValueError
+        Error in case the hazard maps should have identical grids.
+    """
 
-            else:   
-                da_name = da_map_fn
-                list_names.append(da_name)
-            
-            da_type = self.check.get_param(
-                self.map_type_lst, 
-                self.map_fn_lst, 
-                "hazard", 
-                da_name, 
-                idx, 
-                "map type"
-            )
+    map_fn_lst = params["map_fn_lst"]
+    crs = params["crs"]
+    nodata = params["nodata"]
 
-            # Get the local hazard map.
-            kwargs.update(chunks=chunks if chunks == "auto" else self.chunks_lst[idx])
+    # Set the coordinate reference system.
+    if crs is not None:
+        da_crs = get_param(
+            params["crs_lst"],
+            map_fn_lst,
+            "hazard",
+            da_name,
+            idx,
+            "coordinate reference system",
+        )
+        da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
+        da.raster.set_crs(da_crs_str)
+    elif crs is None and not da.raster.crs:
+        raise ValueError("The hazard map has no coordinate reference system assigned.")
 
-            if "da_suffix" in locals() and da_suffix == ".nc":
-                if var is None:
-                    raise ValueError(
-                        "The 'var' parameter is required when reading NetCDF data."
-                    )
-                kwargs.update(
-                    variables=self.check.get_param(
-                        self.var_lst,
-                        self.map_fn_lst,
-                        "hazard",
-                        da_name,
-                        idx,
-                        "NetCDF variable",
-                    )
-                )
+    # Set nodata and mask the nodata value.
+    if nodata is not None:
+        da_nodata = get_param(
+            params["nodata_lst"], 
+            map_fn_lst, 
+            "hazard", 
+            da_name, 
+            idx, 
+            "nodata"
+        )
+        da.raster.set_nodata(nodata=da_nodata)
+    elif nodata is None and da.raster.nodata is None:
+        raise ValueError("The hazard map has no nodata value assigned.")
 
-            if os.path.exists(da_map_fn):
-                if not region.empty:
-                    da = model_fiat.data_catalog.get_rasterdataset(
-                        da_map_fn, geom=region, **kwargs
-                    )
-                    var_test ='1'
-                else:
-                    da = model_fiat.data_catalog.get_rasterdataset(da_map_fn, **kwargs)
-                    var_test ='2'
-            else:
-                if not region.empty:
-                    da = model_fiat.data_catalog.get_rasterdataset(
-                        name_catalog, variables=da_name, geom=region
-                    )
-                    var_test ='3'
-                else:
-                    da = model_fiat.data_catalog.get_rasterdataset(
-                        name_catalog, variables=da_name
-                    )
-                    var_test ='4'
+    # Correct (if necessary) the grid orientation from the lower to the upper left corner.
+    # This check could not be implemented into the sfincs_map outputs. They require to be transformed to geotiff first
+    # if da_name != "sfincs_map":
+    if da.raster.res[1] > 0:
+        da = da.reindex({da.raster.y_dim: list(reversed(da.raster.ycoords))})
 
-            # Set (if necessary) the coordinate reference system.
-            # if crs is not None and not da.raster.crs.is_epsg_code:
-            # if crs is not None and not da.raster.crs:
-            # Change to be defined by the user
-            if crs is not None:
-                da_crs = self.check.get_param(
-                    self.crs_lst,
-                    self.map_fn_lst,
-                    "hazard",
-                    da_name,
-                    idx,
-                    "coordinate reference system",
-                )
-                da_crs_str = da_crs if "EPSG" in da_crs else f"EPSG:{da_crs}"
-                da.raster.set_crs(da_crs_str)
-            # elif crs is None and not da.raster.crs.is_epsg_code:
-            elif crs is None and not da.raster.crs:
-                raise ValueError("The hazard map has no coordinate reference system assigned.")
+    # Check if the obtained hazard map is identical.
+    if maps and not maps.raster.identical_grid(da):
+        raise ValueError("The hazard maps should have identical grids.")
 
-            # Set (if necessary) and mask the nodata value.
-            if nodata is not None:
-                da_nodata = self.check.get_param(
-                    self.nodata_lst, 
-                    self.map_fn_lst, 
-                    "hazard", 
-                    da_name, 
-                    idx, 
-                    "nodata"
-                )
-                da.raster.set_nodata(nodata=da_nodata)
-            elif nodata is None and da.raster.nodata is None:
-                raise ValueError("The hazard map has no nodata value assigned.")
-            
-            # Correct (if necessary) the grid orientation from the lower to the upper left corner.
-            if da.raster.res[1] > 0:
-                da = da.reindex(
-                    {da.raster.y_dim: list(reversed(da.raster.ycoords))}
-                    )
-                
-            # Check if the obtained hazard map is identical.
-            if (
-                model_fiat.staticmaps
-                and not model_fiat.staticmaps.raster.identical_grid(da)
-            ):
-                raise ValueError("The hazard maps should have identical grids.")
 
-            # Get the return period input parameter.
-            da_rp = (
-                self.check.get_param(
-                    self.rp_lst, 
-                    self.map_fn_lst, 
-                    "hazard", 
-                    da_name, 
-                    idx, 
-                    "return period"
-                )
-                if hasattr(self, "rp_lst ") 
-                else None
-            )
-        
-            if risk_output and da_rp is None:
-                
-                # Get (if possible) the return period from dataset names if the input parameter is None.
-                if "rp" in da_name.lower():
+def check_maps_rp(
+    params: dict,
+    da: xr.DataArray,
+    da_name: str,
+    idx: int,
+    risk_output: bool,
+) -> list:
+    """Check or retrieve return periods from file name in case risk analysis is
+    performed (risk_output = True)
 
-                    def fstrip(x):
-                        return x in "0123456789."
+    Parameters
+    ----------
+    params : dict
+        Dictionary with the parameters and list of parameters used in setup_hazard.
+    da : xr.DataArray
+        Hazard map to be loaded to the model's maps.
+    da_name : str
+        File name of a specific hazard map.
+    idx : int
+        Index of a specific hazard map in the list of maps.
+    risk_output : bool
+        The parameter that defines if a risk analysis is required.
 
-                    rp_str = "".join(
-                        filter(fstrip, da_name.lower().split("rp")[-1])
-                    ).lstrip("0")
+    Returns
+    -------
+    list
+        List containing the return of each hazard map in case a risk analysis is
+        required
 
-                    try:
-                        assert isinstance(
-                            literal_eval(rp_str) if rp_str else None, (int, float)
-                        )
-                        da_rp = literal_eval(rp_str)
-                        list_rp.append(da_rp)
+    Raises
+    ------
+    ValueError
+        Error in case return period could not be derived from the file's names
+    ValueError
+        Error in are not provided and they could not be derived from the file's
+        names
+    """
 
-                    except AssertionError:
-                        raise ValueError(
-                            f"Could not derive the return period for hazard map: {da_name}."
-                        )
-                else:
-                    raise ValueError(
-                        "The hazard map must contain a return period in order to conduct a risk calculation."
-                    )
-                
-            # Add the hazard map to config and staticmaps.
-            self.check.check_uniqueness(
-                model_fiat,
-                "hazard",
-                da_type,
-                da_name,
-                {
-                    "usage": True,
-                    "map_fn": da_map_fn,
-                    "map_type": da_type,
-                    "rp": da_rp,
-                    "crs": da.raster.crs,
-                    "nodata": da.raster.nodata,
-                    # "var": None if "var_lst" not in locals() else self.var_lst[idx],
-                    "var": None if not hasattr(self, "var_lst") else self.var_lst[idx],
-                    "chunks": "auto" if chunks == "auto" else self.chunks_lst[idx],
-                },
-                file_type="hazard",
-                filename=da_name,
-            )
+    map_fn_lst = params["map_fn_lst"]
 
-            model_fiat.set_config(
-                "hazard",
-                # da_type,
-                da_name,
-                {
-                    "usage": "True",
-                    "map_fn": da_map_fn,
-                    "map_type": da_type,
-                    "rp": da_rp,
-                    "crs": da.raster.crs,
-                    "nodata": da.raster.nodata,
-                    # "var": None if "var_lst" not in locals() else self.var_lst[idx],
-                    "var": None if not hasattr(self, "var_lst") else self.var_lst[idx],
-                    "chunks": "auto" if chunks == "auto" else self.chunks_lst[idx],
-                },
-            ) 
+    # Get the return period input parameter.
+    if "rp_lst" in params:
+        da_rp = get_param(
+            params["rp_lst"],
+            map_fn_lst,
+            "hazard",
+            da_name,
+            idx,
+            "return period",
+        )
+    else:
+        da_rp = None
 
-            #extra functionalities 
-            # da = da.rename(f"map_{da_rp}")
-            # da.attrs = {
-            #             "usage": "True",
-            #             "map_fn": da_map_fn,
-            #             "map_type": da_type,
-            #             "rp": da_rp,
-            #             "crs": da.raster.crs,
-            #             "nodata": da.raster.nodata,
-            #             # "var": None if "var_lst" not in locals() else self.var_lst[idx],
-            #             "var": None if not hasattr(self, "var_lst") else self.var_lst[idx],
-            #             "chunks": "auto" if chunks == "auto" else self.chunks_lst[idx],
-            #            }
-            
-            da = da.expand_dims({'rp': [da_rp]}, axis=0)
+    if risk_output and da_rp is None:
+        # get (if possible) the return period from dataset names if the input parameter is None.
+        if "rp" in da_name.lower():
 
-            model_fiat.set_maps(da, da_name)
-            # post = f"(rp {da_rp})" if rp is not None and risk_output else ""
-            post = f"(rp {da_rp})" if risk_output else ""
-            model_fiat.logger.info(
-                f"Added {hazard_type} hazard map: {da_name} {post}"
+            def fstrip(x):
+                return x in "0123456789."
+
+            rp_str = "".join(filter(fstrip, da_name.lower().split("rp")[-1])).lstrip(
+                "0"
             )
 
+            try:
+                assert isinstance(
+                    literal_eval(rp_str) if rp_str else None, (int, float)
+                )
+                da_rp = literal_eval(rp_str)
 
-
-            # new_da = xr.concat([new_da, da], dim='rp')   
-
-            # import numpy as np
-            # new_da = xr.DataArray(np.zeros_like(da), dims=da.dims, coords=da.coords).rename('new_dataframe')
-
-        # # model_fiat.maps.to_netcdf("test_hazard_1/test.nc")
-
-        # #model_fiat.set_maps(catalog, "all")
-        maps = model_fiat.maps
-        list_keys = list(maps.keys())
-        maps_0 = maps[list_keys[0]].rename('risk')
-        list_keys.pop(0)
-
-        for idx, x in enumerate(list_keys):
-            key_name = list_keys[idx]
-            layer = maps[key_name]
-            maps_0 = xr.concat([maps_0, layer], dim='rp') 
-
-        new_da = maps_0.to_dataset(name='RISK')
-        new_da.attrs = {  "returnperiod": list(list_rp),
-                          "type":self.map_type_lst,
-                          'name':list_names}
-        
-        if not risk_output:
-            # new_da = maps_0.drop_dims('rp')
-            new_da = maps_0.to_dataset(name='EVENT')
-            new_da.attrs = {  "returnperiod": list(list_rp),
-                            "type":self.map_type_lst,
-                            'name':list_names,
-                            "Analysis": "Event base"}       
-
+            except AssertionError:
+                raise ValueError(
+                    f"Could not derive the return period for hazard map: {da_name}."
+                )
         else:
-            new_da = maps_0.to_dataset(name='RISK')
-            new_da.attrs = {  "returnperiod": list(list_rp),
-                            "type":self.map_type_lst,
-                            'name':list_names,
-                            "Analysis": "Risk"}  
-
-
-        # ds = xr.Dataset(maps)
-        # ds.raster.set_crs(da.raster.crs)
-
-        # # new_da= ds.to_array(dim='rp')
-
-        # # new_da = new_da.to_dataset(name='Full_stack')
-
-        # # new_da.attrs = {  "returnperiod": list_rp,
-        # #                   "type":self.map_type_lst,
-        # #                   'name':list_names}
+            raise ValueError(
+                "The hazard map must contain a return period in order to conduct a risk calculation."
+            )
         
-        # # for var_name, var_data in ds.variables.items():
-        # #     new_da = xr.concat([new_da, ds[var_name]], dim='rp')
+    return da_rp
 
-        # for layer_name in ds:
-        #     layer = ds[layer_name]
-        #     new_da = xr.concat([new_da, layer], dim='rp')
 
-        # # new_da = new_da.to_dataset()
-        
-        # # config = model_fiat.config
-        # # new_da.to_netcdf("P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/test_hazard_1/hazard/test_final_v2.nc")
-        # #C:\Users\fuentesm\CISNE\HydroMT_sprint_sessions
-        return new_da
-        
+def check_map_uniqueness(
+    map_name_lst: list,
+):
+    """Check if the provided maps are unique
+
+    Parameters
+    ----------
+    map_name_lst : list
+        List containing the names of the maps loaded into the model
+    """
+    check_uniqueness(map_name_lst)
+
+
+
+def create_risk_dataset(
+        params: dict,
+        rp_list: list, 
+        map_name_lst: list,
+        maps,
+):
+ # order return periods and maps
+    dict_rp_name = {}
+    for rp, name in zip(rp_list, map_name_lst):
+        dict_rp_name[rp] = name
+    sorted_rp = sorted(rp_list, reverse=False)
+    dict_rp_name = {key: dict_rp_name[key] for key in sorted_rp}
+
+    sorted_maps = []
+    sorted_names = []
+    
+    for key, value in dict_rp_name.items():
+        map_ordered = maps[value].rename(str(key))
+        sorted_maps.append(map_ordered)
+        sorted_names.append(value)
+
+    da = xr.merge(sorted_maps)
+
+    return da, sorted_rp, sorted_names

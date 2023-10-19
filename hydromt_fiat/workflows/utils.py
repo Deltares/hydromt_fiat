@@ -8,5 +8,5 @@ def detect_delimiter(csvFile):
             return ";"
         if header.find(",") != -1:
             return ","
-    # default delimiter (MS Office export)
-    return ";"
+    # default delimiter
+    return ","
