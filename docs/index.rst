@@ -19,7 +19,7 @@ For detailed information on HydroMT itself, you can visit the `core documentatio
 
 ::
 
-   Note: This repository is under development, the documentation is not yet complete!
+   Note: This repository is under development, the documentation is not yet complete...
 
 
 Overview
