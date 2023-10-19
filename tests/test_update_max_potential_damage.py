@@ -1,15 +1,19 @@
 from hydromt_fiat.fiat import FiatModel
+from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import pandas as pd
 
-EXAMPLEDIR = Path().absolute() / "local_test_database"
+EXAMPLEDIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
+)
+DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
     "update_max_potential_damage": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_read",
-        "ini": EXAMPLEDIR / "test_read.ini",
         "new_root": EXAMPLEDIR / "test_update_max_potential_damage",
     },
 }
@@ -19,11 +23,9 @@ _cases = {
 def test_update_max_potential_damage(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    logger = setuplog("hydromt_fiat", log_level=10)
 
-    fm = FiatModel(
-        root=root,
-        mode="r",
-    )
+    fm = FiatModel(root=root, mode="r", logger=logger)
 
     fm.read()
 
@@ -52,3 +54,20 @@ def test_update_max_potential_damage(case):
 
     fm.set_root(_cases[case]["new_root"])
     fm.write()
+
+    # read modified exposure
+    exposure_modified = pd.read_csv(
+        _cases[case]["new_root"] / "exposure" / "exposure.csv"
+    )
+
+    # check if the max potential damage is updated
+    updated_max_pot_damage.reset_index(inplace=True, drop=True)
+    updated_max_pot_damage["Object Name"] = updated_max_pot_damage[
+        "Object Name"
+    ].astype(int)
+    pd.testing.assert_frame_equal(
+        updated_max_pot_damage,
+        exposure_modified,
+        check_dtype=False,
+        check_column_type=False,
+    )

@@ -8,6 +8,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+
 ### TO BE UPDATED ###
 class ExposureRaster(Exposure):
     def setup_buildings_value(
