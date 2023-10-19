@@ -17,6 +17,10 @@ by configuring the model building process from single *yml* file.
 
 For detailed information on HydroMT itself, you can visit the `core documentation <https://deltares.github.io/hydromt/>`_.
 
+::
+
+   Note: This repository is under development, the documentation is not yet complete!
+
 
 Overview
 =============
