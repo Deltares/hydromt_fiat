@@ -2,7 +2,7 @@ name: Build Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, docs ]
     paths:
       - tests/*
       - hydromt_fiat/*
@@ -10,7 +10,7 @@ on:
       - examples/*
       - pyproject.toml
   pull_request:
-    branches: [ main ]
+    branches: [ main, docs ]
     paths:
       - tests/*
       - hydromt_fiat/*
@@ -75,14 +75,14 @@ jobs:
         run: pip install .
 
       - name: Generate docs
-        # if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         run: |
           export PATH=/usr/share/miniconda3/bin:$PATH
           PYTHONPYCACHEPREFIX=~/pycache mamba run -n hydromt-fiat-docs sphinx-build -M html ./docs ./docs/_build
           echo "DOC_VERSION=$(mamba run -n hydromt-fiat-docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
-        # if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
