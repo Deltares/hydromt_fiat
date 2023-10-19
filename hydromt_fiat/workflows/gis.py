@@ -1,6 +1,7 @@
 import geopandas as gpd
 from hydromt.gis_utils import utm_crs, nearest_merge
 from typing import List
+import logging
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -155,6 +156,7 @@ def join_spatial_data(
     attribute_name: str,
     method: str,
     max_dist: float = 10,
+    logger: logging.Logger = None,
 ) -> gpd.GeoDataFrame:
     """Join two GeoDataFrames based on their spatial relationship.
 
@@ -172,17 +174,26 @@ def join_spatial_data(
     max_dist : float, optional
         The maximum distance for the nearest join measured in meters, by default
         10 (meters).
+    logger : logging.Logger
+        A logger object.
 
     Returns
     -------
     gpd.GeoDataFrame
         The joined GeoDataFrame.
     """
-    assert left_gdf.crs == right_gdf.crs, (
-        "The CRS of the GeoDataFrames to join do not match. "
-        f"Left CRS: {get_crs_str_from_gdf(left_gdf.crs)}, "
-        f"Right CRS: {get_crs_str_from_gdf(right_gdf.crs)}"
-    )
+    try:
+        assert left_gdf.crs == right_gdf.crs, (
+            "The CRS of the GeoDataFrames to join do not match. "
+            f"Left CRS: {get_crs_str_from_gdf(left_gdf.crs)}, "
+            f"Right CRS: {get_crs_str_from_gdf(right_gdf.crs)}"
+        )
+    except AssertionError as e:
+        logger.warning(e)
+        logger.warning("Reprojecting the GeoDataFrame from "
+                       f"{get_crs_str_from_gdf(right_gdf.crs)} to "
+                       f"{get_crs_str_from_gdf(left_gdf.crs)}.")
+        right_gdf = right_gdf.to_crs(left_gdf.crs)
 
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)

@@ -10,15 +10,25 @@ EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_floor_heig
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
-    "update_ground_floor_height": {
+    "update_ground_floor_height_with_points": {
         "dir": "fiat_model",
-        "new_root": EXAMPLEDIR / "test_update_ground_floor_height",
+        "new_root": EXAMPLEDIR / "test_update_ground_floor_height_points",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "ground_floor_height_file": EXAMPLEDIR
         / "fake_elevation_certificates.gpkg",
         "attribute": "FFE",
         "method": "nearest",
         "max_dist": 50,
+    },
+    "update_ground_floor_height_with_polygons": {
+        "dir": "fiat_model",
+        "new_root": EXAMPLEDIR / "test_update_ground_floor_height_polygons",
+        "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
+        "ground_floor_height_file": EXAMPLEDIR
+        / "fake_update_ground_floor_height.gpkg",
+        "attribute": "groundfloorheight",
+        "method": "intersection",
+        "max_dist": None,
     },
 }
 

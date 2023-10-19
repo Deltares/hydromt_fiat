@@ -466,7 +466,7 @@ class ExposureVector(Exposure):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
-                gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist)
+                gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attr_name
                 )
