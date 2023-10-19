@@ -613,9 +613,9 @@ class ExposureVector(Exposure):
                 "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                self.exposure_db["Ground Floor Height"] < raise_by,
-                "Ground Floor Height",
-            ].iloc[idx, :] = raise_by
+                (self.exposure_db["Ground Floor Height"] < raise_by) & self.exposure_db.index.isin(idx),
+               "Ground Floor Height",
+            ] = raise_by
 
         elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
