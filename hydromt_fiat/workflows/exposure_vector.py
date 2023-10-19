@@ -7,7 +7,6 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
-from hydromt.gis_utils import utm_crs
 from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
@@ -16,10 +15,11 @@ from hydromt_fiat.data_apis.open_street_maps import (
     get_landuse_from_osm,
 )
 
-from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
-from .exposure import Exposure
-from .utils import detect_delimiter
-from .vulnerability import Vulnerability
+from hydromt_fiat.workflows.damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
+from hydromt_fiat.workflows.exposure import Exposure
+from hydromt_fiat.workflows.utils import detect_delimiter
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.gis import get_area, sjoin_largest_area, get_crs_str_from_gdf, join_spatial_data
 
 
 class ExposureVector(Exposure):
@@ -229,8 +229,7 @@ class ExposureVector(Exposure):
             )
 
         # Set the CRS of the exposure data
-        source_data_authority = assets.crs.to_authority()
-        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+        self.crs = get_crs_str_from_gdf(assets.crs)
 
         # Check if the 'Object ID' column exists and if so, is unique
         if "Object ID" not in assets.columns:
@@ -299,13 +298,7 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
             # occupancy_map.
-            gdf = gpd.overlay(
-                self.exposure_geoms[0], occupancy_map[to_keep], how="intersection"
-            )
-            gdf["area"] = gdf.geometry.area
-            gdf.sort_values(by="area", inplace=True)
-            gdf.drop_duplicates(subset="Object ID", keep="last", inplace=True)
-            gdf.drop(columns=["area"], inplace=True)
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
@@ -419,18 +412,50 @@ class ExposureVector(Exposure):
 
     def setup_ground_floor_height(
         self,
-        ground_floor_height: Union[int, float, None, str, Path],
+        ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
     ) -> None:
-        # Set the ground floor height column.
-        # If the Ground Floor Height is input as a number, assign all objects with
-        # the same Ground Floor Height.
+        """Set the ground floor height of the exposure data. This function overwrites
+        the existing Ground Floor Height column if it already exists.
+
+        Parameters
+        ----------
+        ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
+            A number to set the Ground Floor Height of all assets to the same value, a
+            path to a file that contains the Ground Floor Height of each asset, or a
+            list of paths to files that contain the Ground Floor Height of each asset,
+            in the order of preference (the first item in the list gets the highest
+            priority in assigning the values).
+        attr_name : Union[str, List[str]], optional
+            The name of the attribute that contains the Ground Floor Height in the
+            file(s) that are submitted. If multiple `ground_floor_height` files are
+            submitted, the attribute names are linked to the files in the same order as
+            the files are submitted. By default None.
+        method : Union[str, List[str]], optional
+            The method to use to assign the Ground Floor Height to the assets. If
+            multiple `ground_floor_height` files are submitted, the methods are linked
+            to the files in the same order as the files are submitted. The method can
+            be either 'nearest' (nearest neighbor) or 'intersection'. By default
+            'nearest'.
+        """
         if ground_floor_height:
             if isinstance(ground_floor_height, int) or isinstance(
                 ground_floor_height, float
             ):
+                # If the Ground Floor Height is input as a number, assign all objects with
+                # the same Ground Floor Height.
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif isinstance(ground_floor_height, str):
-                # TODO: implement the option to add the ground floor height from a file.
+            elif isinstance(ground_floor_height, str) or isinstance(
+                ground_floor_height, Path
+            ):
+                # A single file is used to assign the ground floor height to the assets
+                gfh = self.data_catalog.get_geodataframe(ground_floor_height)
+                gdf = self.get_full_gdf(self.exposure_db)
+                gdf = join_spatial_data(gdf, gfh, attr_name, method)
+                gdf = self._set_values_from_other_column(gdf, "Ground Floor Height", attr_name)
+            elif isinstance(ground_floor_height, list):
+                # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
         else:
             # Set the Ground Floor Height to 0 if the user did not specify any
@@ -463,14 +488,7 @@ class ExposureVector(Exposure):
 
         # Calculate the area of each object
         gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        if gdf.crs.is_geographic:
-            # If the CRS is geographic, reproject to the nearest UTM zone
-            nearest_utm = utm_crs(gdf.total_bounds)
-            gdf_utm = gdf.to_crs(nearest_utm)
-            gdf["area"] = gdf_utm["geometry"].area
-        elif gdf.crs.is_projected:
-            # If the CRS is projected, calculate the area in the same CRS
-            gdf["area"] = gdf["geometry"].area
+        gdf = get_area(gdf)
 
         # Set the damage values to the exposure data
         if damage_types is None:
@@ -579,9 +597,9 @@ class ExposureVector(Exposure):
                 "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                self.exposure_db["Ground Floor Height"] < raise_by,
-                "Ground Floor Height",
-            ].iloc[idx, :] = raise_by
+                (self.exposure_db["Ground Floor Height"] < raise_by) & self.exposure_db.index.isin(idx),
+               "Ground Floor Height",
+            ] = raise_by
 
         elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
@@ -910,17 +928,13 @@ class ExposureVector(Exposure):
             len_diff_primary_linking_types = 100000
             len_diff_secondary_linking_types = 100000
             if "Primary Object Type" in self.exposure_db.columns:
-                unique_types_primary = set(
-                    self.exposure_db["Primary Object Type"].unique()
-                )
+                unique_types_primary = set(self.get_primary_object_type())
                 diff_primary_linking_types = unique_types_primary - unique_linking_types
                 len_diff_primary_linking_types = len(diff_primary_linking_types)
 
             unique_types_secondary = set()
             if "Secondary Object Type" in self.exposure_db.columns:
-                unique_types_secondary = set(
-                    self.exposure_db["Secondary Object Type"].unique()
-                )
+                unique_types_secondary = set(self.get_secondary_object_type())
                 diff_secondary_linking_types = (
                     unique_types_secondary - unique_linking_types
                 )
@@ -1281,3 +1295,16 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    @staticmethod
+    def _set_values_from_other_column(
+        df: Union[pd.DataFrame, gpd.GeoDataFrame], col_to_set: str, col_to_copy: str
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Sets the values of <col_to_set> to where the values of <col_to_copy> are 
+        nan and deletes <col_to_copy>.
+        """
+        df.loc[df[col_to_copy].notna(), col_to_set] = df.loc[
+            df[col_to_copy].notna(), col_to_copy
+        ]
+        del df[col_to_copy]
+        return df

@@ -1,41 +1,40 @@
-from typing import Sequence
-from _pytest.mark.structures import ParameterSet
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
+import shutil
 from pathlib import Path
-import pytest
+from typing import Sequence
 
+import pytest
+from _pytest.mark.structures import ParameterSet
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 
-import shutil
-
 # Load Data
-EXAMPLEDIR = Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model")
+EXAMPLEDIR = Path().resolve() / "examples" / "data" / "aggregation_zones"
 
 _cases = {
     "aggregation_test_1": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint"),
+        "new_root": EXAMPLEDIR / "fiat_model_aggregation1",
         "configuration": {
             "setup_aggregation_areas": {
-                "aggregation_area_fn": r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\zones.gpkg",
+                "aggregation_area_fn": EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
                 "attribute_names": "ZONE_BASE",
                 "label_names": "Zoning_map",
             }
         },
     },
     "aggregation_test_2": {
-        "new_root": Path(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\modelbuilder_sprint3"),
+        "new_root": EXAMPLEDIR / "fiat_model_aggregation2",
         "configuration": {
             "setup_aggregation_areas": {
                 "aggregation_area_fn": [
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\land_use.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\future_land_use.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\horse_carriage_track.gpkg",
-                    r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\FIAT\20230927_Hydromt_Fiat_Sprint\FIAT_model\Aggregation_zones\accomodation_type.gpkg"
+                    EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
+                    EXAMPLEDIR / "aggregation_zones" / "land_use.gpkg",
+                    EXAMPLEDIR / "aggregation_zones" / "accomodation_type.gpkg",
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName","ACCOM"],
-                "label_names": ["Zoning_map", "Land_use_map","Horse","Accomodation_Zone"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE","ACCOM"],
+                "label_names": ["Zoning_map", "Land_use_map","Accomodation_Zone"],
             }
         },
     },
@@ -47,7 +46,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_aggregation_areas(case: ParameterSet | Sequence[object] | object):
     # Read model in examples folder.
-    root = EXAMPLEDIR
+    root = EXAMPLEDIR / "fiat_model"
     if _cases[case]["new_root"].exists():
         shutil.rmtree(_cases[case]["new_root"])
     logger = setuplog("hydromt_fiat", log_level=10)
