@@ -3,7 +3,6 @@
 import csv
 import glob
 import logging
-import os
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Union
@@ -12,7 +11,6 @@ import geopandas as gpd
 import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
-from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
 from hydromt_fiat import DATADIR
@@ -37,7 +35,7 @@ class FiatModel(GridModel):
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
-    _CLI_ARGS = {"region": "setup_basemaps"}
+    _CLI_ARGS = {"region": "setup_region"}
     _DATADIR = DATADIR
 
     def __init__(
@@ -58,7 +56,7 @@ class FiatModel(GridModel):
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
         self.vulnerability = None
-        self.vulnerability_metadata = list()
+        self.vf_ids_and_linking_df = pd.DataFrame()
 
     def setup_global_settings(self, crs: str):
         """Setup Delft-FIAT global settings.
@@ -94,12 +92,11 @@ class FiatModel(GridModel):
         for i, name in enumerate(output_vector_name):
             self.set_config(f"output.geom.name{str(i+1)}", name)
 
-    def setup_basemaps(
+    def setup_region(
         self,
         region,
         **kwargs,
     ):
-        # FIXME Mario will update this function according to the one in Habitat
         """Define the model domain that is used to clip the raster layers.
 
         Adds model layer:
@@ -169,7 +166,7 @@ class FiatModel(GridModel):
         df_vulnerability = self.data_catalog.get_dataframe(vulnerability_fn)
 
         # Read the vulnerability linking table
-        vf_ids_and_linking_df = self.data_catalog.get_dataframe(
+        self.vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
 
@@ -181,7 +178,7 @@ class FiatModel(GridModel):
             assert (
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
-            vf_ids_and_linking_df["continent"] = continent.lower()
+            self.vf_ids_and_linking_df["continent"] = continent.lower()
 
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
@@ -193,7 +190,7 @@ class FiatModel(GridModel):
         # vulnerability curves file for Delft-FIAT.
         self.vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
-            df_identifiers_linking=vf_ids_and_linking_df,
+            df_identifiers_linking=self.vf_ids_and_linking_df,
             continent=continent,
         )
 
@@ -201,9 +198,6 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
-
-        # Add the vulnerability linking table to the tables object
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -625,11 +619,11 @@ class FiatModel(GridModel):
 
         # Update the vulnerability data tables
         if self.vulnerability:
-            (
-                df,
-                self.vulnerability_metadata,
-            ) = self.vulnerability.get_table_and_metadata()
-            self.set_tables(df=df, name="vulnerability_curves")
+            self.set_tables(df=self.vulnerability.get_table(), name="vulnerability_curves")
+            
+        if not self.vf_ids_and_linking_df.empty:
+            # Add the vulnerability linking table to the tables object
+            self.set_tables(df=self.vf_ids_and_linking_df, name="vulnerability_identifiers")
 
     def update_geoms(self):
         # Update the exposure data geoms
@@ -689,10 +683,6 @@ class FiatModel(GridModel):
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
-            (
-                self._tables["vulnerability_curves"],
-                _,
-            ) = self.vulnerability.get_table_and_metadata()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
@@ -707,19 +697,8 @@ class FiatModel(GridModel):
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
-            self._tables["exposure"] = self.exposure.exposure_db
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
-
-        # If needed read other tables files like vulnerability identifiers
-        # Comment if not needed - I usually use os rather than pathlib, change if you prefer
-        fns = glob.glob(join(self.root, "*.csv"))
-        if len(fns) > 0:
-            for fn in fns:
-                self.logger.info(f"Reading table {fn}")
-                name = basename(fn).split(".")[0]
-                tbl = pd.read_csv(fn)
-                self.set_tables(tbl, name=name)
 
     def read_geoms(self):
         """Read the geometries for the exposure data."""
@@ -733,13 +712,6 @@ class FiatModel(GridModel):
                 for f in exposure_files
             ]
             self.exposure.read_geoms(exposure_fn)
-
-            exposure_names = [f.stem for f in exposure_fn]
-            for name, geom in zip(exposure_names, self.exposure.exposure_geoms):
-                self.set_geoms(
-                    geom=geom,
-                    name=name,
-                )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
@@ -817,20 +789,19 @@ class FiatModel(GridModel):
     @property
     def vulnerability_curves(self) -> pd.DataFrame:
         """Returns a dataframe with the damage functions."""
-        if "vulnerability_curves" in self._tables:
-            vf = self._tables["vulnerability_curves"]
+        if self.vulnerability:
+            vf = self.vulnerability.get_table()
         else:
             vf = pd.DataFrame()
         return vf
 
     @property
-    def vf_ids_and_linking_df(self) -> pd.DataFrame:
-        """Returns a dataframe with the vulnerability identifiers and linking."""
-        if "vulnerability_identifiers" in self._tables:
-            vi = self._tables["vulnerability_identifiers"]
+    def vulnerability_metadata(self) -> List[str]:
+        if self.vulnerability:
+            vmeta = self.vulnerability.get_metadata()
         else:
-            vi = pd.DataFrame()
-        return vi
+            vmeta = list()
+        return vmeta
 
     def set_tables(self, df: pd.DataFrame, name: str) -> None:
         """Add <pandas.DataFrame> to the tables variable.
