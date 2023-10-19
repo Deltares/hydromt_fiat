@@ -59,19 +59,16 @@ jobs:
       - name: Install hydromt-fiat
         run: pip install .
 
-      - name: Build docs
+      - name: Generate docs
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         run: |
-          make html
-
-      # This overrides the version "dev" with the proper version if we're building off a
-      # branch that's not main (which is confined to n.nn.x above) or on a tag.
-      - name: Set doc version
-        run: echo "DOC_VERSION=$(python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
+          export PATH=/usr/share/miniconda3/bin:$PATH
+          PYTHONPYCACHEPREFIX=~/pycache mamba run -n hydromt sphinx-build -M html ./docs ./docs/_build
+          echo "DOC_VERSION=$(mamba run -n hydromt python -c 'from hydromt import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
-        uses: peaceiris/actions-gh-pages@v3.8.0
+        uses: peaceiris/actions-gh-pages@v3.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
