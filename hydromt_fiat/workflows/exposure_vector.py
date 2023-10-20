@@ -29,7 +29,7 @@ from hydromt_fiat.workflows.gis import (
     get_crs_str_from_gdf,
     join_spatial_data,
 )
-from hydromt_fiat.workflows.roads import add_max_potential_damage_roads
+from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
 
 
 class ExposureVector(Exposure):
@@ -230,7 +230,7 @@ class ExposureVector(Exposure):
 
         # Add the max potential damage to the roads
         road_damage = self.data_catalog.get_dataframe(road_damage)
-        add_max_potential_damage_roads(roads, road_damage)
+        get_max_potential_damage_roads(roads, road_damage)
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
