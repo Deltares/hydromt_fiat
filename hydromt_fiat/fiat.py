@@ -253,7 +253,7 @@ class FiatModel(GridModel):
 
     def setup_road_vulnerability(
         self,
-        unit: str,
+        vertical_unit: str,
         threshold_value: float = 0.6,
         min_hazard_value: float = 0,
         max_hazard_value: float = 10,
@@ -261,7 +261,7 @@ class FiatModel(GridModel):
     ):
         if not self.vulnerability:
             self.vulnerability = Vulnerability(
-                unit,
+                vertical_unit,
                 self.logger,
             )
         self.vulnerability.create_step_function(

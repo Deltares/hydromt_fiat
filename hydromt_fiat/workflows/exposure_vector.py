@@ -221,16 +221,16 @@ class ExposureVector(Exposure):
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
-        roads["Primary Object Type"] = "road"
-        roads["Damage Function: Structure"] = "road"
+        roads["Primary Object Type"] = "roads"
+        roads["Damage Function: Structure"] = "roads"
 
         self.logger.info(
-            "The damage function 'road' is selected for all of the structure damage to the roads."
+            "The damage function 'roads' is selected for all of the structure damage to the roads."
         )
 
-        # Add the max potential damage to the roads
+        # Add the max potential damage and the length of the segments to the roads
         road_damage = self.data_catalog.get_dataframe(road_damage)
-        get_max_potential_damage_roads(roads, road_damage)
+        roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = get_max_potential_damage_roads(roads, road_damage)
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")

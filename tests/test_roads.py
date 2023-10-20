@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import shutil
 import geopandas as gpd
+import pandas as pd
 
 
 EXAMPLEDIR = Path(
@@ -38,11 +39,11 @@ _cases = {
         "dir": "test_roads_from_OSM",
         "configuration": {
             "setup_road_vulnerability": {
-                "name" : "roads",
-                "theshold_value" : 0.5,
-                "min_hazard__value" : 0,
-                "max_hazard_value" :15,
-                "step_hazard_value" : 1,
+                "vertical_unit": "ft",
+                "threshold_value": 0.5,
+                "min_hazard_value": 0,
+                "max_hazard_value": 15,
+                "step_hazard_value": 1,
             },
             "setup_exposure_roads": {
                 "roads_fn": "OSM",
@@ -76,6 +77,13 @@ def test_setup_roads(case):
     assert root.joinpath("exposure", "roads.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
     assert root.joinpath("exposure", "region.gpkg").exists()
+
+    # Read the resulting exposure data and check if the required columns exist
+    exposure = pd.read_csv(root.joinpath("exposure", "exposure.csv"))
+    required_columns = ['Secondary Object Type', 'Object Name', 'lanes', 'Object ID', 
+                        'Primary Object Type', 'Damage Function: Structure',
+                        'Max Potential Damage: Structure', 'Segment Length [m]']
+    assert set(required_columns) == set(exposure.columns)
 
     # Check if the vulnerability data exists
     assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()

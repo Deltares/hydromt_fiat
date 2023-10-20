@@ -39,4 +39,4 @@ def get_max_potential_damage_roads(
             "You are using the wrong unit for the segment length. Please use <'foot/feet/ft'> or <'meter/metre/m'>"
         )
 
-    return roads
+    return roads[["maximum_potential_damage", "segment_length"]]
