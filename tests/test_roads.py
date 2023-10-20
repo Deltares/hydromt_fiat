@@ -37,6 +37,9 @@ _cases = {
         "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_roads_from_OSM",
         "configuration": {
+            "setup_road_vulnerability": {
+                ""
+            },
             "setup_exposure_roads": {
                 "roads_fn": "OSM",
                 "road_types": ["motorway", "primary", "secondary", "tertiary"],
