@@ -718,7 +718,7 @@ class FiatModel(GridModel):
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
+        exposure_fn = Path(self.root) / self.get_config("exposure.csv.file")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(
