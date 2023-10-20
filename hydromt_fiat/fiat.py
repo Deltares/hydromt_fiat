@@ -244,11 +244,27 @@ class FiatModel(GridModel):
                 (e.g. meter).
         """
         # Process the vulnerability data
-        self.vulnerability = Vulnerability(
-            unit,
-            self.logger,
-        )
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                unit,
+                self.logger,
+            )
         self.vulnerability.from_csv(csv_fn)
+
+    def setup_road_vulnerability(
+            self,
+            unit: str,
+            threshold_value: float = 0.6,
+            min_hazard_value: float = 0,
+            max_hazard_value: float = 10,
+            step_hazard_value: float = 1.0,
+            ):
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                unit,
+                self.logger,
+            )
+        self.vulnerability.create_step_function("roads", threshold_value, min_hazard_value, max_hazard_value, step_hazard_value)
 
     def setup_exposure_buildings(
         self,
@@ -336,6 +352,13 @@ class FiatModel(GridModel):
 
     def setup_exposure_roads(self):
         NotImplemented
+
+        # First you get the data
+
+        # Link to vulnerability curves
+
+        # Combine the exposure database with pre-existing exposure data if available
+
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.

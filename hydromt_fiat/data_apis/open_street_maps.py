@@ -25,6 +25,40 @@ def get_assets_from_osm(polygon: Polygon):
     return footprints
 
 
+def get_roads_from_osm(
+    polygon: Union[Polygon, Path, str]
+) ->gpd.GeoDataFrame:
+    tag = {
+        "highway": ["motorway"]
+    }  # this is the tag we use to find the correct OSM data
+    if isinstance(polygon,(Path,str)): 
+        gdf = gpd.read_file(polygon)
+        polygon =gdf.geometry.iloc[0]
+    else:
+        return polygon
+    
+    roads = ox.features.features_from_polygon(
+        polygon, tags=tag
+    )  # then we query the data
+
+    if roads.empty:
+        logging.warning("No road network found from OSM")
+        return None
+
+    logging.info(f"Total number of roads found from OSM: {len(roads)}")
+
+    # Not sure if this is needed here and maybe filter for the columns that we need
+    roads = roads.loc[
+        (roads.geometry.type == "Polygon")
+        | (roads.geometry.type == "MultiPolygon")
+        | (roads.geometry.type == "LineString")
+    ]
+    roads = roads.reset_index(drop=True)
+    roads.rename(columns={"element_type": "type"}, inplace=True)
+
+    return roads
+
+
 def get_landuse_from_osm(polygon: Polygon):
     tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
     landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data

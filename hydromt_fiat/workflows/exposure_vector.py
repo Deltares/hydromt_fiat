@@ -185,24 +185,31 @@ class ExposureVector(Exposure):
     def setup_roads(self, source: Union[str, Path]):
         NotImplemented
         self.logger.info("Setting up roads...")
-        # if str(source).upper() == "OSM":
-        #     polygon = self.region.iloc[0].values[0]
-        #     assets = get_assets_from_osm(polygon)
+        if str(source).upper() == "OSM":
+            polygon = self.region.iloc[0].values[0]
+            roads = get_roads_from_osm(polygon)
 
-        #     if assets.empty:
-        #         self.logger.warning(
-        #             "No assets found in the selected region from source "
-        #             f"{source}."
-        #         )
+            if assets.empty:
+                self.logger.warning(
+                    "No assets found in the selected region from source "
+                    f"{source}."
+                )
 
-        #     # Rename the osmid column to Object ID
-        #     assets.rename(columns={"osmid": "Object ID"}, inplace=True)
-        # else:
-        #     assets = self.data_catalog.get_geodataframe(
-        #         source, geom=self.region
-        #     )
-        # self.set_exposure_geoms(roads)
-        # self.set_geom_names("roads")
+            # Rename the osmid column to Object ID
+            assets.rename(columns={"osmid": "Object ID"}, inplace=True)
+        else:
+            assets = self.data_catalog.get_geodataframe(
+                source, geom=self.region
+            )
+            # add the function to segmentize the roads into certain segments
+
+        # Primary Object Type = roads
+        # Secondary Object Type = road type
+
+        # Add the max potential damage to the roads
+    
+        self.set_exposure_geoms(roads)
+        self.set_geom_names("roads")
 
     def setup_buildings_from_multiple_sources(
         self,
