@@ -18,6 +18,7 @@ dependencies:
 - pip
 - pyogrio
 - pydata-sphinx-theme
+- python=3.10
 - rasterio
 - requests
 - rioxarray

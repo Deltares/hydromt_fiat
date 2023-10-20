@@ -121,7 +121,5 @@ venv.bak/
 cache
 /examples/FIAT_database
 hydromt_fiat/data/damage_functions/flooding/AllDDF_HAZUS_fractions.xlsx
-hydromt_fiat/data/damage_functions/flooding/~$AllDDF_HAZUS_fractions.xlsx
 examples/data/building_footprints/fiat_model_bfs
-examples/data/aggregation_zones_example/aggregation_test_1_output
-examples/data/aggregation_zones_example/aggregation_test_2_output
+examples/data/aggregation_zones/output
