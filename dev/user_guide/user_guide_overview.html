@@ -462,8 +462,8 @@ to local data on the user’s machine. The <cite>asset_locations</cite>, <cite>o
 data should be provided as a vector file (e.g. <em>.shp</em> or <em>.gpkg</em>). The <cite>ground_floor_height</cite> can currently
 only be set to a single value (this will be updated soon!). The <cite>damage_types</cite> should be provided as a
 list of strings (e.g. [“structure”, “content”]). The <cite>unit</cite> should be provided as a string (e.g. “m”).
-See below how the <cite>setup_exposure_vector</cite> method can be used to build or update the exposure data:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">setup_exposure_vector</span><span class="p">]</span>
+See below how the <cite>setup_exposure_buildings</cite> method can be used to build or update the exposure data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">setup_exposure_buildings</span><span class="p">]</span>
 <span class="n">asset_locations</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">Key</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">Data</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">data</span> <span class="n">API</span> <span class="n">key</span><span class="p">,</span> <span class="ow">or</span> <span class="n">path</span> <span class="n">to</span> <span class="n">local</span> <span class="n">data</span><span class="o">&gt;</span>
 <span class="n">occupancy_type</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">Key</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">Data</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">data</span> <span class="n">API</span> <span class="n">key</span><span class="p">,</span> <span class="ow">or</span> <span class="n">path</span> <span class="n">to</span> <span class="n">local</span> <span class="n">data</span><span class="o">&gt;</span>
 <span class="n">damage_types</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">List</span> <span class="n">of</span> <span class="n">damage</span> <span class="n">types</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">]</span><span class="o">&gt;</span>
@@ -475,8 +475,8 @@ See below how the <cite>setup_exposure_vector</cite> method can be used to build
 <p>The following method is used to build or update the <strong>exposure</strong> data:</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_vector.html#hydromt_fiat.fiat.FiatModel.setup_exposure_vector" title="hydromt_fiat.fiat.FiatModel.setup_exposure_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiatModel.setup_exposure_vector</span></code></a>(...[, ...])</p></td>
-<td><p>Setup vector exposure data for Delft-FIAT.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings" title="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiatModel.setup_exposure_buildings</span></code></a>(...[, ...])</p></td>
+<td><p>Setup building exposure (vector) data for Delft-FIAT.</p></td>
 </tr>
 </tbody>
 </table>

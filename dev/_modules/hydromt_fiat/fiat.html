@@ -684,16 +684,38 @@
 <span class="sd">                (e.g. meter).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Process the vulnerability data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
-            <span class="n">unit</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
+                <span class="n">unit</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">from_csv</span><span class="p">(</span><span class="n">csv_fn</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="FiatModel.setup_exposure_vector">
-<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_vector.html#hydromt_fiat.fiat.FiatModel.setup_exposure_vector">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup_exposure_vector</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">setup_road_vulnerability</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vertical_unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">threshold_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
+        <span class="n">min_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">max_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">step_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
+                <span class="n">vertical_unit</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">create_step_function</span><span class="p">(</span>
+            <span class="s2">&quot;roads&quot;</span><span class="p">,</span>
+            <span class="n">threshold_value</span><span class="p">,</span>
+            <span class="n">min_hazard_value</span><span class="p">,</span>
+            <span class="n">max_hazard_value</span><span class="p">,</span>
+            <span class="n">step_hazard_value</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="FiatModel.setup_exposure_buildings">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_exposure_buildings</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">asset_locations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -705,7 +727,7 @@
         <span class="n">damage_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup vector exposure data for Delft-FIAT.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup building exposure (vector) data for Delft-FIAT.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -765,7 +787,7 @@
         <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s2">&quot;Please call the &#39;setup_vulnerability&#39; function before &quot;</span>
-                <span class="s2">&quot;the &#39;setup_exposure_vector&#39; function. Error message: </span><span class="si">{e}</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;the &#39;setup_exposure_buildings&#39; function. Error message: </span><span class="si">{e}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">link_exposure_vulnerability</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">,</span> <span class="n">damage_types</span>
@@ -777,6 +799,30 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
 
+
+    <span class="k">def</span> <span class="nf">setup_exposure_roads</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">roads_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">road_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">road_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup road exposure data for Delft-FIAT.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        roads_fn : Union[str, Path]</span>
+<span class="sd">            Path to the road network source (e.g., OSM) or file.</span>
+<span class="sd">        road_types : Union[str, List[str], bool], optional</span>
+<span class="sd">            List of road types to include in the exposure data, by default True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_roads</span><span class="p">(</span><span class="n">roads_fn</span><span class="p">,</span> <span class="n">road_damage</span><span class="p">,</span> <span class="n">road_types</span><span class="p">)</span>
+
+        <span class="c1"># Link to vulnerability curves</span>
+
+        <span class="c1"># Combine the exposure database with pre-existing exposure data if available</span>
 
     <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>

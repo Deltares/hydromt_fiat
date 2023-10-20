@@ -387,7 +387,7 @@
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_basemaps.html">hydromt_fiat.fiat.FiatModel.setup_basemaps</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_vulnerability.html">hydromt_fiat.fiat.FiatModel.setup_vulnerability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv.html">hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_vector.html">hydromt_fiat.fiat.FiatModel.setup_exposure_vector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html">hydromt_fiat.fiat.FiatModel.setup_exposure_buildings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html">hydromt_fiat.fiat.FiatModel.setup_hazard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index.html">hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index</a></li>
 </ul>
@@ -586,44 +586,50 @@
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config" title="hydromt_fiat.fiat.FiatModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**cfdict)</p></td>
 <td><p>Update config with a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_raster</span></code>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings" title="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_buildings</span></code></a>(asset_locations, ...)</p></td>
+<td><p>Setup building exposure (vector) data for Delft-FIAT.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_raster</span></code>()</p></td>
 <td><p>Setup raster exposure data for Delft-FIAT.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_vector.html#hydromt_fiat.fiat.FiatModel.setup_exposure_vector" title="hydromt_fiat.fiat.FiatModel.setup_exposure_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_vector</span></code></a>(asset_locations, ...)</p></td>
-<td><p>Setup vector exposure data for Delft-FIAT.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_roads</span></code>(roads_fn, road_damage)</p></td>
+<td><p>Setup road exposure data for Delft-FIAT.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_global_settings.html#hydromt_fiat.fiat.FiatModel.setup_global_settings" title="hydromt_fiat.fiat.FiatModel.setup_global_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_global_settings</span></code></a>([crs, gdal_cache, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_global_settings.html#hydromt_fiat.fiat.FiatModel.setup_global_settings" title="hydromt_fiat.fiat.FiatModel.setup_global_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_global_settings</span></code></a>([crs, gdal_cache, ...])</p></td>
 <td><p>Setup Delft-FIAT global settings.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid</span></code>(region[, res, crs, rotated, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid</span></code>(region[, res, crs, rotated, ...])</p></td>
 <td><p>HYDROMT CORE METHOD: Create a 2D regular grid or reads an existing grid.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_constant</span></code>(constant, name[, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_constant</span></code>(constant, name[, ...])</p></td>
 <td><p>HYDROMT CORE METHOD: Adds a grid based on a constant value.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_geodataframe</span></code>(vector_fn[, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_geodataframe</span></code>(vector_fn[, ...])</p></td>
 <td><p>HYDROMT CORE METHOD: Add data variable(s) to grid object by rasterizing the data from <code class="docutils literal notranslate"><span class="pre">vector_fn</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_raster_reclass</span></code>(raster_fn, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_raster_reclass</span></code>(raster_fn, ...)</p></td>
 <td><p>HYDROMT CORE METHOD: Add data variable(s) to grid object by reclassifying the data in <code class="docutils literal notranslate"><span class="pre">raster_fn</span></code> based on <code class="docutils literal notranslate"><span class="pre">reclass_table_fn</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_rasterdataset</span></code>(raster_fn[, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_grid_from_rasterdataset</span></code>(raster_fn[, ...])</p></td>
 <td><p>HYDROMT CORE METHOD: Add data variable(s) from <code class="docutils literal notranslate"><span class="pre">raster_fn</span></code> to grid object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard" title="hydromt_fiat.fiat.FiatModel.setup_hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_hazard</span></code></a>(map_fn, map_type[, rp, crs, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard" title="hydromt_fiat.fiat.FiatModel.setup_hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_hazard</span></code></a>(map_fn, map_type[, rp, crs, ...])</p></td>
 <td><p>Set up hazard maps.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_maps_from_raster_reclass</span></code>(raster_fn, ...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_maps_from_raster_reclass</span></code>(raster_fn, ...)</p></td>
 <td><p>HYDROMT CORE METHOD: Add data variable(s) to maps object by reclassifying the data in <code class="docutils literal notranslate"><span class="pre">raster_fn</span></code> based on <code class="docutils literal notranslate"><span class="pre">reclass_table_fn</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_maps_from_rasterdataset</span></code>(raster_fn[, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_maps_from_rasterdataset</span></code>(raster_fn[, ...])</p></td>
 <td><p>HYDROMT CORE METHOD: Add data variable(s) from <code class="docutils literal notranslate"><span class="pre">raster_fn</span></code> to maps object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_output.html#hydromt_fiat.fiat.FiatModel.setup_output" title="hydromt_fiat.fiat.FiatModel.setup_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_output</span></code></a>([output_dir, output_csv_name, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_output.html#hydromt_fiat.fiat.FiatModel.setup_output" title="hydromt_fiat.fiat.FiatModel.setup_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_output</span></code></a>([output_dir, output_csv_name, ...])</p></td>
 <td><p>Setup Delft-FIAT output folder and files.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_region</span></code>(region, **kwargs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_region</span></code>(region, **kwargs)</p></td>
 <td><p>Define the model domain that is used to clip the raster layers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_road_vulnerability</span></code>(vertical_unit[, ...])</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index.html#hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index" title="hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_social_vulnerability_index</span></code></a>(census_key, ...)</p></td>
 <td><p>Setup the social vulnerability index for the vector exposure data for Delft-FIAT.</p></td>
