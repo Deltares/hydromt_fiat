@@ -78,7 +78,7 @@ def test_setup_roads(case):
     assert root.joinpath("exposure", "region.gpkg").exists()
 
     # Check if the vulnerability data exists
-    # assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
+    assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
 
     # Check if the hazard folder exists
     assert root.joinpath("hazard").exists()
@@ -87,5 +87,5 @@ def test_setup_roads(case):
     assert root.joinpath("output").exists()
 
     # Check if the output gives the correct solution
-    assert fm.functions  == {'roads': [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
-    assert fm.hazard_values == [0.0, 0.49, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    assert fm.vulnerability.functions  == {'roads': [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
+    assert fm.vulnerability.hazard_values == [0.0, 0.49, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
