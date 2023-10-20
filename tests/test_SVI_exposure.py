@@ -51,7 +51,7 @@ _cases = {
                 "functions_max": ["AGR1"],
                 "unit": "feet",
             },
-            "setup_exposure_vector": {
+            "setup_exposure_buildings": {
                 "asset_locations": "NSI",
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",

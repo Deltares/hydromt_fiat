@@ -250,7 +250,7 @@ class FiatModel(GridModel):
         )
         self.vulnerability.from_csv(csv_fn)
 
-    def setup_exposure_vector(
+    def setup_exposure_buildings(
         self,
         asset_locations: Union[str, Path],
         occupancy_type: Union[str, Path],
@@ -322,7 +322,7 @@ class FiatModel(GridModel):
         except AssertionError:
             logging.error(
                 "Please call the 'setup_vulnerability' function before "
-                "the 'setup_exposure_vector' function. Error message: {e}"
+                "the 'setup_exposure_buildings' function. Error message: {e}"
             )
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
@@ -333,6 +333,9 @@ class FiatModel(GridModel):
         self.set_config("exposure.csv.file", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
+
+    def setup_exposure_roads(self):
+        NotImplemented
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.

@@ -32,9 +32,9 @@ to local data on the user's machine. The `asset_locations`, `occupancy_type`, an
 data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `ground_floor_height` can currently 
 only be set to a single value (this will be updated soon!). The `damage_types` should be provided as a 
 list of strings (e.g. ["structure", "content"]). The `unit` should be provided as a string (e.g. "m"). 
-See below how the `setup_exposure_vector` method can be used to build or update the exposure data::
+See below how the `setup_exposure_buildings` method can be used to build or update the exposure data::
 
-   [setup_exposure_vector]
+   [setup_exposure_buildings]
    asset_locations = <Key in the Data Catalog, data API key, or path to local data>
    occupancy_type = <Key in the Data Catalog, data API key, or path to local data>
    damage_types = <List of damage types, e.g. ["structure", "content"]>
@@ -45,7 +45,7 @@ See below how the `setup_exposure_vector` method can be used to build or update 
 The following method is used to build or update the **exposure** data:
 
 .. autosummary::
-   FiatModel.setup_exposure_vector
+   FiatModel.setup_exposure_buildings
 
 For more information, see the :ref:`exposure_vector`.
 
