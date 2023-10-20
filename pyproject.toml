@@ -10,6 +10,7 @@ authors = [
 	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
 	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
+    {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
 ]
 requires-python = ">=3.8"
 dependencies = [
