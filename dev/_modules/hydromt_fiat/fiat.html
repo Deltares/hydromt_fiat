@@ -1,542 +1,1384 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>hydromt_fiat.fiat &mdash; hydromt_fiat  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
+
+<html lang="en" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hydromt_fiat.fiat &#8212; HydroMT-FIAT  documentation</title>
   
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+
+    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/fiat';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-</head>
+    <link rel="search" title="Search" href="../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
 
-          
-          
-          <a href="../../index.html" class="icon icon-home">
-            hydromt_fiat
-          </a>
-              <div class="version">
-                0.2.1.dev
-              </div>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../user_guide/fiat.html">FIAT model components</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../user_guide/fiat_flood.html">Setting up a flood damage model</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">References &amp; Help</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../api/api_index.html">API reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">What’s new</a></li>
-</ul>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
-        </div>
-      </div>
-    </nav>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">hydromt_fiat</a>
-      </nav>
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+    
+    
+    
+    <img src="../../_static/fiat.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../../_static/fiat.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+    <p class="title logo__title">HydroMT-FIAT</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">hydromt_fiat.fiat</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../examples/index.html">
+                        Examples
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user_guide/user_guide_overview.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../data/data_sources.html">
+                        Data Sources
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../api/api_index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+                        What’s new
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
   </ul>
-  <hr/>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script>
+    </div>
+  
+
+  
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../examples/index.html">
+                        Examples
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../user_guide/user_guide_overview.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../data/data_sources.html">
+                        Data Sources
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../api/api_index.html">
+                        API reference
+                      </a>
+                    </li>
+                
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-header-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-header-nav-more-links" class="dropdown-menu">
+                    
+                    <li class="nav-item">
+                      <a class="nav-link dropdown-item nav-internal" href="../../changelog.html">
+                        What’s new
+                      </a>
+                    </li>
+                
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../../_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">hydromt_fiat.fiat</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <h1>Source code for hydromt_fiat.fiat</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Implement fiat model class&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">hydromt.models.model_api</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span><span class="p">,</span> <span class="n">join</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
-<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
 <span class="kn">import</span> <span class="nn">hydromt</span>
-<span class="kn">from</span> <span class="nn">hydromt.cli.cli_utils</span> <span class="kn">import</span> <span class="n">parse_config</span>
-<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">hydromt.models.model_grid</span> <span class="kn">import</span> <span class="n">GridModel</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 
-
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">DATADIR</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat</span> <span class="kn">import</span> <span class="n">DATADIR</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.config</span> <span class="kn">import</span> <span class="n">Config</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.exposure_vector</span> <span class="kn">import</span> <span class="n">ExposureVector</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.hazard</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">create_lists</span><span class="p">,</span>
+    <span class="n">check_lists_size</span><span class="p">,</span>
+    <span class="n">read_maps</span><span class="p">,</span>
+    <span class="n">check_maps_metadata</span><span class="p">,</span>
+    <span class="n">check_maps_rp</span><span class="p">,</span>
+    <span class="n">check_map_uniqueness</span><span class="p">,</span>
+    <span class="n">create_risk_dataset</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.social_vulnerability_index</span> <span class="kn">import</span> <span class="n">SocialVulnerabilityIndex</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.vulnerability</span> <span class="kn">import</span> <span class="n">Vulnerability</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.aggregation_areas</span> <span class="kn">import</span> <span class="n">join_exposure_aggregation_areas</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.building_footprints</span> <span class="kn">import</span> <span class="n">join_exposure_building_footprints</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FiatModel&quot;</span><span class="p">]</span>
 
 <span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="FiatModel"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel">[docs]</a><span class="k">class</span> <span class="nc">FiatModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+<div class="viewcode-block" id="FiatModel">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel">[docs]</a>
+<span class="k">class</span> <span class="nc">FiatModel</span><span class="p">(</span><span class="n">GridModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;General and basic API for the FIAT model in hydroMT.&quot;&quot;&quot;</span>
 
     <span class="n">_NAME</span> <span class="o">=</span> <span class="s2">&quot;fiat&quot;</span>
-    <span class="n">_CONF</span> <span class="o">=</span> <span class="s2">&quot;fiat_configuration.ini&quot;</span>
+    <span class="n">_CONF</span> <span class="o">=</span> <span class="s2">&quot;settings.toml&quot;</span>
     <span class="n">_GEOMS</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># FIXME Mapping from hydromt names to model specific names</span>
     <span class="n">_MAPS</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># FIXME Mapping from hydromt names to model specific names</span>
     <span class="n">_FOLDERS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;vulnerability&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">]</span>
+    <span class="n">_CLI_ARGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;setup_region&quot;</span><span class="p">}</span>
     <span class="n">_DATADIR</span> <span class="o">=</span> <span class="n">DATADIR</span>
 
-<div class="viewcode-block" id="FiatModel.__init__"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="FiatModel.__init__">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>
         <span class="n">config_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">data_libs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">logger</span><span class="o">=</span><span class="n">_logger</span><span class="p">,</span>
-        <span class="n">deltares_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">artifact_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span>
             <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
             <span class="n">config_fn</span><span class="o">=</span><span class="n">config_fn</span><span class="p">,</span>
             <span class="n">data_libs</span><span class="o">=</span><span class="n">data_libs</span><span class="p">,</span>
-            <span class="n">deltares_data</span><span class="o">=</span><span class="n">deltares_data</span><span class="p">,</span>
-            <span class="n">artifact_data</span><span class="o">=</span><span class="n">artifact_data</span><span class="p">,</span>
             <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># Dictionary of tables to write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FiatModel.setup_config"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config">[docs]</a>    <span class="k">def</span> <span class="nf">setup_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># TODO: check if this is required</span>
-        <span class="bp">NotImplemented</span></div>
 
-    <span class="k">def</span> <span class="nf">setup_exposure_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">NotImplemented</span>
-        <span class="c1"># workflows.exposure_vector.Exposure</span>
+<div class="viewcode-block" id="FiatModel.setup_global_settings">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_global_settings.html#hydromt_fiat.fiat.FiatModel.setup_global_settings">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_global_settings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gdal_cache</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keep_temp_files</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">thread</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunk</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Delft-FIAT global settings.</span>
 
-    <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">NotImplemented</span>
-
-    <span class="k">def</span> <span class="nf">setup_vulnerability</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">NotImplemented</span>
-
-<div class="viewcode-block" id="FiatModel.setup_hazard"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard">[docs]</a>    <span class="k">def</span> <span class="nf">setup_hazard</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">NotImplemented</span></div>
-
-    <span class="k">def</span> <span class="nf">setup_social_vulnerability_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">NotImplemented</span>
-
-<div class="viewcode-block" id="FiatModel.read"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to read the complete model schematization and configuration from file.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading model data from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">read_staticmaps</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">read_staticgeoms</span><span class="p">()</span></div>
-
-    <span class="k">def</span> <span class="nf">_configread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse fiat_configuration.ini to dict.&quot;&quot;&quot;</span>
-
-        <span class="c1"># Read and parse the fiat_configuration.ini.</span>
-        <span class="n">opt</span> <span class="o">=</span> <span class="n">parse_config</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-
-        <span class="c1"># Store the general information.</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">opt</span><span class="p">[</span><span class="s2">&quot;setup_config&quot;</span><span class="p">]</span>
-
-        <span class="c1"># Set the paths</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard_dp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;vulnerability&quot;</span><span class="p">)</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;output_dp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)</span>
-
-        <span class="c1"># Store the hazard information.</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">hazard_dict</span> <span class="ow">in</span> <span class="p">[</span><span class="n">opt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">opt</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;hazard&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">]:</span>
-            <span class="n">hazard_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span><span class="s2">&quot;map_fn&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard_dp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">])}</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_type&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">][</span><span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_type&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-                    <span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span> <span class="n">hazard_dict</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">config</span><span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">][</span><span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_type&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                    <span class="p">{</span>
-                        <span class="n">hazard_dict</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span> <span class="n">hazard_dict</span><span class="p">,</span>
-                    <span class="p">}</span>
-                <span class="p">)</span>
-
-        <span class="c1"># Store the exposure information.</span>
-        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">exposure_dict</span> <span class="ow">in</span> <span class="p">[</span><span class="n">opt</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">opt</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;exposure&quot;</span> <span class="ow">in</span> <span class="n">key</span><span class="p">]:</span>
-            <span class="n">exposure_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span><span class="s2">&quot;map_fn&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">exposure_dict</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">])}</span>
-            <span class="p">)</span>
-            <span class="n">exposure_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;function_fn&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="n">i</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
-                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">exposure_dict</span><span class="p">[</span><span class="s2">&quot;function_fn&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                    <span class="p">}</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="n">exposure_dict</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span> <span class="n">exposure_dict</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">config</span>
-
-<div class="viewcode-block" id="FiatModel.read_staticgeoms"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_staticgeoms.html#hydromt_fiat.fiat.FiatModel.read_staticgeoms">[docs]</a>    <span class="k">def</span> <span class="nf">read_staticgeoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read staticgeoms at &lt;root/?/&gt; and parse to dict of GeoPandas.&quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="n">region_fn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;region.GeoJSON&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">region_fn</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region_fn</span><span class="p">),</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span></div>
-
-<div class="viewcode-block" id="FiatModel.read_staticmaps"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_staticmaps.html#hydromt_fiat.fiat.FiatModel.read_staticmaps">[docs]</a>    <span class="k">def</span> <span class="nf">read_staticmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read staticmaps at &lt;root/?/&gt; and parse to xarray Dataset.&quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_staticmaps</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
-
-        <span class="c1"># Read the hazard maps.</span>
-        <span class="k">for</span> <span class="n">hazard_fn</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="n">j</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-        <span class="p">]:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">hazard_fn</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find the hazard map: </span><span class="si">{</span><span class="n">hazard_fn</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span>
-                    <span class="n">hydromt</span><span class="o">.</span><span class="n">open_raster</span><span class="p">(</span><span class="n">hazard_fn</span><span class="p">),</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">hazard_fn</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
-                <span class="p">)</span>
-
-        <span class="c1"># Read the exposure maps.</span>
-        <span class="k">for</span> <span class="n">exposure_fn</span> <span class="ow">in</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">()]:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">exposure_fn</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not find the exposure map: </span><span class="si">{</span><span class="n">hazard_fn</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_staticmaps</span><span class="p">(</span>
-                    <span class="n">hydromt</span><span class="o">.</span><span class="n">open_raster</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">),</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">exposure_fn</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
-                <span class="p">)</span></div>
-
-<div class="viewcode-block" id="FiatModel.set_root"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root">[docs]</a>    <span class="k">def</span> <span class="nf">set_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialized the model root.</span>
-<span class="sd">        In read mode it checks if the root exists.</span>
-<span class="sd">        In write mode in creates the required model folder structure.</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        root: str, optional</span>
-<span class="sd">            Path to model root.</span>
-<span class="sd">        mode: {&quot;r&quot;, &quot;r+&quot;, &quot;w&quot;}, optional</span>
-<span class="sd">            Read/write-only mode for model files.</span>
+<span class="sd">        crs : str</span>
+<span class="sd">            The CRS of the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">crs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.crs&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gdal_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.gdal_cache&quot;</span><span class="p">,</span> <span class="n">gdal_cache</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keep_temp_files</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.keep_temp_files&quot;</span><span class="p">,</span> <span class="n">keep_temp_files</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">thread</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.thread&quot;</span><span class="p">,</span> <span class="n">thread</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.grid.chunk&quot;</span><span class="p">,</span> <span class="n">chunk</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FiatModel.setup_output">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_output.html#hydromt_fiat.fiat.FiatModel.setup_output">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_output</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
+        <span class="n">output_csv_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">,</span>
+        <span class="n">output_vector_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;spatial.gpkg&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Delft-FIAT output folder and files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_dir : str, optional</span>
+<span class="sd">            The name of the output directory, by default &quot;output&quot;.</span>
+<span class="sd">        output_csv_name : str, optional</span>
+<span class="sd">            The name of the output csv file, by default &quot;output.csv&quot;.</span>
+<span class="sd">        output_vector_name : Union[str, List[str]], optional</span>
+<span class="sd">            The name of the output vector file, by default &quot;spatial.gpkg&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output.path&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output.csv.name&quot;</span><span class="p">,</span> <span class="n">output_csv_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_vector_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">output_vector_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">output_vector_name</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output_vector_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;output.geom.name</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">setup_region</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the model domain that is used to clip the raster layers.</span>
+
+<span class="sd">        Adds model layer:</span>
+
+<span class="sd">        * **region** geom: A geometry with the nomenclature &#39;region&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: dict</span>
+<span class="sd">            Dictionary describing region of interest, e.g. {&#39;bbox&#39;: [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># Do super method and update absolute paths in config.</span>
-        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_fn</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_root</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="ow">and</span> <span class="n">root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+        <span class="n">kind</span><span class="p">,</span> <span class="n">region</span> <span class="o">=</span> <span class="n">hydromt</span><span class="o">.</span><span class="n">workflows</span><span class="o">.</span><span class="n">parse_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;bbox&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometry</span><span class="o">=</span><span class="p">[</span><span class="n">box</span><span class="p">(</span><span class="o">*</span><span class="n">region</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">])],</span> <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="s2">&quot;grid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">box</span>
+        <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;geom&quot;</span><span class="p">:</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">region</span><span class="p">[</span><span class="s2">&quot;geom&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown region kind </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> for FIAT, expected one of [&#39;bbox&#39;, &#39;grid&#39;, &#39;geom&#39;].&quot;</span>
+            <span class="p">)</span>
 
-            <span class="c1"># Set the general information.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;hazard_dp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;vulnerability&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output_dp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">))</span>
+        <span class="c1"># Set the model region geometry (to be accessed through the shortcut self.region).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
 
-            <span class="c1"># Set the hazard information.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">hazard_type</span><span class="p">,</span> <span class="n">hazard_scenario</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="k">for</span> <span class="n">hazard_fn</span> <span class="ow">in</span> <span class="n">hazard_scenario</span><span class="p">:</span>
-                        <span class="n">hazard_scenario</span><span class="p">[</span><span class="n">hazard_fn</span><span class="p">][</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                            <span class="s2">&quot;hazard_dp&quot;</span>
-                        <span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">hazard_scenario</span><span class="p">[</span><span class="n">hazard_fn</span><span class="p">][</span><span class="s2">&quot;map_fn&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-                            <span class="s2">&quot;hazard&quot;</span><span class="p">,</span>
-                            <span class="n">hazard_type</span><span class="p">,</span>
-                            <span class="n">hazard_fn</span><span class="p">,</span>
-                            <span class="n">hazard_scenario</span><span class="p">[</span><span class="n">hazard_fn</span><span class="p">],</span>
-                        <span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">exposure_fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-                        <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                        <span class="n">exposure_fn</span><span class="p">,</span>
-                        <span class="s2">&quot;map_fn&quot;</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">exposure_fn</span><span class="p">,</span> <span class="s2">&quot;map_fn&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="k">for</span> <span class="n">sf_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                        <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                        <span class="n">exposure_fn</span><span class="p">,</span>
-                        <span class="s2">&quot;function_fn&quot;</span><span class="p">,</span>
-                    <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="p">(</span>
-                            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span>
-                            <span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                                <span class="n">sf_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="p">)</span>
-                            <span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-                        <span class="p">):</span>
-                            <span class="n">copy</span><span class="p">(</span>
-                                <span class="n">sf_path</span><span class="p">,</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                                    <span class="n">sf_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                <span class="p">),</span>
-                            <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-                        <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                        <span class="n">exposure_fn</span><span class="p">,</span>
-                        <span class="s2">&quot;function_fn&quot;</span><span class="p">,</span>
-                        <span class="p">{</span>
-                            <span class="n">i</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-                            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                                <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                                <span class="n">exposure_fn</span><span class="p">,</span>
-                                <span class="s2">&quot;function_fn&quot;</span><span class="p">,</span>
-                            <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                        <span class="p">},</span>
-                    <span class="p">)</span></div>
+        <span class="c1"># Set the region crs</span>
+        <span class="k">if</span> <span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="mi">4326</span><span class="p">)</span>
 
-<div class="viewcode-block" id="FiatModel.write"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to write the complete model schematization and configuration to file.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FiatModel.setup_vulnerability">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_vulnerability.html#hydromt_fiat.fiat.FiatModel.setup_vulnerability">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_vulnerability</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vulnerability_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">vulnerability_identifiers_and_linking_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">functions_mean</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">functions_max</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">step_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">continent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the vulnerability curves from various possible inputs.</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing model data to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="c1"># if in r, r+ mode, only write updated components</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vulnerability_fn : Union[str, Path]</span>
+<span class="sd">            The (relative) path or ID from the data catalog to the source of the</span>
+<span class="sd">            vulnerability functions.</span>
+<span class="sd">        vulnerability_identifiers_and_linking_fn : Union[str, Path]</span>
+<span class="sd">            The (relative) path to the table that links the vulnerability functions and</span>
+<span class="sd">            exposure categories.</span>
+<span class="sd">        unit : str</span>
+<span class="sd">            The unit of the vulnerability functions.</span>
+<span class="sd">        functions_mean : Union[str, List[str], None], optional</span>
+<span class="sd">            The name(s) of the vulnerability functions that should use the mean hazard</span>
+<span class="sd">            value when using the area extraction method, by default &quot;default&quot; (this</span>
+<span class="sd">            means that all vulnerability functions are using mean).</span>
+<span class="sd">        functions_max : Union[str, List[str], None], optional</span>
+<span class="sd">            The name(s) of the vulnerability functions that should use the maximum</span>
+<span class="sd">            hazard value when using the area extraction method, by default None (this</span>
+<span class="sd">            means that all vulnerability functions are using mean).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Read the vulnerability data</span>
+        <span class="n">df_vulnerability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">vulnerability_fn</span><span class="p">)</span>
+
+        <span class="c1"># Read the vulnerability linking table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
+            <span class="n">vulnerability_identifiers_and_linking_fn</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If the JRC vulnerability curves are used, the continent needs to be specified</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">vulnerability_identifiers_and_linking_fn</span>
+            <span class="o">==</span> <span class="s2">&quot;jrc_vulnerability_curves_linking&quot;</span>
+        <span class="p">):</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="n">continent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="p">),</span> <span class="s2">&quot;Please specify the continent when using the JRC vulnerability curves.&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">[</span><span class="s2">&quot;continent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">continent</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># Process the vulnerability data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
+            <span class="n">unit</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Depending on what the input is, another function is ran to generate the</span>
+        <span class="c1"># vulnerability curves file for Delft-FIAT.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">get_vulnerability_functions_from_one_file</span><span class="p">(</span>
+            <span class="n">df_source</span><span class="o">=</span><span class="n">df_vulnerability</span><span class="p">,</span>
+            <span class="n">df_identifiers_linking</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">,</span>
+            <span class="n">continent</span><span class="o">=</span><span class="n">continent</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the area extraction method for the vulnerability curves</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">set_area_extraction_methods</span><span class="p">(</span>
+            <span class="n">functions_mean</span><span class="o">=</span><span class="n">functions_mean</span><span class="p">,</span> <span class="n">functions_max</span><span class="o">=</span><span class="n">functions_max</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Update config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;vulnerability.file&quot;</span><span class="p">,</span> <span class="s2">&quot;./vulnerability/vulnerability_curves.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">step_size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability.step_size&quot;</span><span class="p">,</span> <span class="n">step_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FiatModel.setup_vulnerability_from_csv">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv.html#hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_vulnerability_from_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the vulnerability curves from one or multiple csv files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">            csv_fn : str</span>
+<span class="sd">                The full path to the folder which holds the single vulnerability curves.</span>
+<span class="sd">            unit : str</span>
+<span class="sd">                The unit of the water depth column for all vulnerability functions</span>
+<span class="sd">                (e.g. meter).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Process the vulnerability data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
+            <span class="n">unit</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">from_csv</span><span class="p">(</span><span class="n">csv_fn</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FiatModel.setup_exposure_vector">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_vector.html#hydromt_fiat.fiat.FiatModel.setup_exposure_vector">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_exposure_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">asset_locations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">max_potential_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">ground_floor_height</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">occupancy_type_field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">extraction_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;centroid&quot;</span><span class="p">,</span>
+        <span class="n">damage_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
+        <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup vector exposure data for Delft-FIAT.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        asset_locations : Union[str, Path]</span>
+<span class="sd">            The path to the vector data (points or polygons) that can be used for the</span>
+<span class="sd">            asset locations.</span>
+<span class="sd">        occupancy_type : Union[str, Path]</span>
+<span class="sd">            The path to the data that can be used for the occupancy type.</span>
+<span class="sd">        max_potential_damage : Union[str, Path]</span>
+<span class="sd">            The path to the data that can be used for the maximum potential damage.</span>
+<span class="sd">        ground_floor_height : Union[int, float, str, Path None]</span>
+<span class="sd">            Either a number (int or float), to give all assets the same ground floor</span>
+<span class="sd">            height or a path to the data that can be used to add the ground floor</span>
+<span class="sd">            height to the assets.</span>
+<span class="sd">        unit : str</span>
+<span class="sd">            The unit of the ground_floor_height</span>
+<span class="sd">        occupancy_type_field : Union[str, None], optional</span>
+<span class="sd">            The name of the field in the occupancy type data that contains the</span>
+<span class="sd">            occupancy type, by default None (this means that the occupancy type data</span>
+<span class="sd">            only contains one column with the occupancy type).</span>
+<span class="sd">        extraction_method : str, optional</span>
+<span class="sd">            The method that should be used to extract the hazard values from the</span>
+<span class="sd">            hazard maps, by default &quot;centroid&quot;.</span>
+<span class="sd">        damage_types : Union[List[str], None], optional</span>
+<span class="sd">            The damage types that should be used for the exposure data, by default</span>
+<span class="sd">            [&quot;structure&quot;, &quot;content&quot;]. The damage types are used to link the</span>
+<span class="sd">            vulnerability functions to the exposure data.</span>
+<span class="sd">        country : Union[str, None], optional</span>
+<span class="sd">            The country that is used for the exposure data, by default None. This is</span>
+<span class="sd">            only required when using the JRC vulnerability curves.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">occupancy_type</span> <span class="o">==</span> <span class="n">max_potential_damage</span><span class="p">:</span>
+            <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
+            <span class="c1"># damage is the same, use one source to create the exposure data.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_buildings_from_single_source</span><span class="p">(</span>
+                <span class="n">asset_locations</span><span class="p">,</span> <span class="n">ground_floor_height</span><span class="p">,</span> <span class="n">extraction_method</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
+            <span class="c1"># damage is different, use three sources to create the exposure data.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_buildings_from_multiple_sources</span><span class="p">(</span>
+                <span class="n">asset_locations</span><span class="p">,</span>
+                <span class="n">occupancy_type</span><span class="p">,</span>
+                <span class="n">max_potential_damage</span><span class="p">,</span>
+                <span class="n">ground_floor_height</span><span class="p">,</span>
+                <span class="n">extraction_method</span><span class="p">,</span>
+                <span class="n">occupancy_type_field</span><span class="p">,</span>
+                <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
+                <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Link the damage functions to assets</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="o">.</span><span class="n">empty</span>
+        <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;Please call the &#39;setup_vulnerability&#39; function before &quot;</span>
+                <span class="s2">&quot;the &#39;setup_exposure_vector&#39; function. Error message: </span><span class="si">{e}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">link_exposure_vulnerability</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">,</span> <span class="n">damage_types</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">check_required_columns</span><span class="p">()</span>
+
+        <span class="c1"># Update the other config settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.csv.file&quot;</span><span class="p">,</span> <span class="s2">&quot;./exposure/exposure.csv&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>
+<span class="sd">        This function will be implemented at a later stage.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">NotImplemented</span>
+
+<div class="viewcode-block" id="FiatModel.setup_hazard">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_hazard</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">map_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]],</span>
+        <span class="n">map_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+        <span class="n">rp</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">nodata</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">var</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">chunks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;flooding&quot;</span><span class="p">,</span>
+        <span class="n">risk_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">unit_conversion_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up hazard maps. This component integrates multiple checks for the hazard</span>
+<span class="sd">        maps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        map_fn : Union[str, Path, list[str], list[Path]]</span>
+<span class="sd">            The data catalog key or list of keys from where to retrieve the</span>
+<span class="sd">            hazard maps. This can also be a path or list of paths to take files</span>
+<span class="sd">            directly from a local database.</span>
+<span class="sd">        map_type : Union[str, list[str]]</span>
+<span class="sd">            The data type of each map speficied in map_fn. In case a single</span>
+<span class="sd">            map type applies for all the elements a single string can be provided.</span>
+<span class="sd">        rp : Union[int, list[int], None], optional.</span>
+<span class="sd">            The return period (rp) type of each map speficied in map_fn in case a</span>
+<span class="sd">            risk output is required. If the rp is not provided and risk</span>
+<span class="sd">            output is required the workflow will try to retrieve the rp from the</span>
+<span class="sd">            files&#39;s name, by default None.</span>
+<span class="sd">        crs : Union[int, str, list[int], list[str], None], optional</span>
+<span class="sd">            The projection (crs) required in EPSG code of each of the maps provided. In</span>
+<span class="sd">            case a single crs applies for all the elements a single value can be</span>
+<span class="sd">            provided as code or string (e.g. &quot;EPSG:4326&quot;). If not provided, then the crs</span>
+<span class="sd">            will be taken from orginal maps metadata, by default None.</span>
+<span class="sd">        nodata : Union[int, list[int], None], optional</span>
+<span class="sd">            The no data values in the rasters arrays. In case a single no data applies</span>
+<span class="sd">            for all the elements a single value can be provided as integer, by default</span>
+<span class="sd">            None.</span>
+<span class="sd">        var : Union[str, list[str], None], optional</span>
+<span class="sd">            The name of the variable to be selected in case a netCDF file is provided</span>
+<span class="sd">            as input, by default None.</span>
+<span class="sd">        chunks : Union[int, str, list[int]], optional</span>
+<span class="sd">            The chuck region per map. In case a single no data applies for all the</span>
+<span class="sd">            elements a single value can be provided as integer. If &quot;auto&quot;is provided</span>
+<span class="sd">            the auto setting will be provided by default &quot;auto&quot;</span>
+<span class="sd">        hazard_type : str, optional</span>
+<span class="sd">            Type of hazard to be studied, by default &quot;flooding&quot;</span>
+<span class="sd">        risk_output : bool, optional</span>
+<span class="sd">            The parameter that defines if a risk analysis is required, by default False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create lists of maps and their parameters to be able to iterate over them</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">create_lists</span><span class="p">(</span><span class="n">map_fn</span><span class="p">,</span> <span class="n">map_type</span><span class="p">,</span> <span class="n">rp</span><span class="p">,</span> <span class="n">crs</span><span class="p">,</span> <span class="n">nodata</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
+        <span class="n">check_lists_size</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="n">rp_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">map_name_lst</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">da_map_fn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;map_fn_lst&quot;</span><span class="p">]):</span>
+            <span class="c1"># read maps and retrieve their attributes</span>
+            <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da_type</span> <span class="o">=</span> <span class="n">read_maps</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+            <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span><span class="n">da_map_fn</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+
+            <span class="c1"># Convert to units of the exposure data if required</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">()</span>
+            <span class="p">):</span>  <span class="c1"># change to be sure that the unit information is available from the expousure dataset</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
+                    <span class="n">da</span> <span class="o">=</span> <span class="n">da</span> <span class="o">*</span> <span class="n">unit_conversion_factor</span>
+
+            <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;_FillValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">gdal_compliant</span><span class="p">()</span>
+
+            <span class="c1"># check masp projection, null data, and grids</span>
+            <span class="n">check_maps_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+            <span class="c1"># check maps return periods</span>
+            <span class="n">da_rp</span> <span class="o">=</span> <span class="n">check_maps_rp</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">risk_output</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">risk_output</span> <span class="ow">and</span> <span class="n">da_map_fn</span><span class="o">.</span><span class="n">stem</span> <span class="o">==</span> <span class="s2">&quot;sfincs_map&quot;</span><span class="p">:</span>
+                <span class="n">da_name</span> <span class="o">=</span> <span class="n">da_name</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">da_rp</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="n">post</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(rp </span><span class="si">{</span><span class="n">da_rp</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">risk_output</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="n">hazard_type</span><span class="si">}</span><span class="s2"> hazard map: </span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">post</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">rp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da_rp</span><span class="p">)</span>
+            <span class="n">map_name_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da_name</span><span class="p">)</span>
+
+            <span class="n">da</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;returnperiod&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">da_rp</span><span class="p">),</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">da_type</span><span class="p">,</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
+                <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_maps</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="p">)</span>
+
+        <span class="n">check_map_uniqueness</span><span class="p">(</span><span class="n">map_name_lst</span><span class="p">)</span>
+
+        <span class="c1"># in case of risk analysis, create a single netcdf with multibans per rp</span>
+        <span class="k">if</span> <span class="n">risk_output</span><span class="p">:</span>
+            <span class="n">da</span><span class="p">,</span> <span class="n">sorted_rp</span><span class="p">,</span> <span class="n">sorted_names</span> <span class="o">=</span> <span class="n">create_risk_dataset</span><span class="p">(</span>
+                <span class="n">params</span><span class="p">,</span> <span class="n">rp_list</span><span class="p">,</span> <span class="n">map_name_lst</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_grid</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;rp&quot;</span><span class="p">:</span> <span class="n">sorted_rp</span><span class="p">,</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">params</span><span class="p">[</span>
+                    <span class="s2">&quot;map_type_lst&quot;</span>
+                <span class="p">],</span>  <span class="c1"># TODO: This parameter has to be changed in case that a list with different hazard types per map is provided</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">sorted_names</span><span class="p">,</span>
+                <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;risk&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="n">list_maps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">list_maps</span><span class="p">[:]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+        <span class="c1"># set configuration .toml file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.return_periods&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">da_rp</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">risk_output</span> <span class="k">else</span> <span class="n">sorted_rp</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">hazard_map</span> <span class="o">+</span> <span class="s2">&quot;.nc&quot;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">hazard_map</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">risk_output</span>
+            <span class="k">else</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="s2">&quot;risk_map&quot;</span> <span class="o">+</span> <span class="s2">&quot;.nc&quot;</span><span class="p">))][</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.crs&quot;</span><span class="p">,</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;EPSG:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">hazard_map</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">()))</span>
+                <span class="k">for</span> <span class="n">hazard_map</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">risk_output</span>
+            <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;EPSG:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">()))][</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.elevation_reference&quot;</span><span class="p">,</span> <span class="s2">&quot;dem&quot;</span> <span class="k">if</span> <span class="n">da_type</span> <span class="o">==</span> <span class="s2">&quot;water_depth&quot;</span> <span class="k">else</span> <span class="s2">&quot;datum&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the configurations for a multiband netcdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.settings.subset&quot;</span><span class="p">,</span>
+            <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">[</span><span class="n">hazard_map</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">hazard_map</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">risk_output</span>
+            <span class="k">else</span> <span class="n">sorted_rp</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span>
+            <span class="n">risk_output</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+            <span class="s2">&quot;hazard.risk&quot;</span><span class="p">,</span>
+            <span class="n">risk_output</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FiatModel.setup_social_vulnerability_index">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index.html#hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index">[docs]</a>
+    <span class="k">def</span> <span class="nf">setup_social_vulnerability_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">codebook_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">state_abbreviation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user_dataset_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">blockgroup_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the social vulnerability index for the vector exposure data for</span>
+<span class="sd">        Delft-FIAT. This method has so far only been tested with US Census data</span>
+<span class="sd">        but aims to be generalized to other datasets as well.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path_dataset : str</span>
+<span class="sd">            The path to a predefined dataset</span>
+<span class="sd">        census_key : str</span>
+<span class="sd">            The user&#39;s unique Census key that they got from the census.gov website</span>
+<span class="sd">            (https://api.census.gov/data/key_signup.html) to be able to download the</span>
+<span class="sd">            Census data</span>
+<span class="sd">        path : Union[str, Path]</span>
+<span class="sd">            The path to the codebook excel</span>
+<span class="sd">        state_abbreviation : str</span>
+<span class="sd">            The abbreviation of the US state one would like to use in the analysis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create SVI object</span>
+        <span class="n">svi</span> <span class="o">=</span> <span class="n">SocialVulnerabilityIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="c1"># Call functionalities of SVI</span>
+        <span class="c1"># svi.read_dataset(user_dataset_fn)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">variable_code_csv_to_pd_df</span><span class="p">(</span><span class="n">codebook_fn</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_download_codes</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_state_code</span><span class="p">(</span><span class="n">state_abbreviation</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">(</span><span class="s2">&quot;Census_code_withE&quot;</span><span class="p">,</span> <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">identify_no_data</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">check_nan_variable_columns</span><span class="p">(</span><span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">check_zeroes_variable_rows</span><span class="p">()</span>
+        <span class="n">translation_variable_to_indicator</span> <span class="o">=</span> <span class="n">svi</span><span class="o">.</span><span class="n">create_indicator_groups</span><span class="p">(</span>
+            <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span>
+        <span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">processing_svi_data</span><span class="p">(</span><span class="n">translation_variable_to_indicator</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">normalization_svi_data</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">domain_scores</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">composite_scores</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">load_shp_geom</span><span class="p">(</span><span class="n">blockgroup_fn</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
+
+        <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
+        <span class="c1"># self.set_tables(df=svi.excluded_regions, name=&quot;social_vulnerability_nodataregions&quot;)</span>
+
+        <span class="c1"># Check if the exposure data exists</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="c1"># Link the SVI score to the exposure data</span>
+            <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
+            <span class="n">exposure_data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Object ID&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">crs</span> <span class="o">!=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
+                <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">,</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+            <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">svi_exp_joined</span></div>
+
+
+    <span class="k">def</span> <span class="nf">setup_aggregation_areas</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">aggregation_area_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">attribute_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">label_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exposure_gdf : gpd.GeoDataFrame</span>
+<span class="sd">            Exposure data to join the aggregation areas to as &quot;Aggregation</span>
+<span class="sd">        Label: `label_names`&quot;.</span>
+<span class="sd">        aggregation_area_fn : Union[List[str], List[Path], str, Path]</span>
+<span class="sd">            Path(s) to the aggregation area(s).</span>
+<span class="sd">        attribute_names : Union[List[str], str]</span>
+<span class="sd">            Name of the attribute(s) to join.</span>
+<span class="sd">        label_names : Union[List[str], str]</span>
+<span class="sd">            Name of the label(s) to join.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">join_exposure_aggregation_areas</span><span class="p">(</span>
+            <span class="n">exposure_gdf</span><span class="p">,</span> <span class="n">aggregation_area_fn</span><span class="p">,</span> <span class="n">attribute_names</span><span class="p">,</span> <span class="n">label_names</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup_building_footprint</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">building_footprint_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">attribute_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exposure_gdf : gpd.GeoDataFrame</span>
+<span class="sd">            Exposure data to join the building footprints to as &quot;BF_FID&quot;.</span>
+<span class="sd">        building_footprint_fn : Union[List[str], List[Path], str, Path]</span>
+<span class="sd">            Path(s) to the building footprint.</span>
+<span class="sd">        attribute_names : Union[List[str], str]</span>
+<span class="sd">            Name of the building footprint ID to join.</span>
+<span class="sd">        column_name: str = &quot;BF_FID&quot;</span>
+<span class="sd">            Name of building footprint in new exposure output</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">join_exposure_building_footprints</span><span class="p">(</span>
+            <span class="n">exposure_gdf</span><span class="p">,</span>
+            <span class="n">building_footprint_fn</span><span class="p">,</span>
+            <span class="n">attribute_name</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Update functions</span>
+    <span class="k">def</span> <span class="nf">update_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating all data objects...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_tables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_geoms</span><span class="p">()</span>
+        <span class="c1"># self.update_maps()</span>
+
+    <span class="k">def</span> <span class="nf">update_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Update the exposure data tables</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;exposure&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Update the vulnerability data tables</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">get_table</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vulnerability_curves&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="c1"># Add the vulnerability linking table to the tables object</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vulnerability_identifiers&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Update the exposure data geoms</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">and</span> <span class="s2">&quot;exposure&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">geom_and_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">geom_names</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">geom</span> <span class="o">=</span> <span class="n">geom_and_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">geom_and_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">&quot;./exposure/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">NotImplemented</span>
+
+    <span class="c1"># I/O</span>
+<div class="viewcode-block" id="FiatModel.read">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read">[docs]</a>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to read the complete model schematization and configuration from</span>
+<span class="sd">        file.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading model data from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Read the configuration file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_config</span><span class="p">(</span><span class="n">config_fn</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;settings.toml&quot;</span><span class="p">)))</span>
+
+        <span class="c1"># TODO: determine if it is required to read the hazard files</span>
+        <span class="c1"># hazard_maps = self.config[&quot;hazard&quot;][&quot;grid_file&quot;]</span>
+        <span class="c1"># self.read_grid(fn=&quot;hazard/{name}.nc&quot;)</span>
+
+        <span class="c1"># Read the tables exposure and vulnerability</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_tables</span><span class="p">()</span>
+
+        <span class="c1"># Read the geometries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_geoms</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_configread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse Delft-FIAT configuration toml file to dict.&quot;&quot;&quot;</span>
+        <span class="c1"># Read the fiat configuration toml file.</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">read_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the model tables for vulnerability and exposure data.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Cannot write in read-only mode&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># start fresh in read-only mode</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading model table files.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Start with vulnerability table</span>
+        <span class="n">vulnerability_fn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability.file&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">vulnerability_fn</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading vulnerability table </span><span class="si">{</span><span class="n">vulnerability_fn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="n">vulnerability_fn</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">vulnerability_fn</span><span class="si">}</span><span class="s2"> does not exist!&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Now with exposure</span>
+        <span class="n">exposure_fn</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.csv.file&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading exposure table </span><span class="si">{</span><span class="n">exposure_fn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
+                <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">),</span>
+                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">),</span>
+                <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>  <span class="c1"># TODO: See if this works also when no data catalog is provided</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;File </span><span class="si">{</span><span class="n">exposure_fn</span><span class="si">}</span><span class="s2"> does not exist!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FiatModel.read_geoms">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.read_geoms.html#hydromt_fiat.fiat.FiatModel.read_geoms">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the geometries for the exposure data.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading exposure geometries.&quot;</span><span class="p">)</span>
+            <span class="n">exposure_files</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;exposure&quot;</span><span class="p">][</span><span class="s2">&quot;geom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;file&quot;</span> <span class="ow">in</span> <span class="n">k</span>
+            <span class="p">]</span>
+            <span class="n">exposure_fn</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exposure.geom.</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">exposure_files</span>
+            <span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">read_geoms</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FiatModel.write">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write">[docs]</a>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to write the complete model schematization and configuration to file.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_all</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing model data to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>  <span class="c1"># try to read default if not yet set</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_config</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticmaps</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_staticmaps</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_staticgeoms</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forcing</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_forcing</span><span class="p">()</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_maps</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/</span><span class="si">{name}</span><span class="s2">.nc&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_grid</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/risk_map.nc&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;exposure/</span><span class="si">{name}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;GPKG&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_tables</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FiatModel.write_staticgeoms"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_staticgeoms.html#hydromt_fiat.fiat.FiatModel.write_staticgeoms">[docs]</a>    <span class="k">def</span> <span class="nf">write_staticgeoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write staticmaps at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model opened in read-only mode&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staticgeoms</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span>
-                    <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">),</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;GeoJSON&quot;</span>
-                <span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">write_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No table data found, skip writing.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_write_mode</span>
 
-<div class="viewcode-block" id="FiatModel.write_staticmaps"><a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_staticmaps.html#hydromt_fiat.fiat.FiatModel.write_staticmaps">[docs]</a>    <span class="k">def</span> <span class="nf">write_staticmaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compress</span><span class="o">=</span><span class="s2">&quot;lzw&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write staticmaps at &lt;root/?/&gt; in model ready format.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c1"># Vulnerability</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">:</span>
+                <span class="c1"># The default location and save settings of the vulnerability curves</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;vulnerability/vulnerability_curves.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
-        <span class="c1"># to write to gdal raster files use: self.staticmaps.raster.to_mapstack()</span>
-        <span class="c1"># to write to netcdf use: self.staticmaps.to_netcdf()</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Model opened in read-only mode.&quot;</span><span class="p">)</span>
-        <span class="n">hazard_maps</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">j</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hazard_maps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">[</span><span class="n">hazard_maps</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">to_mapstack</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard_dp&quot;</span><span class="p">),</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span>
-            <span class="p">)</span>
-        <span class="n">exposure_maps</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hazard_maps</span><span class="p">]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_maps</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">[</span><span class="n">exposure_maps</span><span class="p">]</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">to_mapstack</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">),</span> <span class="n">compress</span><span class="o">=</span><span class="n">compress</span>
-            <span class="p">)</span></div>
+                <span class="c1"># The vulnerability curves are written out differently because of</span>
+                <span class="c1"># the metadata</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">fn</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+                    <span class="c1"># First write the metadata</span>
+                    <span class="k">for</span> <span class="n">metadata</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability_metadata</span><span class="p">:</span>
+                        <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">metadata</span><span class="p">])</span>
+            <span class="c1"># Exposure</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;exposure&quot;</span><span class="p">:</span>
+                <span class="c1"># The default location and save settings of the exposure data</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;exposure/exposure.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;vulnerability_identifiers&quot;</span><span class="p">:</span>
+                <span class="c1"># The default location and save settings of the vulnerability curves</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;vulnerability/vulnerability_identifiers.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="s2">&quot;social_vulnerability&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;exposure/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+            <span class="c1"># Other, can also return an error or pass silently</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+            <span class="c1"># make dir and save file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing model </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> table file to </span><span class="si">{</span><span class="n">fn</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="n">fn</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;xlsx&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_configwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write config to fiat_configuration.ini&quot;&quot;&quot;</span>
-
-        <span class="n">parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
-
-        <span class="c1"># Store the general information.</span>
-        <span class="n">parser</span><span class="p">[</span><span class="s2">&quot;setup_config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;case&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;case&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;strategy&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;strategy&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;scenario&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scenario&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;country&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;hazard_type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard_type&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;output_unit&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_unit&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;hazard_dp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
-            <span class="s2">&quot;exposure_dp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
-            <span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
-            <span class="s2">&quot;output_dp&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
-            <span class="s2">&quot;category_output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;category_output&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;total_output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;total_output&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;risk_output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;risk_output&quot;</span><span class="p">)),</span>
-            <span class="s2">&quot;map_output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;map_output&quot;</span><span class="p">)),</span>
-        <span class="p">}</span>
-
-        <span class="c1"># Store the hazard information.</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">hazard_scenario</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-            <span class="p">]</span>
-        <span class="p">):</span>
-            <span class="n">section_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;setup_hazard</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">section_name</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">hazard_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                <span class="s2">&quot;hazard&quot;</span><span class="p">,</span> <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="p">):</span>
-                <span class="k">if</span> <span class="n">hazard_key</span> <span class="o">==</span> <span class="s2">&quot;map_fn&quot;</span><span class="p">:</span>
-                    <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                        <span class="n">section_name</span><span class="p">,</span>
-                        <span class="n">hazard_key</span><span class="p">,</span>
-                        <span class="nb">str</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                                <span class="s2">&quot;hazard&quot;</span><span class="p">,</span>
-                                <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">hazard_key</span><span class="p">,</span>
-                            <span class="p">)</span><span class="o">.</span><span class="n">name</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                        <span class="n">section_name</span><span class="p">,</span>
-                        <span class="n">hazard_key</span><span class="p">,</span>
-                        <span class="nb">str</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                                <span class="s2">&quot;hazard&quot;</span><span class="p">,</span>
-                                <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                                <span class="n">hazard_scenario</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                <span class="n">hazard_key</span><span class="p">,</span>
-                            <span class="p">)</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-
-        <span class="c1"># Store the exposure information.</span>
-        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">exposure_fn</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">)):</span>
-            <span class="n">section_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;setup_exposure</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">section_name</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">exposure_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">exposure_fn</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">exposure_key</span> <span class="o">==</span> <span class="s2">&quot;map_fn&quot;</span><span class="p">:</span>
-                    <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                        <span class="n">section_name</span><span class="p">,</span>
-                        <span class="n">exposure_key</span><span class="p">,</span>
-                        <span class="nb">str</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">exposure_fn</span><span class="p">,</span> <span class="n">exposure_key</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                <span class="k">elif</span> <span class="n">exposure_key</span> <span class="o">==</span> <span class="s2">&quot;function_fn&quot;</span><span class="p">:</span>
-                    <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                        <span class="n">section_name</span><span class="p">,</span>
-                        <span class="n">exposure_key</span><span class="p">,</span>
-                        <span class="nb">str</span><span class="p">(</span>
-                            <span class="p">{</span>
-                                <span class="n">i</span><span class="p">:</span> <span class="n">j</span><span class="o">.</span><span class="n">name</span>
-                                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                                    <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                                    <span class="n">exposure_fn</span><span class="p">,</span>
-                                    <span class="n">exposure_key</span><span class="p">,</span>
-                                <span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                            <span class="p">}</span>
-                        <span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="k">for</span> <span class="n">function_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                        <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                        <span class="n">exposure_fn</span><span class="p">,</span>
-                        <span class="n">exposure_key</span><span class="p">,</span>
-                    <span class="p">):</span>
-                        <span class="n">sf_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span>
-                            <span class="s2">&quot;exposure&quot;</span><span class="p">,</span>
-                            <span class="n">exposure_fn</span><span class="p">,</span>
-                            <span class="n">exposure_key</span><span class="p">,</span>
-                        <span class="p">)[</span><span class="n">function_key</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="p">(</span>
-                            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span>
-                            <span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                                <span class="n">sf_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                            <span class="p">)</span>
-                            <span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
-                        <span class="p">):</span>
-                            <span class="n">copy</span><span class="p">(</span>
-                                <span class="n">sf_path</span><span class="p">,</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;vulnerability_dp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span>
-                                    <span class="n">sf_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                                <span class="p">),</span>
-                            <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                        <span class="n">section_name</span><span class="p">,</span>
-                        <span class="n">exposure_key</span><span class="p">,</span>
-                        <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">exposure_fn</span><span class="p">,</span> <span class="n">exposure_key</span><span class="p">)),</span>
-                    <span class="p">)</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write config to Delft-FIAT configuration toml file.&quot;&quot;&quot;</span>
         <span class="c1"># Save the configuration file.</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_CONF</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">config</span><span class="p">:</span>
-            <span class="n">parser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+        <span class="n">Config</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;settings.toml&quot;</span><span class="p">))</span>
+
+    <span class="c1"># FIAT specific attributes and methods</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vulnerability_curves</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a dataframe with the damage functions.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="n">vf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">get_table</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">vf</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vulnerability_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="n">vmeta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">get_metadata</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vmeta</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">vmeta</span>
+
+    <span class="k">def</span> <span class="nf">set_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add &lt;pandas.DataFrame&gt; to the tables variable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df : pd.DataFrame</span>
+<span class="sd">            New DataFrame to add</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Name of the DataFrame to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;df type not recognized, should be pandas.DataFrame.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot overwrite table </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> in read-only mode&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting table: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span></div>
+
 </pre></div>
 
-           </div>
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
           </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright Deltares.</p>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
   </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright Deltares.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.1.
+</p></div>
+      
+    </div>
+  
+</div>
 
-</footer>
-        </div>
-      </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+  </footer>
+  </body>
 </html>
