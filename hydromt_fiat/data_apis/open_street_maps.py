@@ -1,16 +1,17 @@
 import osmnx as ox
 import logging
 from shapely.geometry import Polygon
+import geopandas as gpd
+from typing import Union, List
 
 
-def get_assets_from_osm(polygon: Polygon):
+def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
     footprints = ox.features.features_from_polygon(
         polygon, tags
     )  # then we query the data
 
     if footprints.empty:
-        logging.warning("No buildings found from OSM")
         return None
 
     logging.info(f"Total number of buildings found from OSM: {len(footprints)}")
@@ -26,40 +27,37 @@ def get_assets_from_osm(polygon: Polygon):
 
 
 def get_roads_from_osm(
-    polygon: Union[Polygon, Path, str]
-) ->gpd.GeoDataFrame:
+    polygon: Polygon,
+    road_types: Union[str, List[str], bool] = True,
+) -> gpd.GeoDataFrame:
+    if isinstance(road_types, str):
+        road_types = [road_types]
+
     tag = {
-        "highway": ["motorway"]
+        "highway": road_types
     }  # this is the tag we use to find the correct OSM data
-    if isinstance(polygon,(Path,str)): 
-        gdf = gpd.read_file(polygon)
-        polygon =gdf.geometry.iloc[0]
-    else:
-        return polygon
     
     roads = ox.features.features_from_polygon(
         polygon, tags=tag
     )  # then we query the data
 
     if roads.empty:
-        logging.warning("No road network found from OSM")
         return None
 
     logging.info(f"Total number of roads found from OSM: {len(roads)}")
 
     # Not sure if this is needed here and maybe filter for the columns that we need
     roads = roads.loc[
-        (roads.geometry.type == "Polygon")
-        | (roads.geometry.type == "MultiPolygon")
-        | (roads.geometry.type == "LineString")
+        (roads.geometry.type == "LineString")
+        | (roads.geometry.type == "MultiLineString")
     ]
     roads = roads.reset_index(drop=True)
-    roads.rename(columns={"element_type": "type"}, inplace=True)
+    roads = roads.loc[:, ["highway", "name", "lanes", "geometry"]]
 
     return roads
 
 
-def get_landuse_from_osm(polygon: Polygon):
+def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
     landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data
 
@@ -78,18 +76,6 @@ def get_landuse_from_osm(polygon: Polygon):
     landuse.rename(columns={"element_type": "type"}, inplace=True)
     return landuse
 
-
-if __name__ == "__main__":
-    _polygon = Polygon(
-        [
-            [-80.21997289327112, 25.83897611793664],
-            [-80.21997289327112, 25.86427542636784],
-            [-80.24609330530801, 25.86427542636784],
-            [-80.24609330530801, 25.83897611793664],
-            [-80.21997289327112, 25.83897611793664],
-        ]
-    )
-    get_landuse_from_osm(_polygon)
 
 # # Do a spatial join to connect the buildings with the classes
 # # (here we use a buffer area of 100 m around the classes in case there buildings falling completely out of the classes)

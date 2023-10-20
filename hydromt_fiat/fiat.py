@@ -252,19 +252,25 @@ class FiatModel(GridModel):
         self.vulnerability.from_csv(csv_fn)
 
     def setup_road_vulnerability(
-            self,
-            unit: str,
-            threshold_value: float = 0.6,
-            min_hazard_value: float = 0,
-            max_hazard_value: float = 10,
-            step_hazard_value: float = 1.0,
-            ):
+        self,
+        unit: str,
+        threshold_value: float = 0.6,
+        min_hazard_value: float = 0,
+        max_hazard_value: float = 10,
+        step_hazard_value: float = 1.0,
+    ):
         if not self.vulnerability:
             self.vulnerability = Vulnerability(
                 unit,
                 self.logger,
             )
-        self.vulnerability.create_step_function("roads", threshold_value, min_hazard_value, max_hazard_value, step_hazard_value)
+        self.vulnerability.create_step_function(
+            "roads",
+            threshold_value,
+            min_hazard_value,
+            max_hazard_value,
+            step_hazard_value,
+        )
 
     def setup_exposure_buildings(
         self,
@@ -278,7 +284,7 @@ class FiatModel(GridModel):
         damage_types: Union[List[str], None] = ["structure", "content"],
         country: Union[str, None] = None,
     ) -> None:
-        """Setup vector exposure data for Delft-FIAT.
+        """Setup building exposure (vector) data for Delft-FIAT.
 
         Parameters
         ----------
@@ -350,15 +356,29 @@ class FiatModel(GridModel):
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
 
-    def setup_exposure_roads(self):
-        NotImplemented
+    def setup_exposure_roads(
+        self,
+        roads_fn: Union[str, Path],
+        road_damage: Union[str, Path],
+        road_types: Union[str, List[str], bool] = True,
+        unit: str = "m",
+    ):
+        """Setup road exposure data for Delft-FIAT.
 
-        # First you get the data
+        Parameters
+        ----------
+        roads_fn : Union[str, Path]
+            Path to the road network source (e.g., OSM) or file.
+        road_types : Union[str, List[str], bool], optional
+            List of road types to include in the exposure data, by default True
+        """
+        if not self.exposure:
+            self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
+        self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
-
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
