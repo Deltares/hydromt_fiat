@@ -23,7 +23,7 @@ Build components
    fiat.FiatModel.setup_basemaps
    fiat.FiatModel.setup_vulnerability
    fiat.FiatModel.setup_vulnerability_from_csv
-   fiat.FiatModel.setup_exposure_vector
+   fiat.FiatModel.setup_exposure_buildings
    fiat.FiatModel.setup_hazard
    fiat.FiatModel.setup_social_vulnerability_index
 

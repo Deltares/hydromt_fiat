@@ -14,7 +14,7 @@ by providing the following values in the configuration file::
     vulnerability_identifiers_and_linking_fn = "jrc_vulnerability_curves_linking"
     unit = "m"
 
-    [setup_exposure_vector]
+    [setup_exposure_buildings]
     max_potential_damage = "jrc_damage_values"
     unit = "m"
 

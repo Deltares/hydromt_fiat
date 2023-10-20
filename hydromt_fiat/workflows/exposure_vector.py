@@ -13,13 +13,23 @@ from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
+    get_roads_from_osm,
 )
 
-from hydromt_fiat.workflows.damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
+from hydromt_fiat.workflows.damage_values import (
+    preprocess_jrc_damage_values,
+    preprocess_hazus_damage_values,
+)
 from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.gis import get_area, sjoin_largest_area, get_crs_str_from_gdf, join_spatial_data
+from hydromt_fiat.workflows.gis import (
+    get_area,
+    sjoin_largest_area,
+    get_crs_str_from_gdf,
+    join_spatial_data,
+)
+from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
 
 
 class ExposureVector(Exposure):
@@ -181,6 +191,54 @@ class ExposureVector(Exposure):
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
+
+    def setup_roads(
+        self,
+        source: Union[str, Path],
+        road_damage: Union[str, Path],
+        road_types: Union[str, List[str], bool] = True,
+    ):
+        self.logger.info("Setting up roads...")
+        if str(source).upper() == "OSM":
+            polygon = self.region.iloc[0].values[0]
+            roads = get_roads_from_osm(polygon, road_types)
+
+            if roads.empty:
+                self.logger.warning(
+                    "No roads found in the selected region from source " f"{source}."
+                )
+
+            # Rename the columns to FIAT names
+            roads.rename(
+                columns={"highway": "Secondary Object Type", "name": "Object Name"},
+                inplace=True,
+            )
+
+            # Add an Object ID
+            roads["Object ID"] = range(1, len(roads.index) + 1)
+        else:
+            roads = self.data_catalog.get_geodataframe(source, geom=self.region)
+            # add the function to segmentize the roads into certain segments
+
+        # Add the Primary Object Type and damage function, which is currently not set up to be flexible
+        roads["Primary Object Type"] = "roads"
+        roads["Damage Function: Structure"] = "roads"
+
+        self.logger.info(
+            "The damage function 'roads' is selected for all of the structure damage to the roads."
+        )
+
+        # Add the max potential damage and the length of the segments to the roads
+        road_damage = self.data_catalog.get_dataframe(road_damage)
+        roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = get_max_potential_damage_roads(roads, road_damage)
+
+        self.set_exposure_geoms(roads[["Object ID", "geometry"]])
+        self.set_geom_names("roads")
+
+        del roads["geometry"]
+
+        # Update the exposure_db
+        self.exposure_db = pd.concat([self.exposure_db, roads]).reset_index(drop=True)
 
     def setup_buildings_from_multiple_sources(
         self,
@@ -453,7 +511,9 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(gdf, gfh, attr_name, method)
-                gdf = self._set_values_from_other_column(gdf, "Ground Floor Height", attr_name)
+                gdf = self._set_values_from_other_column(
+                    gdf, "Ground Floor Height", attr_name
+                )
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
@@ -597,8 +657,9 @@ class ExposureVector(Exposure):
                 "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                (self.exposure_db["Ground Floor Height"] < raise_by) & self.exposure_db.index.isin(idx),
-               "Ground Floor Height",
+                (self.exposure_db["Ground Floor Height"] < raise_by)
+                & self.exposure_db.index.isin(idx),
+                "Ground Floor Height",
             ] = raise_by
 
         elif height_reference.lower() in ["geom", "table"]:
@@ -1300,7 +1361,7 @@ class ExposureVector(Exposure):
     def _set_values_from_other_column(
         df: Union[pd.DataFrame, gpd.GeoDataFrame], col_to_set: str, col_to_copy: str
     ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
-        """Sets the values of <col_to_set> to where the values of <col_to_copy> are 
+        """Sets the values of <col_to_set> to where the values of <col_to_copy> are
         nan and deletes <col_to_copy>.
         """
         df.loc[df[col_to_copy].notna(), col_to_set] = df.loc[

@@ -51,7 +51,7 @@ _cases = {
                 "unit": "feet",
                 "step_size": 0.01,
             },
-            "setup_exposure_vector": {
+            "setup_exposure_buildings": {
                 "asset_locations": "NSI",
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
@@ -91,7 +91,7 @@ _cases = {
                 "unit": "feet",
                 "step_size": 0.01,
             },
-            "setup_exposure_vector": {
+            "setup_exposure_buildings": {
                 "asset_locations": "NSI",
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
