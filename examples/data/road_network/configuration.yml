@@ -1,0 +1,35 @@
+cases:
+  new_root:  C:/Users/rautenba/hydromt_fiat/examples/data/road_network/
+  roads_from_OSM:
+    data_catalogue: C:/Users/rautenba/hydromt_fiat/examples/data/road_network/hydromt_fiat_catalog_USA.yml
+    dir: test_roads_from_OSM
+  road_network:
+    new_root: "./data/road_network/output/road_network_example"
+    configuration:
+      setup_road_vulnerability:
+        vertical_unit: feet
+        threshold_value: 0.6
+        min_hazard_value: 0
+        max_hazard_value: 10
+        step_hazard_value: 1
+      setup_exposure_roads:
+        roads_fn: OSM
+        road_types: ["motorway", "primary", "secondary", "tertiary"]
+        road_damage: default_road_max_potential_damages
+        unit: meter
+  region:
+    type: FeatureCollection
+    features:
+      - type: Feature
+        properties: {}
+        geometry:
+          type: Polygon
+          coordinates:
+            - [
+                [-79.92169686568795, 32.768208904171374],
+                [-79.92169686568795, 32.77745096033627],
+                [-79.94881762529997, 32.77745096033627],
+                [-79.94881762529997, 32.768208904171374],
+                [-79.92169686568795, 32.768208904171374]
+              ]
+
