@@ -73,7 +73,7 @@ class ExposureViewModel:
                 crs=crs,
             )
 
-            exposure.setup_from_single_source(
+            exposure.setup_buildings_from_single_source(
                 input_source,
                 self.exposure_model.ground_floor_height,
                 "centroid",  # TODO: MAKE FLEXIBLE
@@ -84,10 +84,10 @@ class ExposureViewModel:
             secondary_object_types = (
                 exposure.exposure_db["Secondary Object Type"].unique().tolist()
             )
-            exposure.set_exposure_geoms_from_xy()
+            gdf = exposure.get_full_gdf(exposure.exposure_db)
 
             return (
-                exposure.exposure_geoms[0],
+                gdf,
                 primary_object_types,
                 secondary_object_types,
             )
