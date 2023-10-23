@@ -1,5 +1,4 @@
 cases:
-  new_root:  C:/Users/rautenba/hydromt_fiat/examples/data/road_network/
   roads_from_OSM:
     data_catalogue: C:/Users/rautenba/hydromt_fiat/examples/data/road_network/hydromt_fiat_catalog_USA.yml
     dir: test_roads_from_OSM
