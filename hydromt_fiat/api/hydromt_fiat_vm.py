@@ -82,6 +82,10 @@ class HydroMtViewModel(Singleton):
             tomli_w.dump(config_ini.dict(exclude_none=True), f)
 
     def run_hydromt_fiat(self):
+        config_ini = ConfigIni(
+            setup_vulnerability=self.vulnerability_vm.vulnerability_model,
+            setup_exposure_buildings=self.exposure_vm.exposure_model,
+        )
         region = self.data_catalog.get_geodataframe("area_of_interest")
-        self.fiat_model.build(region={"geom": region}, opt=ConfigIni.dict())
+        self.fiat_model.build(region={"geom": region}, opt=config_ini.dict())
         self.fiat_model.write()
