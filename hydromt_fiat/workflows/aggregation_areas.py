@@ -1,7 +1,6 @@
 import geopandas as gpd
 from typing import List, Union
 from pathlib import Path
-import sys 
 
 def process_value(value):
     if isinstance(value, list) and len(value) == 1:
