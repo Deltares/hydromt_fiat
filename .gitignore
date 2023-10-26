@@ -123,3 +123,9 @@ cache
 hydromt_fiat/data/damage_functions/flooding/AllDDF_HAZUS_fractions.xlsx
 examples/data/building_footprints/fiat_model_bfs
 examples/data/aggregation_zones/output
+
+# notebooks
+/examples/aggregation_zones_example_files
+/examples/data/aggregation_zones/aggregation_zones_test1/
+/examples/data/aggregation_zones/aggregation_zones_test2/
+examples/aggregation_zones_example.html
