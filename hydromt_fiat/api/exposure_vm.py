@@ -33,6 +33,7 @@ class ExposureViewModel:
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
+        self.exposure: ExposureVector = None
 
     def create_interest_area(self, **kwargs: str):
         fpath = kwargs.get("fpath")
@@ -57,7 +58,6 @@ class ExposureViewModel:
     ):
         if input_source == "NSI":
             # NSI is already defined in the data catalog
-            # Add NSI to the configuration file
             self.exposure_model.asset_locations = input_source
             self.exposure_model.occupancy_type = input_source
             self.exposure_model.max_potential_damage = input_source
@@ -66,28 +66,28 @@ class ExposureViewModel:
 
             # Download NSI from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
-            exposure = ExposureVector(
+            self.exposure = ExposureVector(
                 data_catalog=self.data_catalog,
                 logger=self.logger,
                 region=region,
                 crs=crs,
             )
 
-            exposure.setup_from_single_source(
+            self.exposure.setup_buildings_from_single_source(
                 input_source,
                 self.exposure_model.ground_floor_height,
                 "centroid",  # TODO: MAKE FLEXIBLE
             )
             primary_object_types = (
-                exposure.exposure_db["Primary Object Type"].unique().tolist()
+                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
             )
             secondary_object_types = (
-                exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
             )
-            exposure.set_exposure_geoms_from_xy()
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
 
             return (
-                exposure.exposure_geoms[0],
+                gdf,
                 primary_object_types,
                 secondary_object_types,
             )
@@ -110,13 +110,6 @@ class ExposureViewModel:
             print(catalog_entry)
         # write to data catalog
 
-    def create_extraction_map(self, *args):
-        # TODO: implement callback
-        # if no exceptions, then self.exposure_model.extraction_method = args[0]
-        # else if
-        # make backend call to api with arguments to set extraction method per object:
-        # create first with default method. Then get uploaded or drawn area and merge with default methid
-        # save file to database
-        # change self.exposure_model.extraction_method to file
-        ...
-        # change self.exposure_model.extraction_method to file
+    def setup_extraction_method(self, extraction_method):
+        if self.exposure:
+            self.exposure.setup_extraction_method(extraction_method)
