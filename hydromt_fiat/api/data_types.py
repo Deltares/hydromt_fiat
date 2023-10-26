@@ -85,4 +85,4 @@ class ConfigIni(BaseModel):
     setup_config: ModelIni
     setup_hazard: HazardIni
     setup_vulnerability: VulnerabilityIni
-    setup_exposure_vector: ExposureVectorIni
+    setup_exposure_buildings: ExposureVectorIni

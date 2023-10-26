@@ -7,26 +7,22 @@ dependencies:
   - pip
   - pip:
     - census
+    - us
   - click
   - black
   - gdal>=3.1
   - geopandas
   - hydromt
   - hydromt_sfincs
-  - nbsphinx  # docs
   - numpy
   - osmnx
   - pandas
   - pydantic=1.10.9
-  - pygeos>=0.8
+  - pyogrio
   - pytest # tests
-  - pytest-cov # tests
-  - pytest-benchmark # tests
   - python=3.10
   - requests
-  - sphinx # docs
-  - sphinx_rtd_theme # docs
   - xarray
   - tomli-w
   - tomli
-  - ipykernel
+  - ipykernel # examples

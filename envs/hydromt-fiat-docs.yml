@@ -1,0 +1,33 @@
+name: hydromt-fiat-docs
+
+channels:
+- conda-forge
+
+dependencies:
+- click
+- gdal>=3.1
+- geopandas
+- jupyterlab
+- matplotlib-base
+- mercantile
+- nbsphinx
+- notebook
+- numpy
+- packaging
+- pandas
+- pip
+- pyogrio
+- pydata-sphinx-theme
+- python=3.10
+- rasterio
+- requests
+- rioxarray
+- sphinx
+- tomli
+- tomli-w
+- universal_pathlib
+- xarray
+- pip:
+  - sphinx_autosummary_accessors
+  - sphinx_design
+  - census
