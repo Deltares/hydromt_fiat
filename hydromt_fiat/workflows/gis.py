@@ -1,6 +1,7 @@
 import geopandas as gpd
 from hydromt.gis_utils import utm_crs, nearest_merge
 from typing import List
+import logging
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -105,9 +106,14 @@ def clean_up_gdf(gdf: gpd.GeoDataFrame, columns: List[str]) -> gpd.GeoDataFrame:
     return gdf
 
 
-def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.GeoDataFrame:
+def join_nearest_points(
+    left_gdf: gpd.GeoDataFrame,
+    right_gdf: gpd.GeoDataFrame,
+    attribute_name: str,
+    max_dist: float,
+) -> gpd.GeoDataFrame:
     """Join two GeoDataFrames based on the nearest distance between their points.
-    
+
     Parameters
     ----------
     left_gdf : gpd.GeoDataFrame
@@ -123,7 +129,7 @@ def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.Ge
     -------
     gpd.GeoDataFrame
         The joined GeoDataFrame.
-    """    
+    """
     # Use the HydroMT function nearest_merge to join the geodataframes
     gdf_merged = nearest_merge(
         gdf1=left_gdf, gdf2=right_gdf, columns=[attribute_name], max_dist=max_dist
@@ -131,7 +137,7 @@ def join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist) -> gpd.Ge
 
     # Clean up the geodataframe (remove unnecessary columns)
     gdf_merged = clean_up_gdf(gdf_merged, ["distance_right", "index_right"])
-    
+
     return gdf_merged
 
 
@@ -143,13 +149,14 @@ def intersect_points_polygons(left_gdf, right_gdf, attribute_name) -> gpd.GeoDat
 
     return gdf_merged
 
-    
+
 def join_spatial_data(
     left_gdf: gpd.GeoDataFrame,
     right_gdf: gpd.GeoDataFrame,
     attribute_name: str,
     method: str,
     max_dist: float = 10,
+    logger: logging.Logger = None,
 ) -> gpd.GeoDataFrame:
     """Join two GeoDataFrames based on their spatial relationship.
 
@@ -165,42 +172,49 @@ def join_spatial_data(
         The method that will be used to join the data. Either "nearest" or
         "intersection".
     max_dist : float, optional
-        The maximum distance for the nearest join measured in meters, by default 
+        The maximum distance for the nearest join measured in meters, by default
         10 (meters).
+    logger : logging.Logger
+        A logger object.
 
     Returns
     -------
     gpd.GeoDataFrame
         The joined GeoDataFrame.
     """
-    assert left_gdf.crs == right_gdf.crs, (
+    try:
+        assert left_gdf.crs == right_gdf.crs, (
             "The CRS of the GeoDataFrames to join do not match. "
             f"Left CRS: {get_crs_str_from_gdf(left_gdf.crs)}, "
             f"Right CRS: {get_crs_str_from_gdf(right_gdf.crs)}"
         )
+    except AssertionError as e:
+        logger.warning(e)
+        logger.warning("Reprojecting the GeoDataFrame from "
+                       f"{get_crs_str_from_gdf(right_gdf.crs)} to "
+                       f"{get_crs_str_from_gdf(left_gdf.crs)}.")
+        right_gdf = right_gdf.to_crs(left_gdf.crs)
 
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)
 
-    assert (left_gdf_type == "Polygon") or (left_gdf_type == "Point"), (
-            "The left GeoDataFrame should contain either polygons or points."
-        )
+    assert (left_gdf_type == "Polygon") or (
+        left_gdf_type == "Point"
+    ), "The left GeoDataFrame should contain either polygons or points."
 
-    assert (right_gdf_type == "Polygon") or (right_gdf_type == "Point"), (
-        "The right GeoDataFrame should contain either polygons or points."
-    )
+    assert (right_gdf_type == "Polygon") or (
+        right_gdf_type == "Point"
+    ), "The right GeoDataFrame should contain either polygons or points."
 
     if method == "nearest":
         if left_gdf_type == "Polygon":
-            left_gdf_geom_original = left_gdf.geometry
             left_gdf.geometry = left_gdf.geometry.centroid
-        
+
         if right_gdf_type == "Polygon":
             right_gdf.geometry = right_gdf.geometry.centroid
-        
+
         gdf = join_nearest_points(left_gdf, right_gdf, attribute_name, max_dist)
-        left_gdf.geometry = left_gdf_geom_original # TODO: Check if this works well
-    
+
     elif method == "intersection":
         if (left_gdf_type == "Polygon") and (right_gdf_type == "Polygon"):
             gdf = sjoin_largest_area(left_gdf, right_gdf)

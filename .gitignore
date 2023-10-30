@@ -121,6 +121,8 @@ venv.bak/
 cache
 /examples/FIAT_database
 hydromt_fiat/data/damage_functions/flooding/AllDDF_HAZUS_fractions.xlsx
+examples/data/update_ground_floor_height/test_update_ground_floor_height_points
+examples/data/update_ground_floor_height/test_update_ground_floor_height_polygons
 hydromt_fiat/data/damage_functions/flooding/Hazus_IWR_curves.*
 examples/data/building_footprints/fiat_model_bfs
 examples/data/aggregation_zones/output
