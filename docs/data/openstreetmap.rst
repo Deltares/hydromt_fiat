@@ -7,7 +7,7 @@ OpenStreetMap Building Footprints and Land Use
 Users of **HydroMT-FIAT** can directly and easily make use of the `OpenStreetMap <https://www.openstreetmap.org/about>`_ 
 (OSM) initiative. The user can access the data through providing 'OSM' in the configuration file as such::
 
-    [setup_exposure_vector]
+    [setup_exposure_buildings]
     asset_locations = "OSM"
     occupancy_type = "OSM"
 

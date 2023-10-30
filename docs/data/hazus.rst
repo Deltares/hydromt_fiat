@@ -16,7 +16,7 @@ by providing the following values in the configuration file::
     vulnerability_identifiers_and_linking_fn = "default_hazus_iwr_linking"
     unit = "ft"
 
-    [setup_exposure_vector]
+    [setup_exposure_buildings]
     max_potential_damage = "hazus_max_potential_damages"
     unit = "m"
 

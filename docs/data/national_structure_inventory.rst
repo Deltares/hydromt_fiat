@@ -8,7 +8,7 @@ For projects in the United States, users of **HydroMT-FIAT** can directly and ea
 of the `National Structure Inventory <https://www.hec.usace.army.mil/confluence/nsi>`_ (NSI). The 
 user can access the data through providing 'NSI' in the configuration file as such::
 
-    [setup_exposure_vector]
+    [setup_exposure_buildings]
     asset_locations = "NSI"
     occupancy_type = "NSI"
     max_potential_damage = "NSI"

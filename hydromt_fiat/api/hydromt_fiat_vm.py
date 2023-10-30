@@ -73,7 +73,7 @@ class HydroMtViewModel(Singleton):
             setup_config=self.model_vm.config_model,
             setup_hazard=self.hazard_vm.hazard_model,
             setup_vulnerability=self.vulnerability_vm.vulnerability_model,
-            setup_exposure_vector=self.exposure_vm.exposure_model,
+            setup_exposure_buildings=self.exposure_vm.exposure_model,
         )
 
         database_path = self.__class__.database.drive

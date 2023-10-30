@@ -3,7 +3,6 @@
 import csv
 import glob
 import logging
-import os
 from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Union
@@ -12,17 +11,24 @@ import geopandas as gpd
 import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
-from hydromt_sfincs import SfincsModel
 from shapely.geometry import box
 
 from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
-from hydromt_fiat.workflows.hazard import create_lists, check_lists_size, read_maps, check_maps_metadata, check_maps_rp, check_map_uniqueness, create_risk_dataset
+from hydromt_fiat.workflows.hazard import (
+    create_lists,
+    check_lists_size,
+    read_maps,
+    check_maps_metadata,
+    check_maps_rp,
+    check_map_uniqueness,
+    create_risk_dataset,
+)
 from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
-from hydromt_fiat.workflows.building_footprints import  join_exposure_building_footprints
+from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 
 __all__ = ["FiatModel"]
 
@@ -37,7 +43,7 @@ class FiatModel(GridModel):
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
     _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
-    _CLI_ARGS = {"region": "setup_basemaps"}
+    _CLI_ARGS = {"region": "setup_region"}
     _DATADIR = DATADIR
 
     def __init__(
@@ -58,9 +64,16 @@ class FiatModel(GridModel):
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
         self.vulnerability = None
-        self.vulnerability_metadata = list()
+        self.vf_ids_and_linking_df = pd.DataFrame()
 
-    def setup_global_settings(self, crs: str):
+    def setup_global_settings(
+        self,
+        crs: str = None,
+        gdal_cache: int = None,
+        keep_temp_files: bool = None,
+        thread: int = None,
+        chunk: List[int] = None,
+    ) -> None:
         """Setup Delft-FIAT global settings.
 
         Parameters
@@ -68,7 +81,16 @@ class FiatModel(GridModel):
         crs : str
             The CRS of the model.
         """
-        self.set_config("global.crs", crs)
+        if crs:
+            self.set_config("global.crs", crs)
+        if gdal_cache:
+            self.set_config("global.gdal_cache", gdal_cache)
+        if keep_temp_files:
+            self.set_config("global.keep_temp_files", keep_temp_files)
+        if thread:
+            self.set_config("global.thread", thread)
+        if chunk:
+            self.set_config("global.grid.chunk", chunk)
 
     def setup_output(
         self,
@@ -94,12 +116,11 @@ class FiatModel(GridModel):
         for i, name in enumerate(output_vector_name):
             self.set_config(f"output.geom.name{str(i+1)}", name)
 
-    def setup_basemaps(
+    def setup_region(
         self,
         region,
         **kwargs,
     ):
-        # FIXME Mario will update this function according to the one in Habitat
         """Define the model domain that is used to clip the raster layers.
 
         Adds model layer:
@@ -169,7 +190,7 @@ class FiatModel(GridModel):
         df_vulnerability = self.data_catalog.get_dataframe(vulnerability_fn)
 
         # Read the vulnerability linking table
-        vf_ids_and_linking_df = self.data_catalog.get_dataframe(
+        self.vf_ids_and_linking_df = self.data_catalog.get_dataframe(
             vulnerability_identifiers_and_linking_fn
         )
 
@@ -181,7 +202,7 @@ class FiatModel(GridModel):
             assert (
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
-            vf_ids_and_linking_df["continent"] = continent.lower()
+            self.vf_ids_and_linking_df["continent"] = continent.lower()
 
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
@@ -193,7 +214,7 @@ class FiatModel(GridModel):
         # vulnerability curves file for Delft-FIAT.
         self.vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
-            df_identifiers_linking=vf_ids_and_linking_df,
+            df_identifiers_linking=self.vf_ids_and_linking_df,
             continent=continent,
         )
 
@@ -201,9 +222,6 @@ class FiatModel(GridModel):
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
-
-        # Add the vulnerability linking table to the tables object
-        self.set_tables(df=vf_ids_and_linking_df, name="vulnerability_identifiers")
 
         # Update config
         self.set_config(
@@ -226,13 +244,35 @@ class FiatModel(GridModel):
                 (e.g. meter).
         """
         # Process the vulnerability data
-        self.vulnerability = Vulnerability(
-            unit,
-            self.logger,
-        )
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                unit,
+                self.logger,
+            )
         self.vulnerability.from_csv(csv_fn)
 
-    def setup_exposure_vector(
+    def setup_road_vulnerability(
+        self,
+        vertical_unit: str,
+        threshold_value: float = 0.6,
+        min_hazard_value: float = 0,
+        max_hazard_value: float = 10,
+        step_hazard_value: float = 1.0,
+    ):
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                vertical_unit,
+                self.logger,
+            )
+        self.vulnerability.create_step_function(
+            "roads",
+            threshold_value,
+            min_hazard_value,
+            max_hazard_value,
+            step_hazard_value,
+        )
+
+    def setup_exposure_buildings(
         self,
         asset_locations: Union[str, Path],
         occupancy_type: Union[str, Path],
@@ -244,7 +284,7 @@ class FiatModel(GridModel):
         damage_types: Union[List[str], None] = ["structure", "content"],
         country: Union[str, None] = None,
     ) -> None:
-        """Setup vector exposure data for Delft-FIAT.
+        """Setup building exposure (vector) data for Delft-FIAT.
 
         Parameters
         ----------
@@ -304,7 +344,7 @@ class FiatModel(GridModel):
         except AssertionError:
             logging.error(
                 "Please call the 'setup_vulnerability' function before "
-                "the 'setup_exposure_vector' function. Error message: {e}"
+                "the 'setup_exposure_buildings' function. Error message: {e}"
             )
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
@@ -312,9 +352,33 @@ class FiatModel(GridModel):
         self.exposure.check_required_columns()
 
         # Update the other config settings
-        self.set_config("exposure.geom.csv", "./exposure/exposure.csv")
+        self.set_config("exposure.csv.file", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
+
+    def setup_exposure_roads(
+        self,
+        roads_fn: Union[str, Path],
+        road_damage: Union[str, Path],
+        road_types: Union[str, List[str], bool] = True,
+        unit: str = "m",
+    ):
+        """Setup road exposure data for Delft-FIAT.
+
+        Parameters
+        ----------
+        roads_fn : Union[str, Path]
+            Path to the road network source (e.g., OSM) or file.
+        road_types : Union[str, List[str], bool], optional
+            List of road types to include in the exposure data, by default True
+        """
+        if not self.exposure:
+            self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
+        self.exposure.setup_roads(roads_fn, road_damage, road_types)
+
+        # Link to vulnerability curves
+
+        # Combine the exposure database with pre-existing exposure data if available
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -335,7 +399,7 @@ class FiatModel(GridModel):
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
     ) -> None:
-        """Set up hazard maps. This component integrates multiple checks for the hazard 
+        """Set up hazard maps. This component integrates multiple checks for the hazard
         maps.
 
         Parameters
@@ -373,10 +437,10 @@ class FiatModel(GridModel):
         risk_output : bool, optional
             The parameter that defines if a risk analysis is required, by default False
         """
-        # create lists of maps and their parameters to be able to iterate over them 
+        # create lists of maps and their parameters to be able to iterate over them
         params = create_lists(map_fn, map_type, rp, crs, nodata, var, chunks)
-        check_lists_size(params)  
- 
+        check_lists_size(params)
+
         rp_list = []
         map_name_lst = []
 
@@ -387,8 +451,10 @@ class FiatModel(GridModel):
             da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region)
 
             # Convert to units of the exposure data if required
-            if self.exposure in locals() or self.exposure in globals():                   # change to be sure that the unit information is available from the expousure dataset
-                if self.exposure.unit != da.units:  
+            if (
+                self.exposure in locals() or self.exposure in globals()
+            ):  # change to be sure that the unit information is available from the expousure dataset
+                if self.exposure.unit != da.units:
                     da = da * unit_conversion_factor
 
             da.encoding["_FillValue"] = None
@@ -415,23 +481,26 @@ class FiatModel(GridModel):
                 "name": da_name,
                 "analysis": "event",
             }
-            
-            da = da.to_dataset(name= da_name)
+
+            da = da.to_dataset(name=da_name)
 
             self.set_maps(da, da_name)
 
         check_map_uniqueness(map_name_lst)
-        
+
         # in case of risk analysis, create a single netcdf with multibans per rp
         if risk_output:
+            da, sorted_rp, sorted_names = create_risk_dataset(
+                params, rp_list, map_name_lst, self.maps
+            )
 
-            da, sorted_rp, sorted_names = create_risk_dataset(params, rp_list, map_name_lst, self.maps) 
-
-            self.set_grid(da) 
+            self.set_grid(da)
 
             self.grid.attrs = {
                 "rp": sorted_rp,
-                "type": params["map_type_lst"], #TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
+                "type": params[
+                    "map_type_lst"
+                ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
                 "name": sorted_names,
                 "analysis": "risk",
             }
@@ -442,44 +511,39 @@ class FiatModel(GridModel):
                 self.maps.pop(item)
 
         # set configuration .toml file
-        self.set_config("hazard.return_periods", 
-                        str(da_rp) if not risk_output else sorted_rp 
+        self.set_config(
+            "hazard.return_periods", str(da_rp) if not risk_output else sorted_rp
         )
 
         self.set_config(
             "hazard.file",
             [
                 str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys() 
-            ][0] if not risk_output else 
-            [
-                str(Path("hazard") / ("risk_map" + ".nc")) 
-            ][0],
+                for hazard_map in self.maps.keys()
+            ][0]
+            if not risk_output
+            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
         )
         self.set_config(
             "hazard.crs",
             [
                 "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
                 for hazard_map in self.maps.keys()
-            ][0] if not risk_output else                
-            [
-                "EPSG:" + str((self.crs.to_epsg()))
-            ][0]       
-            ,
+            ][0]
+            if not risk_output
+            else ["EPSG:" + str((self.crs.to_epsg()))][0],
         )
 
         self.set_config(
-            "hazard.elevation_reference", 
-            "dem" if da_type == "water_depth" else "datum"
+            "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
         )
 
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [
-                (self.maps[hazard_map].name) 
-                for hazard_map in self.maps.keys()
-            ][0] if not risk_output else sorted_rp,
+            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
+            if not risk_output
+            else sorted_rp,
         )
 
         self.set_config(
@@ -572,7 +636,7 @@ class FiatModel(GridModel):
         Parameters
         ----------
         exposure_gdf : gpd.GeoDataFrame
-            Exposure data to join the aggregation areas to as "Aggregation 
+            Exposure data to join the aggregation areas to as "Aggregation
         Label: `label_names`".
         aggregation_area_fn : Union[List[str], List[Path], str, Path]
             Path(s) to the aggregation area(s).
@@ -582,11 +646,12 @@ class FiatModel(GridModel):
             Name of the label(s) to join.
 
         """
-        
+
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
+
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
@@ -608,7 +673,9 @@ class FiatModel(GridModel):
 
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_building_footprints(
-            exposure_gdf, building_footprint_fn, attribute_name,
+            exposure_gdf,
+            building_footprint_fn,
+            attribute_name,
         )
 
     # Update functions
@@ -625,11 +692,15 @@ class FiatModel(GridModel):
 
         # Update the vulnerability data tables
         if self.vulnerability:
-            (
-                df,
-                self.vulnerability_metadata,
-            ) = self.vulnerability.get_table_and_metadata()
-            self.set_tables(df=df, name="vulnerability_curves")
+            self.set_tables(
+                df=self.vulnerability.get_table(), name="vulnerability_curves"
+            )
+
+        if not self.vf_ids_and_linking_df.empty:
+            # Add the vulnerability linking table to the tables object
+            self.set_tables(
+                df=self.vf_ids_and_linking_df, name="vulnerability_identifiers"
+            )
 
     def update_geoms(self):
         # Update the exposure data geoms
@@ -689,15 +760,11 @@ class FiatModel(GridModel):
         if Path(vulnerability_fn).is_file():
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
-            (
-                self._tables["vulnerability_curves"],
-                _,
-            ) = self.vulnerability.get_table_and_metadata()
         else:
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
+        exposure_fn = Path(self.root) / self.get_config("exposure.csv.file")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(
@@ -707,19 +774,8 @@ class FiatModel(GridModel):
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
-            self._tables["exposure"] = self.exposure.exposure_db
         else:
             logging.warning(f"File {exposure_fn} does not exist!")
-
-        # If needed read other tables files like vulnerability identifiers
-        # Comment if not needed - I usually use os rather than pathlib, change if you prefer
-        fns = glob.glob(join(self.root, "*.csv"))
-        if len(fns) > 0:
-            for fn in fns:
-                self.logger.info(f"Reading table {fn}")
-                name = basename(fn).split(".")[0]
-                tbl = pd.read_csv(fn)
-                self.set_tables(tbl, name=name)
 
     def read_geoms(self):
         """Read the geometries for the exposure data."""
@@ -733,13 +789,6 @@ class FiatModel(GridModel):
                 for f in exposure_files
             ]
             self.exposure.read_geoms(exposure_fn)
-
-            exposure_names = [f.stem for f in exposure_fn]
-            for name, geom in zip(exposure_names, self.exposure.exposure_geoms):
-                self.set_geoms(
-                    geom=geom,
-                    name=name,
-                )
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
@@ -817,20 +866,19 @@ class FiatModel(GridModel):
     @property
     def vulnerability_curves(self) -> pd.DataFrame:
         """Returns a dataframe with the damage functions."""
-        if "vulnerability_curves" in self._tables:
-            vf = self._tables["vulnerability_curves"]
+        if self.vulnerability:
+            vf = self.vulnerability.get_table()
         else:
             vf = pd.DataFrame()
         return vf
 
     @property
-    def vf_ids_and_linking_df(self) -> pd.DataFrame:
-        """Returns a dataframe with the vulnerability identifiers and linking."""
-        if "vulnerability_identifiers" in self._tables:
-            vi = self._tables["vulnerability_identifiers"]
+    def vulnerability_metadata(self) -> List[str]:
+        if self.vulnerability:
+            vmeta = self.vulnerability.get_metadata()
         else:
-            vi = pd.DataFrame()
-        return vi
+            vmeta = list()
+        return vmeta
 
     def set_tables(self, df: pd.DataFrame, name: str) -> None:
         """Add <pandas.DataFrame> to the tables variable.
