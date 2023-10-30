@@ -7,7 +7,6 @@
     "Max Potential Damage: Content": "val_cont",
     "Ground Floor Height": "found_ht",
     "Ground Elevation": "ground_elv",
-    "X Coordinate": "x",
-    "Y Coordinate": "y",
+    "geometry": "geometry",
     "Aggregation Label: Census Block": "cbfips"
 }

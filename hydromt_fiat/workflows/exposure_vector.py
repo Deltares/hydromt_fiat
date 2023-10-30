@@ -181,16 +181,22 @@ class ExposureVector(Exposure):
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
-        self.setup_ground_floor_height(ground_floor_height)
+        # Set the ground floor height if not yet set
+        if "Ground Floor Height" not in self.exposure_db.columns:
+            self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-        # Set the geoms from the X and Y coordinates
-        self.set_exposure_geoms_from_xy()
+        # Set the exposure_geoms
+        self.set_exposure_geoms(gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]], crs=self.crs))
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
+    
+        # Remove the geometry column from the exposure_db
+        if "geometry" in self.exposure_db:
+            del self.exposure_db["geometry"]
 
     def setup_roads(
         self,
