@@ -118,7 +118,6 @@ class ExposureVector(Exposure):
     def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
-        ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
     ) -> None:
         """Set up asset locations and other available data from a single source.
@@ -180,8 +179,6 @@ class ExposureVector(Exposure):
         # Check if the 'Object ID' column is unique
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
-
-        self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
