@@ -55,10 +55,6 @@ _region_charleston = {
 }
 
 
-
-
-
-
 _cases = {
     "event_map": {
         "region": _region_charleston,
@@ -187,7 +183,6 @@ def test_hazard(case):
 
     fm = FiatModel(root=root, mode="w", logger=logger)
     region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
-    # region = gpd.read_file(r'P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\data\Area_of_interest\aoi_charleston.shp')
     
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()
