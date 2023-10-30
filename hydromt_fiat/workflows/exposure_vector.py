@@ -29,7 +29,9 @@ from hydromt_fiat.workflows.gis import (
     get_crs_str_from_gdf,
     join_spatial_data,
 )
+
 from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
+
 
 
 class ExposureVector(Exposure):
@@ -464,7 +466,9 @@ class ExposureVector(Exposure):
         occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
             landuse_to_jrc_mapping
         )
-        occupancy_map["Secondary Object Type"] = occupancy_map[occupancy_attribute]
+        occupancy_map.rename(
+            columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
+        )
 
         return occupancy_map
 
@@ -479,6 +483,7 @@ class ExposureVector(Exposure):
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
@@ -502,6 +507,9 @@ class ExposureVector(Exposure):
             to the files in the same order as the files are submitted. The method can
             be either 'nearest' (nearest neighbor) or 'intersection'. By default
             'nearest'.
+        max_dist : float
+            The maximum distance for the nearest join measured in meters, by default 
+            set to 10 meters.
         """
         if ground_floor_height:
             if isinstance(ground_floor_height, int) or isinstance(
@@ -516,8 +524,8 @@ class ExposureVector(Exposure):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
-                gdf = join_spatial_data(gdf, gfh, attr_name, method)
-                gdf = self._set_values_from_other_column(
+                gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+                self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attr_name
                 )
             elif isinstance(ground_floor_height, list):
@@ -975,6 +983,7 @@ class ExposureVector(Exposure):
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
             ]
+            assert not linking_per_damage_type.empty, f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
 
             # Create a dictionary that links the exposure data to the vulnerability data
             linking_dict = dict(
