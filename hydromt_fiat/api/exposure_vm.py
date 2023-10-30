@@ -12,7 +12,7 @@ from .data_types import (
     DataCatalogEntry,
     DataType,
     Driver,
-    ExposureVectorIni,
+    ExposureBuildingsIni,
     ExtractionMethod,
     Units,
 )
@@ -22,13 +22,14 @@ class ExposureViewModel:
     def __init__(
         self, database: IDatabase, data_catalog: DataCatalog, logger: logging.Logger
     ):
-        self.exposure_model = ExposureVectorIni(
+        self.exposure_model = ExposureBuildingsIni(
             asset_locations="",
             occupancy_type="",
             max_potential_damage=-999,
             ground_floor_height=-999,
             unit=Units.m.value,
             extraction_method=ExtractionMethod.centroid.value,
+            damage_types=["structure", "content"]
         )
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
