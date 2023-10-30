@@ -125,3 +125,7 @@ examples/data/update_ground_floor_height/test_update_ground_floor_height_points
 examples/data/update_ground_floor_height/test_update_ground_floor_height_polygons
 examples/data/building_footprints/fiat_model_bfs
 examples/data/aggregation_zones/output
+examples/data/aggregation_zones/
+examples/data/upgrade_ground_floor_height/
+examples/data/damage_functions/flooding/Hazus_IWR_curves.csv
+
