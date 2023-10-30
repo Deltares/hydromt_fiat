@@ -132,3 +132,5 @@ examples/data/aggregation_zones/fiat_model_aggregation1/exposure/buildings.gpkg
 examples/data/aggregation_zones/fiat_model_aggregation2/exposure/buildings.gpkg
 examples/data/update_ground_floor_height/test_update_ground_floor_height_points/exposure/building_points.gpkg
 examples/data/update_ground_floor_height/test_update_ground_floor_height_polygons/exposure/building_points.gpkg
+hydromt_fiat/data/damage_functions/flooding/Hazus_IWR_curves.csv
+
