@@ -208,7 +208,7 @@ class ExposureVector(Exposure):
     ):
         self.logger.info("Setting up roads...")
         if str(source).upper() == "OSM":
-            polygon = self.region.iloc[0].values[0]
+            polygon = self.region["geometry"].values[0]  #TODO check if this works each time
             roads = get_roads_from_osm(polygon, road_types)
 
             if roads.empty:

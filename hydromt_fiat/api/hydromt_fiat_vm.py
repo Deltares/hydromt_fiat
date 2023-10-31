@@ -4,7 +4,7 @@ import tomli_w
 from hydromt import DataCatalog
 from pathlib import Path
 
-from hydromt_fiat.api.data_types import ConfigIni
+from hydromt_fiat.api.data_types import ConfigYaml
 from hydromt_fiat.api.dbs_controller import LocalDatabase
 from hydromt_fiat.api.exposure_vm import ExposureViewModel
 from hydromt_fiat.api.model_vm import ModelViewModel
@@ -53,10 +53,13 @@ class HydroMtViewModel:
         self.__class__.data_catalog.to_yml(database_path / "data_catalog.yml")
 
     def build_config_ini(self):
-        config_ini = ConfigIni(
-            setup_config=self.model_vm.config_model,
-            setup_vulnerability=self.vulnerability_vm.vulnerability_model,
-            setup_exposure_buildings=self.exposure_vm.exposure_model,
+        config_ini = ConfigYaml(
+            setup_global_settings=self.model_vm.global_settings_model,
+            setup_output=self.model_vm.output_model,
+            setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
+            setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
+            setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
+            setup_exposure_roads=self.exposure_vm.exposure_roads_model,
         )
 
         database_path = self.__class__.database.drive
@@ -68,13 +71,16 @@ class HydroMtViewModel:
         self.fiat_model.read()
         
     def run_hydromt_fiat(self):
-        config_ini = ConfigIni(
-            setup_config=self.model_vm.config_model,
-            setup_vulnerability=self.vulnerability_vm.vulnerability_model,
-            setup_exposure_buildings=self.exposure_vm.exposure_model,
+        config_yaml = ConfigYaml(
+            setup_global_settings=self.model_vm.global_settings_model,
+            setup_output=self.model_vm.output_model,
+            setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
+            setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
+            setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
+            setup_exposure_roads=self.exposure_vm.exposure_roads_model,
         )
         region = self.data_catalog.get_geodataframe("area_of_interest")
-        self.fiat_model.build(region={"geom": region}, opt=config_ini.dict())
+        self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
         self.fiat_model.write()
 
     

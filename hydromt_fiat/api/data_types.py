@@ -10,8 +10,8 @@ class ExtractionMethod(str, Enum):
 
 
 class Units(str, Enum):
-    m = "meter"
-    ft = "feet"
+    m = "m"
+    ft = "ft"
 
 
 class Category(str, Enum):
@@ -46,14 +46,17 @@ class DataCatalogEntry(BaseModel):
     meta: Meta
 
 
-class ModelIni(BaseModel):
-    site_name: str
-    scenario_name: str
+class GlobalSettings(BaseModel):
+    crs: Union[str, int]
+
+
+class OutputSettings(BaseModel):
     output_dir: str
-    crs: str
+    output_csv_name: str
+    output_vector_name: str
 
 
-class VulnerabilityIni(BaseModel):
+class VulnerabilitySettings(BaseModel):
     vulnerability_fn: str
     vulnerability_identifiers_and_linking_fn: str
     unit: Units
@@ -62,7 +65,7 @@ class VulnerabilityIni(BaseModel):
     step_size: Union[float, None]
 
 
-class ExposureBuildingsIni(BaseModel):
+class ExposureBuildingsSettings(BaseModel):
     asset_locations: str
     occupancy_type: str
     max_potential_damage: str
@@ -72,7 +75,25 @@ class ExposureBuildingsIni(BaseModel):
     damage_types : Union[List[str], None]
 
 
-class ConfigIni(BaseModel):
-    setup_config: ModelIni
-    setup_vulnerability: VulnerabilityIni
-    setup_exposure_buildings: ExposureBuildingsIni
+class RoadVulnerabilitySettings(BaseModel):
+    threshold_value: float
+    min_hazard_value: float
+    max_hazard_value: float
+    step_hazard_value: float
+    vertical_unit: Units
+
+
+class ExposureRoadsSettings(BaseModel):
+    roads_fn: str
+    road_types: List[str]
+    road_damage: str
+    unit: Units
+
+
+class ConfigYaml(BaseModel):
+    setup_global_settings: GlobalSettings
+    setup_output: OutputSettings
+    setup_vulnerability: VulnerabilitySettings
+    setup_exposure_buildings: ExposureBuildingsSettings
+    setup_road_vulnerability: RoadVulnerabilitySettings
+    setup_exposure_roads: ExposureRoadsSettings
