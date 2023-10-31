@@ -281,7 +281,7 @@ class FiatModel(GridModel):
         unit: str,
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
-        damage_types: Union[List[str], None] = ["structure", "content"],
+        damage_types: List[str] = ["structure", "content"],
         country: Union[str, None] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
@@ -318,7 +318,7 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage:
+        if asset_locations == occupancy_type == max_potential_damage == ground_floor_height:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
@@ -764,7 +764,7 @@ class FiatModel(GridModel):
             logging.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
-        exposure_fn = Path(self.root) / self.get_config("exposure.geom.csv")
+        exposure_fn = Path(self.root) / self.get_config("exposure.csv.file")
         if Path(exposure_fn).is_file():
             self.logger.debug(f"Reading exposure table {exposure_fn}")
             self.exposure = ExposureVector(

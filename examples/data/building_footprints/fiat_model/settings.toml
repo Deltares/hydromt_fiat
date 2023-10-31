@@ -14,7 +14,9 @@ name1 = "spatial.gpkg"
 file = "./vulnerability/vulnerability_curves.csv"
 scale = 0.1
 
+[exposure.csv]
+file = "./exposure/exposure.csv"
+
 [exposure.geom]
-csv = "./exposure/exposure.csv"
 crs = "EPSG:4326"
 file1 = "./exposure/buildings.gpkg"

@@ -29,7 +29,9 @@ from hydromt_fiat.workflows.gis import (
     get_crs_str_from_gdf,
     join_spatial_data,
 )
+
 from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
+
 
 
 class ExposureVector(Exposure):
@@ -181,16 +183,22 @@ class ExposureVector(Exposure):
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
-        self.setup_ground_floor_height(ground_floor_height)
+        # Set the ground floor height if not yet set
+        if "Ground Floor Height" not in self.exposure_db.columns:
+            self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-        # Set the geoms from the X and Y coordinates
-        self.set_exposure_geoms_from_xy()
+        # Set the exposure_geoms
+        self.set_exposure_geoms(gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]], crs=self.crs))
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
+    
+        # Remove the geometry column from the exposure_db
+        if "geometry" in self.exposure_db:
+            del self.exposure_db["geometry"]
 
     def setup_roads(
         self,
@@ -458,7 +466,9 @@ class ExposureVector(Exposure):
         occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
             landuse_to_jrc_mapping
         )
-        occupancy_map["Secondary Object Type"] = occupancy_map[occupancy_attribute]
+        occupancy_map.rename(
+            columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
+        )
 
         return occupancy_map
 
@@ -473,6 +483,7 @@ class ExposureVector(Exposure):
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
@@ -496,6 +507,9 @@ class ExposureVector(Exposure):
             to the files in the same order as the files are submitted. The method can
             be either 'nearest' (nearest neighbor) or 'intersection'. By default
             'nearest'.
+        max_dist : float
+            The maximum distance for the nearest join measured in meters, by default 
+            set to 10 meters.
         """
         if ground_floor_height:
             if isinstance(ground_floor_height, int) or isinstance(
@@ -510,8 +524,8 @@ class ExposureVector(Exposure):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
-                gdf = join_spatial_data(gdf, gfh, attr_name, method)
-                gdf = self._set_values_from_other_column(
+                gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+                self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attr_name
                 )
             elif isinstance(ground_floor_height, list):
@@ -965,16 +979,24 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
+        exposure_linking_table["Damage function name"] = [
+            name + "_" + type
+            for name, type in zip(
+                exposure_linking_table["FIAT Damage Function Name"].values,
+                exposure_linking_table["Damage Type"].values,
+            )
+        ]
         for damage_type in damage_types:
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
             ]
+            assert not linking_per_damage_type.empty, f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
 
             # Create a dictionary that links the exposure data to the vulnerability data
             linking_dict = dict(
                 zip(
                     linking_per_damage_type["Exposure Link"],
-                    linking_per_damage_type["FIAT Damage Function Name"],
+                    linking_per_damage_type["Damage function name"],
                 )
             )
             unique_linking_types = set(linking_dict.keys())
