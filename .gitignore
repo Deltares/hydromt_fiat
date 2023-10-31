@@ -134,3 +134,4 @@ examples/data/update_ground_floor_height/test_update_ground_floor_height_points/
 examples/data/update_ground_floor_height/test_update_ground_floor_height_polygons/exposure/building_points.gpkg
 hydromt_fiat/data/damage_functions/flooding/Hazus_IWR_curves.csv
 
+hydromt_fiat/data/ground_elevation/charleston_14m.tif
