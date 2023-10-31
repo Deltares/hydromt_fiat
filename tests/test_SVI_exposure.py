@@ -55,7 +55,7 @@ _cases = {
                 "asset_locations": "NSI",
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
-                "ground_floor_height": 1,
+                "ground_floor_height": "NSI",
                 "unit": "ft",
             },
             "setup_social_vulnerability_index": {

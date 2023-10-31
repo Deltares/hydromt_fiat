@@ -1,5 +1,5 @@
 from enum import Enum
-from typing_extensions import Optional, TypedDict, Union
+from typing_extensions import Optional, TypedDict, Union, List
 
 from pydantic import BaseModel
 
@@ -53,36 +53,26 @@ class ModelIni(BaseModel):
     crs: str
 
 
-class ExposureVectorIni(BaseModel):
+class VulnerabilityIni(BaseModel):
+    vulnerability_fn: str
+    vulnerability_identifiers_and_linking_fn: str
+    unit: Units
+    functions_mean: Union[str, list]
+    functions_max: Union[str, list, None]
+    step_size: Union[float, None]
+
+
+class ExposureBuildingsIni(BaseModel):
     asset_locations: str
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: str
     unit: Units
     extraction_method: ExtractionMethod
-
-
-class HazardIni(BaseModel):
-    hazard_map_fn: str
-    hazard_type: str
-    return_period: Optional[Union[int, None]] = None
-    crs: Optional[str] = None
-    no_data: Optional[int] = -9999
-    var: Optional[Union[str, None]] = None
-    chunks: Optional[Union[int, str]] = "auto"
-    no_data: Optional[int] = -9999
-    var: Optional[Union[str, None]] = None
-    chunks: Optional[Union[int, str]] = "auto"
-
-
-class VulnerabilityIni(BaseModel):
-    vulnerability_fn: str
-    link_table: str
-    units: Units
+    damage_types : Union[List[str], None]
 
 
 class ConfigIni(BaseModel):
     setup_config: ModelIni
-    setup_hazard: HazardIni
     setup_vulnerability: VulnerabilityIni
-    setup_exposure_buildings: ExposureVectorIni
+    setup_exposure_buildings: ExposureBuildingsIni

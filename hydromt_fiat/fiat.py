@@ -318,7 +318,7 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage:
+        if asset_locations == occupancy_type == max_potential_damage == ground_floor_height:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
