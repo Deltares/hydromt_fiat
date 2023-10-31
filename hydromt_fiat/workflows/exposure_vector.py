@@ -1,4 +1,5 @@
 import json
+import rasterio
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
@@ -31,8 +32,9 @@ from hydromt_fiat.workflows.gis import (
 )
 
 from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
-
-
+from rasterio.features import rasterize
+from xrspatial import zonal_stats
+import xarray as xr
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -529,6 +531,52 @@ class ExposureVector(Exposure):
             # Set the Ground Floor Height to 0 if the user did not specify any
             # Ground Floor Height.
             self.exposure_db["Ground Floor Height"] = 0
+
+
+    def setup_ground_elevation(
+        self,
+        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]],
+    ) -> None:
+
+        if ground_elevation:
+            # Read in the DEM
+            dem = rasterio.open(ground_elevation)
+            gdf = self.get_full_gdf(self.exposure_db)  
+            gdf = gdf.to_crs(dem.crs.data)
+            # Create a list of geometries plus a label for rasterize
+            # The labels start at 1 since the label 0 is reserved for everything not in a geometry
+            # The order of each tuple is (geometry,label)
+            shapes = list(enumerate(gdf['geometry'].values))
+            shapes = [(t[1],t[0]+1) for t in shapes]
+
+            rasterized = rasterize(
+                shapes=shapes,
+                out_shape=dem.shape,
+                transform=dem.transform,
+                all_touched=True
+            )
+            # zonal_stats needs xarrays as input
+            rasterized = xr.DataArray(rasterized)
+
+            # Calculate the zonal statistics
+            zonal_out = zonal_stats(rasterized,xr.DataArray(dem.read(1)),
+                                    stats_funcs=['mean'],
+                                    nodata_values=np.nan)
+
+            # The zero label is for pixels not in a geometry so we discard them
+            zonal_out = zonal_out.drop(0)
+
+            # Array storing the zonal means
+            # Store the calculated means at index corresponding to their label
+            zonal_means = np.full(len(shapes),np.nan)
+            zonal_means[[zonal_out['zone'].values-1]] = zonal_out['mean'].values
+
+            # # Add Ground Elevation column and get rid of nans in the appropriate way
+            self.exposure_db['Ground Elevation'] = zonal_means
+            self.exposure_db['Ground Elevation'].bfill(inplace=True)
+        
+        else:
+            print('Ground elevation is not recognized by the setup_ground_elevation function')
 
     def setup_max_potential_damage(
         self,
