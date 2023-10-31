@@ -62,7 +62,7 @@ class ExposureViewModel:
             self.exposure_model.asset_locations = input_source
             self.exposure_model.occupancy_type = input_source
             self.exposure_model.max_potential_damage = input_source
-            self.exposure_model.ground_floor_height = 1  # TODO: make flexible
+            self.exposure_model.ground_floor_height = input_source
             self.exposure_model.unit = Units.ft.value  # TODO: make flexible
 
             # Download NSI from the database
