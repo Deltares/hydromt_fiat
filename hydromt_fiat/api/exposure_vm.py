@@ -126,8 +126,9 @@ class ExposureViewModel:
             self.exposure.setup_extraction_method(extraction_method)
 
     def get_osm_roads(
-        self, road_types: List[str] = ["motorway", "primary", "secondary", "tertiary"], crs=4326
+        self, road_types: List[str] = True, crs=4326
     ):
+        # TODO: determine standard road types (["motorway", "primary", "secondary", "tertiary"]?)
         if self.exposure is None:
             region = self.data_catalog.get_geodataframe("area_of_interest")
             self.exposure = ExposureVector(
