@@ -1,0 +1,8 @@
+setup_aggregation_areas:
+  aggregation_area_fn: "data/aggregation_zones/aggregation_zones/base_zones.gpkg"
+  attribute_names: ZONE_BASE
+  label_names: Base_zones
+
+
+
+ 
