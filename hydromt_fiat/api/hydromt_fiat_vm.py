@@ -60,6 +60,7 @@ class HydroMtViewModel:
             setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
             setup_exposure_roads=self.exposure_vm.exposure_roads_model,
+            setup_aggregation_areas=self.exposure_vm.aggregation_areas_model,
         )
 
         database_path = self.__class__.database.drive
@@ -78,6 +79,7 @@ class HydroMtViewModel:
             setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
             setup_exposure_roads=self.exposure_vm.exposure_roads_model,
+            setup_aggregation_areas=self.exposure_vm.aggregation_areas_model,
         )
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())

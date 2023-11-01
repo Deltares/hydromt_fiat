@@ -15,6 +15,7 @@ from .data_types import (
     ExposureBuildingsSettings,
     ExposureRoadsSettings,
     ExtractionMethod,
+    AggregationAreaSettings,
     Units,
 )
 
@@ -37,6 +38,11 @@ class ExposureViewModel:
             road_types=["motorway", "primary", "secondary", "tertiary"],
             road_damage="default_road_max_potential_damages",
             unit=Units.ft.value,
+        )
+        self.aggregation_areas_model = AggregationAreaSettings(
+            aggregation_area_fn="",
+            attribute_names="",
+            label_names="",
         )
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -149,3 +155,9 @@ class ExposureViewModel:
         gdf = self.exposure.get_full_gdf(roads)
 
         return gdf
+
+    def set_aggregation_areas_config(self, files, attribute_names, label_names):
+        self.aggregation_areas_model.aggregation_area_fn = files
+        self.aggregation_areas_model.attribute_names = attribute_names
+        self.aggregation_areas_model.label_names = label_names
+    

@@ -90,6 +90,12 @@ class ExposureRoadsSettings(BaseModel):
     unit: Units
 
 
+class AggregationAreaSettings(BaseModel):
+    aggregation_area_fn: str
+    attribute_names: str
+    label_names: str
+
+
 class ConfigYaml(BaseModel):
     setup_global_settings: GlobalSettings
     setup_output: OutputSettings
@@ -97,3 +103,4 @@ class ConfigYaml(BaseModel):
     setup_exposure_buildings: ExposureBuildingsSettings
     setup_road_vulnerability: RoadVulnerabilitySettings
     setup_exposure_roads: ExposureRoadsSettings
+    setup_aggregation_areas: AggregationAreaSettings
