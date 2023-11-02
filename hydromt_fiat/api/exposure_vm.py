@@ -136,19 +136,17 @@ class ExposureViewModel:
                 crs=crs,
             )
 
-        self.exposure_roads_model.road_types = road_types
-
         self.exposure.setup_roads(
-            source=self.exposure_roads_model.roads_fn,
-            road_damage=self.exposure_roads_model.road_damage,
-            road_types=self.exposure_roads_model.road_types,
+            source="OSM",
+            road_damage="default_road_max_potential_damages",
+            road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[self.exposure.exposure_db["Primary Object Type"] == "roads"]
         gdf = self.exposure.get_full_gdf(roads)
 
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
-            road_types=["motorway", "primary", "secondary", "tertiary"],
+            road_types=road_types,
             road_damage="default_road_max_potential_damages",
             unit=Units.ft.value,
         )
