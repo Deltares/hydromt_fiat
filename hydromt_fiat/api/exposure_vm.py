@@ -33,17 +33,9 @@ class ExposureViewModel:
             extraction_method=ExtractionMethod.centroid.value,
             damage_types=["structure", "content"],
         )
-        self.exposure_roads_model = ExposureRoadsSettings(
-            roads_fn="OSM",
-            road_types=["motorway", "primary", "secondary", "tertiary"],
-            road_damage="default_road_max_potential_damages",
-            unit=Units.ft.value,
-        )
-        self.aggregation_areas_model = AggregationAreaSettings(
-            aggregation_area_fn="",
-            attribute_names="",
-            label_names="",
-        )
+        self.exposure_roads_model = None
+        self.aggregation_areas_model = None
+
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
@@ -154,10 +146,19 @@ class ExposureViewModel:
         roads = self.exposure.exposure_db.loc[self.exposure.exposure_db["Primary Object Type"] == "roads"]
         gdf = self.exposure.get_full_gdf(roads)
 
+        self.exposure_roads_model = ExposureRoadsSettings(
+            roads_fn="OSM",
+            road_types=["motorway", "primary", "secondary", "tertiary"],
+            road_damage="default_road_max_potential_damages",
+            unit=Units.ft.value,
+        )
+
         return gdf
 
     def set_aggregation_areas_config(self, files, attribute_names, label_names):
-        self.aggregation_areas_model.aggregation_area_fn = files
-        self.aggregation_areas_model.attribute_names = attribute_names
-        self.aggregation_areas_model.label_names = label_names
+        self.aggregation_areas_model = AggregationAreaSettings(
+            aggregation_area_fn=files,
+            attribute_names=attribute_names,
+            label_names=label_names,
+        )
     

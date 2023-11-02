@@ -1,7 +1,7 @@
 from enum import Enum
 from typing_extensions import Optional, TypedDict, Union, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 
 class ExtractionMethod(str, Enum):
@@ -96,11 +96,8 @@ class AggregationAreaSettings(BaseModel):
     label_names: str
 
 
-class ConfigYaml(BaseModel):
+class ConfigYaml(BaseModel, extra=Extra.allow):
     setup_global_settings: GlobalSettings
     setup_output: OutputSettings
     setup_vulnerability: VulnerabilitySettings
     setup_exposure_buildings: ExposureBuildingsSettings
-    setup_road_vulnerability: RoadVulnerabilitySettings
-    setup_exposure_roads: ExposureRoadsSettings
-    setup_aggregation_areas: AggregationAreaSettings

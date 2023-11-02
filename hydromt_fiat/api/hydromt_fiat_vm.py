@@ -53,20 +53,27 @@ class HydroMtViewModel:
         self.__class__.data_catalog.to_yml(database_path / "data_catalog.yml")
 
     def build_config_ini(self):
-        config_ini = ConfigYaml(
+        config_yaml = ConfigYaml(
             setup_global_settings=self.model_vm.global_settings_model,
             setup_output=self.model_vm.output_model,
             setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
             setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
             setup_exposure_roads=self.exposure_vm.exposure_roads_model,
-            setup_aggregation_areas=self.exposure_vm.aggregation_areas_model,
         )
+        if self.exposure_vm.aggregation_areas_model:
+            config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
+        
+        if self.exposure_vm.exposure_roads_model:
+            config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
+        
+        if self.vulnerability_vm.vulnerability_roads_model:
+            config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
 
         database_path = self.__class__.database.drive
 
         with open(database_path / "config.ini", "wb") as f:
-            tomli_w.dump(config_ini.dict(exclude_none=True), f)
+            tomli_w.dump(config_yaml.dict(exclude_none=True), f)
 
     def read(self):
         self.fiat_model.read()
@@ -79,8 +86,18 @@ class HydroMtViewModel:
             setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
             setup_exposure_roads=self.exposure_vm.exposure_roads_model,
-            setup_aggregation_areas=self.exposure_vm.aggregation_areas_model,
         )
+        if self.exposure_vm.aggregation_areas_model:
+            config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
+        
+        if self.exposure_vm.exposure_roads_model:
+            config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
+        
+        if self.vulnerability_vm.vulnerability_roads_model:
+            config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
+        
+    setup_exposure_roads: ExposureRoadsSettings
+        
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
         self.fiat_model.write()
