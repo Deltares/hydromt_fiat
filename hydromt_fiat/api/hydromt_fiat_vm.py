@@ -57,9 +57,7 @@ class HydroMtViewModel:
             setup_global_settings=self.model_vm.global_settings_model,
             setup_output=self.model_vm.output_model,
             setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
-            setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
-            setup_exposure_roads=self.exposure_vm.exposure_roads_model,
         )
         if self.exposure_vm.aggregation_areas_model:
             config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
@@ -83,9 +81,7 @@ class HydroMtViewModel:
             setup_global_settings=self.model_vm.global_settings_model,
             setup_output=self.model_vm.output_model,
             setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
-            setup_road_vulnerability=self.vulnerability_vm.vulnerability_roads_model,
             setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
-            setup_exposure_roads=self.exposure_vm.exposure_roads_model,
         )
         if self.exposure_vm.aggregation_areas_model:
             config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
