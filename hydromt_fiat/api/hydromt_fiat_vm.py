@@ -96,8 +96,6 @@ class HydroMtViewModel:
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
         
-    setup_exposure_roads: ExposureRoadsSettings
-        
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
         self.fiat_model.write()
