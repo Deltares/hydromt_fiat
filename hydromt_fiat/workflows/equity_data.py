@@ -62,7 +62,7 @@ class EquityData:
         self.logger.info(f"The state abbreviation specified is: {state_abbreviation}")
 
     def variables_to_download(self):
-        self.download_variables = ['B01003_001E', 'B19301_001E', 'NAME', 'GEO_ID']
+        self.download_variables = ['B01003_001E', 'B19301_001E', 'NAME', 'GEO_ID']  # TODO: later make this a user input?
 
     def download_census_data(self, year_data):
         """download the census data
@@ -93,7 +93,7 @@ class EquityData:
         to_name : str
             The name to replace with
         """
-        name_dict = {'B01003_001E': "TotalPopulationBG", 'B19301_001E': "PerCapitaIncomeBG"} 
+        name_dict = {'B01003_001E': "TotalPopulationBG", 'B19301_001E': "PerCapitaIncomeBG"}  # TODO: Later make this a user input?
         self.pd_census_data = self.pd_census_data.rename(columns=name_dict)
 
     def match_geo_ID(self):
