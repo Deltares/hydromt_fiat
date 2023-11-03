@@ -58,7 +58,7 @@ def join_exposure_aggregation_multiple_areas(
 
         # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
         # Documentation that the order the user put the label name must be the order of the gdf
-        exposure_gdf.rename(columns={attribute_name: f"Aggregation Label: {label_name}"}, inplace=True)
+        exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
         ##remove the index_right column
         if "index_right" in exposure_gdf.columns:
