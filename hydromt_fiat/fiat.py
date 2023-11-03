@@ -612,7 +612,7 @@ class FiatModel(GridModel):
 
         # store the relevant tables coming out of the social vulnerability module
         self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
-        #self.set_tables(df=svi.excluded_regions, name="social_vulnerability_nodataregions")
+        # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
         # Check if the exposure data exists
         if self.exposure:
