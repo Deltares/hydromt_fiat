@@ -91,9 +91,9 @@ class ExposureRoadsSettings(BaseModel):
 
 
 class AggregationAreaSettings(BaseModel):
-    aggregation_area_fn: str
-    attribute_names: str
-    label_names: str
+    aggregation_area_fn: Union[List[str], str]
+    attribute_names: Union[List[str], str]
+    label_names: Union[List[str], str]
 
 
 class ConfigYaml(BaseModel, extra=Extra.allow):
