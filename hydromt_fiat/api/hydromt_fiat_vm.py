@@ -67,7 +67,13 @@ class HydroMtViewModel:
         
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
-
+        
+        if self.svi_vm.svi_model:
+            config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
+                
+        if self.svi_vm.equity_model:
+            config_yaml.setup_equity_data = self.svi_vm.equity_model
+    
         database_path = self.__class__.database.drive
 
         with open(database_path / "config.ini", "wb") as f:
@@ -91,6 +97,12 @@ class HydroMtViewModel:
         
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
+                
+        if self.svi_vm.svi_model:
+            config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
+                
+        if self.svi_vm.equity_model:
+            config_yaml.setup_equity_data = self.svi_vm.equity_model
         
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
