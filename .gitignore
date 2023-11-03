@@ -133,11 +133,11 @@ examples/data/aggregation_zones/output
 /examples/data/aggregation_zones/aggregation_zones_test1/
 /examples/data/aggregation_zones/aggregation_zones_test2/
 examples/aggregation_zones_example.html
+examples/aggregation_zones_example_files/
+examples/data/road_network/FIAT model
 
-
-hydromt_fiat/data/ground_elevation/charleston_14m.tif
-examples/data/aggregation_zones/fiat_model_aggregation1/exposure/buildings.gpkg
 examples/data/setup_exposure_buildings/
 examples/data/setup_new_composite_area/
+hydromt_fiat/data/ground_elevation/
 examples/data/update_max_potential_damage/
 hydromt_fiat/data/new_composite_areas/
