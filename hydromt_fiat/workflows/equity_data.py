@@ -183,7 +183,7 @@ class EquityData:
 
 
     def merge_svi_data_shp(self):
-        """Merges the geometry data with the social vulnerability index computed in the module"""
+        """Merges the geometry data with the equity data computed in the module"""
         self.equity_data_shp = self.pd_domain_scores_geo.merge(self.block_groups[["GEO_ID", "geometry"]], on="GEO_ID", how="left")
         self.equity_data_shp = gpd.GeoDataFrame(self.equity_data_shp)
 
