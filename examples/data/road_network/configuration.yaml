@@ -1,0 +1,12 @@
+setup_road_vulnerability:
+  vertical_unit: feet
+  threshold_value: 0.6
+  min_hazard_value: 0
+  max_hazard_value: 10
+  step_hazard_value: 1
+setup_exposure_roads:
+  roads_fn: OSM
+  road_types: ["motorway", "primary", "secondary", "tertiary"]
+  road_damage: default_road_max_potential_damages
+  unit: meter
+  

@@ -979,6 +979,13 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
+        exposure_linking_table["Damage function name"] = [
+            name + "_" + type
+            for name, type in zip(
+                exposure_linking_table["FIAT Damage Function Name"].values,
+                exposure_linking_table["Damage Type"].values,
+            )
+        ]
         for damage_type in damage_types:
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
@@ -989,7 +996,7 @@ class ExposureVector(Exposure):
             linking_dict = dict(
                 zip(
                     linking_per_damage_type["Exposure Link"],
-                    linking_per_damage_type["FIAT Damage Function Name"],
+                    linking_per_damage_type["Damage function name"],
                 )
             )
             unique_linking_types = set(linking_dict.keys())
