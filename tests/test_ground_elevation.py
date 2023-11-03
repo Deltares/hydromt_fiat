@@ -1,6 +1,7 @@
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 from pathlib import Path
+import numpy as np
 import pytest
 import shutil
 import copy
@@ -32,8 +33,13 @@ def test_ground_elevation(case):
 
     fm.read()
 
+    original_exposure = copy.deepcopy(fm.exposure.exposure_db)
+    unique_ge_original = original_exposure["Ground Elevation"].unique()
+
     fm.exposure.setup_ground_elevation(
         _cases[case]["ground_elevation_file"],
+        fm.exposure.exposure_db,
+        fm.exposure.get_full_gdf(fm.exposure.exposure_db),
     )
 
     # Remove the new root folder if it already exists
@@ -44,5 +50,6 @@ def test_ground_elevation(case):
     fm.set_root(_cases[case]["new_root"])
     fm.write()
 
-    assert 'Ground Elevation' in fm.exposure.exposure_db.columns, "The Ground Elevation was added"
+    unique_ge_new = fm.exposure.exposure_db["Ground Elevation"].unique()
+    assert not np.array_equal(unique_ge_original, unique_ge_new), "The Ground Elevation is the same"
 
