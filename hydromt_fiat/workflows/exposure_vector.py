@@ -1,4 +1,5 @@
 import json
+import rasterio
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
@@ -31,8 +32,9 @@ from hydromt_fiat.workflows.gis import (
 )
 
 from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
-
-
+from rasterio.features import rasterize
+from xrspatial import zonal_stats
+import xarray as xr
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -538,52 +540,89 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        max_potential_damage: Union[List[float], float],
-        damage_types: Union[List[str], str, None] = None,
-        country: Union[str, None] = None,
-    ):
-        if max_potential_damage == "jrc_damage_values":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            if country is None:
-                country = "World"
-                self.logger.warning(
-                    f"No country specified, using the '{country}' JRC damage values."
+        max_potential_damage: Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]=None,
+        target_attribute: Union[str, List[str], None] = None,
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
+    ) -> None:
+        
+        if isinstance(max_potential_damage, pd.DataFrame
+            ):
+                self.update_max_potential_damage(
+                    updated_max_potential_damages=max_potential_damage
                 )
+        elif isinstance(max_potential_damage, int) or isinstance(
+            max_potential_damage, float
+        ):      
+                # modify the column manually 
+                #self.exposure_db[target_attribute] = max_potential_damage
+                NotImplemented
 
-            damage_values = preprocess_jrc_damage_values(damage_source, country)
-
-        elif max_potential_damage == "hazus_max_potential_damages":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            damage_values = preprocess_hazus_damage_values(damage_source)
-        else:
+        elif isinstance(max_potential_damage, str) or isinstance(
+            max_potential_damage, Path
+        ):
+            # A single file is used to assign the ground floor height to the assets
+            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            gdf = self.get_full_gdf(self.exposure_db)
+            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+            self.exposure_db = self._set_values_from_other_column(
+                gdf, target_attribute, attr_name
+            )
+        elif isinstance(max_potential_damage, list):
+            # Multiple files are used to assign the ground floor height to the assets
             NotImplemented
-            # TODO: Implement other ways of setting the max potential damage, e.g. from a
-            # vector file or from a table.
+            
 
-        # Calculate the area of each object
-        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        gdf = get_area(gdf)
+    def setup_ground_elevation(
+        self,
+        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]],
+        exposure_db: pd.DataFrame,
+        exposure_geoms: gpd.GeoDataFrame,
+    ) -> None:
 
-        # Set the damage values to the exposure data
-        if damage_types is None:
-            damage_types = ["total"]
+        if ground_elevation:
+            # This function was developed by Willem https://github.com/interTwin-eu/DT-flood/blob/DemonstrationNotebooks/Notebooks/SetupFIAT.ipynb
+            #TODO: Find equivalent functions in hydromt
+            # Read in the DEM
+            dem = rasterio.open(ground_elevation)
+            # gdf = self.get_full_gdf(exposure_db)  
+            gdf = exposure_geoms.to_crs(dem.crs.data)
+            # Create a list of geometries plus a label for rasterize
+            # The labels start at 1 since the label 0 is reserved for everything not in a geometry
+            # The order of each tuple is (geometry,label)
+            shapes = list(enumerate(gdf['geometry'].values))
+            shapes = [(t[1],t[0]+1) for t in shapes]
 
-        for damage_type in damage_types:
-            # Calculate the maximum potential damage for each object and per damage type
-            try:
-                self.exposure_db[
-                    f"Max Potential Damage: {damage_type.capitalize()}"
-                ] = [
-                    damage_values[building_type][damage_type.lower()] * square_meters
-                    for building_type, square_meters in zip(
-                        gdf["Primary Object Type"], gdf["area"]
-                    )
-                ]
-            except KeyError as e:
-                self.logger.warning(
-                    f"Not found in the {max_potential_damage} damage "
-                    f"value data: {e}"
-                )
+            rasterized = rasterize(
+                shapes=shapes,
+                out_shape=dem.shape,
+                transform=dem.transform,
+                all_touched=True
+            )
+            # zonal_stats needs xarrays as input
+            rasterized = xr.DataArray(rasterized)
+
+            # Calculate the zonal statistics
+            zonal_out = zonal_stats(rasterized,xr.DataArray(dem.read(1)),
+                                    stats_funcs=['mean'],
+                                    nodata_values=np.nan)
+
+            # The zero label is for pixels not in a geometry so we discard them
+            zonal_out = zonal_out.drop(0)
+
+            # Array storing the zonal means
+            # Store the calculated means at index corresponding to their label
+            zonal_means = np.full(len(shapes),np.nan)
+            zonal_means[[zonal_out['zone'].values-1]] = zonal_out['mean'].values
+
+            # # Add Ground Elevation column and get rid of nans in the appropriate way
+            exposure_db['Ground Elevation'] = zonal_means
+            exposure_db['Ground Elevation'].bfill(inplace=True)
+        
+        else:
+            print('Ground elevation is not recognized by the setup_ground_elevation function\n Ground elevation will be set to 0')
+            exposure_db['Ground Elevation'] = 0
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -805,6 +844,7 @@ class ExposureVector(Exposure):
         elevation_reference: str,
         path_ref: str = None,
         attr_ref: str = None,
+        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]]=None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -844,7 +884,7 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.is_file()
+        assert geom_file.is_file() #TODO: The assert message is missing
 
         # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
@@ -966,6 +1006,9 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
+        # Adding elevation data into the new objects
+        self.setup_ground_elevation(ground_elevation,new_objects,_new_exposure_geoms)
+        
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True

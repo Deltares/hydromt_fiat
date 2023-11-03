@@ -3,14 +3,61 @@ from hydromt.log import setuplog
 from pathlib import Path
 import pytest
 import shutil
+import geopandas as gpd
 
 EXAMPLEDIR = Path(
     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
 )
 
+_region = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    [
+                        [ 171.090746817905512, 7.121358418747697 ], 
+                        [ 171.217560473873988, 7.123661889257901 ], 
+                        [ 171.217560473873988, 7.123661889257901 ], 
+                        [ 171.216525686221701, 7.063008661686558 ], 
+                        [ 171.092077237014792, 7.063384936479417 ], 
+                        [ 171.090746817905512, 7.121358418747697 ],
+                    ]
+                ],
+                "type": "Polygon",
+            },
+        }
+    ],
+}
+
+_region_charleston = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "coordinates": [
+                    [
+                        [ -80.028357024435763, 32.84613574478697 ], 
+                        [ -79.863521617196227, 32.833781113480647 ], 
+                        [ -79.854779619756741, 32.734963735677987 ], 
+                        [ -80.026105579065501, 32.739367988104483 ], 
+                        [ -80.028357024435763, 32.84613574478697 ],
+                    ]
+                ],
+                "type": "Polygon",
+            },
+        }
+    ],
+}
+
+
 _cases = {
     "event_map": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region_charleston,
         "dir": "test_event_map",
         "configuration": {
         "setup_hazard": {
@@ -27,7 +74,7 @@ _cases = {
     }
     },
     "risk_map": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region_charleston,
         "dir": "test_risk_map",
         "configuration": {
         "setup_hazard": {
@@ -48,7 +95,7 @@ _cases = {
     },
 
     "event_map_geotiffs": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region,
         "dir": "test_event_map_geotiffs",
         "configuration": {
         "setup_hazard": {
@@ -66,7 +113,7 @@ _cases = {
     },
 
     "risk_map_geotiffs": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region,
         "dir": "test_risk_map_geotiffs",
         "configuration": {
         "setup_hazard": {
@@ -86,7 +133,7 @@ _cases = {
     },
 
     "event_map_geotiff2": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region_charleston,
         "dir": "test_event_map_geotiff2",
         "configuration": {
         "setup_hazard": {
@@ -104,7 +151,7 @@ _cases = {
     },
 
     "risk_map_geotiff2": {
-        "data_catalogue": EXAMPLEDIR / "fiat_catalog.yml",
+        "region": _region_charleston,
         "dir": "test_risk_map_geotiff2",
         "configuration": {
         "setup_hazard": {
@@ -133,10 +180,9 @@ def test_hazard(case):
         shutil.rmtree(root)
 
     logger = setuplog("hydromt_fiat", log_level=10)
-    data_catalog_yml = str(_cases[case]["data_catalogue"])
 
-    fm = FiatModel(root=root, mode="w", data_libs=[data_catalog_yml], logger=logger)
-    region = fm.data_catalog.get_geodataframe("region", variables=None)
+    fm = FiatModel(root=root, mode="w", logger=logger)
+    region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
     
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()
