@@ -93,7 +93,7 @@ class EquityData:
         to_name : str
             The name to replace with
         """
-        name_dict = {'B01003_001E': "TotalPopulationBG", 'B19301_001E': "PerCapitaIncomeBG"} 
+        name_dict = {'B01003_001E': "TotalPopulationBG", 'B19301_001E': "PerCapitaIncomeBG"}  # TODO: Later make this a user input?
         self.pd_census_data = self.pd_census_data.rename(columns=name_dict)
 
     def match_geo_ID(self):
