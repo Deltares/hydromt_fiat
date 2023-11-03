@@ -25,6 +25,7 @@ from hydromt_fiat.workflows.hazard import (
     check_map_uniqueness,
     create_risk_dataset,
 )
+from hydromt_fiat.workflows.equity_data import EquityData
 from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
@@ -563,6 +564,8 @@ class FiatModel(GridModel):
         state_abbreviation: str,
         user_dataset_fn: str = None,
         blockgroup_fn: str = None,
+        year_data: int = None,
+        county: str = None
     ):
         """Setup the social vulnerability index for the vector exposure data for
         Delft-FIAT. This method has so far only been tested with US Census data
@@ -591,7 +594,7 @@ class FiatModel(GridModel):
         svi.variable_code_csv_to_pd_df(codebook_fn)
         svi.set_up_download_codes()
         svi.set_up_state_code(state_abbreviation)
-        svi.download_census_data()
+        svi.download_census_data(year_data)
         svi.rename_census_data("Census_code_withE", "Census_variable_name")
         svi.identify_no_data()
         svi.check_nan_variable_columns("Census_variable_name", "Indicator_code")
@@ -604,12 +607,12 @@ class FiatModel(GridModel):
         svi.domain_scores()
         svi.composite_scores()
         svi.match_geo_ID()
-        svi.load_shp_geom(blockgroup_fn)
+        svi.download_shp_geom(year_data, county)
         svi.merge_svi_data_shp()
 
         # store the relevant tables coming out of the social vulnerability module
         self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
-        # self.set_tables(df=svi.excluded_regions, name="social_vulnerability_nodataregions")
+        #self.set_tables(df=svi.excluded_regions, name="social_vulnerability_nodataregions")
 
         # Check if the exposure data exists
         if self.exposure:
@@ -624,6 +627,46 @@ class FiatModel(GridModel):
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             self.exposure.exposure_db = svi_exp_joined
+    
+    def setup_equity_data(
+        self,
+        census_key: str,
+        state_abbreviation: str,
+        blockgroup_fn: str = None,
+        year_data: int = None,
+        county: str = None
+    ):
+        """Setup the download procedure for equity data similarly to the SVI setup
+
+        Parameters
+        ----------
+        path_dataset : str
+            The path to a predefined dataset
+        census_key : str
+            The user's unique Census key that they got from the census.gov website
+            (https://api.census.gov/data/key_signup.html) to be able to download the
+            Census data
+        path : Union[str, Path]
+            The path to the codebook excel
+        state_abbreviation : str
+            The abbreviation of the US state one would like to use in the analysis
+        """
+
+        # Create equity object
+        equity = EquityData(self.data_catalog, self.logger)
+
+        # Call functionalities of equity
+        equity.set_up_census_key(census_key)
+        equity.variables_to_download()
+        equity.set_up_state_code(state_abbreviation)
+        equity.download_census_data(year_data)
+        equity.rename_census_data()
+        equity.match_geo_ID()
+        equity.download_shp_geom(year_data, county)
+        equity.merge_svi_data_shp()
+
+        self.set_tables(df=equity.equity_data_shp, name="equity_data")
+
 
     def setup_aggregation_areas(
         self,

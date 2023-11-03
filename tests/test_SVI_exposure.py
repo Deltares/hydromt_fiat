@@ -63,6 +63,8 @@ _cases = {
                 "codebook_fn": "social_vulnerability",
                 "state_abbreviation": "SC",
                 "blockgroup_fn": "blockgroup_shp_data",
+                "year_data": 2021,
+                "county": "019"
             },
         },
     }
@@ -80,25 +82,7 @@ def test_SVI_exposure(case):
     data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
     fm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
 
-    # Now we will add data from the user to the data catalog.
-    to_add = {
-        "blockgroup_shp_data": {
-            "path": str(
-                EXAMPLEDIR
-                / "social_vulnerability"
-                / "test_blockgroup_shp"
-                / "tl_2022_45_bg.shp"
-            ),
-            "data_type": "GeoDataFrame",
-            "driver": "vector",
-            "crs": 4326,
-            "category": "social_vulnerability",
-        }
-    }
-
     region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)
-
-    fm.data_catalog.from_dict(to_add)
     fm.build(region={"geom": region}, opt=_cases[case]["configuration"])
     fm.write()
 
