@@ -1,6 +1,7 @@
 from hydromt import DataCatalog
 
 from hydromt_fiat.interface.database import IDatabase
+from hydromt_fiat.workflows.social_vulnerability_index import list_of_states
 import logging
 
 from .data_types import (
@@ -19,6 +20,11 @@ class SviViewModel:
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
+
+    @staticmethod
+    def get_state_names():
+        dict_states = list_of_states()
+        return list(dict_states.keys())
 
     def set_svi_settings(self, census_key, state_abbreviation, year_data, county):
         self.svi_model = SocialVulnerabilityIndexSettings(

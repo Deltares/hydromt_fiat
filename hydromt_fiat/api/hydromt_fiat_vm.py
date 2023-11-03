@@ -9,6 +9,7 @@ from hydromt_fiat.api.dbs_controller import LocalDatabase
 from hydromt_fiat.api.exposure_vm import ExposureViewModel
 from hydromt_fiat.api.model_vm import ModelViewModel
 from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
+from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 
@@ -41,6 +42,9 @@ class HydroMtViewModel:
             HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
         )
         self.vulnerability_vm = VulnerabilityViewModel(
+            HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
+        )
+        self.svi_vm = SviViewModel(
             HydroMtViewModel.database, HydroMtViewModel.data_catalog, logger
         )
 
