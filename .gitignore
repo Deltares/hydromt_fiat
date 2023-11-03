@@ -135,9 +135,3 @@ examples/data/aggregation_zones/output
 examples/aggregation_zones_example.html
 examples/aggregation_zones_example_files/
 examples/data/road_network/FIAT model
-
-examples/data/setup_exposure_buildings/
-examples/data/setup_new_composite_area/
-hydromt_fiat/data/ground_elevation/
-examples/data/update_max_potential_damage/
-hydromt_fiat/data/new_composite_areas/
