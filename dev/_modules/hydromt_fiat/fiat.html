@@ -450,6 +450,7 @@
     <span class="n">check_map_uniqueness</span><span class="p">,</span>
     <span class="n">create_risk_dataset</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.equity_data</span> <span class="kn">import</span> <span class="n">EquityData</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.social_vulnerability_index</span> <span class="kn">import</span> <span class="n">SocialVulnerabilityIndex</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.vulnerability</span> <span class="kn">import</span> <span class="n">Vulnerability</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.aggregation_areas</span> <span class="kn">import</span> <span class="n">join_exposure_aggregation_areas</span>
@@ -1013,6 +1014,8 @@
         <span class="n">state_abbreviation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">user_dataset_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">blockgroup_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">year_data</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the social vulnerability index for the vector exposure data for</span>
 <span class="sd">        Delft-FIAT. This method has so far only been tested with US Census data</span>
@@ -1041,7 +1044,7 @@
         <span class="n">svi</span><span class="o">.</span><span class="n">variable_code_csv_to_pd_df</span><span class="p">(</span><span class="n">codebook_fn</span><span class="p">)</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">set_up_download_codes</span><span class="p">()</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">set_up_state_code</span><span class="p">(</span><span class="n">state_abbreviation</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">()</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">(</span><span class="s2">&quot;Census_code_withE&quot;</span><span class="p">,</span> <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">)</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">identify_no_data</span><span class="p">()</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">check_nan_variable_columns</span><span class="p">(</span><span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span><span class="p">)</span>
@@ -1054,12 +1057,12 @@
         <span class="n">svi</span><span class="o">.</span><span class="n">domain_scores</span><span class="p">()</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">composite_scores</span><span class="p">()</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">load_shp_geom</span><span class="p">(</span><span class="n">blockgroup_fn</span><span class="p">)</span>
+        <span class="n">svi</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county</span><span class="p">)</span>
         <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
 
         <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
-        <span class="c1"># self.set_tables(df=svi.excluded_regions, name=&quot;social_vulnerability_nodataregions&quot;)</span>
+        <span class="c1"># TODO: Think about adding an indicator for missing data to the svi.svi_data_shp</span>
 
         <span class="c1"># Check if the exposure data exists</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
@@ -1074,6 +1077,46 @@
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">svi_exp_joined</span></div>
+
+    
+    <span class="k">def</span> <span class="nf">setup_equity_data</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">state_abbreviation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">blockgroup_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">year_data</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the download procedure for equity data similarly to the SVI setup</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path_dataset : str</span>
+<span class="sd">            The path to a predefined dataset</span>
+<span class="sd">        census_key : str</span>
+<span class="sd">            The user&#39;s unique Census key that they got from the census.gov website</span>
+<span class="sd">            (https://api.census.gov/data/key_signup.html) to be able to download the</span>
+<span class="sd">            Census data</span>
+<span class="sd">        path : Union[str, Path]</span>
+<span class="sd">            The path to the codebook excel</span>
+<span class="sd">        state_abbreviation : str</span>
+<span class="sd">            The abbreviation of the US state one would like to use in the analysis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create equity object</span>
+        <span class="n">equity</span> <span class="o">=</span> <span class="n">EquityData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="c1"># Call functionalities of equity</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">variables_to_download</span><span class="p">()</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">set_up_state_code</span><span class="p">(</span><span class="n">state_abbreviation</span><span class="p">)</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">()</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county</span><span class="p">)</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
 
 
     <span class="k">def</span> <span class="nf">setup_aggregation_areas</span><span class="p">(</span>
