@@ -56,7 +56,7 @@ def join_exposure_aggregation_multiple_areas(
         
         assert exposure_gdf["Object ID"].is_unique, "Error! Aggregation polygons overlap! Please clean your aggregation data from overlapping features."
 
-        # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
+        # Rename the 'aggregation_attribute' column to 'new_column_name'.Put in 
         # Documentation that the order the user put the label name must be the order of the gdf
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
