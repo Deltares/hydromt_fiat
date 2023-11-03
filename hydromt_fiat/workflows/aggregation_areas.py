@@ -78,8 +78,7 @@ def join_exposure_aggregation_areas(
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
-        Exposure data to join the aggregation areas to as "Aggregation 
-        Label: `label_names`".
+        Exposure data to join the aggregation areas to as `label_names`.
     aggregation_area_fn : Union[List[str], List[Path], str, Path]
         Path(s) to the aggregation area(s).
     attribute_names : Union[List[str], str]
