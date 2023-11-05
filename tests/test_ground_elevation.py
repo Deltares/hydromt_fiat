@@ -9,13 +9,15 @@ import copy
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_elevation"
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
+DATADIR = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/Database_env_fix/static/dem"
+)
 
 _cases = {
     "update_ground_elevation_with_dem": {
         "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_elevation",
         "ground_elevation_file": DATADIR 
-        / "ground_elevation"
         / "charleston_14m.tif",
     },
 }
