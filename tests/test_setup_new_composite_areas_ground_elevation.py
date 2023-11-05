@@ -11,6 +11,9 @@ EXAMPLEDIR = Path(
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "setup_new_composite_area"
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
+DATADIRDEM = Path(
+    "P:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/Database_env_fix/static/dem"
+)
 
 _cases = {
     "setup_new_composite_area_datum": {
@@ -20,8 +23,7 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": DATADIR 
-        / "ground_elevation"
+        "ground_elevation_file": DATADIRDEM 
         / "charleston_14m.tif",
     },
     "setup_new_composite_area_geom": {
@@ -31,8 +33,7 @@ _cases = {
         "type": "geom",
         "path_ref": DATADIR / "new_composite_areas" /  "reference_groundHeight_test.shp",
         "attr_ref": "bfe",
-        "ground_elevation_file": DATADIR 
-        / "ground_elevation"
+        "ground_elevation_file": DATADIRDEM 
         / "charleston_14m.tif",
     },
     "setup_new_composite_area_elevation": {
@@ -42,8 +43,7 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": DATADIR 
-        / "ground_elevation"
+        "ground_elevation_file": DATADIRDEM 
         / "charleston_14m.tif",
     },
 }
