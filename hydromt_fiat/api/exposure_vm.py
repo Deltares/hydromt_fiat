@@ -24,15 +24,7 @@ class ExposureViewModel:
     def __init__(
         self, database: IDatabase, data_catalog: DataCatalog, logger: logging.Logger
     ):
-        self.exposure_buildings_model = ExposureBuildingsSettings(
-            asset_locations="",
-            occupancy_type="",
-            max_potential_damage=-999,
-            ground_floor_height=-999,
-            unit=Units.ft.value,
-            extraction_method=ExtractionMethod.centroid.value,
-            damage_types=["structure", "content"],
-        )
+        self.exposure_buildings_model = None
         self.exposure_roads_model = None
         self.aggregation_areas_model = None
 
@@ -64,11 +56,15 @@ class ExposureViewModel:
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
-            self.exposure_buildings_model.asset_locations = source
-            self.exposure_buildings_model.occupancy_type = source
-            self.exposure_buildings_model.max_potential_damage = source
-            self.exposure_buildings_model.ground_floor_height = source
-            self.exposure_buildings_model.unit = Units.ft.value  # TODO: make flexible
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage=source,
+                ground_floor_height=source,
+                unit=Units.ft.value, # TODO: make flexible
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+            )
 
             # Download NSI from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")

@@ -56,13 +56,18 @@ class HydroMtViewModel:
         database_path = self.__class__.database.drive
         self.__class__.data_catalog.to_yml(database_path / "data_catalog.yml")
 
-    def build_config_ini(self):
+    def build_config_yaml(self):
         config_yaml = ConfigYaml(
             setup_global_settings=self.model_vm.global_settings_model,
             setup_output=self.model_vm.output_model,
-            setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
-            setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
         )
+        
+        if self.vulnerability_vm.vulnerability_buildings_model:
+            config_yaml.setup_vulnerability = self.vulnerability_vm.vulnerability_buildings_model
+
+        if self.exposure_vm.exposure_buildings_model:
+            config_yaml.setup_exposure_buildings = self.exposure_vm.exposure_buildings_model
+        
         if self.exposure_vm.aggregation_areas_model:
             config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
         
@@ -71,7 +76,7 @@ class HydroMtViewModel:
         
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
-        
+                
         if self.svi_vm.svi_model:
             config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
                 
@@ -80,36 +85,17 @@ class HydroMtViewModel:
     
         database_path = self.__class__.database.drive
 
-        with open(database_path / "config.ini", "wb") as f:
+        with open(database_path / "config.yaml", "wb") as f:
             tomli_w.dump(config_yaml.dict(exclude_none=True), f)
+    
+        return config_yaml
 
     def read(self):
         self.fiat_model.read()
         
     def run_hydromt_fiat(self):
-        config_yaml = ConfigYaml(
-            setup_global_settings=self.model_vm.global_settings_model,
-            setup_output=self.model_vm.output_model,
-            setup_vulnerability=self.vulnerability_vm.vulnerability_buildings_model,
-            setup_exposure_buildings=self.exposure_vm.exposure_buildings_model,
-        )
-        if self.exposure_vm.aggregation_areas_model:
-            config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
-        
-        if self.exposure_vm.exposure_roads_model:
-            config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
-        
-        if self.vulnerability_vm.vulnerability_roads_model:
-            config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
-                
-        if self.svi_vm.svi_model:
-            config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
-                
-        if self.svi_vm.equity_model:
-            config_yaml.setup_equity_data = self.svi_vm.equity_model
-        
+        self.save_data_catalog()
+        config_yaml = self.build_config_yaml()
+
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
-        self.fiat_model.write()
-
-    

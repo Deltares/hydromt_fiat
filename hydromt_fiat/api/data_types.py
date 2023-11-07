@@ -114,5 +114,3 @@ class EquityDataSettings(BaseModel):
 class ConfigYaml(BaseModel, extra=Extra.allow):
     setup_global_settings: GlobalSettings
     setup_output: OutputSettings
-    setup_vulnerability: VulnerabilitySettings
-    setup_exposure_buildings: ExposureBuildingsSettings
