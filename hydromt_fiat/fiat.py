@@ -284,6 +284,7 @@ class FiatModel(GridModel):
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
         country: Union[str, None] = None,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -323,8 +324,12 @@ class FiatModel(GridModel):
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
-                asset_locations, ground_floor_height, extraction_method
+                asset_locations, 
+                ground_floor_height, 
+                extraction_method,
+                ground_elevation_file=ground_elevation_file, 
             )
+
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
@@ -337,6 +342,7 @@ class FiatModel(GridModel):
                 occupancy_type_field,
                 damage_types=damage_types,
                 country=country,
+                ground_elevation_file=ground_elevation_file,
             )
 
         # Link the damage functions to assets

@@ -124,6 +124,7 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -197,7 +198,12 @@ class ExposureVector(Exposure):
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
-    
+
+        # Set the ground floor height if not yet set
+        #TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
+        if ground_elevation_file is not None:
+            self.setup_ground_elevation(ground_elevation_file, self.exposure_db, gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]]))
+
         # Remove the geometry column from the exposure_db
         if "geometry" in self.exposure_db:
             del self.exposure_db["geometry"]
@@ -260,6 +266,7 @@ class ExposureVector(Exposure):
         occupancy_type_field: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
@@ -267,6 +274,7 @@ class ExposureVector(Exposure):
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(ground_floor_height)
         self.setup_extraction_method(extraction_method)
+        self.setup_ground_elevation(ground_elevation_file, self.exposure_db, self.get_full_gdf(self.exposure_db))
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
