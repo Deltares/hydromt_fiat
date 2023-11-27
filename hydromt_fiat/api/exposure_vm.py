@@ -61,7 +61,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=source,
-                unit=Units.ft.value, # TODO: make flexible
+                unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
             )
@@ -120,7 +120,18 @@ class ExposureViewModel:
             self.exposure.setup_extraction_method(extraction_method)
 
     def get_osm_roads(
-        self, road_types: List[str] = ["motorway", "primary", "secondary", "tertiary"], crs=4326
+        self,
+        road_types: List[str] = [
+            "motorway",
+            "motorway_link",
+            "trunk",
+            "trunk_link",
+            "primary",
+            "primary_link",
+            "secondary",
+            "secondary_link",
+        ],
+        crs=4326,
     ):
         if self.exposure is None:
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -136,7 +147,9 @@ class ExposureViewModel:
             road_damage="default_road_max_potential_damages",
             road_types=road_types,
         )
-        roads = self.exposure.exposure_db.loc[self.exposure.exposure_db["Primary Object Type"] == "roads"]
+        roads = self.exposure.exposure_db.loc[
+            self.exposure.exposure_db["Primary Object Type"] == "roads"
+        ]
         gdf = self.exposure.get_full_gdf(roads)
 
         self.exposure_roads_model = ExposureRoadsSettings(
@@ -154,4 +167,3 @@ class ExposureViewModel:
             attribute_names=attribute_names,
             label_names=label_names,
         )
-    
