@@ -5,6 +5,8 @@ import numpy as np
 import pytest
 import shutil
 import copy
+import rasterio
+import numpy as np
 
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_elevation"
@@ -52,6 +54,23 @@ def test_ground_elevation(case):
     fm.set_root(_cases[case]["new_root"])
     fm.write()
 
+    # Check the values are updated. This will only work if the original data has "Ground Elevation" column
     unique_ge_new = fm.exposure.exposure_db["Ground Elevation"].unique()
     assert not np.array_equal(unique_ge_original, unique_ge_new), "The Ground Elevation is the same"
 
+    # Check if the updated values are not null
+    not_null_values = fm.exposure.exposure_db["Ground Elevation"].notnull()
+    assert not_null_values.all(), "Warning: There are null values in 'Ground Elevation' column."
+
+    # Check if the calculated values are within the maximun and minimun value of the original daster file. This function could be used to calculate 
+    # Ground Elevation itself in case the ground_elevation_from_dem() function in gis.py is not accurate enough
+    raster_file_path = _cases[case]["ground_elevation_file"]
+    with rasterio.open(raster_file_path) as src:
+        nodata_value = src.nodatavals[0]  
+        raster_data = src.read(1)
+        valid_values = raster_data[raster_data != nodata_value]
+        #mean_value_excluding_nodata = np.nanmean(valid_values)
+        max_value_excluding_nodata = np.nanmax(valid_values)
+        min_value_excluding_nodata = np.nanmin(valid_values)
+        valid_values = (fm.exposure.exposure_db["Ground Elevation"] >= min_value_excluding_nodata) & (fm.exposure.exposure_db["Ground Elevation"] <= max_value_excluding_nodata)
+    assert valid_values.all(), "The Ground Elevation is beyond the maximun and minimun values of the provided DEM"
