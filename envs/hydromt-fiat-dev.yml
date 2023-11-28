@@ -8,6 +8,7 @@ dependencies:
   - pip:
     - census
     - us
+    - xarray-spatial
   - click
   - black
   - gdal>=3.1
