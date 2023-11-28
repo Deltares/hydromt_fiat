@@ -16,7 +16,7 @@ _cases = {
         "new_root": EXAMPLEDIR / "test_update_max_potential_damage_points",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "max_potential_damage_file": EXAMPLEDIR
-        / "fake_elevation_certificates.gpkg",
+        / "fake_max_potential_damage_points.gpkg",
         "target_attribute": "Max Potential Damage: Content",
         "attribute": "maxpotential_content",
         "method": "nearest",
@@ -27,7 +27,7 @@ _cases = {
         "new_root": EXAMPLEDIR / "test_update_max_potential_damage_polygons",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "max_potential_damage_file": EXAMPLEDIR
-        / "fake_update_ground_floor_height.gpkg",
+        / "fake_max_potential_damage_polygons.gpkg",
         "target_attribute": "Max Potential Damage: Structure",
         "attribute": "maxpotential_structure",
         "method": "intersection",
