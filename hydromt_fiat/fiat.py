@@ -663,7 +663,7 @@ class FiatModel(GridModel):
         equity.rename_census_data()
         equity.match_geo_ID()
         equity.download_shp_geom(year_data, county)
-        equity.merge_svi_data_shp()
+        equity.merge_equity_data_shp()
 
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
