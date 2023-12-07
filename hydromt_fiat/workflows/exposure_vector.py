@@ -550,11 +550,37 @@ class ExposureVector(Exposure):
     def setup_max_potential_damage(
         self,
         max_potential_damage: Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]=None,
+        damage_types: Union[List[str], str, None] = None,
+        country: Union[str, None] = None,
         target_attribute: Union[str, List[str], None] = None,
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
+        """Setup the max potential damage column of the exposure data in various ways.
+
+        Parameters
+        ----------
+        max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
+            _description_, by default None
+        damage_types : Union[List[str], str, None], optional
+            _description_, by default None
+        country : Union[str, None], optional
+            _description_, by default None
+        target_attribute : Union[str, List[str], None], optional
+            _description_, by default None
+        attr_name : Union[str, List[str], None], optional
+            _description_, by default None
+        method : Union[str, List[str], None], optional
+            _description_, by default "nearest"
+        max_dist : float, optional
+            _description_, by default 10
+        """
+        if damage_types is None:
+            damage_types = ["total"]
+
+        if isinstance(damage_types, str):
+            damage_types = [damage_types]
         
         if isinstance(max_potential_damage, pd.DataFrame
             ):
@@ -563,10 +589,10 @@ class ExposureVector(Exposure):
                 )
         elif isinstance(max_potential_damage, int) or isinstance(
             max_potential_damage, float
-        ):      
-                # modify the column manually 
-                #self.exposure_db[target_attribute] = max_potential_damage
-                NotImplemented
+        ):
+            # Set the column(s) to a single value
+            for damage_type in damage_types:
+                self.exposure_db[f"Max Potential Damage: {damage_type}"] = max_potential_damage
 
         elif isinstance(max_potential_damage, str) or isinstance(
             max_potential_damage, Path
@@ -581,7 +607,42 @@ class ExposureVector(Exposure):
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
             NotImplemented
+        elif max_potential_damage in ["jrc_damage_values", "hazus_max_potential_damages"]:
+            if max_potential_damage == "jrc_damage_values":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                if country is None:
+                    country = "World"
+                    self.logger.warning(
+                        f"No country specified, using the '{country}' JRC damage values."
+                    )
+
+                damage_values = preprocess_jrc_damage_values(damage_source, country)
+
+            elif max_potential_damage == "hazus_max_potential_damages":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                damage_values = preprocess_hazus_damage_values(damage_source)
             
+                    # Calculate the area of each object
+        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
+        gdf = get_area(gdf)
+
+        # Set the damage values to the exposure data
+        for damage_type in damage_types:
+            # Calculate the maximum potential damage for each object and per damage type
+            try:
+                self.exposure_db[
+                    f"Max Potential Damage: {damage_type.capitalize()}"
+                ] = [
+                    damage_values[building_type][damage_type.lower()] * square_meters
+                    for building_type, square_meters in zip(
+                        gdf["Primary Object Type"], gdf["area"]
+                    )
+                ]
+            except KeyError as e:
+                self.logger.warning(
+                    f"Not found in the {max_potential_damage} damage "
+                    f"value data: {e}"
+                )
 
     def setup_ground_elevation(
         self,
@@ -861,7 +922,7 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.is_file() f"File {str(geom_file)} is missing, cannot set up a new composite area."
+        assert geom_file.is_file(), f"File {str(geom_file)} is missing, cannot set up a new composite area."
 
         # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
