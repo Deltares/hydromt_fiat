@@ -861,7 +861,7 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.is_file() #TODO: The assert message is missing
+        assert geom_file.is_file() f"File {str(geom_file)} is missing, cannot set up a new composite area."
 
         # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
