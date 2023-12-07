@@ -86,4 +86,4 @@ def test_setup_new_composite_areas_ground_elevation(case):
     exposure_modified = fm.exposure.exposure_db
 
     # check if the new development area was added
-    assert len(exposure_modified) > len(exposure_original), 'The aggregated areas were not added'
+    assert len(exposure_modified) > len(exposure_original), 'The composite areas were not added'
