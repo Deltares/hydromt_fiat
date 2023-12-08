@@ -66,7 +66,7 @@ class EquityData:
         """
         dfs = []
         for sf in self.state_fips:
-            download_census_codes = self.census_key.acs.state_county_blockgroup(
+            download_census_codes = self.census_key.acs5.state_county_blockgroup(
                 fields=self.download_variables,
                 state_fips=sf,
                 county_fips="*",
