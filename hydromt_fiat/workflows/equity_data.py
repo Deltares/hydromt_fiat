@@ -187,6 +187,9 @@ class EquityData:
         self.equity_data_shp = self.pd_domain_scores_geo.merge(self.block_groups[["GEO_ID", "geometry"]], on="GEO_ID", how="left")
         self.equity_data_shp = gpd.GeoDataFrame(self.equity_data_shp)
 
+        # Delete the rows that do not have a geometry column
+        self.equity_data_shp = self.equity_data_shp.loc[self.equity_data_shp["geometry"].notnull()]
+
         #self.svi_data_shp.drop(columns=columns_to_drop, inplace=True)
         self.equity_data_shp = self.equity_data_shp.to_crs(epsg=4326)
         self.logger.info(

@@ -922,7 +922,7 @@ class FiatModel(GridModel):
                 fn = f"exposure/SVI/{name}.csv"
                 kwargs = {"index": False}
             elif name == "equity_data":
-                fn = f"exposure/equity/{name}.csv"
+                fn = f"equity/{name}.csv"
                 kwargs = {"index": False}
 
             # Other, can also return an error or pass silently
