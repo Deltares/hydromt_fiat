@@ -1,33 +1,32 @@
 from census import Census  # install in your environment using pip install Census
 from us import states  # install in your environment using pip install us
 from hydromt.data_catalog import DataCatalog
-from hydromt.log import setuplog
-import logging
+from logging import Logger
 import pandas as pd
-import numpy as np
 import geopandas as gpd
 from urllib.request import urlopen
 from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
-
+from typing import List
 
 
 class EquityData:
-    def __init__(self, data_catalog: DataCatalog = None, logger: logging.Logger = None):
+    def __init__(self, data_catalog: DataCatalog, logger: Logger):
         self.data_catalog = data_catalog
         self.census_key = Census
         self.download_codes = {}
-        self.state_fips = 0
+        self.state_fips = []
         self.pd_census_data = pd.DataFrame()
         self.codebook = pd.DataFrame()
         self.indicator_groups = {}
         self.processed_census_data = pd.DataFrame()
 
         self.pd_domain_scores_geo = pd.DataFrame()
-        self.logger = setuplog("SVI", log_level=10)
+        self.logger = logger
         self.svi_data_shp = gpd.GeoDataFrame()
         self.block_groups = gpd.GeoDataFrame()
+        self.temp_folder = []
 
 
     def set_up_census_key(self, census_key: str):
@@ -45,8 +44,7 @@ class EquityData:
             f"your census key {census_key} is used to download data from the Census website "
         )
 
-
-    def set_up_state_code(self, state_abbreviation: str):
+    def set_up_state_code(self, state_abbreviation: List[str]):
         """download census data for a state
 
         Parameters
@@ -54,12 +52,10 @@ class EquityData:
         state_abbreviation : str
             Abbreviation of the state for which you want to set up the census data download
         """
-        state = [
-            state_abbreviation
-        ]  # read in the state abbreviation as specified in the ini file
-        state_obj = getattr(states, state[0])
-        self.state_fips = state_obj.fips
-        self.logger.info(f"The state abbreviation specified is: {state_abbreviation}")
+        for state in state_abbreviation:
+            self.logger.info(f"The state abbreviation specified is: {state}")
+            state_obj = getattr(states, state)
+            self.state_fips.append(state_obj.fips)
 
     def variables_to_download(self):
         self.download_variables = ['B01003_001E', 'B19301_001E', 'NAME', 'GEO_ID']  # TODO: later make this a user input?
@@ -67,21 +63,23 @@ class EquityData:
     def download_census_data(self, year_data):
         """download the census data
         it is possible to also make the county, tract and blockgroup flexible so that a user could specify exactly what to download
-        But: bear in mind, with social vulneraiblity we compare areas against each other, so Ideally you would have a large enough dataset (for statistical and validity purposes)
         """
-        download_census_codes = self.census_key.acs.state_county_blockgroup(
-            fields=self.download_variables,
-            state_fips=self.state_fips,
-            county_fips="*",
-            tract="*",
-            blockgroup="*",
-            year=year_data
-        )
-        self.pd_census_data = pd.DataFrame(download_census_codes)
+        dfs = []
+        for sf in self.state_fips:
+            download_census_codes = self.census_key.acs.state_county_blockgroup(
+                fields=self.download_variables,
+                state_fips=sf,
+                county_fips="*",
+                tract="*",
+                blockgroup="*",
+                year=year_data
+            )
+            dfs.append(pd.DataFrame(download_census_codes))
+
+        self.pd_census_data = pd.concat(dfs)
         self.logger.info(
             "The equity data was succesfully downloaded from the Census website"
         )
-        return self.pd_census_data
 
     def rename_census_data(self):
         """renaming the columns so that they have variable names instead of variable codes as their headers
@@ -136,56 +134,61 @@ class EquityData:
         except Exception as e:
             print(f"Error during download and unzip: {e}")
 
-    def download_shp_geom(self, year_data, county):
+    def download_shp_geom(self, year_data: int, counties: List[str]):
         """Downloading the shapefiles from the government Tiger website
 
         Parameters
         ----------
         year_data : int
             The year for which you want to download the census data and the corresponding shapefiles (for geometry)
-        county : int
-            the county code in which your area of interest lies
+        counties : List[str]
+            A list of county codes in which your area of interest lies
         """
-        # Download shapefile of blocks 
-        if year_data == 2022:
-            url = f"https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/FACES/tl_rd22_{self.state_fips}{county}_faces.zip"
+        block_groups_list = []
+        for sf, county in zip(self.state_fips, counties):
+            # Download shapefile of blocks 
+            if year_data == 2022:
+                url = f"https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/FACES/tl_rd22_{sf}{county}_faces.zip"
+            elif year_data == 2021:
+                url = f"https://www2.census.gov/geo/tiger/TIGER2021/FACES/tl_2021_{sf}{county}_faces.zip"
+            elif year_data == 2020:
+                url = f"https://www2.census.gov/geo/tiger/TIGER2020PL/LAYER/FACES/tl_2020_{sf}{county}_faces.zip"
+            else:
+                self.logger.warning(f"Year {year_data} not available from 'https://www2.census.gov/geo/tiger'")
+                return
+            
+            # Save shapefiles 
+            folder = f'Shapefiles/{sf}{county}/{year_data}'
+            self.temp_folder.append(folder)
+            self.logger.info(f"Downloading the county shapefile for {str(year_data)}")
+            self.download_and_unzip(url, folder)
+            shapefiles = list(Path(folder).glob("*.shp"))
+            if shapefiles:
+                shp = gpd.read_file(shapefiles[0])
+                self.logger.info("The shapefile was downloaded")
+            else:
+                print("No shapefile found in the directory.")
+            
+            # Dissolve shapefile based on block groups
             code = "20"
-            self.logger.info("Downloading the county shapefile for 2022")
-        elif year_data == 2021:
-            url = f"https://www2.census.gov/geo/tiger/TIGER2021/FACES/tl_2021_{self.state_fips}{county}_faces.zip"
-            code = "20"
-            self.logger.info("Downloading the county shapefile for 2021")
-        elif year_data == 2020:
-            url = f"https://www2.census.gov/geo/tiger/TIGER2020PL/LAYER/FACES/tl_2020_{self.state_fips}{county}_faces.zip"
-            code = "20"
-            self.logger.info("Downloading the county shapefile for 2020")
-        else:
-            print("year not supported")
-            return
-        # Save shapefiles 
-        fold_name = f'Shapefiles/{self.state_fips}{county}/{year_data}'
-        self.download_and_unzip(url, fold_name)
-        shapefiles = list(Path(fold_name).glob("*.shp"))
-        if shapefiles:
-            self.shp = gpd.read_file(shapefiles[0])
-            self.logger.info("The shapefile was downloaded")
-        else:
-            print("No shapefile found in the directory.")
-        
-        # Dissolve shapefile based on block groups
-        attrs = ["STATEFP", "COUNTYFP", "TRACTCE", "BLKGRPCE"]
-        attrs = [attr + code for attr in attrs]
+            attrs = ["STATEFP", "COUNTYFP", "TRACTCE", "BLKGRPCE"]
+            attrs = [attr + code for attr in attrs]
 
-        self.block_groups = self.shp.dissolve(by=attrs, as_index=False)
-        self.block_groups = self.block_groups[attrs + ["geometry"]]
-        # block_groups["Census_Bg"] = block_groups['TRACTCE' + code].astype(str) + "-block" + block_groups['BLKGRPCE' + code].astype(str)
-        self.block_groups["GEO_ID"] = "1500000US" + self.block_groups['STATEFP' + code].astype(str) + self.block_groups['COUNTYFP' + code].astype(str) + self.block_groups['TRACTCE' + code].astype(str) + self.block_groups['BLKGRPCE' + code].astype(str)
+            block_groups_shp = shp.dissolve(by=attrs, as_index=False)
+            block_groups_shp = block_groups_shp[attrs + ["geometry"]]
+            # block_groups["Census_Bg"] = block_groups['TRACTCE' + code].astype(str) + "-block" + block_groups['BLKGRPCE' + code].astype(str)
+            block_groups_shp["GEO_ID"] = "1500000US" + block_groups_shp['STATEFP' + code].astype(str) + block_groups_shp['COUNTYFP' + code].astype(str) + block_groups_shp['TRACTCE' + code].astype(str) + block_groups_shp['BLKGRPCE' + code].astype(str)
+            block_groups_list.append(block_groups_shp)
 
+        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
 
     def merge_equity_data_shp(self):
         """Merges the geometry data with the equity_data downloaded"""
         self.equity_data_shp = self.pd_domain_scores_geo.merge(self.block_groups[["GEO_ID", "geometry"]], on="GEO_ID", how="left")
         self.equity_data_shp = gpd.GeoDataFrame(self.equity_data_shp)
+
+        # Delete the rows that do not have a geometry column
+        self.equity_data_shp = self.equity_data_shp.loc[self.equity_data_shp["geometry"].notnull()]
 
         #self.svi_data_shp.drop(columns=columns_to_drop, inplace=True)
         self.equity_data_shp = self.equity_data_shp.to_crs(epsg=4326)

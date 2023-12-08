@@ -1,9 +1,7 @@
 """Implement fiat model class"""
 
 import csv
-import glob
 import logging
-from os.path import basename, join
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -26,10 +24,12 @@ from hydromt_fiat.workflows.hazard import (
     create_risk_dataset,
 )
 from hydromt_fiat.workflows.equity_data import EquityData
-from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex
+from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex, list_of_states
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
+from hydromt_fiat.workflows.gis import locate_from_bounding_box
+from hydromt_fiat.workflows.utils import get_us_county_numbers
 
 __all__ = ["FiatModel"]
 
@@ -567,11 +567,8 @@ class FiatModel(GridModel):
         self,
         census_key: str,
         codebook_fn: Union[str, Path],
-        state_abbreviation: str,
-        user_dataset_fn: str = None,
-        blockgroup_fn: str = None,
         year_data: int = None,
-        county: str = None
+        save_all: bool = False,
     ):
         """Setup the social vulnerability index for the vector exposure data for
         Delft-FIAT. This method has so far only been tested with US Census data
@@ -585,43 +582,58 @@ class FiatModel(GridModel):
             The user's unique Census key that they got from the census.gov website
             (https://api.census.gov/data/key_signup.html) to be able to download the
             Census data
-        path : Union[str, Path]
+        codebook_fn : Union[str, Path]
             The path to the codebook excel
-        state_abbreviation : str
-            The abbreviation of the US state one would like to use in the analysis
+        year_data: int 
+            The year of which the census data should be downloaded, 2020, 2021, or 2022
+        save_all: bool
+            If True, all (normalized) data variables are saved, if False, only the SVI
+            column is added to the FIAT exposure data. By default False.
         """
-
-        # Create SVI object
-        svi = SocialVulnerabilityIndex(self.data_catalog, self.logger)
-
-        # Call functionalities of SVI
-        # svi.read_dataset(user_dataset_fn)
-        svi.set_up_census_key(census_key)
-        svi.variable_code_csv_to_pd_df(codebook_fn)
-        svi.set_up_download_codes()
-        svi.set_up_state_code(state_abbreviation)
-        svi.download_census_data(year_data)
-        svi.rename_census_data("Census_code_withE", "Census_variable_name")
-        svi.identify_no_data()
-        svi.check_nan_variable_columns("Census_variable_name", "Indicator_code")
-        svi.check_zeroes_variable_rows()
-        translation_variable_to_indicator = svi.create_indicator_groups(
-            "Census_variable_name", "Indicator_code"
-        )
-        svi.processing_svi_data(translation_variable_to_indicator)
-        svi.normalization_svi_data()
-        svi.domain_scores()
-        svi.composite_scores()
-        svi.match_geo_ID()
-        svi.download_shp_geom(year_data, county)
-        svi.merge_svi_data_shp()
-
-        # store the relevant tables coming out of the social vulnerability module
-        self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
-        # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
-
         # Check if the exposure data exists
         if self.exposure:
+            # First find the state(s) and county/counties where the exposure data is 
+            # located in
+            us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
+            counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+            states_dict = list_of_states()
+            state_abbreviation = []
+            for state in states:
+                try:
+                    state_abbreviation.append(states_dict[state])
+                except KeyError:
+                    self.logger.warning(f"State {state} not found.")
+
+            county_numbers = get_us_county_numbers(counties, us_states_counties)
+
+            # Create SVI object
+            svi = SocialVulnerabilityIndex(self.data_catalog, self.logger)
+
+            # Call functionalities of SVI
+            svi.set_up_census_key(census_key)
+            svi.variable_code_csv_to_pd_df(codebook_fn)
+            svi.set_up_download_codes()
+            svi.set_up_state_code(state_abbreviation)
+            svi.download_census_data(year_data)
+            svi.rename_census_data("Census_code_withE", "Census_variable_name")
+            svi.identify_no_data()
+            svi.check_nan_variable_columns("Census_variable_name", "Indicator_code")
+            svi.check_zeroes_variable_rows()
+            translation_variable_to_indicator = svi.create_indicator_groups(
+                "Census_variable_name", "Indicator_code"
+            )
+            svi.processing_svi_data(translation_variable_to_indicator)
+            svi.normalization_svi_data()
+            svi.domain_scores()
+            svi.composite_scores()
+            svi.match_geo_ID()
+            svi.download_shp_geom(year_data, county_numbers)
+            svi.merge_svi_data_shp()
+
+            # store the relevant tables coming out of the social vulnerability module
+            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
+            # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
+
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
             exposure_data.sort_values("Object ID")
@@ -629,18 +641,27 @@ class FiatModel(GridModel):
             if svi.svi_data_shp.crs != exposure_data.crs:
                 svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
 
-            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp, how="left")
+            if save_all:
+                # Clean up the columns that are saved
+                cols_to_save = list(svi.svi_data_shp.columns)
+                cols_to_save.remove("GEO_ID")
+                cols_to_save.remove("GEOID_short")
+                cols_to_save.remove("NAME")
+                cols_to_save.remove("composite_SVI")
+            else:
+                # Only save the composite_svi_z
+                cols_to_save = ["composite_svi_z", "geometry"]
+
+            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp[cols_to_save], how="left")
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
+            svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             self.exposure.exposure_db = svi_exp_joined
     
     def setup_equity_data(
         self,
         census_key: str,
-        state_abbreviation: str,
-        blockgroup_fn: str = None,
         year_data: int = None,
-        county: str = None
     ):
         """Setup the download procedure for equity data similarly to the SVI setup
 
@@ -654,9 +675,20 @@ class FiatModel(GridModel):
             Census data
         path : Union[str, Path]
             The path to the codebook excel
-        state_abbreviation : str
-            The abbreviation of the US state one would like to use in the analysis
         """
+        # First find the state(s) and county/counties where the exposure data is 
+        # located in
+        us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
+        counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+        states_dict = list_of_states()
+        state_abbreviation = []
+        for state in states:
+            try:
+                state_abbreviation.append(states_dict[state])
+            except KeyError:
+                self.logger.warning(f"State {state} not found.")
+
+        county_numbers = get_us_county_numbers(counties, us_states_counties)
 
         # Create equity object
         equity = EquityData(self.data_catalog, self.logger)
@@ -668,7 +700,7 @@ class FiatModel(GridModel):
         equity.download_census_data(year_data)
         equity.rename_census_data()
         equity.match_geo_ID()
-        equity.download_shp_geom(year_data, county)
+        equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
 
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
@@ -886,8 +918,11 @@ class FiatModel(GridModel):
                 # The default location and save settings of the vulnerability curves
                 fn = "vulnerability/vulnerability_identifiers.csv"
                 kwargs = {"index": False}
-            elif "social_vulnerability" in name:
-                fn = f"exposure/{name}.csv"
+            elif name == "social_vulnerability_scores":
+                fn = f"exposure/SVI/{name}.csv"
+                kwargs = {"index": False}
+            elif name == "equity_data":
+                fn = f"equity/{name}.csv"
                 kwargs = {"index": False}
 
             # Other, can also return an error or pass silently

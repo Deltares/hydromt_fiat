@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import xarray as xr
 from pathlib import Path
+from geopy.geocoders import Nominatim
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -197,9 +198,11 @@ def join_spatial_data(
         )
     except AssertionError as e:
         logger.warning(e)
-        logger.warning("Reprojecting the GeoDataFrame from "
-                       f"{get_crs_str_from_gdf(right_gdf.crs)} to "
-                       f"{get_crs_str_from_gdf(left_gdf.crs)}.")
+        logger.warning(
+            "Reprojecting the GeoDataFrame from "
+            f"{get_crs_str_from_gdf(right_gdf.crs)} to "
+            f"{get_crs_str_from_gdf(left_gdf.crs)}."
+        )
         right_gdf = right_gdf.to_crs(left_gdf.crs)
 
     left_gdf_type = check_geometry_type(left_gdf)
@@ -243,41 +246,62 @@ def ground_elevation_from_dem(
     exposure_db: pd.DataFrame,
     exposure_geoms: gpd.GeoDataFrame,
 ) -> None:
-    
     # This function was developed by Willem https://github.com/interTwin-eu/DT-flood/blob/DemonstrationNotebooks/Notebooks/SetupFIAT.ipynb
-    #TODO: Find equivalent functions in hydromt
+    # TODO: Find equivalent functions in hydromt
     # Read in the DEM
     dem = rasterio.open(ground_elevation)
-    # gdf = self.get_full_gdf(exposure_db)  
+    # gdf = self.get_full_gdf(exposure_db)
     gdf = exposure_geoms.to_crs(dem.crs.data)
     # Create a list of geometries plus a label for rasterize
     # The labels start at 1 since the label 0 is reserved for everything not in a geometry
     # The order of each tuple is (geometry,label)
-    shapes = list(enumerate(gdf['geometry'].values))
-    shapes = [(t[1],t[0]+1) for t in shapes]
+    shapes = list(enumerate(gdf["geometry"].values))
+    shapes = [(t[1], t[0] + 1) for t in shapes]
 
     rasterized = rasterize(
-        shapes=shapes,
-        out_shape=dem.shape,
-        transform=dem.transform,
-        all_touched=True
+        shapes=shapes, out_shape=dem.shape, transform=dem.transform, all_touched=True
     )
     # zonal_stats needs xarrays as input
     rasterized = xr.DataArray(rasterized)
 
     # Calculate the zonal statistics
-    zonal_out = zonal_stats(rasterized,xr.DataArray(dem.read(1)),
-                            stats_funcs=['mean'],
-                            nodata_values=np.nan)
+    zonal_out = zonal_stats(
+        rasterized,
+        xr.DataArray(dem.read(1)),
+        stats_funcs=["mean"],
+        nodata_values=np.nan,
+    )
 
     # The zero label is for pixels not in a geometry so we discard them
     zonal_out = zonal_out.drop(0)
 
     # Array storing the zonal means
     # Store the calculated means at index corresponding to their label
-    zonal_means = np.full(len(shapes),np.nan)
-    zonal_means[[zonal_out['zone'].values-1]] = zonal_out['mean'].values
+    zonal_means = np.full(len(shapes), np.nan)
+    zonal_means[[zonal_out["zone"].values - 1]] = zonal_out["mean"].values
 
     # # Add Ground Elevation column and get rid of nans in the appropriate way
-    exposure_db['Ground Elevation'] = zonal_means
-    exposure_db['Ground Elevation'].bfill(inplace=True)
+    exposure_db["Ground Elevation"] = zonal_means
+    exposure_db["Ground Elevation"].bfill(inplace=True)
+
+
+def locate_from_bounding_box(bounding_box):
+    geolocator = Nominatim(user_agent="hydromt-fiat")
+
+    search = [
+        (bounding_box[1], bounding_box[0]),
+        (bounding_box[1], bounding_box[2]),
+        (bounding_box[3], bounding_box[0]),
+        (bounding_box[3], bounding_box[2]),
+    ]
+    locations = [geolocator.reverse(s) for s in search]
+    locations_list = [location[0].split(", ") for location in locations]
+    locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
+    counties = [y for x in locations_list for y in x if "county" in y.lower()]
+    states = [x[-2] for x in locations_list_no_numbers]
+
+    counties_states_combo = set(list(zip(counties, states)))
+    counties = [c[0] for c in counties_states_combo]
+    states = [c[1] for c in counties_states_combo]
+
+    return counties, states
