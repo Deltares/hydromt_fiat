@@ -656,6 +656,7 @@ class FiatModel(GridModel):
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
+            del svi_exp_joined["index_right"]
             self.exposure.exposure_db = svi_exp_joined
     
     def setup_equity_data(
