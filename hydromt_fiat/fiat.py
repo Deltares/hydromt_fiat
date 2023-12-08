@@ -649,8 +649,8 @@ class FiatModel(GridModel):
                 cols_to_save.remove("NAME")
                 cols_to_save.remove("composite_SVI")
             else:
-                # Only save the composite_svi_z
-                cols_to_save = ["composite_svi_z", "geometry"]
+                # Only save the SVI_key_domain and composite_svi_z
+                cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
             svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp[cols_to_save], how="left")
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
