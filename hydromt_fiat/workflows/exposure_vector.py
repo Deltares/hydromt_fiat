@@ -594,16 +594,6 @@ class ExposureVector(Exposure):
             for damage_type in damage_types:
                 self.exposure_db[f"Max Potential Damage: {damage_type}"] = max_potential_damage
 
-        elif isinstance(max_potential_damage, str) or isinstance(
-            max_potential_damage, Path
-        ):
-            # A single file is used to assign the ground floor height to the assets
-            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
-            gdf = self.get_full_gdf(self.exposure_db)
-            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
-            self.exposure_db = self._set_values_from_other_column(
-                gdf, target_attribute, attr_name
-            )
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
             NotImplemented
@@ -622,27 +612,39 @@ class ExposureVector(Exposure):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
                 damage_values = preprocess_hazus_damage_values(damage_source)
             
-                    # Calculate the area of each object
-        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        gdf = get_area(gdf)
+            # Calculate the area of each object
+            gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
+            gdf = get_area(gdf)
 
-        # Set the damage values to the exposure data
-        for damage_type in damage_types:
-            # Calculate the maximum potential damage for each object and per damage type
-            try:
-                self.exposure_db[
-                    f"Max Potential Damage: {damage_type.capitalize()}"
-                ] = [
-                    damage_values[building_type][damage_type.lower()] * square_meters
-                    for building_type, square_meters in zip(
-                        gdf["Primary Object Type"], gdf["area"]
+            # Set the damage values to the exposure data
+            for damage_type in damage_types:
+                # Calculate the maximum potential damage for each object and per damage type
+                try:
+                    self.exposure_db[
+                        f"Max Potential Damage: {damage_type.capitalize()}"
+                    ] = [
+                        damage_values[building_type][damage_type.lower()] * square_meters
+                        for building_type, square_meters in zip(
+                            gdf["Primary Object Type"], gdf["area"]
+                        )
+                    ]
+                except KeyError as e:
+                    self.logger.warning(
+                        f"Not found in the {max_potential_damage} damage "
+                        f"value data: {e}"
                     )
-                ]
-            except KeyError as e:
-                self.logger.warning(
-                    f"Not found in the {max_potential_damage} damage "
-                    f"value data: {e}"
-                )
+        elif isinstance(max_potential_damage, str) or isinstance(
+            max_potential_damage, Path
+        ):
+            # When the max_potential_damage is a string but not jrc_damage_values
+            # or hazus_max_potential_damages. Here, a single file is used to 
+            # assign the ground floor height to the assets
+            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            gdf = self.get_full_gdf(self.exposure_db)
+            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+            self.exposure_db = self._set_values_from_other_column(
+                gdf, target_attribute, attr_name
+            )
 
     def setup_ground_elevation(
         self,
