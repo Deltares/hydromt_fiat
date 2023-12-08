@@ -26,19 +26,15 @@ class SviViewModel:
         dict_states = list_of_states()
         return list(dict_states.keys())
 
-    def set_svi_settings(self, census_key, state_abbreviation, year_data, county):
+    def set_svi_settings(self, census_key, year_data):
         self.svi_model = SocialVulnerabilityIndexSettings(
             census_key = census_key,
             codebook_fn = "social_vulnerability",
-            state_abbreviation = state_abbreviation,
             year_data = year_data,
-            county = county,
         )
     
-    def set_equity_settings(self, census_key, state_abbreviation, year_data, county):
+    def set_equity_settings(self, census_key, year_data):
         self.equity_model = EquityDataSettings(
             census_key = census_key,
-            state_abbreviation = state_abbreviation,
             year_data = year_data,
-            county = county,
         )

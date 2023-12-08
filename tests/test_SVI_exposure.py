@@ -61,10 +61,7 @@ _cases = {
             "setup_social_vulnerability_index": {
                 "census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9",
                 "codebook_fn": "social_vulnerability",
-                "state_abbreviation": "SC",
-                "blockgroup_fn": "blockgroup_shp_data",
                 "year_data": 2021,
-                "county": "019"
             },
         },
     }
@@ -92,7 +89,7 @@ def test_SVI_exposure(case):
     assert root.joinpath("exposure", "region.gpkg").exists()
 
     # Check if the social vulnerability data exists
-    assert root.joinpath("exposure", "social_vulnerability_scores.csv").exists()
+    assert root.joinpath("exposure", "SVI", "social_vulnerability_scores.csv").exists()
 
     # Check if the vulnerability data exists
     assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()

@@ -99,16 +99,12 @@ class AggregationAreaSettings(BaseModel):
 class SocialVulnerabilityIndexSettings(BaseModel):
     census_key: str
     codebook_fn: str
-    state_abbreviation: str
     year_data: int
-    county: str
 
                 
 class EquityDataSettings(BaseModel):
     census_key: str
-    state_abbreviation: str
     year_data: int
-    county: str
 
 
 class ConfigYaml(BaseModel, extra=Extra.allow):

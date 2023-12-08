@@ -24,9 +24,7 @@ _cases = {
 
             "setup_equity_data": {
                 "census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9",
-                "state_abbreviation": "SC",
                 "year_data": 2021,
-                "county": "019"
             },
         },
     }
@@ -43,6 +41,16 @@ def test_equity_data(case):
     data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
     fm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
 
-
     fm.build(opt=_cases[case]["configuration"])
     fm.write()
+
+    # Check if the exposure data exists
+    assert root.joinpath("exposure", "buildings.gpkg").exists()
+    assert root.joinpath("exposure", "exposure.csv").exists()
+    assert root.joinpath("exposure", "region.gpkg").exists()
+
+    # Check if the equity data exists
+    assert root.joinpath("exposure", "equity", "equity_data.csv").exists()
+
+    # Check if the vulnerability data exists
+    assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
