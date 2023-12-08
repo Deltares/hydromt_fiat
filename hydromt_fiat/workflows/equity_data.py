@@ -52,10 +52,13 @@ class EquityData:
         state_abbreviation : str
             Abbreviation of the state for which you want to set up the census data download
         """
+        states_done = []
         for state in state_abbreviation:
-            self.logger.info(f"The state abbreviation specified is: {state}")
-            state_obj = getattr(states, state)
-            self.state_fips.append(state_obj.fips)
+            if state not in states_done:
+                self.logger.info(f"The state abbreviation specified is: {state}")
+                state_obj = getattr(states, state)
+                self.state_fips.append(state_obj.fips)
+                states_done.append(state)
 
     def variables_to_download(self):
         self.download_variables = ['B01003_001E', 'B19301_001E', 'NAME', 'GEO_ID']  # TODO: later make this a user input?
