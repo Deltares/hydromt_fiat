@@ -1,4 +1,5 @@
 import json
+import rasterio
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
@@ -28,11 +29,13 @@ from hydromt_fiat.workflows.gis import (
     sjoin_largest_area,
     get_crs_str_from_gdf,
     join_spatial_data,
+    ground_elevation_from_dem,
 )
 
 from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
-
-
+from rasterio.features import rasterize
+from xrspatial import zonal_stats
+import xarray as xr
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -122,6 +125,7 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -195,7 +199,12 @@ class ExposureVector(Exposure):
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
-    
+
+        # Set the ground floor height if not yet set
+        #TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
+        if ground_elevation_file is not None:
+            self.setup_ground_elevation(ground_elevation_file, self.exposure_db, gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]]))
+
         # Remove the geometry column from the exposure_db
         if "geometry" in self.exposure_db:
             del self.exposure_db["geometry"]
@@ -258,6 +267,7 @@ class ExposureVector(Exposure):
         occupancy_type_field: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
@@ -265,6 +275,7 @@ class ExposureVector(Exposure):
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(ground_floor_height)
         self.setup_extraction_method(extraction_method)
+        self.setup_ground_elevation(ground_elevation_file, self.exposure_db, self.get_full_gdf(self.exposure_db))
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -538,52 +549,120 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        max_potential_damage: Union[List[float], float],
+        max_potential_damage: Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]=None,
         damage_types: Union[List[str], str, None] = None,
         country: Union[str, None] = None,
-    ):
-        if max_potential_damage == "jrc_damage_values":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            if country is None:
-                country = "World"
-                self.logger.warning(
-                    f"No country specified, using the '{country}' JRC damage values."
-                )
+        target_attribute: Union[str, List[str], None] = None,
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
+    ) -> None:
+        """Setup the max potential damage column of the exposure data in various ways.
 
-            damage_values = preprocess_jrc_damage_values(damage_source, country)
-
-        elif max_potential_damage == "hazus_max_potential_damages":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            damage_values = preprocess_hazus_damage_values(damage_source)
-        else:
-            NotImplemented
-            # TODO: Implement other ways of setting the max potential damage, e.g. from a
-            # vector file or from a table.
-
-        # Calculate the area of each object
-        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        gdf = get_area(gdf)
-
-        # Set the damage values to the exposure data
+        Parameters
+        ----------
+        max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
+            _description_, by default None
+        damage_types : Union[List[str], str, None], optional
+            _description_, by default None
+        country : Union[str, None], optional
+            _description_, by default None
+        target_attribute : Union[str, List[str], None], optional
+            _description_, by default None
+        attr_name : Union[str, List[str], None], optional
+            _description_, by default None
+        method : Union[str, List[str], None], optional
+            _description_, by default "nearest"
+        max_dist : float, optional
+            _description_, by default 10
+        """
         if damage_types is None:
             damage_types = ["total"]
 
-        for damage_type in damage_types:
-            # Calculate the maximum potential damage for each object and per damage type
-            try:
-                self.exposure_db[
-                    f"Max Potential Damage: {damage_type.capitalize()}"
-                ] = [
-                    damage_values[building_type][damage_type.lower()] * square_meters
-                    for building_type, square_meters in zip(
-                        gdf["Primary Object Type"], gdf["area"]
-                    )
-                ]
-            except KeyError as e:
-                self.logger.warning(
-                    f"Not found in the {max_potential_damage} damage "
-                    f"value data: {e}"
+        if isinstance(damage_types, str):
+            damage_types = [damage_types]
+        
+        if isinstance(max_potential_damage, pd.DataFrame
+            ):
+                self.update_max_potential_damage(
+                    updated_max_potential_damages=max_potential_damage
                 )
+        elif isinstance(max_potential_damage, int) or isinstance(
+            max_potential_damage, float
+        ):
+            # Set the column(s) to a single value
+            for damage_type in damage_types:
+                self.exposure_db[f"Max Potential Damage: {damage_type}"] = max_potential_damage
+
+        elif isinstance(max_potential_damage, list):
+            # Multiple files are used to assign the ground floor height to the assets
+            NotImplemented
+        elif max_potential_damage in ["jrc_damage_values", "hazus_max_potential_damages"]:
+            if max_potential_damage == "jrc_damage_values":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                if country is None:
+                    country = "World"
+                    self.logger.warning(
+                        f"No country specified, using the '{country}' JRC damage values."
+                    )
+
+                damage_values = preprocess_jrc_damage_values(damage_source, country)
+
+            elif max_potential_damage == "hazus_max_potential_damages":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                damage_values = preprocess_hazus_damage_values(damage_source)
+            
+            # Calculate the area of each object
+            gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
+            gdf = get_area(gdf)
+
+            # Set the damage values to the exposure data
+            for damage_type in damage_types:
+                # Calculate the maximum potential damage for each object and per damage type
+                try:
+                    self.exposure_db[
+                        f"Max Potential Damage: {damage_type.capitalize()}"
+                    ] = [
+                        damage_values[building_type][damage_type.lower()] * square_meters
+                        for building_type, square_meters in zip(
+                            gdf["Primary Object Type"], gdf["area"]
+                        )
+                    ]
+                except KeyError as e:
+                    self.logger.warning(
+                        f"Not found in the {max_potential_damage} damage "
+                        f"value data: {e}"
+                    )
+        elif isinstance(max_potential_damage, str) or isinstance(
+            max_potential_damage, Path
+        ):
+            # When the max_potential_damage is a string but not jrc_damage_values
+            # or hazus_max_potential_damages. Here, a single file is used to 
+            # assign the ground floor height to the assets
+            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            gdf = self.get_full_gdf(self.exposure_db)
+            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+            self.exposure_db = self._set_values_from_other_column(
+                gdf, target_attribute, attr_name
+            )
+
+    def setup_ground_elevation(
+        self,
+        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]],
+        exposure_db: pd.DataFrame,
+        exposure_geoms: gpd.GeoDataFrame,
+    ) -> None:
+
+        if ground_elevation:
+            ground_elevation_from_dem(
+                ground_elevation=ground_elevation,
+                exposure_db=exposure_db,
+                exposure_geoms=exposure_geoms,
+            )
+        
+        else:
+            print('Ground elevation is not recognized by the setup_ground_elevation function\n Ground elevation will be set to 0')
+            exposure_db['Ground Elevation'] = 0
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -805,6 +884,7 @@ class ExposureVector(Exposure):
         elevation_reference: str,
         path_ref: str = None,
         attr_ref: str = None,
+        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]]=None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -844,7 +924,7 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.is_file()
+        assert geom_file.is_file(), f"File {str(geom_file)} is missing, cannot set up a new composite area."
 
         # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
@@ -966,6 +1046,9 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
+        # Adding elevation data into the new objects
+        self.setup_ground_elevation(ground_elevation,new_objects,_new_exposure_geoms)
+        
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True
