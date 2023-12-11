@@ -84,6 +84,7 @@ class ExposureViewModel:
 
             self.exposure.setup_buildings_from_single_source(
                 source,
+                ground_floor_height,
                 "centroid",
             )
             primary_object_types = (
