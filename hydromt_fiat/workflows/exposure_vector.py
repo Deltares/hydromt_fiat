@@ -127,9 +127,6 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
-        # attr_name_gfh: Union[str, List[str], None] = None,
-        # method_gfh: Union[str, List[str], None] = "nearest",
-        # max_dist: Union[int, float, None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
