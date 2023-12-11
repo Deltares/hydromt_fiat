@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, List
 
 from hydromt import DataCatalog
 
@@ -12,8 +12,10 @@ from .data_types import (
     DataCatalogEntry,
     DataType,
     Driver,
-    ExposureBuildingsIni,
+    ExposureBuildingsSettings,
+    ExposureRoadsSettings,
     ExtractionMethod,
+    AggregationAreaSettings,
     Units,
 )
 
@@ -22,15 +24,10 @@ class ExposureViewModel:
     def __init__(
         self, database: IDatabase, data_catalog: DataCatalog, logger: logging.Logger
     ):
-        self.exposure_model = ExposureBuildingsIni(
-            asset_locations="",
-            occupancy_type="",
-            max_potential_damage=-999,
-            ground_floor_height=-999,
-            unit=Units.m.value,
-            extraction_method=ExtractionMethod.centroid.value,
-            damage_types=["structure", "content"]
-        )
+        self.exposure_buildings_model = None
+        self.exposure_roads_model = None
+        self.aggregation_areas_model = None
+
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
@@ -53,17 +50,21 @@ class ExposureViewModel:
 
     def set_asset_locations_source(
         self,
-        input_source: str,
+        source: str,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
-        if input_source == "NSI":
+        if source == "NSI":
             # NSI is already defined in the data catalog
-            self.exposure_model.asset_locations = input_source
-            self.exposure_model.occupancy_type = input_source
-            self.exposure_model.max_potential_damage = input_source
-            self.exposure_model.ground_floor_height = input_source
-            self.exposure_model.unit = Units.ft.value  # TODO: make flexible
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage=source,
+                ground_floor_height=source,
+                unit=Units.ft.value,  # TODO: make flexible
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+            )
 
             # Download NSI from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -75,8 +76,8 @@ class ExposureViewModel:
             )
 
             self.exposure.setup_buildings_from_single_source(
-                input_source,
-                self.exposure_model.ground_floor_height,
+                source,
+                self.exposure_buildings_model.ground_floor_height,
                 "centroid",  # TODO: MAKE FLEXIBLE
             )
             primary_object_types = (
@@ -93,14 +94,14 @@ class ExposureViewModel:
                 secondary_object_types,
             )
 
-        elif input_source == "file" and fiat_key_maps is not None:
+        elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
             # make calls to backend to derive file meta info such as crs, data type and driver
             crs: str = "4326"
             # save keymaps to database
 
             catalog_entry = DataCatalogEntry(
-                path=input_source,
+                path=source,
                 data_type="GeoDataFrame",
                 driver="vector",
                 crs=crs,
@@ -111,6 +112,58 @@ class ExposureViewModel:
             print(catalog_entry)
         # write to data catalog
 
+    def set_asset_data_source(self, source):
+        self.exposure_buildings_model.asset_locations = source
+
     def setup_extraction_method(self, extraction_method):
         if self.exposure:
             self.exposure.setup_extraction_method(extraction_method)
+
+    def get_osm_roads(
+        self,
+        road_types: List[str] = [
+            "motorway",
+            "motorway_link",
+            "trunk",
+            "trunk_link",
+            "primary",
+            "primary_link",
+            "secondary",
+            "secondary_link",
+        ],
+        crs=4326,
+    ):
+        if self.exposure is None:
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+            self.exposure = ExposureVector(
+                data_catalog=self.data_catalog,
+                logger=self.logger,
+                region=region,
+                crs=crs,
+            )
+
+        self.exposure.setup_roads(
+            source="OSM",
+            road_damage="default_road_max_potential_damages",
+            road_types=road_types,
+        )
+        roads = self.exposure.exposure_db.loc[
+            self.exposure.exposure_db["Primary Object Type"] == "roads"
+        ]
+        gdf = self.exposure.get_full_gdf(roads)
+
+        self.exposure_roads_model = ExposureRoadsSettings(
+            roads_fn="OSM",
+            road_types=road_types,
+            road_damage="default_road_max_potential_damages",
+            unit=Units.ft.value,
+        )
+
+        return gdf
+
+    def set_aggregation_areas_config(self, files, attribute_names, label_names):
+        self.aggregation_areas_model = AggregationAreaSettings(
+            aggregation_area_fn=files,
+            attribute_names=attribute_names,
+            label_names=label_names,
+        )

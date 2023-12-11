@@ -54,11 +54,11 @@ def join_exposure_aggregation_multiple_areas(
             how="left",
         )
         
-        assert exposure_gdf["Object ID"].is_unique, "Error! Polygons overlap! Please clean your data from overlaping features."
+        assert exposure_gdf["Object ID"].is_unique, "Error! Aggregation polygons overlap! Please clean your aggregation data from overlapping features."
 
         # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
         # Documentation that the order the user put the label name must be the order of the gdf
-        exposure_gdf.rename(columns={attribute_name: f"Aggregation Label: {label_name}"}, inplace=True)
+        exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
         ##remove the index_right column
         if "index_right" in exposure_gdf.columns:
@@ -78,8 +78,7 @@ def join_exposure_aggregation_areas(
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
-        Exposure data to join the aggregation areas to as "Aggregation 
-        Label: `label_names`".
+        Exposure data to join the aggregation areas to as `label_names`.
     aggregation_area_fn : Union[List[str], List[Path], str, Path]
         Path(s) to the aggregation area(s).
     attribute_names : Union[List[str], str]
