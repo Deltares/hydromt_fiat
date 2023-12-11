@@ -280,6 +280,8 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
+        # attr_name_gfh: Union[str, List[str], None] = None,
+        # method: Union[str, List[str], None] = "nearest",
         occupancy_type_field: Union[str, None] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
@@ -320,12 +322,12 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage == ground_floor_height:
+        if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
                 asset_locations, 
-                ground_floor_height, 
+                ground_floor_height,
                 extraction_method,
                 ground_elevation_file=ground_elevation_file, 
             )

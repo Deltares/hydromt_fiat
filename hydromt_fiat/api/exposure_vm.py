@@ -51,6 +51,9 @@ class ExposureViewModel:
     def set_asset_locations_source(
         self,
         source: str,
+        ground_floor_height: str,
+        attribute_name_gfh: Union[str, List[str], None] = None,
+        method_gfh: Union[str, List[str], None] = "nearest",
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
@@ -60,8 +63,10 @@ class ExposureViewModel:
                 asset_locations=source,
                 occupancy_type=source,
                 max_potential_damage=source,
-                ground_floor_height=source,
+                ground_floor_height=ground_floor_height,
                 unit=Units.ft.value,  # TODO: make flexible
+                attribute_name_gfh=attribute_name_gfh,
+                method_gfh=method_gfh,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
             )
@@ -119,6 +124,36 @@ class ExposureViewModel:
         if self.exposure:
             self.exposure.setup_extraction_method(extraction_method)
 
+    def set_ground_floor_height(
+        self,
+        ground_floor_height: str,
+        attribute_name_gfh: Union[str, List[str], None] = None,
+        method_gfh: Union[str, List[str], None] = "nearest",
+        max_dist_gfh: Union[float, int, None] = 10,
+    ):
+        self.exposure_buildings_model.ground_floor_height = ground_floor_height
+        self.exposure_buildings_model.attribute_name_gfh = attribute_name_gfh
+        self.exposure_buildings_model.method_gfh = method_gfh
+        self.exposure_buildings_model.max_dist_gfh = max_dist_gfh
+
+    def set_damages(
+        self,
+        damages: str,
+        attribute_name_damages: Union[str, List[str], None] = None,
+        method_damages: Union[str, List[str], None] = "nearest",
+        max_dist_damages: Union[float, int, None] = 10,
+    ):
+        self.exposure_buildings_model.damages = damages
+        self.exposure_buildings_model.attribute_name_damages = attribute_name_damages
+        self.exposure_buildings_model.method_damages = method_damages
+        self.exposure_buildings_model.max_dist_damages = max_dist_damages
+
+    def set_max_dist_gfh(self, max_dist_gfh: Union[float, int, None]):
+        self.exposure_buildings_model.max_dist_gfh = max_dist_gfh
+
+    def set_method_gfh(self, method_gfh: Union[str, List[str], None] = "nearest"):
+        self.exposure_buildings_model.method_gfh = method_gfh
+    
     def get_osm_roads(
         self,
         road_types: List[str] = [

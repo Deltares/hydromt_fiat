@@ -70,6 +70,13 @@ class ExposureBuildingsSettings(BaseModel):
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: str
+    attribute_name_gfh: Union[str, List[str], None]
+    method_gfh: Union[str, List[str], None]
+    max_dist_gfh: Union[float, int, None]
+    damages: Union[str, None]
+    attribute_name_damages: Union[str, List[str], None]
+    method_damages: Union[str, List[str], None]
+    max_dist_damages: Union[float, int, None]
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Union[List[str], None]

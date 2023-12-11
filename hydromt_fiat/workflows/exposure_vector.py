@@ -127,6 +127,9 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        # attr_name_gfh: Union[str, List[str], None] = None,
+        # method_gfh: Union[str, List[str], None] = "nearest",
+        # max_dist: Union[int, float, None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
@@ -190,7 +193,7 @@ class ExposureVector(Exposure):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
         # Set the ground floor height if not yet set
-        if "Ground Floor Height" not in self.exposure_db.columns:
+        if ground_floor_height != source:
             self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
@@ -279,13 +282,16 @@ class ExposureVector(Exposure):
         occupancy_type_field: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
+        attr_name_gfh: Union[str, List[str], None] = None,
+        method_gfh: Union[str, List[str], None] = "nearest",
+        max_dist: Union[int, float, None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_type_field)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
-        self.setup_ground_floor_height(ground_floor_height)
+        self.setup_ground_floor_height(ground_floor_height, attr_name_gfh, method_gfh, max_dist)
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(
             ground_elevation_file, self.exposure_db, self.get_full_gdf(self.exposure_db)
