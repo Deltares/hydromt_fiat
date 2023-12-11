@@ -297,7 +297,7 @@ def locate_from_bounding_box(bounding_box):
     locations = [geolocator.reverse(s) for s in search]
     locations_list = [location[0].split(", ") for location in locations]
     locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
-    counties = [y for x in locations_list for y in x if "county" in y.lower()]
+    counties = [y for x in locations_list for y in x if ("county" in y.lower()) or ("parish" in y.lower())]
     states = [x[-2] for x in locations_list_no_numbers]
 
     counties_states_combo = set(list(zip(counties, states)))
