@@ -680,22 +680,20 @@ class ExposureVector(Exposure):
 
     def setup_ground_elevation(
         self,
-        ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]],
-        exposure_db: pd.DataFrame,
-        exposure_geoms: gpd.GeoDataFrame,
+        ground_elevation: Union[int, float, None, str, Path],
     ) -> None:
         if ground_elevation:
-            ground_elevation_from_dem(
+            self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
                 ground_elevation=ground_elevation,
-                exposure_db=exposure_db,
-                exposure_geoms=exposure_geoms,
+                exposure_db=self.exposure_db,
+                exposure_geoms=self.exposure_geoms,
             )
 
         else:
             print(
                 "Ground elevation is not recognized by the setup_ground_elevation function\n Ground elevation will be set to 0"
             )
-            exposure_db["Ground Elevation"] = 0
+            self.exposure_db["Ground Elevation"] = 0
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame

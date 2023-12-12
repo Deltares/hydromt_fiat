@@ -242,7 +242,7 @@ def join_spatial_data(
 
 
 def ground_elevation_from_dem(
-    ground_elevation: Union[int, float, None, str, Path, List[str], List[Path]],
+    ground_elevation: Union[int, float, None, str, Path],
     exposure_db: pd.DataFrame,
     exposure_geoms: gpd.GeoDataFrame,
 ) -> None:
@@ -283,6 +283,8 @@ def ground_elevation_from_dem(
     # # Add Ground Elevation column and get rid of nans in the appropriate way
     exposure_db["Ground Elevation"] = zonal_means
     exposure_db["Ground Elevation"].bfill(inplace=True)
+
+    return exposure_db["Ground Elevation"]
 
 
 def locate_from_bounding_box(bounding_box):
