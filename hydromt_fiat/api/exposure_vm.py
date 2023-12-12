@@ -154,18 +154,6 @@ class ExposureViewModel:
             max_dist=max_dist,
         )
 
-    def set_max_dist_gfh(self, max_dist: Union[float, int, None]):
-        self.exposure_ground_floor_height_model.max_dist = max_dist
-
-    def set_method_gfh(self, method: Union[str, List[str], None] = "nearest"):
-        self.exposure_ground_floor_height_model.method = method
-    
-    def set_max_dist_damages(self, max_dist: Union[float, int, None]):
-        self.exposure_damages_model.max_dist = max_dist
-
-    def set_method_damages(self, method: Union[str, List[str], None] = "nearest"):
-        self.exposure_damages_model.method = method
-    
     def get_osm_roads(
         self,
         road_types: List[str] = [
