@@ -749,7 +749,7 @@ class FiatModel(GridModel):
             shutil.copy2(aggregation_area_fn, additional_att)
         
         # Create additional attributes folder in root  
-        additional_att_input = Path(self.root)
+        additional_att_input = Path(self.root).joinpath("additional_attributes")
         if not os.path.exists(additional_att_input):
             os.makedirs(additional_att_input)
 
