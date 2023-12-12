@@ -56,8 +56,6 @@ class ExposureViewModel:
         self,
         source: str,
         ground_floor_height: str,
-        attribute_name_gfh: Union[str, List[str], None] = None,
-        method_gfh: Union[str, List[str], None] = "nearest",
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
