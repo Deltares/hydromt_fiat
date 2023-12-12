@@ -772,10 +772,25 @@ class FiatModel(GridModel):
             building_footprint_fn,
             attribute_name,
         )
-        building_footprints = Path(self.root).joinpath("output" , "building_footprints")
-        if not os.path.exists(building_footprints):
-            os.makedirs(building_footprints)
-        shutil.copy2(building_footprint_fn, building_footprints)
+        # Create BF folder in Exposure
+        building_footprints_exp = Path(self.root).joinpath("exposure" , "building_footprints")
+        if not os.path.exists(building_footprints_exp):
+            os.makedirs(building_footprints_exp)
+        if isinstance(building_footprint_fn,list):
+            for file in building_footprint_fn:
+                shutil.copy2(file, building_footprints_exp)
+        else:    
+            shutil.copy2(building_footprint_fn, building_footprints_exp)
+
+        # Create BF folder in Output
+        building_footprints_out = Path(self.root).joinpath("output" , "building_footprints")
+        if not os.path.exists(building_footprints_out):
+            os.makedirs(building_footprints_out)
+        if isinstance(building_footprint_fn,list):
+            for file in building_footprint_fn:
+                shutil.copy2(file, building_footprints_out)
+        else:    
+            shutil.copy2(building_footprint_fn, building_footprints_out)
 
     # Update functions
     def update_all(self):
