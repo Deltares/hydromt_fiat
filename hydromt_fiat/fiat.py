@@ -10,6 +10,8 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
+import os 
+import shutil
 
 from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
@@ -98,6 +100,7 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+       
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -733,6 +736,18 @@ class FiatModel(GridModel):
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
+        additional_att = Path(self.root).joinpath("output" , "additional_attributes")
+        if not os.path.exists(additional_att):
+            os.makedirs(additional_att)
+
+        if isinstance(aggregation_area_fn,list):
+            for file in aggregation_area_fn:
+                shutil.copy2(file, additional_att)
+        else:
+            shutil.copy2(aggregation_area_fn, additional_att)
+
+
+# TODO loop over file names and copy into self.root (create directory (aggregation and BF))
 
     def setup_building_footprint(
         self,
@@ -759,6 +774,7 @@ class FiatModel(GridModel):
             building_footprint_fn,
             attribute_name,
         )
+# TODO: loop over file names and copy into self.root (create directory (aggregation and BF))
 
     # Update functions
     def update_all(self):
