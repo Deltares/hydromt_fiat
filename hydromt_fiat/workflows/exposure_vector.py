@@ -31,7 +31,7 @@ from hydromt_fiat.workflows.gis import (
     ground_elevation_from_dem,
 )
 
-from hydromt_fiat.workflows.roads import get_max_potential_damage_roads
+from hydromt_fiat.workflows.roads import get_max_potential_damage_roads, get_road_lengths
 
 
 class ExposureVector(Exposure):
@@ -220,7 +220,7 @@ class ExposureVector(Exposure):
     def setup_roads(
         self,
         source: Union[str, Path],
-        road_damage: Union[str, Path],
+        road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
     ):
         self.logger.info("Setting up roads...")
@@ -255,11 +255,15 @@ class ExposureVector(Exposure):
             "The damage function 'roads' is selected for all of the structure damage to the roads."
         )
 
-        # Add the max potential damage and the length of the segments to the roads
-        road_damage = self.data_catalog.get_dataframe(road_damage)
-        roads[
-            ["Max Potential Damage: Structure", "Segment Length [m]"]
-        ] = get_max_potential_damage_roads(roads, road_damage)
+        if isinstance(road_damage, str):
+            # Add the max potential damage and the length of the segments to the roads
+            road_damage = self.data_catalog.get_dataframe(road_damage)
+            roads[
+                ["Max Potential Damage: Structure", "Segment Length [m]"]
+            ] = get_max_potential_damage_roads(roads, road_damage)
+        elif isinstance(road_damage, int):
+            roads["Segment Length [m]"] = get_road_lengths(roads)
+            roads["Max Potential Damage: Structure"] = road_damage
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")

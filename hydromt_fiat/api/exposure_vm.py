@@ -177,7 +177,7 @@ class ExposureViewModel:
 
         self.exposure.setup_roads(
             source="OSM",
-            road_damage="default_road_max_potential_damages",
+            road_damage=1,
             road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[
@@ -188,7 +188,7 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage="default_road_max_potential_damages",
+            road_damage=1,
             unit=Units.ft.value,
         )
 

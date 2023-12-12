@@ -100,7 +100,7 @@ class RoadVulnerabilitySettings(BaseModel):
 class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
-    road_damage: str
+    road_damage: Union[str, int]
     unit: Units
 
 
