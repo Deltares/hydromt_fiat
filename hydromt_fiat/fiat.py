@@ -747,8 +747,6 @@ class FiatModel(GridModel):
             shutil.copy2(aggregation_area_fn, additional_att)
 
 
-# TODO loop over file names and copy into self.root (create directory (aggregation and BF))
-
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
@@ -774,7 +772,10 @@ class FiatModel(GridModel):
             building_footprint_fn,
             attribute_name,
         )
-# TODO: loop over file names and copy into self.root (create directory (aggregation and BF))
+        building_footprints = Path(self.root).joinpath("output" , "building_footprints")
+        if not os.path.exists(building_footprints):
+            os.makedirs(building_footprints)
+        shutil.copy2(building_footprint_fn, building_footprints)
 
     # Update functions
     def update_all(self):
