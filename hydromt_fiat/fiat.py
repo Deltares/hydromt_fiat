@@ -736,6 +736,8 @@ class FiatModel(GridModel):
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
+        
+        # Create additional attributes folder in output
         additional_att = Path(self.root).joinpath("output" , "additional_attributes")
         if not os.path.exists(additional_att):
             os.makedirs(additional_att)
@@ -745,6 +747,17 @@ class FiatModel(GridModel):
                 shutil.copy2(file, additional_att)
         else:
             shutil.copy2(aggregation_area_fn, additional_att)
+        
+        # Create additional attributes folder in root  
+        additional_att_input = Path(self.root)
+        if not os.path.exists(additional_att_input):
+            os.makedirs(additional_att_input)
+
+        if isinstance(aggregation_area_fn,list):
+            for file in aggregation_area_fn:
+                shutil.copy2(file, additional_att_input)
+        else:
+            shutil.copy2(aggregation_area_fn, additional_att_input)
 
 
     def setup_building_footprint(
