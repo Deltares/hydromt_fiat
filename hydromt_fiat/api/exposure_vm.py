@@ -15,6 +15,7 @@ from .data_types import (
     ExposureBuildingsSettings,
     ExposureSetupGroundFloorHeight,
     ExposureSetupDamages,
+    ExposureSetupGroundElevation,
     ExposureRoadsSettings,
     ExtractionMethod,
     AggregationAreaSettings,
@@ -31,6 +32,7 @@ class ExposureViewModel:
         self.aggregation_areas_model = None
         self.exposure_ground_floor_height_model = None
         self.exposure_damages_model = None
+        self.exposure_ground_elevation_model = None
 
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -150,6 +152,11 @@ class ExposureViewModel:
             attribute_name=attribute_name,
             method=method,
             max_dist=max_dist,
+        )
+
+    def set_ground_elevation(self, source: Union[int, float, None, str]):
+        self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
+            source=source
         )
 
     def get_osm_roads(

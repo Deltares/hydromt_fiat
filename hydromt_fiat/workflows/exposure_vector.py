@@ -31,7 +31,10 @@ from hydromt_fiat.workflows.gis import (
     ground_elevation_from_dem,
 )
 
-from hydromt_fiat.workflows.roads import get_max_potential_damage_roads, get_road_lengths
+from hydromt_fiat.workflows.roads import (
+    get_max_potential_damage_roads,
+    get_road_lengths,
+)
 
 
 class ExposureVector(Exposure):
@@ -209,8 +212,6 @@ class ExposureVector(Exposure):
         if ground_elevation_file is not None:
             self.setup_ground_elevation(
                 ground_elevation_file,
-                self.exposure_db,
-                gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]]),
             )
 
         # Remove the geometry column from the exposure_db
@@ -292,11 +293,11 @@ class ExposureVector(Exposure):
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_type_field)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
-        self.setup_ground_floor_height(ground_floor_height, attr_name_gfh, method_gfh, max_dist)
-        self.setup_extraction_method(extraction_method)
-        self.setup_ground_elevation(
-            ground_elevation_file, self.exposure_db, self.get_full_gdf(self.exposure_db)
+        self.setup_ground_floor_height(
+            ground_floor_height, attr_name_gfh, method_gfh, max_dist
         )
+        self.setup_extraction_method(extraction_method)
+        self.setup_ground_elevation(ground_elevation_file)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -576,11 +577,10 @@ class ExposureVector(Exposure):
             int, float, str, Path, List[str], List[Path], pd.DataFrame
         ] = None,
         damage_types: Union[List[str], str, None] = None,
-        country: Union[str, None] = None,
-        target_attribute: Union[str, List[str], None] = None,
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
+        country: Union[str, None] = None,
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -591,8 +591,6 @@ class ExposureVector(Exposure):
         damage_types : Union[List[str], str, None], optional
             _description_, by default None
         country : Union[str, None], optional
-            _description_, by default None
-        target_attribute : Union[str, List[str], None], optional
             _description_, by default None
         attr_name : Union[str, List[str], None], optional
             _description_, by default None
@@ -675,7 +673,7 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)
             gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
             self.exposure_db = self._set_values_from_other_column(
-                gdf, target_attribute, attr_name
+                gdf, f"Max Potential Damage: {damage_types[0].capitalize()}", attr_name
             )
 
     def setup_ground_elevation(
@@ -686,7 +684,7 @@ class ExposureVector(Exposure):
             self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
                 ground_elevation=ground_elevation,
                 exposure_db=self.exposure_db,
-                exposure_geoms=self.exposure_geoms,
+                exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
 
         else:
@@ -1081,9 +1079,6 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
-        # Adding elevation data into the new objects
-        self.setup_ground_elevation(ground_elevation, new_objects, _new_exposure_geoms)
-
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True
@@ -1091,6 +1086,9 @@ class ExposureVector(Exposure):
 
         # Update the exposure_geoms
         self.set_exposure_geoms(_new_exposure_geoms)
+
+        # Adding elevation data into the new objects
+        self.setup_ground_elevation(ground_elevation)
 
     def link_exposure_vulnerability(
         self,

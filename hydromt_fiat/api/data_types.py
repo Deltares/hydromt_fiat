@@ -81,6 +81,10 @@ class ExposureSetupGroundFloorHeight(BaseModel):
     method: Union[str, List[str], None]
     max_dist: Union[float, int, None]
 
+
+class ExposureSetupGroundElevation(BaseModel):
+    source: Union[int, float, None, str]
+
     
 class ExposureSetupDamages(BaseModel):
     source: str
