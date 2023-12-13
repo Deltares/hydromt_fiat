@@ -1110,7 +1110,8 @@
             <span class="n">county_numbers</span> <span class="o">=</span> <span class="n">get_us_county_numbers</span><span class="p">(</span><span class="n">counties</span><span class="p">,</span> <span class="n">us_states_counties</span><span class="p">)</span>
 
             <span class="c1"># Create SVI object</span>
-            <span class="n">svi</span> <span class="o">=</span> <span class="n">SocialVulnerabilityIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+            <span class="n">save_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;exposure&quot;</span> <span class="o">/</span> <span class="s2">&quot;SVI&quot;</span><span class="p">)</span>
+            <span class="n">svi</span> <span class="o">=</span> <span class="n">SocialVulnerabilityIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">save_folder</span><span class="p">)</span>
 
             <span class="c1"># Call functionalities of SVI</span>
             <span class="n">svi</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
@@ -1198,7 +1199,8 @@
         <span class="n">county_numbers</span> <span class="o">=</span> <span class="n">get_us_county_numbers</span><span class="p">(</span><span class="n">counties</span><span class="p">,</span> <span class="n">us_states_counties</span><span class="p">)</span>
 
         <span class="c1"># Create equity object</span>
-        <span class="n">equity</span> <span class="o">=</span> <span class="n">EquityData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        <span class="n">save_folder</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;equity&quot;</span><span class="p">)</span>
+        <span class="n">equity</span> <span class="o">=</span> <span class="n">EquityData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="n">save_folder</span><span class="p">)</span>
 
         <span class="c1"># Call functionalities of equity</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
