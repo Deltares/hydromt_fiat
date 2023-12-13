@@ -593,7 +593,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config" title="hydromt_fiat.fiat.FiatModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**cfdict)</p></td>
 <td><p>Update config with a dictionary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_equity_data</span></code>(census_key, state_abbreviation)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_equity_data</span></code>(census_key[, year_data])</p></td>
 <td><p>Setup the download procedure for equity data similarly to the SVI setup</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings" title="hydromt_fiat.fiat.FiatModel.setup_exposure_buildings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_exposure_buildings</span></code></a>(asset_locations, ...)</p></td>
@@ -662,43 +662,52 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_geoms</span></code>()</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_ground_elevation</span></code>(ground_elevation)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_ground_floor_height</span></code>(source[, ...])</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_maps</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_tables</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_max_potential_damage</span></code>([source, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write" title="hydromt_fiat.fiat.FiatModel.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_tables</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write" title="hydromt_fiat.fiat.FiatModel.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>()</p></td>
 <td><p>Method to write the complete model schematization and configuration to file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_config.html#hydromt_fiat.fiat.FiatModel.write_config" title="hydromt_fiat.fiat.FiatModel.write_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_config</span></code></a>([config_name, config_root])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_config.html#hydromt_fiat.fiat.FiatModel.write_config" title="hydromt_fiat.fiat.FiatModel.write_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_config</span></code></a>([config_name, config_root])</p></td>
 <td><p>Write config to &lt;root/config_fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_data_catalog</span></code>([root, data_lib_fn, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_data_catalog</span></code>([root, data_lib_fn, ...])</p></td>
 <td><p>Write the data catalog to data_lib_fn.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_forcing</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_forcing</span></code>([fn])</p></td>
 <td><p>Write forcing to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms" title="hydromt_fiat.fiat.FiatModel.write_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_geoms</span></code></a>([fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms" title="hydromt_fiat.fiat.FiatModel.write_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_geoms</span></code></a>([fn])</p></td>
 <td><p>Write model geometries to a vector file (by default GeoJSON) at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_grid</span></code>([fn, gdal_compliant, ...])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_grid</span></code>([fn, gdal_compliant, ...])</p></td>
 <td><p>Write model grid data to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_maps.html#hydromt_fiat.fiat.FiatModel.write_maps" title="hydromt_fiat.fiat.FiatModel.write_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_maps</span></code></a>([fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_maps.html#hydromt_fiat.fiat.FiatModel.write_maps" title="hydromt_fiat.fiat.FiatModel.write_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_maps</span></code></a>([fn])</p></td>
 <td><p>Write maps to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_states</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_states</span></code>([fn])</p></td>
 <td><p>Write states to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code>()</p></td>
 <td><p>Write the geometries to disk.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code>([fn])</p></td>
 <td><p>Write static model maps to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_tables</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_tables</span></code>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>

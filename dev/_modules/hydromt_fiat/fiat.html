@@ -431,9 +431,7 @@
 <span></span><span class="sd">&quot;&quot;&quot;Implement fiat model class&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">csv</span>
-<span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span><span class="p">,</span> <span class="n">join</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -456,10 +454,15 @@
     <span class="n">create_risk_dataset</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.equity_data</span> <span class="kn">import</span> <span class="n">EquityData</span>
-<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.social_vulnerability_index</span> <span class="kn">import</span> <span class="n">SocialVulnerabilityIndex</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.social_vulnerability_index</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SocialVulnerabilityIndex</span><span class="p">,</span>
+    <span class="n">list_of_states</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.vulnerability</span> <span class="kn">import</span> <span class="n">Vulnerability</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.aggregation_areas</span> <span class="kn">import</span> <span class="n">join_exposure_aggregation_areas</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.building_footprints</span> <span class="kn">import</span> <span class="n">join_exposure_building_footprints</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.gis</span> <span class="kn">import</span> <span class="n">locate_from_bounding_box</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.utils</span> <span class="kn">import</span> <span class="n">get_us_county_numbers</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FiatModel&quot;</span><span class="p">]</span>
 
@@ -769,14 +772,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">occupancy_type</span> <span class="o">==</span> <span class="n">max_potential_damage</span> <span class="o">==</span> <span class="n">ground_floor_height</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">occupancy_type</span> <span class="o">==</span> <span class="n">max_potential_damage</span><span class="p">:</span>
             <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
             <span class="c1"># damage is the same, use one source to create the exposure data.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_buildings_from_single_source</span><span class="p">(</span>
-                <span class="n">asset_locations</span><span class="p">,</span> 
-                <span class="n">ground_floor_height</span><span class="p">,</span> 
+                <span class="n">asset_locations</span><span class="p">,</span>
+                <span class="n">ground_floor_height</span><span class="p">,</span>
                 <span class="n">extraction_method</span><span class="p">,</span>
-                <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span> 
+                <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -816,7 +819,7 @@
     <span class="k">def</span> <span class="nf">setup_exposure_roads</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">roads_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-        <span class="n">road_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">road_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
         <span class="n">road_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
     <span class="p">):</span>
@@ -830,12 +833,54 @@
 <span class="sd">            List of road types to include in the exposure data, by default True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_roads</span><span class="p">(</span><span class="n">roads_fn</span><span class="p">,</span> <span class="n">road_damage</span><span class="p">,</span> <span class="n">road_types</span><span class="p">)</span>
 
         <span class="c1"># Link to vulnerability curves</span>
 
         <span class="c1"># Combine the exposure database with pre-existing exposure data if available</span>
+
+    <span class="k">def</span> <span class="nf">update_ground_floor_height</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">attr_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_max_potential_damage</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">damage_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target_attribute</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">attr_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_max_potential_damage</span><span class="p">(</span>
+                <span class="n">max_potential_damage</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+                <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
+                <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
+                <span class="n">target_attribute</span><span class="o">=</span><span class="n">target_attribute</span><span class="p">,</span>
+                <span class="n">attr_name</span><span class="o">=</span><span class="n">attr_name</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">,</span>
+            <span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">update_ground_elevation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ground_elevation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">ground_elevation</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>
@@ -907,7 +952,7 @@
             <span class="c1"># read maps and retrieve their attributes</span>
             <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da_type</span> <span class="o">=</span> <span class="n">read_maps</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
 
-            <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span><span class="n">da_map_fn</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+            <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span><span class="n">da_map_fn</span><span class="p">)</span>  <span class="c1"># removed geom=self.region because it is not always there</span>
 
             <span class="c1"># Convert to units of the exposure data if required</span>
             <span class="k">if</span> <span class="p">(</span>
@@ -1022,11 +1067,8 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">codebook_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-        <span class="n">state_abbreviation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">user_dataset_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">blockgroup_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">year_data</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">save_all</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the social vulnerability index for the vector exposure data for</span>
 <span class="sd">        Delft-FIAT. This method has so far only been tested with US Census data</span>
@@ -1040,43 +1082,58 @@
 <span class="sd">            The user&#39;s unique Census key that they got from the census.gov website</span>
 <span class="sd">            (https://api.census.gov/data/key_signup.html) to be able to download the</span>
 <span class="sd">            Census data</span>
-<span class="sd">        path : Union[str, Path]</span>
+<span class="sd">        codebook_fn : Union[str, Path]</span>
 <span class="sd">            The path to the codebook excel</span>
-<span class="sd">        state_abbreviation : str</span>
-<span class="sd">            The abbreviation of the US state one would like to use in the analysis</span>
+<span class="sd">        year_data: int</span>
+<span class="sd">            The year of which the census data should be downloaded, 2020, 2021, or 2022</span>
+<span class="sd">        save_all: bool</span>
+<span class="sd">            If True, all (normalized) data variables are saved, if False, only the SVI</span>
+<span class="sd">            column is added to the FIAT exposure data. By default False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Create SVI object</span>
-        <span class="n">svi</span> <span class="o">=</span> <span class="n">SocialVulnerabilityIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
-
-        <span class="c1"># Call functionalities of SVI</span>
-        <span class="c1"># svi.read_dataset(user_dataset_fn)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">variable_code_csv_to_pd_df</span><span class="p">(</span><span class="n">codebook_fn</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_download_codes</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">set_up_state_code</span><span class="p">(</span><span class="n">state_abbreviation</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">(</span><span class="s2">&quot;Census_code_withE&quot;</span><span class="p">,</span> <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">identify_no_data</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">check_nan_variable_columns</span><span class="p">(</span><span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">check_zeroes_variable_rows</span><span class="p">()</span>
-        <span class="n">translation_variable_to_indicator</span> <span class="o">=</span> <span class="n">svi</span><span class="o">.</span><span class="n">create_indicator_groups</span><span class="p">(</span>
-            <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span>
-        <span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">processing_svi_data</span><span class="p">(</span><span class="n">translation_variable_to_indicator</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">normalization_svi_data</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">domain_scores</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">composite_scores</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county</span><span class="p">)</span>
-        <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
-
-        <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
-        <span class="c1"># TODO: Think about adding an indicator for missing data to the svi.svi_data_shp</span>
-
         <span class="c1"># Check if the exposure data exists</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="c1"># First find the state(s) and county/counties where the exposure data is</span>
+            <span class="c1"># located in</span>
+            <span class="n">us_states_counties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="s2">&quot;us_states_counties&quot;</span><span class="p">)</span>
+            <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">())</span>
+            <span class="n">states_dict</span> <span class="o">=</span> <span class="n">list_of_states</span><span class="p">()</span>
+            <span class="n">state_abbreviation</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">state_abbreviation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">states_dict</span><span class="p">[</span><span class="n">state</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+            <span class="n">county_numbers</span> <span class="o">=</span> <span class="n">get_us_county_numbers</span><span class="p">(</span><span class="n">counties</span><span class="p">,</span> <span class="n">us_states_counties</span><span class="p">)</span>
+
+            <span class="c1"># Create SVI object</span>
+            <span class="n">svi</span> <span class="o">=</span> <span class="n">SocialVulnerabilityIndex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+            <span class="c1"># Call functionalities of SVI</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">set_up_census_key</span><span class="p">(</span><span class="n">census_key</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">variable_code_csv_to_pd_df</span><span class="p">(</span><span class="n">codebook_fn</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">set_up_download_codes</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">set_up_state_code</span><span class="p">(</span><span class="n">state_abbreviation</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">(</span><span class="s2">&quot;Census_code_withE&quot;</span><span class="p">,</span> <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">identify_no_data</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">check_nan_variable_columns</span><span class="p">(</span><span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">check_zeroes_variable_rows</span><span class="p">()</span>
+            <span class="n">translation_variable_to_indicator</span> <span class="o">=</span> <span class="n">svi</span><span class="o">.</span><span class="n">create_indicator_groups</span><span class="p">(</span>
+                <span class="s2">&quot;Census_variable_name&quot;</span><span class="p">,</span> <span class="s2">&quot;Indicator_code&quot;</span>
+            <span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">processing_svi_data</span><span class="p">(</span><span class="n">translation_variable_to_indicator</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">normalization_svi_data</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">domain_scores</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">composite_scores</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
+            <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
+
+            <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
+            <span class="c1"># TODO: Think about adding an indicator for missing data to the svi.svi_data_shp</span>
+
             <span class="c1"># Link the SVI score to the exposure data</span>
             <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
             <span class="n">exposure_data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Object ID&quot;</span><span class="p">)</span>
@@ -1084,19 +1141,31 @@
             <span class="k">if</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">crs</span> <span class="o">!=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
                 <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">,</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">save_all</span><span class="p">:</span>
+                <span class="c1"># Clean up the columns that are saved</span>
+                <span class="n">cols_to_save</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+                <span class="n">cols_to_save</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;GEO_ID&quot;</span><span class="p">)</span>
+                <span class="n">cols_to_save</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;GEOID_short&quot;</span><span class="p">)</span>
+                <span class="n">cols_to_save</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span>
+                <span class="n">cols_to_save</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;composite_SVI&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Only save the SVI_key_domain and composite_svi_z</span>
+                <span class="n">cols_to_save</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;composite_svi_z&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
+
+            <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
+                <span class="n">exposure_data</span><span class="p">,</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">[</span><span class="n">cols_to_save</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+            <span class="p">)</span>
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">)</span>
+            <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;composite_svi_z&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">svi_exp_joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">svi_exp_joined</span></div>
 
-    
+
     <span class="k">def</span> <span class="nf">setup_equity_data</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">state_abbreviation</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">blockgroup_fn</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">year_data</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">county</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the download procedure for equity data similarly to the SVI setup</span>
 
@@ -1110,9 +1179,20 @@
 <span class="sd">            Census data</span>
 <span class="sd">        path : Union[str, Path]</span>
 <span class="sd">            The path to the codebook excel</span>
-<span class="sd">        state_abbreviation : str</span>
-<span class="sd">            The abbreviation of the US state one would like to use in the analysis</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First find the state(s) and county/counties where the exposure data is</span>
+        <span class="c1"># located in</span>
+        <span class="n">us_states_counties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="s2">&quot;us_states_counties&quot;</span><span class="p">)</span>
+        <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_bounding_box</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">bounding_box</span><span class="p">())</span>
+        <span class="n">states_dict</span> <span class="o">=</span> <span class="n">list_of_states</span><span class="p">()</span>
+        <span class="n">state_abbreviation</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">state_abbreviation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">states_dict</span><span class="p">[</span><span class="n">state</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+
+        <span class="n">county_numbers</span> <span class="o">=</span> <span class="n">get_us_county_numbers</span><span class="p">(</span><span class="n">counties</span><span class="p">,</span> <span class="n">us_states_counties</span><span class="p">)</span>
 
         <span class="c1"># Create equity object</span>
         <span class="n">equity</span> <span class="o">=</span> <span class="n">EquityData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
@@ -1124,11 +1204,10 @@
         <span class="n">equity</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">()</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
-        <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county</span><span class="p">)</span>
+        <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">merge_equity_data_shp</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
-
 
     <span class="k">def</span> <span class="nf">setup_aggregation_areas</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1351,8 +1430,11 @@
                 <span class="c1"># The default location and save settings of the vulnerability curves</span>
                 <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;vulnerability/vulnerability_identifiers.csv&quot;</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
-            <span class="k">elif</span> <span class="s2">&quot;social_vulnerability&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;exposure/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">:</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;exposure/SVI/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+            <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;equity_data&quot;</span><span class="p">:</span>
+                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;equity/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.csv&quot;</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
             <span class="c1"># Other, can also return an error or pass silently</span>
