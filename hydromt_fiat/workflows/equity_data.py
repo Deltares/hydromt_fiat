@@ -12,8 +12,9 @@ from typing import List
 
 
 class EquityData:
-    def __init__(self, data_catalog: DataCatalog, logger: Logger):
+    def __init__(self, data_catalog: DataCatalog, logger: Logger, save_folder: str):
         self.data_catalog = data_catalog
+        self.save_folder = save_folder
         self.census_key = Census
         self.download_codes = {}
         self.state_fips = []
@@ -26,8 +27,6 @@ class EquityData:
         self.logger = logger
         self.svi_data_shp = gpd.GeoDataFrame()
         self.block_groups = gpd.GeoDataFrame()
-        self.temp_folder = []
-
 
     def set_up_census_key(self, census_key: str):
         """The Census key can be inputted in the ini file.
@@ -55,7 +54,7 @@ class EquityData:
         states_done = []
         for state in state_abbreviation:
             if state not in states_done:
-                self.logger.info(f"The state abbreviation specified is: {state}")
+                self.logger.info(f"The states for which census data will be downloaded is (it's an abbreviation): {state}")
                 state_obj = getattr(states, state)
                 self.state_fips.append(state_obj.fips)
                 states_done.append(state)
@@ -135,7 +134,7 @@ class EquityData:
             zipfile = ZipFile(BytesIO(http_response.read()))
             zipfile.extractall(path=extract_to)
         except Exception as e:
-            print(f"Error during download and unzip: {e}")
+            self.logger.warning(f"Error during download and unzip: {e}")
 
     def download_shp_geom(self, year_data: int, counties: List[str]):
         """Downloading the shapefiles from the government Tiger website
@@ -161,8 +160,7 @@ class EquityData:
                 return
             
             # Save shapefiles 
-            folder = f'Shapefiles/{sf}{county}/{year_data}'
-            self.temp_folder.append(folder)
+            folder = Path(self.save_folder) / "shapefiles" / ("state" + sf + "_county" + county) / str(year_data)
             self.logger.info(f"Downloading the county shapefile for {str(year_data)}")
             self.download_and_unzip(url, folder)
             shapefiles = list(Path(folder).glob("*.shp"))
@@ -170,7 +168,7 @@ class EquityData:
                 shp = gpd.read_file(shapefiles[0])
                 self.logger.info("The shapefile was downloaded")
             else:
-                print("No shapefile found in the directory.")
+                self.logger.warning("No county shapefile found in the directory.")
             
             # Dissolve shapefile based on block groups
             code = "20"
