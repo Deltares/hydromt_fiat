@@ -455,7 +455,7 @@ class FiatModel(GridModel):
             # read maps and retrieve their attributes
             da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
 
-            da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region)
+            da = self.data_catalog.get_rasterdataset(da_map_fn)  # removed geom=self.region because it is not always there
 
             # Convert to units of the exposure data if required
             if (
