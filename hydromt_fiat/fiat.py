@@ -757,8 +757,12 @@ class FiatModel(GridModel):
         equity.match_geo_ID()
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
+        equity.clean()
 
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
+
+        # Update (if necessary) the aggregation label: census block
+        # Save the census block aggregation area data
 
     def setup_aggregation_areas(
         self,
@@ -779,7 +783,8 @@ class FiatModel(GridModel):
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
         """
-
+        # TODO: add a census block option to automatically download and save
+        # the data
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names

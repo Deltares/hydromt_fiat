@@ -177,7 +177,7 @@ class EquityData:
 
             block_groups_shp = shp.dissolve(by=attrs, as_index=False)
             block_groups_shp = block_groups_shp[attrs + ["geometry"]]
-            # block_groups["Census_Bg"] = block_groups['TRACTCE' + code].astype(str) + "-block" + block_groups['BLKGRPCE' + code].astype(str)
+            block_groups_shp["GEOID_short"] = block_groups_shp['STATEFP' + code].astype(str) + block_groups_shp['COUNTYFP' + code].astype(str) + block_groups_shp['TRACTCE' + code].astype(str) + block_groups_shp['BLKGRPCE' + code].astype(str)
             block_groups_shp["GEO_ID"] = "1500000US" + block_groups_shp['STATEFP' + code].astype(str) + block_groups_shp['COUNTYFP' + code].astype(str) + block_groups_shp['TRACTCE' + code].astype(str) + block_groups_shp['BLKGRPCE' + code].astype(str)
             block_groups_list.append(block_groups_shp)
 
@@ -191,8 +191,13 @@ class EquityData:
         # Delete the rows that do not have a geometry column
         self.equity_data_shp = self.equity_data_shp.loc[self.equity_data_shp["geometry"].notnull()]
 
-        #self.svi_data_shp.drop(columns=columns_to_drop, inplace=True)
         self.equity_data_shp = self.equity_data_shp.to_crs(epsg=4326)
         self.logger.info(
             "The geometry information was successfully added to the equity information"
         )
+
+        aggregation_areas = self.block_groups[["GEOID_short", "geometry"]]
+    
+    def clean(self):
+        """Removes unnecessary columns"""
+        self.svi_data_shp = self.svi_data_shp[["GEOID_short", "TotalPopulationBG", "PerCapitaIncomeBG"]]
