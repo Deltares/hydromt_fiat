@@ -655,7 +655,8 @@ class FiatModel(GridModel):
             county_numbers = get_us_county_numbers(counties, us_states_counties)
 
             # Create SVI object
-            svi = SocialVulnerabilityIndex(self.data_catalog, self.logger)
+            save_folder = str(Path(self.root) / "exposure" / "SVI")
+            svi = SocialVulnerabilityIndex(self.data_catalog, self.logger, save_folder)
 
             # Call functionalities of SVI
             svi.set_up_census_key(census_key)
@@ -742,7 +743,8 @@ class FiatModel(GridModel):
         county_numbers = get_us_county_numbers(counties, us_states_counties)
 
         # Create equity object
-        equity = EquityData(self.data_catalog, self.logger)
+        save_folder = str(Path(self.root) / "equity")
+        equity = EquityData(self.data_catalog, self.logger, save_folder)
 
         # Call functionalities of equity
         equity.set_up_census_key(census_key)
