@@ -88,7 +88,7 @@ def test_equity_data(case):
     assert root.joinpath("exposure", "region.gpkg").exists()
 
     # Check if the equity data exists
-    assert root.joinpath("exposure", "equity", "equity_data.csv").exists()
+    assert root.joinpath("equity", "equity_data.csv").exists()
 
     # Check if the vulnerability data exists
     assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()
