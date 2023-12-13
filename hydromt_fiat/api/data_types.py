@@ -75,6 +75,24 @@ class ExposureBuildingsSettings(BaseModel):
     damage_types : Union[List[str], None]
 
 
+class ExposureSetupGroundFloorHeight(BaseModel):
+    source: str
+    attribute_name: Union[str, List[str], None]
+    method: Union[str, List[str], None]
+    max_dist: Union[float, int, None]
+
+
+class ExposureSetupGroundElevation(BaseModel):
+    source: Union[int, float, None, str]
+
+    
+class ExposureSetupDamages(BaseModel):
+    source: str
+    attribute_name: Union[str, List[str], None]
+    method: Union[str, List[str], None]
+    max_dist: Union[float, int, None]
+
+    
 class RoadVulnerabilitySettings(BaseModel):
     threshold_value: float
     min_hazard_value: float
@@ -86,7 +104,7 @@ class RoadVulnerabilitySettings(BaseModel):
 class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
-    road_damage: str
+    road_damage: Union[str, int]
     unit: Units
 
 

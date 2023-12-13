@@ -74,6 +74,12 @@ class HydroMtViewModel:
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
         
+        if self.exposure_vm.exposure_damages_model:
+            config_yaml.update_max_potential_damage = self.exposure_vm.exposure_damages_model
+        
+        if self.exposure_vm.exposure_ground_floor_height_model:
+            config_yaml.update_ground_floor_height = self.exposure_vm.exposure_ground_floor_height_model
+        
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
                 
@@ -82,7 +88,7 @@ class HydroMtViewModel:
                 
         if self.svi_vm.equity_model:
             config_yaml.setup_equity_data = self.svi_vm.equity_model
-    
+        
         database_path = self.__class__.database.drive
 
         with open(database_path / "config.yaml", "wb") as f:

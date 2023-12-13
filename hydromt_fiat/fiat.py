@@ -24,7 +24,10 @@ from hydromt_fiat.workflows.hazard import (
     create_risk_dataset,
 )
 from hydromt_fiat.workflows.equity_data import EquityData
-from hydromt_fiat.workflows.social_vulnerability_index import SocialVulnerabilityIndex, list_of_states
+from hydromt_fiat.workflows.social_vulnerability_index import (
+    SocialVulnerabilityIndex,
+    list_of_states,
+)
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
@@ -320,14 +323,14 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage == ground_floor_height:
+        if asset_locations == occupancy_type == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
-                asset_locations, 
-                ground_floor_height, 
+                asset_locations,
+                ground_floor_height,
                 extraction_method,
-                ground_elevation_file=ground_elevation_file, 
+                ground_elevation_file=ground_elevation_file,
             )
 
         else:
@@ -366,7 +369,7 @@ class FiatModel(GridModel):
     def setup_exposure_roads(
         self,
         roads_fn: Union[str, Path],
-        road_damage: Union[str, Path],
+        road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
         unit: str = "m",
     ):
@@ -380,12 +383,54 @@ class FiatModel(GridModel):
             List of road types to include in the exposure data, by default True
         """
         if not self.exposure:
-            self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
+            self.exposure = ExposureVector(
+                self.data_catalog, self.logger, self.region, unit=unit
+            )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
+
+    def update_ground_floor_height(
+        self,
+        source: Union[int, float, str, Path, None],
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
+    ):
+        if self.exposure:
+            self.exposure.setup_ground_floor_height(source, attr_name, method, max_dist)
+
+    def update_max_potential_damage(
+        self,
+        source: Union[
+            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        ] = None,
+        damage_types: Union[List[str], str, None] = None,
+        country: Union[str, None] = None,
+        target_attribute: Union[str, List[str], None] = None,
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
+    ):
+        if self.exposure:
+            self.exposure.setup_max_potential_damage(
+                max_potential_damage=source,
+                damage_types=damage_types,
+                country=country,
+                target_attribute=target_attribute,
+                attr_name=attr_name,
+                method=method,
+                max_dist=max_dist,
+            )
+    
+    def update_ground_elevation(
+        self,
+        ground_elevation: Union[int, float, None, str, Path],
+    ):
+        if self.exposure:
+            self.exposure.setup_ground_elevation(ground_elevation)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -584,7 +629,7 @@ class FiatModel(GridModel):
             Census data
         codebook_fn : Union[str, Path]
             The path to the codebook excel
-        year_data: int 
+        year_data: int
             The year of which the census data should be downloaded, 2020, 2021, or 2022
         save_all: bool
             If True, all (normalized) data variables are saved, if False, only the SVI
@@ -592,7 +637,7 @@ class FiatModel(GridModel):
         """
         # Check if the exposure data exists
         if self.exposure:
-            # First find the state(s) and county/counties where the exposure data is 
+            # First find the state(s) and county/counties where the exposure data is
             # located in
             us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
             counties, states = locate_from_bounding_box(self.exposure.bounding_box())
@@ -652,13 +697,15 @@ class FiatModel(GridModel):
                 # Only save the SVI_key_domain and composite_svi_z
                 cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
-            svi_exp_joined = gpd.sjoin(exposure_data, svi.svi_data_shp[cols_to_save], how="left")
+            svi_exp_joined = gpd.sjoin(
+                exposure_data, svi.svi_data_shp[cols_to_save], how="left"
+            )
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = svi_exp_joined
-    
+
     def setup_equity_data(
         self,
         census_key: str,
@@ -677,7 +724,7 @@ class FiatModel(GridModel):
         path : Union[str, Path]
             The path to the codebook excel
         """
-        # First find the state(s) and county/counties where the exposure data is 
+        # First find the state(s) and county/counties where the exposure data is
         # located in
         us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
         counties, states = locate_from_bounding_box(self.exposure.bounding_box())
@@ -705,7 +752,6 @@ class FiatModel(GridModel):
         equity.merge_equity_data_shp()
 
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
-
 
     def setup_aggregation_areas(
         self,
