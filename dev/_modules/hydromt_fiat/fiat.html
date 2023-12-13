@@ -440,6 +440,8 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">hydromt.models.model_grid</span> <span class="kn">import</span> <span class="n">GridModel</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
+<span class="kn">import</span> <span class="nn">os</span> 
+<span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="kn">from</span> <span class="nn">hydromt_fiat</span> <span class="kn">import</span> <span class="n">DATADIR</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.config</span> <span class="kn">import</span> <span class="n">Config</span>
@@ -541,6 +543,7 @@
         <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
         <span class="n">output_csv_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">,</span>
         <span class="n">output_vector_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;spatial.gpkg&quot;</span><span class="p">,</span>
+       
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Delft-FIAT output folder and files.</span>
 
@@ -1235,6 +1238,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">join_exposure_aggregation_areas</span><span class="p">(</span>
             <span class="n">exposure_gdf</span><span class="p">,</span> <span class="n">aggregation_area_fn</span><span class="p">,</span> <span class="n">attribute_names</span><span class="p">,</span> <span class="n">label_names</span>
         <span class="p">)</span>
+        
+        <span class="c1"># Create additional attributes folder in root  </span>
+        <span class="n">additional_att_input</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">additional_att_input</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">additional_att_input</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">aggregation_area_fn</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">aggregation_area_fn</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">additional_att_input</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">aggregation_area_fn</span><span class="p">,</span> <span class="n">additional_att_input</span><span class="p">)</span>
+
 
     <span class="k">def</span> <span class="nf">setup_building_footprint</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1261,6 +1276,15 @@
             <span class="n">building_footprint_fn</span><span class="p">,</span>
             <span class="n">attribute_name</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="c1"># Create BF folder in Exposure</span>
+        <span class="n">building_footprints_exp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span> <span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">building_footprints_exp</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">building_footprints_exp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">building_footprint_fn</span><span class="p">,</span><span class="nb">list</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">building_footprint_fn</span><span class="p">:</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">building_footprints_exp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">building_footprint_fn</span><span class="p">,</span> <span class="n">building_footprints_exp</span><span class="p">)</span>
 
     <span class="c1"># Update functions</span>
     <span class="k">def</span> <span class="nf">update_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
