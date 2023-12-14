@@ -14,6 +14,7 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 
 
+
 class HydroMtViewModel:
     data_catalog: DataCatalog
     database: LocalDatabase
@@ -102,6 +103,7 @@ class HydroMtViewModel:
     def run_hydromt_fiat(self):
         self.save_data_catalog()
         config_yaml = self.build_config_yaml()
-
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
+        updated_exposure_output = self.fiat_model.exposure.exposure_db
+        return updated_exposure_output
