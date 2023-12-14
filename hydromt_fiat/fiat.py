@@ -10,6 +10,8 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
+import os 
+import shutil
 
 from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
@@ -102,6 +104,7 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+       
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -501,7 +504,7 @@ class FiatModel(GridModel):
             # read maps and retrieve their attributes
             da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
 
-            da = self.data_catalog.get_rasterdataset(da_map_fn, geom=self.region)
+            da = self.data_catalog.get_rasterdataset(da_map_fn)  # removed geom=self.region because it is not always there
 
             # Convert to units of the exposure data if required
             if (
@@ -653,7 +656,8 @@ class FiatModel(GridModel):
             county_numbers = get_us_county_numbers(counties, us_states_counties)
 
             # Create SVI object
-            svi = SocialVulnerabilityIndex(self.data_catalog, self.logger)
+            save_folder = str(Path(self.root) / "exposure" / "SVI")
+            svi = SocialVulnerabilityIndex(self.data_catalog, self.logger, save_folder)
 
             # Call functionalities of SVI
             svi.set_up_census_key(census_key)
@@ -741,7 +745,8 @@ class FiatModel(GridModel):
         county_numbers = get_us_county_numbers(counties, us_states_counties)
 
         # Create equity object
-        equity = EquityData(self.data_catalog, self.logger)
+        save_folder = str(Path(self.root) / "equity")
+        equity = EquityData(self.data_catalog, self.logger, save_folder)
 
         # Call functionalities of equity
         equity.set_up_census_key(census_key)
@@ -781,6 +786,18 @@ class FiatModel(GridModel):
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
+        
+        # Create additional attributes folder in root  
+        additional_att_input = Path(self.root).joinpath("additional_attributes")
+        if not os.path.exists(additional_att_input):
+            os.makedirs(additional_att_input)
+
+        if isinstance(aggregation_area_fn,list):
+            for file in aggregation_area_fn:
+                shutil.copy2(file, additional_att_input)
+        else:
+            shutil.copy2(aggregation_area_fn, additional_att_input)
+
 
     def setup_building_footprint(
         self,
@@ -807,6 +824,15 @@ class FiatModel(GridModel):
             building_footprint_fn,
             attribute_name,
         )
+        # Create BF folder in Exposure
+        building_footprints_exp = Path(self.root).joinpath("exposure" , "building_footprints")
+        if not os.path.exists(building_footprints_exp):
+            os.makedirs(building_footprints_exp)
+        if isinstance(building_footprint_fn,list):
+            for file in building_footprint_fn:
+                shutil.copy2(file, building_footprints_exp)
+        else:    
+            shutil.copy2(building_footprint_fn, building_footprints_exp)
 
     # Update functions
     def update_all(self):
