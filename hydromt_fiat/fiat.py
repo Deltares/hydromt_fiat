@@ -10,7 +10,7 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
-import os 
+import os
 import shutil
 
 from hydromt_fiat import DATADIR
@@ -71,7 +71,9 @@ class FiatModel(GridModel):
         self.exposure = None
         self.vulnerability = None
         self.vf_ids_and_linking_df = pd.DataFrame()
-        self.additional_attributes_fn = ""  # Path or paths to the additional attributes dataset(s)
+        self.additional_attributes_fn = (
+            ""  # Path or paths to the additional attributes dataset(s)
+        )
         self.building_footprint_fn = ""  # Path to the building footprints dataset
 
     def setup_global_settings(
@@ -105,7 +107,6 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
-       
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -429,7 +430,7 @@ class FiatModel(GridModel):
                 method=method,
                 max_dist=max_dist,
             )
-    
+
     def update_ground_elevation(
         self,
         ground_elevation: Union[int, float, None, str, Path],
@@ -505,7 +506,9 @@ class FiatModel(GridModel):
             # read maps and retrieve their attributes
             da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
 
-            da = self.data_catalog.get_rasterdataset(da_map_fn)  # removed geom=self.region because it is not always there
+            da = self.data_catalog.get_rasterdataset(
+                da_map_fn
+            )  # removed geom=self.region because it is not always there
 
             # Convert to units of the exposure data if required
             if (
@@ -761,12 +764,21 @@ class FiatModel(GridModel):
 
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
-        # Update (if necessary) the aggregation label: census block
         # Save the census block aggregation area data
+        block_groups = equity.get_block_groups()
+        self.set_geoms(block_groups, "aggregation_areas/block_groups")
+
+        # Update the aggregation label: census block
+        del self.exposure.exposure_db["Aggregation Label: Census Blockgroup"]
+        self.setup_aggregation_areas(
+            aggregation_area_fn=block_groups,
+            attribute_names="GEOID_short",
+            label_names="Aggregation Label: Census Blockgroup",
+        )
 
     def setup_aggregation_areas(
         self,
-        aggregation_area_fn: Union[List[str], List[Path], str, Path],
+        aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
     ):
@@ -774,8 +786,6 @@ class FiatModel(GridModel):
 
         Parameters
         ----------
-        exposure_gdf : gpd.GeoDataFrame
-            Exposure data to join the aggregation areas to as `label_names`.
         aggregation_area_fn : Union[List[str], List[Path], str, Path]
             Path(s) to the aggregation area(s).
         attribute_names : Union[List[str], str]
@@ -783,15 +793,20 @@ class FiatModel(GridModel):
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
         """
-        # TODO: add a census block option to automatically download and save
-        # the data
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
             exposure_gdf, aggregation_area_fn, attribute_names, label_names
         )
 
         # Set the additional_attributes_fn property to save the additional datasets
-        self.additional_attributes_fn = aggregation_area_fn
+        if isinstance(aggregation_area_fn, list):
+            the_type = type(aggregation_area_fn[0])
+        else:
+            the_type = type(aggregation_area_fn)
+        if the_type != gpd.GeoDataFrame:
+            # This copies data from one location to the root folder for the FIAT
+            # model, only use user-input data here (not the census blocks)
+            self.additional_attributes_fn = aggregation_area_fn
 
     def setup_building_footprint(
         self,
@@ -818,7 +833,7 @@ class FiatModel(GridModel):
             building_footprint_fn,
             attribute_name,
         )
-        
+
         # Set the building_footprint_fn property to save the building footprints
         self.building_footprint_fn = building_footprint_fn
 
@@ -953,10 +968,12 @@ class FiatModel(GridModel):
             folder = Path(self.root).joinpath("additional_attributes")
             self.copy_datasets(self.additional_attributes_fn, folder)
         if self.building_footprint_fn:
-            folder = Path(self.root).joinpath("exposure" , "building_footprints")
+            folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
 
-    def copy_datasets(self, data: Union[list, str, Path], folder: Union[Path, str]) -> None:
+    def copy_datasets(
+        self, data: Union[list, str, Path], folder: Union[Path, str]
+    ) -> None:
         """Copies datasets to another folder
 
         Parameters
@@ -966,7 +983,7 @@ class FiatModel(GridModel):
         folder : Union[Path, str]
             _description_
         """
-        # Create additional attributes folder in root 
+        # Create additional attributes folder in root
         if not os.path.exists(folder):
             os.makedirs(folder)
 
