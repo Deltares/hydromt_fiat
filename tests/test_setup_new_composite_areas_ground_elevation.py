@@ -23,6 +23,10 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
+        "ground_elevation_file": None,
+        "aggregation_area_fn": None,
+        "attribute_names": None,
+        "label_names": None,
     },
     "setup_new_composite_area_geom": {
         "dir": "test_read",
@@ -33,8 +37,8 @@ _cases = {
         "attr_ref": "bfe",
         "ground_elevation_file": None,
         "aggregation_area_fn": None,
-        "attribute_names": "GEOID_short",
-        "label_names": "Aggregation Label: Census Block",
+        "attribute_names": None,
+        "label_names": None,
     },
     "setup_new_composite_area_elevation": {
         "dir": "test_read",
@@ -45,7 +49,7 @@ _cases = {
         "attr_ref": None,
         "ground_elevation_file": DATADIRDEM 
         / "charleston_14m.tif",
-        "aggregation_area_fn": EXAMPLEDIR.joinpath("exposure", "aggregation_areas", "block_groups.gpkg"),
+        "aggregation_area_fn": EXAMPLEDIR.joinpath("test_read", "exposure", "aggregation_areas", "block_groups.gpkg"),
         "attribute_names": "GEOID_short",
         "label_names": "Aggregation Label: Census Block",
     },
@@ -73,6 +77,9 @@ def test_setup_new_composite_areas_ground_elevation(case):
         path_ref=_cases[case]["path_ref"],
         attr_ref=_cases[case]["attr_ref"],
         ground_elevation=_cases[case]["ground_elevation_file"],
+        aggregation_area_fn=_cases[case]["aggregation_area_fn"],
+        attribute_names=_cases[case]["attribute_names"],
+        label_names=_cases[case]["label_names"],
     )
 
     if _cases[case]["new_root"].exists():
