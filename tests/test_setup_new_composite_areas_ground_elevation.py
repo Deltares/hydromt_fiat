@@ -23,8 +23,6 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": DATADIRDEM 
-        / "charleston_14m.tif",
     },
     "setup_new_composite_area_geom": {
         "dir": "test_read",
@@ -33,8 +31,10 @@ _cases = {
         "type": "geom",
         "path_ref": DATADIR / "new_composite_areas" /  "reference_groundHeight_test.shp",
         "attr_ref": "bfe",
-        "ground_elevation_file": DATADIRDEM 
-        / "charleston_14m.tif",
+        "ground_elevation_file": None,
+        "aggregation_area_fn": None,
+        "attribute_names": "GEOID_short",
+        "label_names": "Aggregation Label: Census Block",
     },
     "setup_new_composite_area_elevation": {
         "dir": "test_read",
@@ -45,6 +45,9 @@ _cases = {
         "attr_ref": None,
         "ground_elevation_file": DATADIRDEM 
         / "charleston_14m.tif",
+        "aggregation_area_fn": EXAMPLEDIR.joinpath("exposure", "aggregation_areas", "block_groups.gpkg"),
+        "attribute_names": "GEOID_short",
+        "label_names": "Aggregation Label: Census Block",
     },
 }
 

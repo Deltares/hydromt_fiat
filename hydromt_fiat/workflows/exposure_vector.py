@@ -36,6 +36,8 @@ from hydromt_fiat.workflows.roads import (
     get_road_lengths,
 )
 
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -913,9 +915,10 @@ class ExposureVector(Exposure):
         elevation_reference: str,
         path_ref: str = None,
         attr_ref: str = None,
-        ground_elevation: Union[
-            int, float, None, str, Path, List[str], List[Path]
-        ] = None,
+        ground_elevation: Union[None, str, Path] = None,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -1015,7 +1018,9 @@ class ExposureVector(Exposure):
             # TODO: Take ground elevation from DEM?
             # For water level calculation this will not take into account the
             # non-flooded cells separately, just averaged over the whole area.
-            self.logger.warning("The ground elevation is set to 0.")
+            self.logger.warning(
+                "The ground elevation is set to 0 if no DEM is supplied."
+            )
 
             # Idea: Reduction factor for the part of the area is not build-up?
 
@@ -1079,16 +1084,33 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
+        # Update the exposure_geoms
+        self.set_geom_names("new_development_area")
+        self.set_exposure_geoms(_new_exposure_geoms)
+
+        # If the user supplied ground elevation data, assign that to the new
+        # composite areas
+        if ground_elevation is not None:
+            new_objects["Ground Elevation"] = ground_elevation_from_dem(
+                ground_elevation=ground_elevation,
+                exposure_db=new_objects,
+                exposure_geoms=_new_exposure_geoms,
+            )
+
+        # If the user supplied aggregation area data, assign that to the
+        # new composite areas
+        if aggregation_area_fn is not None:
+            new_objects = join_exposure_aggregation_areas(
+                self.get_full_gdf(new_objects),
+                aggregation_area_fn=aggregation_area_fn,
+                attribute_names=attribute_names,
+                label_names=label_names,
+            )
+
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True
         )
-
-        # Update the exposure_geoms
-        self.set_exposure_geoms(_new_exposure_geoms)
-
-        # Adding elevation data into the new objects
-        self.setup_ground_elevation(ground_elevation)
 
     def link_exposure_vulnerability(
         self,
