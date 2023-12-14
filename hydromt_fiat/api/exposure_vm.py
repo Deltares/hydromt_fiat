@@ -13,6 +13,9 @@ from .data_types import (
     DataType,
     Driver,
     ExposureBuildingsSettings,
+    ExposureSetupGroundFloorHeight,
+    ExposureSetupDamages,
+    ExposureSetupGroundElevation,
     ExposureRoadsSettings,
     ExtractionMethod,
     AggregationAreaSettings,
@@ -27,6 +30,9 @@ class ExposureViewModel:
         self.exposure_buildings_model = None
         self.exposure_roads_model = None
         self.aggregation_areas_model = None
+        self.exposure_ground_floor_height_model = None
+        self.exposure_damages_model = None
+        self.exposure_ground_elevation_model = None
 
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -51,6 +57,7 @@ class ExposureViewModel:
     def set_asset_locations_source(
         self,
         source: str,
+        ground_floor_height: str,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
@@ -60,7 +67,7 @@ class ExposureViewModel:
                 asset_locations=source,
                 occupancy_type=source,
                 max_potential_damage=source,
-                ground_floor_height=source,
+                ground_floor_height=ground_floor_height,
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
@@ -77,8 +84,8 @@ class ExposureViewModel:
 
             self.exposure.setup_buildings_from_single_source(
                 source,
-                self.exposure_buildings_model.ground_floor_height,
-                "centroid",  # TODO: MAKE FLEXIBLE
+                ground_floor_height,
+                "centroid",
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
@@ -119,6 +126,39 @@ class ExposureViewModel:
         if self.exposure:
             self.exposure.setup_extraction_method(extraction_method)
 
+    def set_ground_floor_height(
+        self,
+        source: str,
+        attribute_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: Union[float, int, None] = 10,
+    ):
+        self.exposure_ground_floor_height_model = ExposureSetupGroundFloorHeight(
+            source=source,
+            attribute_name=attribute_name,
+            method=method,
+            max_dist=max_dist,
+        )
+
+    def set_damages(
+        self,
+        source: str,
+        attribute_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: Union[float, int, None] = 10,
+    ):
+        self.exposure_damages_model = ExposureSetupDamages(
+            source=source,
+            attribute_name=attribute_name,
+            method=method,
+            max_dist=max_dist,
+        )
+
+    def set_ground_elevation(self, source: Union[int, float, None, str]):
+        self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
+            source=source
+        )
+
     def get_osm_roads(
         self,
         road_types: List[str] = [
@@ -144,7 +184,7 @@ class ExposureViewModel:
 
         self.exposure.setup_roads(
             source="OSM",
-            road_damage="default_road_max_potential_damages",
+            road_damage=1,
             road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[
@@ -155,7 +195,7 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage="default_road_max_potential_damages",
+            road_damage=1,
             unit=Units.ft.value,
         )
 

@@ -40,3 +40,11 @@ def get_max_potential_damage_roads(
         )
 
     return roads[["maximum_potential_damage", "segment_length"]]
+
+
+def get_road_lengths(roads):
+    if roads.crs.is_geographic:
+        # If the CRS is geographic, reproject to the nearest UTM zone
+        nearest_utm = utm_crs(roads.total_bounds)
+        roads = roads.to_crs(nearest_utm)
+    return roads.length

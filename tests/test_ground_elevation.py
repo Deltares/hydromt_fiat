@@ -42,8 +42,6 @@ def test_ground_elevation(case):
 
     fm.exposure.setup_ground_elevation(
         _cases[case]["ground_elevation_file"],
-        fm.exposure.exposure_db,
-        fm.exposure.get_full_gdf(fm.exposure.exposure_db),
     )
 
     # Remove the new root folder if it already exists

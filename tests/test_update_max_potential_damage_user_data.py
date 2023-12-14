@@ -17,7 +17,7 @@ _cases = {
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "max_potential_damage_file": EXAMPLEDIR
         / "fake_max_potential_damage_points.gpkg",
-        "target_attribute": "Max Potential Damage: Content",
+        "damage_types": "content",
         "attribute": "maxpotential_content",
         "method": "nearest",
         "max_dist": 50,
@@ -28,7 +28,7 @@ _cases = {
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "max_potential_damage_file": EXAMPLEDIR
         / "fake_max_potential_damage_polygons.gpkg",
-        "target_attribute": "Max Potential Damage: Structure",
+        "damage_types": "structure",
         "attribute": "maxpotential_structure",
         "method": "intersection",
         "max_dist": None,
@@ -46,17 +46,17 @@ def test_update_max_potential_damage(case):
     )
     fm.read()
 
-    target_column = _cases[case]["target_attribute"]
+    target_column = f"Max Potential Damage: {_cases[case]['damage_types'].capitalize()}"
 
     original_exposure = copy.deepcopy(fm.exposure.exposure_db)
     unique_mp_original = original_exposure[target_column].unique()
 
     fm.exposure.setup_max_potential_damage(
-        _cases[case]["max_potential_damage_file"],
-        _cases[case]["target_attribute"],    
-        _cases[case]["attribute"],
-        _cases[case]["method"],
-        _cases[case]["max_dist"]
+        max_potential_damage=_cases[case]["max_potential_damage_file"],
+        damage_types=_cases[case]["damage_types"],    
+        attr_name=_cases[case]["attribute"],
+        method=_cases[case]["method"],
+        max_dist=_cases[case]["max_dist"]
     )
 
     # Remove the new root folder if it already exists
