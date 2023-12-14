@@ -68,6 +68,7 @@ class FiatModel(GridModel):
         self._tables = dict()  # Dictionary of tables to write
         self.exposure = None
         self.vulnerability = None
+        self.svi = None
         self.vf_ids_and_linking_df = pd.DataFrame()
 
     def setup_global_settings(
@@ -705,7 +706,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = svi_exp_joined
-
+            self.svi = svi_exp_joined
+            
     def setup_equity_data(
         self,
         census_key: str,
