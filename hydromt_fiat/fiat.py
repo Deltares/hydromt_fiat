@@ -714,7 +714,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = svi_exp_joined
-
+    
+            
     def setup_equity_data(
         self,
         census_key: str,

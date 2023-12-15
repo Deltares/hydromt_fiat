@@ -1,4 +1,5 @@
 from typing import Any, Union, List
+import geopandas as gpd
 
 import tomli_w
 from hydromt import DataCatalog
@@ -12,6 +13,7 @@ from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
 from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
+
 
 
 class HydroMtViewModel:
@@ -102,6 +104,21 @@ class HydroMtViewModel:
     def run_hydromt_fiat(self):
         self.save_data_catalog()
         config_yaml = self.build_config_yaml()
-
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
+
+        exposure_db = self.fiat_model.exposure.exposure_db
+        if "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" not in config_yaml.dict():
+            # Only buildings are set up
+            buildings_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            return buildings_gdf, None
+        elif "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+            # Buildings and roads are set up
+            full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            roads_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            return buildings_gdf, roads_gdf
+        elif "setup_exposure_buildings" not in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+            # Only roads are set up
+            roads_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            return None, roads_gdf
