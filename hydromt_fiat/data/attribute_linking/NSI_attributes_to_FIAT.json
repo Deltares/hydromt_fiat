@@ -8,5 +8,5 @@
     "Ground Floor Height": "found_ht",
     "Ground Elevation": "ground_elv",
     "geometry": "geometry",
-    "Aggregation Label: Census Block": "cbfips"
+    "Aggregation Label: Census Blockgroup": "cbfips"
 }
