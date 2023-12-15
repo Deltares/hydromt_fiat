@@ -32,10 +32,13 @@ class HydroMtViewModel:
         HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
 
         logger = setuplog("hydromt_fiat", log_level=10)
+        # NOTE: with w+ hydromt_fiat allows to create a model in a folder that 
+        # already contains data, with w this is not allowed (I would say the 
+        # latter is preferred, but w is handy for testing)
         self.fiat_model = FiatModel(
             data_libs=catalog_path,
             root=hydromt_fiat_path,
-            mode="w+",
+            mode="w+",  
             logger=logger,
         )
 
