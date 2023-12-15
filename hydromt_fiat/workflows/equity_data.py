@@ -185,6 +185,7 @@ class EquityData:
 
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
 
+        # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
         # Delete the shapefile, that is not used anymore
         shp_folder = Path(self.save_folder) / "shapefiles"
         try:
