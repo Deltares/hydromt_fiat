@@ -106,5 +106,19 @@ class HydroMtViewModel:
         config_yaml = self.build_config_yaml()
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
-        updated_exposure_output =  gpd.GeoDataFrame(self.fiat_model.exposure.exposure_db.merge(self.exposure_vm.exposure.exposure_geoms[0], on ="Object ID"), geometry="geometry")
-        return updated_exposure_output
+
+        exposure_db = self.fiat_model.exposure.exposure_db
+        if "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" not in config_yaml.dict():
+            # Only buildings are set up
+            buildings_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            return buildings_gdf, None
+        elif "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+            # Buildings and roads are set up
+            full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            roads_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            return buildings_gdf, roads_gdf
+        elif "setup_exposure_buildings" not in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+            # Only roads are set up
+            roads_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            return None, roads_gdf

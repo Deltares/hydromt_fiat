@@ -9,6 +9,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List
+from hydromt_fiat.workflows.social_vulnerability_index import list_of_states
 
 
 class EquityData:
@@ -54,7 +55,7 @@ class EquityData:
         states_done = []
         for state in state_abbreviation:
             if state not in states_done:
-                self.logger.info(f"The states for which census data will be downloaded is (it's an abbreviation): {state}")
+                self.logger.info(f"The states for which census data will be downloaded is: {list_of_states(inverted=False)[state]}")
                 state_obj = getattr(states, state)
                 self.state_fips.append(state_obj.fips)
                 states_done.append(state)
