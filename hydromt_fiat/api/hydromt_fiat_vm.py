@@ -1,4 +1,5 @@
 from typing import Any, Union, List
+import geopandas as gpd
 
 import tomli_w
 from hydromt import DataCatalog
@@ -105,5 +106,5 @@ class HydroMtViewModel:
         config_yaml = self.build_config_yaml()
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
-        updated_exposure_output = self.fiat_model.exposure.exposure_db
+        updated_exposure_output =  gpd.GeoDataFrame(self.fiat_model.exposure.exposure_db.merge(self.exposure_vm.exposure.exposure_geoms[0], on ="Object ID"), geometry="geometry")
         return updated_exposure_output
