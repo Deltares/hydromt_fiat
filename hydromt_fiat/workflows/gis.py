@@ -10,6 +10,8 @@ import numpy as np
 import xarray as xr
 from pathlib import Path
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
+import time
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -287,6 +289,15 @@ def ground_elevation_from_dem(
     return exposure_db["Ground Elevation"]
 
 
+def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):
+    try:
+        return geolocator.reverse(xycoords)
+    except GeocoderTimedOut:
+        if attempt <= max_attempts:
+            return do_geocode(geolocator, xycoords, attempt=attempt+1)
+        raise
+
+    
 def locate_from_bounding_box(bounding_box):
     geolocator = Nominatim(user_agent="hydromt-fiat")
 
@@ -296,9 +307,13 @@ def locate_from_bounding_box(bounding_box):
         (bounding_box[3], bounding_box[0]),
         (bounding_box[3], bounding_box[2]),
     ]
-    locations = [geolocator.reverse(s) for s in search]
+    # Find the county and state of the corner points (corners of the bounding box) of the exposure data
+    locations = [do_geocode(geolocator, s) for s in search]
     locations_list = [location[0].split(", ") for location in locations]
     locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
+
+    # TODO: Read from the CSV the counties and check whether the name of the county is in the outcome
+    # of the geolocator
     counties = [y for x in locations_list for y in x if ("county" in y.lower()) or ("parish" in y.lower())]
     states = [x[-2] for x in locations_list_no_numbers]
 
