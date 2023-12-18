@@ -12,7 +12,7 @@ def process_value(value):
 
 def join_exposure_aggregation_multiple_areas(
     exposure_gdf: gpd.GeoDataFrame,
-    aggregation_area_fn: Union[List[str], List[Path]],
+    aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
     label_names: List[str],
 ) -> gpd.GeoDataFrame:
@@ -35,7 +35,10 @@ def join_exposure_aggregation_multiple_areas(
         _description_
     """
     for file_path, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
-        aggregation_gdf = gpd.read_file(file_path)
+        if isinstance(file_path, str) or isinstance(file_path, Path):
+            aggregation_gdf = gpd.read_file(file_path)
+        else:
+            aggregation_gdf = file_path
 
         ## check the projection of both gdf and if not match, reproject
         if exposure_gdf.crs != aggregation_gdf.crs:
@@ -50,7 +53,7 @@ def join_exposure_aggregation_multiple_areas(
         exposure_gdf = gpd.sjoin(
             exposure_gdf,
             aggregation_gdf[["geometry", attribute_name]],
-            op="intersects",
+            predicate="intersects",
             how="left",
         )
         
@@ -69,7 +72,7 @@ def join_exposure_aggregation_multiple_areas(
 
 def join_exposure_aggregation_areas(
     exposure_gdf: gpd.GeoDataFrame,
-    aggregation_area_fn: Union[List[str], List[Path], str, Path],
+    aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame],
     attribute_names: Union[List[str], str],
     label_names: Union[List[str], str],
 ) -> gpd.GeoDataFrame:
@@ -86,7 +89,7 @@ def join_exposure_aggregation_areas(
     label_names : Union[List[str], str]
         Name of the label(s) to join.
     """
-    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path):
+    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path) or isinstance(aggregation_area_fn, gpd.GeoDataFrame):
         aggregation_area_fn = [aggregation_area_fn]
     if isinstance(attribute_names, str):
         attribute_names = [attribute_names]

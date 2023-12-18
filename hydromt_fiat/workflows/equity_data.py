@@ -9,6 +9,8 @@ from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List
+import shutil
+from hydromt_fiat.workflows.social_vulnerability_index import list_of_states
 
 
 class EquityData:
@@ -25,7 +27,7 @@ class EquityData:
 
         self.pd_domain_scores_geo = pd.DataFrame()
         self.logger = logger
-        self.svi_data_shp = gpd.GeoDataFrame()
+        self.equity_data_shp = gpd.GeoDataFrame()
         self.block_groups = gpd.GeoDataFrame()
 
     def set_up_census_key(self, census_key: str):
@@ -54,7 +56,7 @@ class EquityData:
         states_done = []
         for state in state_abbreviation:
             if state not in states_done:
-                self.logger.info(f"The states for which census data will be downloaded is (it's an abbreviation): {state}")
+                self.logger.info(f"The states for which census data will be downloaded is: {list_of_states(inverted=False)[state]}")
                 state_obj = getattr(states, state)
                 self.state_fips.append(state_obj.fips)
                 states_done.append(state)
@@ -177,11 +179,18 @@ class EquityData:
 
             block_groups_shp = shp.dissolve(by=attrs, as_index=False)
             block_groups_shp = block_groups_shp[attrs + ["geometry"]]
-            # block_groups["Census_Bg"] = block_groups['TRACTCE' + code].astype(str) + "-block" + block_groups['BLKGRPCE' + code].astype(str)
             block_groups_shp["GEO_ID"] = "1500000US" + block_groups_shp['STATEFP' + code].astype(str) + block_groups_shp['COUNTYFP' + code].astype(str) + block_groups_shp['TRACTCE' + code].astype(str) + block_groups_shp['BLKGRPCE' + code].astype(str)
+            block_groups_shp["GEOID_short"] = block_groups_shp["GEO_ID"].str.split("US").str[1]
             block_groups_list.append(block_groups_shp)
 
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
+
+        # Delete the shapefile, that is not used anymore
+        shp_folder = Path(self.save_folder) / "shapefiles"
+        try:
+            shutil.rmtree(shp_folder)
+        except Exception as e:
+            self.logger.warning(f"Folder {shp_folder} cannot be removed: {e}")
 
     def merge_equity_data_shp(self):
         """Merges the geometry data with the equity_data downloaded"""
@@ -191,8 +200,14 @@ class EquityData:
         # Delete the rows that do not have a geometry column
         self.equity_data_shp = self.equity_data_shp.loc[self.equity_data_shp["geometry"].notnull()]
 
-        #self.svi_data_shp.drop(columns=columns_to_drop, inplace=True)
         self.equity_data_shp = self.equity_data_shp.to_crs(epsg=4326)
         self.logger.info(
             "The geometry information was successfully added to the equity information"
         )
+
+    def get_block_groups(self):
+        return self.block_groups[["GEOID_short", "geometry"]]
+    
+    def clean(self):
+        """Removes unnecessary columns"""
+        self.equity_data_shp = self.equity_data_shp[["GEOID_short", "TotalPopulationBG", "PerCapitaIncomeBG"]]

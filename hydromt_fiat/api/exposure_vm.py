@@ -60,7 +60,7 @@ class ExposureViewModel:
         ground_floor_height: str,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
-    ):
+    ) -> None:
         if source == "NSI":
             # NSI is already defined in the data catalog
             self.exposure_buildings_model = ExposureBuildingsSettings(
@@ -72,35 +72,6 @@ class ExposureViewModel:
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
             )
-
-            # Download NSI from the database
-            region = self.data_catalog.get_geodataframe("area_of_interest")
-            self.exposure = ExposureVector(
-                data_catalog=self.data_catalog,
-                logger=self.logger,
-                region=region,
-                crs=crs,
-            )
-
-            self.exposure.setup_buildings_from_single_source(
-                source,
-                ground_floor_height,
-                "centroid",
-            )
-            primary_object_types = (
-                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
-            )
-            secondary_object_types = (
-                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
-            )
-            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-
-            return (
-                gdf,
-                primary_object_types,
-                secondary_object_types,
-            )
-
         elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
             # make calls to backend to derive file meta info such as crs, data type and driver
@@ -118,6 +89,19 @@ class ExposureViewModel:
             # make backend calls to create translation file with fiat_key_maps
             print(catalog_entry)
         # write to data catalog
+
+    def get_object_types(self):
+        if self.exposure:
+            primary_object_types = (
+                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+            )
+            secondary_object_types = (
+                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+            )
+            return (
+                primary_object_types,
+                secondary_object_types,
+            )
 
     def set_asset_data_source(self, source):
         self.exposure_buildings_model.asset_locations = source
@@ -159,6 +143,27 @@ class ExposureViewModel:
             source=source
         )
 
+    def set_roads_settings(
+        self,
+        road_types: List[str] = [
+            "motorway",
+            "motorway_link",
+            "trunk",
+            "trunk_link",
+            "primary",
+            "primary_link",
+            "secondary",
+            "secondary_link",
+        ],
+    ):
+        self.exposure_roads_model = ExposureRoadsSettings(
+            roads_fn="OSM",
+            road_types=road_types,
+            road_damage=1,
+            unit=Units.ft.value,
+        )
+
+            
     def get_osm_roads(
         self,
         road_types: List[str] = [
