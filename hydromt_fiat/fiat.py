@@ -717,8 +717,7 @@ class FiatModel(GridModel):
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
-            self.exposure.exposure_db.loc[filter_roads] = svi_exp_joined
-
+            self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
     def setup_equity_data(
         self,
         census_key: str,
