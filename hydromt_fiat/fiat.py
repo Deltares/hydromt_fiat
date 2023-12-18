@@ -289,7 +289,8 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
-        occupancy_type_field: Union[str, None] = None,
+        occupancy_attr: Union[str, None] = None,
+        occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
         country: Union[str, None] = None,
@@ -312,7 +313,7 @@ class FiatModel(GridModel):
             height to the assets.
         unit : str
             The unit of the ground_floor_height
-        occupancy_type_field : Union[str, None], optional
+        occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
             only contains one column with the occupancy type).
@@ -329,7 +330,7 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage:
+        if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
@@ -348,10 +349,17 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
-                occupancy_type_field,
+                occupancy_attr,
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+            )
+
+        if asset_locations != occupancy_type:
+            self.exposure.setup_occupancy_type(
+                occupancy_source=occupancy_type,
+                occupancy_attr=occupancy_attr,
+                type_add=occupancy_object_type,
             )
 
         # Link the damage functions to assets

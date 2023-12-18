@@ -33,6 +33,7 @@ class ExposureViewModel:
         self.exposure_ground_floor_height_model = None
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
+        self.exposure_occupancy_type_model = None
 
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -181,7 +182,7 @@ class ExposureViewModel:
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
             source=source
         )
-
+    
     def set_roads_settings(
         self,
         road_types: List[str] = [

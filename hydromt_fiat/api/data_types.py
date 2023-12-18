@@ -92,7 +92,7 @@ class ExposureSetupDamages(BaseModel):
     method: Union[str, List[str], None]
     max_dist: Union[float, int, None]
 
-    
+
 class RoadVulnerabilitySettings(BaseModel):
     threshold_value: float
     min_hazard_value: float

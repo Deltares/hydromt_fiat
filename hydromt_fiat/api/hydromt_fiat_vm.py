@@ -67,6 +67,7 @@ class HydroMtViewModel:
             setup_output=self.model_vm.output_model,
         )
         
+        # Make sure the order of the configurations is correct
         if self.vulnerability_vm.vulnerability_buildings_model:
             config_yaml.setup_vulnerability = self.vulnerability_vm.vulnerability_buildings_model
 
@@ -76,15 +77,15 @@ class HydroMtViewModel:
         if self.exposure_vm.aggregation_areas_model:
             config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
         
-        if self.exposure_vm.exposure_roads_model:
-            config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
-        
         if self.exposure_vm.exposure_damages_model:
             config_yaml.update_max_potential_damage = self.exposure_vm.exposure_damages_model
         
         if self.exposure_vm.exposure_ground_floor_height_model:
             config_yaml.update_ground_floor_height = self.exposure_vm.exposure_ground_floor_height_model
         
+        if self.exposure_vm.exposure_roads_model:
+            config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
+            
         if self.vulnerability_vm.vulnerability_roads_model:
             config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
                 
@@ -107,6 +108,11 @@ class HydroMtViewModel:
     def run_hydromt_fiat(self):
         self.save_data_catalog()
         config_yaml = self.build_config_yaml()
+
+        # TODO: add some more checks to see if HydroMT-FIAT can be run
+        if "setup_vulnerability" not in config_yaml.dict():
+            raise Exception("Please set up the vulnerability data before creating a Delft-FIAT model.")
+
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
 

@@ -283,7 +283,7 @@ class ExposureVector(Exposure):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
-        occupancy_type_field: Union[str, None] = None,
+        occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
         attr_name_gfh: Union[str, List[str], None] = None,
@@ -293,7 +293,7 @@ class ExposureVector(Exposure):
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
-        self.setup_occupancy_type(occupancy_source, occupancy_type_field)
+        self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(
             ground_floor_height, attr_name_gfh, method_gfh, max_dist
@@ -368,7 +368,7 @@ class ExposureVector(Exposure):
         self.logger.info("Setting exposure geometries...")
         self.exposure_geoms.append(gdf)
 
-    def setup_occupancy_type(self, occupancy_source: str, occupancy_attr: str) -> None:
+    def setup_occupancy_type(self, occupancy_source: str, occupancy_attr: str, type_add: str = "Primary Object Type") -> None:
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
             occupancy_map = self.setup_occupancy_type_from_osm()
@@ -378,9 +378,9 @@ class ExposureVector(Exposure):
                 occupancy_source, geom=self.region
             )
             occupancy_map.rename(
-                columns={occupancy_attr: "Primary Object Type"}, inplace=True
+                columns={occupancy_attr: type_add}, inplace=True
             )
-            occupancy_types = ["Primary Object Type"]
+            occupancy_types = [type_add]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:
@@ -430,7 +430,7 @@ class ExposureVector(Exposure):
             # Update the exposure database
             self.exposure_db = gdf.copy()
         else:
-            print(
+            self.logger.warning(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
