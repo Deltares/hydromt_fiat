@@ -130,14 +130,25 @@ class ExposureViewModel:
             print(catalog_entry)
         # write to data catalog
 
+    def update_occupancy_types(self, source, attribute, type_add):
+        if self.exposure:
+            self.exposure.setup_occupancy_type(source, attribute, type_add)
+
     def get_object_types(self):
         if self.exposure:
-            primary_object_types = (
-                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
-            )
-            secondary_object_types = (
-                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
-            )
+            primary_object_types = []
+            secondary_object_types = []
+
+            if "Primary Object Type" in self.exposure.exposure_db.columns:
+                primary_object_types = (
+                    self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+                )
+            
+            if "Secondary Object Type" in self.exposure.exposure_db.columns:
+                secondary_object_types = (
+                    self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                )
+    
             return (
                 primary_object_types,
                 secondary_object_types,

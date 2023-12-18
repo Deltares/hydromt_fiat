@@ -368,7 +368,12 @@ class ExposureVector(Exposure):
         self.logger.info("Setting exposure geometries...")
         self.exposure_geoms.append(gdf)
 
-    def setup_occupancy_type(self, occupancy_source: str, occupancy_attr: str, type_add: str = "Primary Object Type") -> None:
+    def setup_occupancy_type(
+        self,
+        occupancy_source: str,
+        occupancy_attr: str,
+        type_add: str = "Primary Object Type",
+    ) -> None:
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
             occupancy_map = self.setup_occupancy_type_from_osm()
@@ -377,9 +382,7 @@ class ExposureVector(Exposure):
             occupancy_map = self.data_catalog.get_geodataframe(
                 occupancy_source, geom=self.region
             )
-            occupancy_map.rename(
-                columns={occupancy_attr: type_add}, inplace=True
-            )
+            occupancy_map.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
@@ -426,9 +429,18 @@ class ExposureVector(Exposure):
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
+            gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
 
             # Update the exposure database
-            self.exposure_db = gdf.copy()
+            if type_add in self.exposure_db:
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="Object ID", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "Primary Object Type", "pot"
+                )
+            else:
+                self.exposure_db = gdf.copy()
         else:
             self.logger.warning(
                 "NotImplemented the spatial join of the exposure data with the "
