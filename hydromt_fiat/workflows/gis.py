@@ -10,7 +10,7 @@ import numpy as np
 import xarray as xr
 from pathlib import Path
 from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 
 
@@ -294,6 +294,12 @@ def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):
         return geolocator.reverse(xycoords)
     except GeocoderTimedOut:
         if attempt <= max_attempts:
+            time.sleep(1)
+            return do_geocode(geolocator, xycoords, attempt=attempt+1)
+        raise
+    except GeocoderUnavailable:
+        if attempt <= max_attempts:
+            time.sleep(1)
             return do_geocode(geolocator, xycoords, attempt=attempt+1)
         raise
 
