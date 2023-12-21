@@ -611,7 +611,7 @@ class FiatModel(GridModel):
             "hazard.settings.subset",
             [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
             if not risk_output
-            else sorted_rp,
+            else sorted_names,
         )
 
         self.set_config(
