@@ -519,9 +519,7 @@ class FiatModel(GridModel):
             else:
                 raise ValueError("The hazard map provided should be a path like object or an DataArray")
             # Convert to units of the exposure data if required
-            if (
-                self.exposure in locals() or self.exposure in globals()
-            ):  # change to be sure that the unit information is available from the expousure dataset
+            if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
                 if self.exposure.unit != da.units:
                     da = da * unit_conversion_factor
 
