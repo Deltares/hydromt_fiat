@@ -1,7 +1,7 @@
 from enum import Enum
-from typing_extensions import Optional, TypedDict, Union
+from typing_extensions import Optional, TypedDict, Union, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Extra
 
 
 class ExtractionMethod(str, Enum):
@@ -10,8 +10,8 @@ class ExtractionMethod(str, Enum):
 
 
 class Units(str, Enum):
-    m = "meter"
-    ft = "feet"
+    m = "m"
+    ft = "ft"
 
 
 class Category(str, Enum):
@@ -46,43 +46,85 @@ class DataCatalogEntry(BaseModel):
     meta: Meta
 
 
-class ModelIni(BaseModel):
-    site_name: str
-    scenario_name: str
+class GlobalSettings(BaseModel):
+    crs: Union[str, int]
+
+
+class OutputSettings(BaseModel):
     output_dir: str
-    crs: str
+    output_csv_name: str
+    output_vector_name: str
 
 
-class ExposureVectorIni(BaseModel):
+class VulnerabilitySettings(BaseModel):
+    vulnerability_fn: str
+    vulnerability_identifiers_and_linking_fn: str
+    unit: Units
+    functions_mean: Union[str, list]
+    functions_max: Union[str, list, None]
+    step_size: Union[float, None]
+
+
+class ExposureBuildingsSettings(BaseModel):
     asset_locations: str
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: str
     unit: Units
     extraction_method: ExtractionMethod
+    damage_types : Union[List[str], None]
 
 
-class HazardIni(BaseModel):
-    hazard_map_fn: str
-    hazard_type: str
-    return_period: Optional[Union[int, None]] = None
-    crs: Optional[str] = None
-    no_data: Optional[int] = -9999
-    var: Optional[Union[str, None]] = None
-    chunks: Optional[Union[int, str]] = "auto"
-    no_data: Optional[int] = -9999
-    var: Optional[Union[str, None]] = None
-    chunks: Optional[Union[int, str]] = "auto"
+class ExposureSetupGroundFloorHeight(BaseModel):
+    source: str
+    attribute_name: Union[str, List[str], None]
+    method: Union[str, List[str], None]
+    max_dist: Union[float, int, None]
 
 
-class VulnerabilityIni(BaseModel):
-    vulnerability_fn: str
-    link_table: str
-    units: Units
+class ExposureSetupGroundElevation(BaseModel):
+    source: Union[int, float, None, str]
+
+    
+class ExposureSetupDamages(BaseModel):
+    source: str
+    attribute_name: Union[str, List[str], None]
+    method: Union[str, List[str], None]
+    max_dist: Union[float, int, None]
+
+    
+class RoadVulnerabilitySettings(BaseModel):
+    threshold_value: float
+    min_hazard_value: float
+    max_hazard_value: float
+    step_hazard_value: float
+    vertical_unit: Units
 
 
-class ConfigIni(BaseModel):
-    setup_config: ModelIni
-    setup_hazard: HazardIni
-    setup_vulnerability: VulnerabilityIni
-    setup_exposure_vector: ExposureVectorIni
+class ExposureRoadsSettings(BaseModel):
+    roads_fn: str
+    road_types: Union[List[str], bool]
+    road_damage: int
+    unit: Units
+
+
+class AggregationAreaSettings(BaseModel):
+    aggregation_area_fn: Union[List[str], str]
+    attribute_names: Union[List[str], str]
+    label_names: Union[List[str], str]
+
+
+class SocialVulnerabilityIndexSettings(BaseModel):
+    census_key: str
+    codebook_fn: str
+    year_data: int
+
+                
+class EquityDataSettings(BaseModel):
+    census_key: str
+    year_data: int
+
+
+class ConfigYaml(BaseModel, extra=Extra.allow):
+    setup_global_settings: GlobalSettings
+    setup_output: OutputSettings

@@ -10,15 +10,16 @@ authors = [
 	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
 	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
+    {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
 ]
 requires-python = ">=3.8"
 dependencies = [
     "hydromt==0.8.0",
     "hydromt_sfincs",
     "geopandas",
+    "geopy",
     "numpy",
     "pandas",
-    "pygeos",
     "pyogrio",
     "tomli-w",
     "tomli",
@@ -26,7 +27,8 @@ dependencies = [
 	"pydantic==1.10.9",
 	"osmnx",
 	"census",
-	"us"
+	"us",
+    "xarray-spatial"
 ]
 readme = "README.rst"
 classifiers = [
@@ -34,8 +36,8 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Hydrology",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Topic :: Scientific/Engineering :: Climate impact",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
 dynamic = ['version', 'description']

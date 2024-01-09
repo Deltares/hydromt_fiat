@@ -1,8 +1,11 @@
-from hydromt_fiat.api.data_types import ModelIni
+from hydromt_fiat.api.data_types import OutputSettings, GlobalSettings
 
 
 class ModelViewModel:
     def __init__(self):
-        self.config_model = ModelIni(
-            site_name="", scenario_name="", output_dir="", crs=""
+        self.global_settings_model = GlobalSettings(crs=4326)
+        self.output_model = OutputSettings(
+            output_dir="output",
+            output_csv_name="output.csv",
+            output_vector_name="spatial.gpkg",
         )

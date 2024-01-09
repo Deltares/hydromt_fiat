@@ -7,19 +7,36 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
-from hydromt.gis_utils import utm_crs
 from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
+    get_roads_from_osm,
 )
 
-from .damage_values import preprocess_jrc_damage_values, preprocess_hazus_damage_values
-from .exposure import Exposure
-from .utils import detect_delimiter
-from .vulnerability import Vulnerability
+from hydromt_fiat.workflows.damage_values import (
+    preprocess_jrc_damage_values,
+    preprocess_hazus_damage_values,
+)
+from hydromt_fiat.workflows.exposure import Exposure
+from hydromt_fiat.workflows.utils import detect_delimiter
+from hydromt_fiat.workflows.vulnerability import Vulnerability
+from hydromt_fiat.workflows.gis import (
+    get_area,
+    sjoin_largest_area,
+    get_crs_str_from_gdf,
+    join_spatial_data,
+    ground_elevation_from_dem,
+)
+
+from hydromt_fiat.workflows.roads import (
+    get_max_potential_damage_roads,
+    get_road_lengths,
+)
+
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 
 
 class ExposureVector(Exposure):
@@ -74,8 +91,13 @@ class ExposureVector(Exposure):
         )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
-        self.source = gpd.GeoDataFrame()
         self.unit = unit
+        self._geom_names = list()  # A list of (original) names of the geometry (files)
+
+    def bounding_box(self):
+        if len(self.exposure_geoms) > 0:
+            gdf = gpd.GeoDataFrame(pd.concat(self.exposure_geoms, ignore_index=True))
+            return gdf.total_bounds
 
     def read_table(self, fn: Union[str, Path]):
         """Read the Delft-FIAT exposure data.
@@ -102,13 +124,15 @@ class ExposureVector(Exposure):
             fn = [fn]
 
         for f in fn:
+            self.set_geom_names(Path(f).stem)
             self.set_exposure_geoms(gpd.read_file(f, engine="pyogrio"))
 
-    def setup_from_single_source(
+    def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -170,15 +194,89 @@ class ExposureVector(Exposure):
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
-        self.setup_ground_floor_height(ground_floor_height)
+        # Set the ground floor height if not yet set
+        if ground_floor_height != source:
+            self.setup_ground_floor_height(ground_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
 
-        # Set the geoms from the X and Y coordinates
-        self.set_exposure_geoms_from_xy()
+        # Set the exposure_geoms
+        self.set_exposure_geoms(
+            gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]], crs=self.crs)
+        )
 
-    def setup_from_multiple_sources(
+        # Set the name to the geom_names
+        self.set_geom_names("buildings")
+
+        # Set the ground floor height if not yet set
+        # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
+        if ground_elevation_file is not None:
+            self.setup_ground_elevation(
+                ground_elevation_file,
+            )
+
+        # Remove the geometry column from the exposure_db
+        if "geometry" in self.exposure_db:
+            del self.exposure_db["geometry"]
+
+    def setup_roads(
+        self,
+        source: Union[str, Path],
+        road_damage: Union[str, Path, int],
+        road_types: Union[str, List[str], bool] = True,
+    ):
+        self.logger.info("Setting up roads...")
+        if str(source).upper() == "OSM":
+            polygon = self.region["geometry"].values[
+                0
+            ]  # TODO check if this works each time
+            roads = get_roads_from_osm(polygon, road_types)
+
+            if roads.empty:
+                self.logger.warning(
+                    "No roads found in the selected region from source " f"{source}."
+                )
+
+            # Rename the columns to FIAT names
+            roads.rename(
+                columns={"highway": "Secondary Object Type", "name": "Object Name"},
+                inplace=True,
+            )
+
+            # Add an Object ID
+            roads["Object ID"] = range(1, len(roads.index) + 1)
+        else:
+            roads = self.data_catalog.get_geodataframe(source, geom=self.region)
+            # add the function to segmentize the roads into certain segments
+
+        # Add the Primary Object Type and damage function, which is currently not set up to be flexible
+        roads["Primary Object Type"] = "roads"
+        roads["Damage Function: Structure"] = "roads"
+
+        self.logger.info(
+            "The damage function 'roads' is selected for all of the structure damage to the roads."
+        )
+
+        if isinstance(road_damage, str):
+            # Add the max potential damage and the length of the segments to the roads
+            road_damage = self.data_catalog.get_dataframe(road_damage)
+            roads[
+                ["Max Potential Damage: Structure", "Segment Length [m]"]
+            ] = get_max_potential_damage_roads(roads, road_damage)
+        elif isinstance(road_damage, int):
+            roads["Segment Length [m]"] = get_road_lengths(roads)
+            roads["Max Potential Damage: Structure"] = road_damage
+
+        self.set_exposure_geoms(roads[["Object ID", "geometry"]])
+        self.set_geom_names("roads")
+
+        del roads["geometry"]
+
+        # Update the exposure_db
+        self.exposure_db = pd.concat([self.exposure_db, roads]).reset_index(drop=True)
+
+    def setup_buildings_from_multiple_sources(
         self,
         asset_locations: Union[str, Path],
         occupancy_source: Union[str, Path],
@@ -188,13 +286,20 @@ class ExposureVector(Exposure):
         occupancy_type_field: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
+        attr_name_gfh: Union[str, List[str], None] = None,
+        method_gfh: Union[str, List[str], None] = "nearest",
+        max_dist: Union[int, float, None] = 10,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_type_field)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
-        self.setup_ground_floor_height(ground_floor_height)
+        self.setup_ground_floor_height(
+            ground_floor_height, attr_name_gfh, method_gfh, max_dist
+        )
         self.setup_extraction_method(extraction_method)
+        self.setup_ground_elevation(ground_elevation_file)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -208,12 +313,13 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.iloc[0][0]
+            polygon = self.region.iloc[0].values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
                 self.logger.warning(
-                    f"No assets found in the selected region from source {asset_locations}."
+                    "No assets found in the selected region from source "
+                    f"{asset_locations}."
                 )
 
             # Rename the osmid column to Object ID
@@ -224,8 +330,7 @@ class ExposureVector(Exposure):
             )
 
         # Set the CRS of the exposure data
-        source_data_authority = assets.crs.to_authority()
-        self.crs = source_data_authority[0] + ":" + source_data_authority[1]
+        self.crs = get_crs_str_from_gdf(assets.crs)
 
         # Check if the 'Object ID' column exists and if so, is unique
         if "Object ID" not in assets.columns:
@@ -235,7 +340,28 @@ class ExposureVector(Exposure):
                 assets["Object ID"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
+        # and set the geom name
         self.set_exposure_geoms(assets)
+        self.set_geom_names("buildings")
+
+    def set_geom_names(self, name: str) -> None:
+        """Append a name to the list of geometry names `geom_names`."""
+        self.logger.info(f"Setting geometry name to {name}...")
+        self._geom_names.append(name)
+
+    @property
+    def geom_names(self) -> List[str]:
+        """Returns a list with the geom names."""
+        if len(self._geom_names) > 0 and len(self.exposure_geoms) > 0:
+            return self._geom_names
+        elif len(self._geom_names) == 0 and len(self.exposure_geoms) == 1:
+            return ["exposure"]
+        else:
+            self.logger.warning(
+                "No geometry names found, returning a list with the default names "
+                "'exposure_X'."
+            )
+            return [f"exposure_{i}" for i in range(len(self.exposure_geoms))]
 
     def set_exposure_geoms(self, gdf: gpd.GeoDataFrame) -> None:
         """Append a GeoDataFrame to the exposure geometries `exposure_geoms`."""
@@ -270,48 +396,45 @@ class ExposureVector(Exposure):
 
         # Spatially join the exposure data with the occupancy map
         if len(self.exposure_geoms) == 1:
-            self.exposure_db = gpd.sjoin(
-                self.exposure_geoms[0],
-                occupancy_map[to_keep],
-                how="left",
-                op="intersects",
+            # If there is only one exposure geom, do the spatial join with the
+            # occupancy_map. Only take the largest overlapping object from the
+            # occupancy_map.
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
+
+            # Remove the objects that do not have a Primary Object Type, that were not
+            # overlapping with the land use map, or that had a land use type of 'nan'.
+            nr_without_primary_object_type = len(
+                gdf.loc[gdf["Primary Object Type"] == ""].index
             )
+            if nr_without_primary_object_type > 0:
+                self.logger.warning(
+                    f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                    "Type and will be removed from the exposure data."
+                )
+            gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+
+            nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
+            if nr_without_landuse > 0:
+                self.logger.warning(
+                    f"{nr_without_landuse} objects were not overlapping with the "
+                    "land use data and will be removed from the exposure data."
+                )
+            gdf = gdf.loc[gdf["Primary Object Type"].notna()]
+
+            # Update the exposure geoms
+            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+
+            # Remove the geometry column from the exposure database
+            del gdf["geometry"]
+
+            # Update the exposure database
+            self.exposure_db = gdf.copy()
         else:
             print(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
             NotImplemented
-
-        # Remove the objects that do not have a Primary Object Type, that were not
-        # overlapping with the land use map, or that had a land use type of 'nan'.
-        nr_without_primary_object_type = len(
-            self.exposure_db.loc[self.exposure_db["Primary Object Type"] == ""].index
-        )
-        self.logger.warning(
-            f"{nr_without_primary_object_type} objects do not have a Primary Object "
-            "Type and will be removed from the exposure data."
-        )
-        self.exposure_db = self.exposure_db.loc[
-            self.exposure_db["Primary Object Type"] != ""
-        ]
-
-        nr_without_landuse = len(
-            self.exposure_db.loc[self.exposure_db["Primary Object Type"].isna()].index
-        )
-        self.logger.warning(
-            f"{nr_without_landuse} objects were not overlapping with the "
-            "land use data and will be removed from the exposure data."
-        )
-        self.exposure_db = self.exposure_db.loc[
-            self.exposure_db["Primary Object Type"].notna()
-        ]
-
-        # Update the exposure geoms
-        self.exposure_geoms[0] = self.exposure_db[["Object ID", "geometry"]]
-
-        # Remove the geometry column from the exposure database
-        del self.exposure_db["geometry"]
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -378,7 +501,9 @@ class ExposureVector(Exposure):
         occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
             landuse_to_jrc_mapping
         )
-        occupancy_map["Secondary Object Type"] = occupancy_map[occupancy_attribute]
+        occupancy_map.rename(
+            columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
+        )
 
         return occupancy_map
 
@@ -390,16 +515,58 @@ class ExposureVector(Exposure):
 
     def setup_ground_floor_height(
         self,
-        ground_floor_height: Union[int, float],
+        ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
     ) -> None:
-        # Set the ground floor height column.
-        # If the Ground Floor Height is input as a number, assign all objects with
-        # the same Ground Floor Height.
+        """Set the ground floor height of the exposure data. This function overwrites
+        the existing Ground Floor Height column if it already exists.
+
+        Parameters
+        ----------
+        ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
+            A number to set the Ground Floor Height of all assets to the same value, a
+            path to a file that contains the Ground Floor Height of each asset, or a
+            list of paths to files that contain the Ground Floor Height of each asset,
+            in the order of preference (the first item in the list gets the highest
+            priority in assigning the values).
+        attr_name : Union[str, List[str]], optional
+            The name of the attribute that contains the Ground Floor Height in the
+            file(s) that are submitted. If multiple `ground_floor_height` files are
+            submitted, the attribute names are linked to the files in the same order as
+            the files are submitted. By default None.
+        method : Union[str, List[str]], optional
+            The method to use to assign the Ground Floor Height to the assets. If
+            multiple `ground_floor_height` files are submitted, the methods are linked
+            to the files in the same order as the files are submitted. The method can
+            be either 'nearest' (nearest neighbor) or 'intersection'. By default
+            'nearest'.
+        max_dist : float
+            The maximum distance for the nearest join measured in meters, by default
+            set to 10 meters.
+        """
         if ground_floor_height:
-            if type(ground_floor_height) == int or type(ground_floor_height) == float:
+            if isinstance(ground_floor_height, int) or isinstance(
+                ground_floor_height, float
+            ):
+                # If the Ground Floor Height is input as a number, assign all objects with
+                # the same Ground Floor Height.
                 self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif type(ground_floor_height) == str:
-                # TODO: implement the option to add the ground floor height from a file.
+            elif isinstance(ground_floor_height, str) or isinstance(
+                ground_floor_height, Path
+            ):
+                # A single file is used to assign the ground floor height to the assets
+                gfh = self.data_catalog.get_geodataframe(ground_floor_height)
+                gdf = self.get_full_gdf(self.exposure_db)
+                gdf = join_spatial_data(
+                    gdf, gfh, attr_name, method, max_dist, self.logger
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    gdf, "Ground Floor Height", attr_name
+                )
+            elif isinstance(ground_floor_height, list):
+                # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
         else:
             # Set the Ground Floor Height to 0 if the user did not specify any
@@ -408,59 +575,125 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        max_potential_damage: Union[List[float], float],
+        max_potential_damage: Union[
+            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        ] = None,
         damage_types: Union[List[str], str, None] = None,
+        attr_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+        max_dist: float = 10,
         country: Union[str, None] = None,
-    ):
-        if max_potential_damage == "jrc_damage_values":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            if country is None:
-                country = "World"
-                self.logger.warning(
-                    f"No country specified, using the '{country}' JRC damage values."
-                )
+    ) -> None:
+        """Setup the max potential damage column of the exposure data in various ways.
 
-            damage_values = preprocess_jrc_damage_values(damage_source, country)
-
-        elif max_potential_damage == "hazus_max_potential_damages":
-            damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-            damage_values = preprocess_hazus_damage_values(damage_source)
-        else:
-            NotImplemented
-            # TODO: Implement other ways of setting the max potential damage, e.g. from a
-            # vector file or from a table.
-
-        # Calculate the area of each object
-        gdf = self.get_full_gdf(self.exposure_db)[["Primary Object Type", "geometry"]]
-        if gdf.crs.is_geographic:
-            # If the CRS is geographic, reproject to the nearest UTM zone
-            nearest_utm = utm_crs(gdf.total_bounds)
-            gdf_utm = gdf.to_crs(nearest_utm)
-            gdf["area"] = gdf_utm["geometry"].area
-        elif gdf.crs.is_projected:
-            # If the CRS is projected, calculate the area in the same CRS
-            gdf["area"] = gdf["geometry"].area
-
-        # Set the damage values to the exposure data
+        Parameters
+        ----------
+        max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
+            _description_, by default None
+        damage_types : Union[List[str], str, None], optional
+            _description_, by default None
+        country : Union[str, None], optional
+            _description_, by default None
+        attr_name : Union[str, List[str], None], optional
+            _description_, by default None
+        method : Union[str, List[str], None], optional
+            _description_, by default "nearest"
+        max_dist : float, optional
+            _description_, by default 10
+        """
         if damage_types is None:
             damage_types = ["total"]
 
-        for damage_type in damage_types:
-            # Calculate the maximum potential damage for each object and per damage type
-            try:
+        if isinstance(damage_types, str):
+            damage_types = [damage_types]
+
+        if isinstance(max_potential_damage, pd.DataFrame):
+            self.update_max_potential_damage(
+                updated_max_potential_damages=max_potential_damage
+            )
+        elif isinstance(max_potential_damage, int) or isinstance(
+            max_potential_damage, float
+        ):
+            # Set the column(s) to a single value
+            for damage_type in damage_types:
                 self.exposure_db[
-                    f"Max Potential Damage: {damage_type.capitalize()}"
-                ] = [
-                    damage_values[building_type][damage_type.lower()] * square_meters
-                    for building_type, square_meters in zip(
-                        gdf["Primary Object Type"], gdf["area"]
+                    f"Max Potential Damage: {damage_type}"
+                ] = max_potential_damage
+
+        elif isinstance(max_potential_damage, list):
+            # Multiple files are used to assign the ground floor height to the assets
+            NotImplemented
+        elif max_potential_damage in [
+            "jrc_damage_values",
+            "hazus_max_potential_damages",
+        ]:
+            if max_potential_damage == "jrc_damage_values":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                if country is None:
+                    country = "World"
+                    self.logger.warning(
+                        f"No country specified, using the '{country}' JRC damage values."
                     )
-                ]
-            except KeyError as e:
-                self.logger.warning(
-                    f"Not found in the {max_potential_damage} damage "
-                    f"value data: {e}"
-                )
+
+                damage_values = preprocess_jrc_damage_values(damage_source, country)
+
+            elif max_potential_damage == "hazus_max_potential_damages":
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                damage_values = preprocess_hazus_damage_values(damage_source)
+
+            # Calculate the area of each object
+            gdf = self.get_full_gdf(self.exposure_db)[
+                ["Primary Object Type", "geometry"]
+            ]
+            gdf = get_area(gdf)
+
+            # Set the damage values to the exposure data
+            for damage_type in damage_types:
+                # Calculate the maximum potential damage for each object and per damage type
+                try:
+                    self.exposure_db[
+                        f"Max Potential Damage: {damage_type.capitalize()}"
+                    ] = [
+                        damage_values[building_type][damage_type.lower()]
+                        * square_meters
+                        for building_type, square_meters in zip(
+                            gdf["Primary Object Type"], gdf["area"]
+                        )
+                    ]
+                except KeyError as e:
+                    self.logger.warning(
+                        f"Not found in the {max_potential_damage} damage "
+                        f"value data: {e}"
+                    )
+        elif isinstance(max_potential_damage, str) or isinstance(
+            max_potential_damage, Path
+        ):
+            # When the max_potential_damage is a string but not jrc_damage_values
+            # or hazus_max_potential_damages. Here, a single file is used to
+            # assign the ground floor height to the assets
+            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            gdf = self.get_full_gdf(self.exposure_db)
+            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+            self.exposure_db = self._set_values_from_other_column(
+                gdf, f"Max Potential Damage: {damage_types[0].capitalize()}", attr_name
+            )
+
+    def setup_ground_elevation(
+        self,
+        ground_elevation: Union[int, float, None, str, Path],
+    ) -> None:
+        if ground_elevation:
+            self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
+                ground_elevation=ground_elevation,
+                exposure_db=self.exposure_db,
+                exposure_geoms=self.get_full_gdf(self.exposure_db),
+            )
+
+        else:
+            print(
+                "Ground elevation is not recognized by the setup_ground_elevation function\n Ground elevation will be set to 0"
+            )
+            self.exposure_db["Ground Elevation"] = 0
 
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
@@ -548,8 +781,9 @@ class ExposureVector(Exposure):
                 "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                (self.exposure_db["Ground Floor Height"] < raise_by) & self.exposure_db.index.isin(idx),
-               "Ground Floor Height",
+                (self.exposure_db["Ground Floor Height"] < raise_by)
+                & self.exposure_db.index.isin(idx),
+                "Ground Floor Height",
             ] = raise_by
 
         elif height_reference.lower() in ["geom", "table"]:
@@ -681,6 +915,10 @@ class ExposureVector(Exposure):
         elevation_reference: str,
         path_ref: str = None,
         attr_ref: str = None,
+        ground_elevation: Union[None, str, Path] = None,
+        aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -720,7 +958,9 @@ class ExposureVector(Exposure):
 
         percent_growth = float(percent_growth) / 100
         geom_file = Path(geom_file)
-        assert geom_file.is_file()
+        assert (
+            geom_file.is_file()
+        ), f"File {str(geom_file)} is missing, cannot set up a new composite area."
 
         # Calculate the total damages for the new object, for the indicated damage types
         new_object_damages = self.calculate_damages_new_exposure_object(
@@ -778,7 +1018,9 @@ class ExposureVector(Exposure):
             # TODO: Take ground elevation from DEM?
             # For water level calculation this will not take into account the
             # non-flooded cells separately, just averaged over the whole area.
-            self.logger.warning("The ground elevation is set to 0.")
+            self.logger.warning(
+                "The ground elevation is set to 0 if no DEM is supplied."
+            )
 
             # Idea: Reduction factor for the part of the area is not build-up?
 
@@ -842,39 +1084,129 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
+        # Update the exposure_geoms
+        self.set_geom_names("new_development_area")
+        self.set_exposure_geoms(_new_exposure_geoms)
+
+        # If the user supplied ground elevation data, assign that to the new
+        # composite areas
+        if ground_elevation is not None:
+            new_objects["Ground Elevation"] = ground_elevation_from_dem(
+                ground_elevation=ground_elevation,
+                exposure_db=new_objects,
+                exposure_geoms=_new_exposure_geoms,
+            )
+
+        # If the user supplied aggregation area data, assign that to the
+        # new composite areas
+        if aggregation_area_fn is not None:
+            new_objects = join_exposure_aggregation_areas(
+                _new_exposure_geoms.merge(new_objects, on="Object ID"),
+                aggregation_area_fn=aggregation_area_fn,
+                attribute_names=attribute_names,
+                label_names=label_names,
+            )
+
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
             drop=True
         )
-
-        # Update the exposure_geoms
-        self.set_exposure_geoms(_new_exposure_geoms)
 
     def link_exposure_vulnerability(
         self,
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
-        linking_dict = dict(
-            zip(exposure_linking_table["Link"], exposure_linking_table["Name"])
-        )
-
-        # Find the column to link the exposure data to the vulnerability data
-        unique_types_primary = set(self.exposure_db["Primary Object Type"].unique())
-        unique_types_secondary = set(self.exposure_db["Secondary Object Type"].unique())
-        unique_linking_types = set(linking_dict.keys())
-
-        # Check if the linking column is the Primary Object Type or the Secondary
-        # Object Type
-        if unique_types_primary.issubset(unique_linking_types):
-            linking_column = "Primary Object Type"
-        elif unique_types_secondary.issubset(unique_linking_types):
-            linking_column = "Secondary Object Type"
-
+        exposure_linking_table["Damage function name"] = [
+            name + "_" + type
+            for name, type in zip(
+                exposure_linking_table["FIAT Damage Function Name"].values,
+                exposure_linking_table["Damage Type"].values,
+            )
+        ]
         for damage_type in damage_types:
+            linking_per_damage_type = exposure_linking_table.loc[
+                exposure_linking_table["Damage Type"] == damage_type, :
+            ]
+            assert (
+                not linking_per_damage_type.empty
+            ), f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
+
+            # Create a dictionary that links the exposure data to the vulnerability data
+            linking_dict = dict(
+                zip(
+                    linking_per_damage_type["Exposure Link"],
+                    linking_per_damage_type["Damage function name"],
+                )
+            )
+            unique_linking_types = set(linking_dict.keys())
+
+            # Find the column to link the exposure data to the vulnerability data
+            unique_types_primary = set()
+
+            # Set the variables below to large numbers to ensure when there is no
+            # Primary Object Type or Secondary Object Type column in the exposure data
+            # that the available column is used to link the exposure data to the
+            # vulnerability data.
+            len_diff_primary_linking_types = 100000
+            len_diff_secondary_linking_types = 100000
+            if "Primary Object Type" in self.exposure_db.columns:
+                unique_types_primary = set(self.get_primary_object_type())
+                diff_primary_linking_types = unique_types_primary - unique_linking_types
+                len_diff_primary_linking_types = len(diff_primary_linking_types)
+
+            unique_types_secondary = set()
+            if "Secondary Object Type" in self.exposure_db.columns:
+                unique_types_secondary = set(self.get_secondary_object_type())
+                diff_secondary_linking_types = (
+                    unique_types_secondary - unique_linking_types
+                )
+                len_diff_secondary_linking_types = len(diff_secondary_linking_types)
+
+            # Check if the linking column is the Primary Object Type or the Secondary
+            # Object Type
+            if (len(unique_types_primary) > 0) and (
+                unique_types_primary.issubset(unique_linking_types)
+            ):
+                linking_column = "Primary Object Type"
+            elif (len(unique_types_secondary) > 0) and (
+                unique_types_secondary.issubset(unique_linking_types)
+            ):
+                linking_column = "Secondary Object Type"
+            else:
+                if (
+                    len_diff_primary_linking_types < len_diff_secondary_linking_types
+                ) and (len(unique_types_primary) > 0):
+                    linking_column = "Primary Object Type"
+                    self.logger.warning(
+                        "There are "
+                        f"{str(len_diff_primary_linking_types)} primary"
+                        " object types that are not in the linking "
+                        "table and will not have a damage function "
+                        f"assigned for {damage_type} damages: "
+                        f"{str(list(diff_primary_linking_types))}"
+                    )
+                elif (
+                    len_diff_secondary_linking_types < len_diff_primary_linking_types
+                ) and (len(unique_types_secondary) > 0):
+                    linking_column = "Secondary Object Type"
+                    self.logger.warning(
+                        "There are "
+                        f"{str(len(diff_secondary_linking_types))} "
+                        "secondary object types that are not in the "
+                        "linking table and will not have a damage "
+                        f"function assigned for {damage_type} damages: "
+                        f"{str(list(diff_secondary_linking_types))}"
+                    )
+
             self.exposure_db[
                 f"Damage Function: {damage_type.capitalize()}"
             ] = self.exposure_db[linking_column].map(linking_dict)
+
+            self.logger.info(
+                f"The {linking_column} was used to link the exposure data to the "
+                f"vulnerability curves for {damage_type} damages."
+            )
 
     def get_primary_object_type(self):
         if "Primary Object Type" in self.exposure_db.columns:
@@ -1032,6 +1364,10 @@ class ExposureVector(Exposure):
     def get_full_gdf(
         self, df: pd.DataFrame
     ) -> Union[gpd.GeoDataFrame, List[gpd.GeoDataFrame]]:
+        # Create a copy from the dataframe to ensure the values are not changed in the
+        # original dataframe
+        df = df.copy()
+
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
             assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
@@ -1182,3 +1518,16 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    @staticmethod
+    def _set_values_from_other_column(
+        df: Union[pd.DataFrame, gpd.GeoDataFrame], col_to_set: str, col_to_copy: str
+    ) -> Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """Sets the values of <col_to_set> to where the values of <col_to_copy> are
+        nan and deletes <col_to_copy>.
+        """
+        df.loc[df[col_to_copy].notna(), col_to_set] = df.loc[
+            df[col_to_copy].notna(), col_to_copy
+        ]
+        del df[col_to_copy]
+        return df

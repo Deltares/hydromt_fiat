@@ -11,7 +11,7 @@ def test_hydromt_fiat_vm():
     )
     view_model = HydroMtViewModel(path_to_database, path_to_datacatalog)
 
-    view_model.build_config_ini()
+    view_model.build_config_yaml()
     view_model.save_data_catalog()
 
     print("exit")
