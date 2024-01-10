@@ -505,7 +505,7 @@ class FiatModel(GridModel):
 
         for idx, da_map_fn in enumerate(params["map_fn_lst"]):
             # read maps and retrieve their attributes
-            if isinstance(da_map_fn, os.PathLike):
+            if isinstance(da_map_fn, os.PathLike) or isinstance(da_map_fn, str):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
@@ -520,8 +520,9 @@ class FiatModel(GridModel):
                 raise ValueError("The hazard map provided should be a path like object or an DataArray")
             # Convert to units of the exposure data if required
             if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
-                if self.exposure.unit != da.units:
-                    da = da * unit_conversion_factor
+                if hasattr(da, "units"):
+                    if self.exposure.unit != da.units:
+                        da = da * unit_conversion_factor
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
