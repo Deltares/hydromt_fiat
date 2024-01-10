@@ -15,7 +15,6 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 
 
-
 class HydroMtViewModel:
     data_catalog: DataCatalog
     database: LocalDatabase
@@ -32,6 +31,9 @@ class HydroMtViewModel:
         HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
 
         logger = setuplog("hydromt_fiat", log_level=10)
+        # NOTE: with w+ hydromt_fiat allows to create a model in a folder that
+        # already contains data, with w this is not allowed (I would say the
+        # latter is preferred, but w is handy for testing)
         self.fiat_model = FiatModel(
             data_libs=catalog_path,
             root=hydromt_fiat_path,
@@ -63,62 +65,101 @@ class HydroMtViewModel:
             setup_global_settings=self.model_vm.global_settings_model,
             setup_output=self.model_vm.output_model,
         )
-        
+
+        # Make sure the order of the configurations is correct
         if self.vulnerability_vm.vulnerability_buildings_model:
-            config_yaml.setup_vulnerability = self.vulnerability_vm.vulnerability_buildings_model
+            config_yaml.setup_vulnerability = (
+                self.vulnerability_vm.vulnerability_buildings_model
+            )
 
         if self.exposure_vm.exposure_buildings_model:
-            config_yaml.setup_exposure_buildings = self.exposure_vm.exposure_buildings_model
-        
+            config_yaml.setup_exposure_buildings = (
+                self.exposure_vm.exposure_buildings_model
+            )
+
         if self.exposure_vm.aggregation_areas_model:
-            config_yaml.setup_aggregation_areas = self.exposure_vm.aggregation_areas_model
-        
+            config_yaml.setup_aggregation_areas = (
+                self.exposure_vm.aggregation_areas_model
+            )
+
+        if self.exposure_vm.exposure_damages_model:
+            config_yaml.update_max_potential_damage = (
+                self.exposure_vm.exposure_damages_model
+            )
+
+        if self.exposure_vm.exposure_ground_floor_height_model:
+            config_yaml.update_ground_floor_height = (
+                self.exposure_vm.exposure_ground_floor_height_model
+            )
+
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
-        
-        if self.exposure_vm.exposure_damages_model:
-            config_yaml.update_max_potential_damage = self.exposure_vm.exposure_damages_model
-        
-        if self.exposure_vm.exposure_ground_floor_height_model:
-            config_yaml.update_ground_floor_height = self.exposure_vm.exposure_ground_floor_height_model
-        
+
         if self.vulnerability_vm.vulnerability_roads_model:
-            config_yaml.setup_road_vulnerability = self.vulnerability_vm.vulnerability_roads_model
-                
+            config_yaml.setup_road_vulnerability = (
+                self.vulnerability_vm.vulnerability_roads_model
+            )
+
         if self.svi_vm.svi_model:
             config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
-                
+
         if self.svi_vm.equity_model:
             config_yaml.setup_equity_data = self.svi_vm.equity_model
-        
+
         database_path = self.__class__.database.drive
 
         with open(database_path / "config.yaml", "wb") as f:
             tomli_w.dump(config_yaml.dict(exclude_none=True), f)
-    
+
         return config_yaml
 
     def read(self):
         self.fiat_model.read()
-        
+
     def run_hydromt_fiat(self):
         self.save_data_catalog()
         config_yaml = self.build_config_yaml()
+
+        # TODO: add some more checks to see if HydroMT-FIAT can be run
+        if ("setup_vulnerability" not in config_yaml.dict()) and (
+            "setup_exposure_buildings" in config_yaml.dict()
+        ):
+            raise Exception(
+                "Please set up the vulnerability data before creating a Delft-FIAT model."
+            )
+        elif "setup_exposure_buildings" not in config_yaml.dict():
+            raise Exception(
+                "Please set up the exposure and vulnerability data before creating a Delft-FIAT model."
+            )
+
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
 
         exposure_db = self.fiat_model.exposure.exposure_db
-        if "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" not in config_yaml.dict():
+        if (
+            "setup_exposure_buildings" in config_yaml.dict()
+            and "setup_exposure_roads" not in config_yaml.dict()
+        ):
             # Only buildings are set up
             buildings_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
             return buildings_gdf, None
-        elif "setup_exposure_buildings" in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+        elif (
+            "setup_exposure_buildings" in config_yaml.dict()
+            and "setup_exposure_roads" in config_yaml.dict()
+        ):
             # Buildings and roads are set up
             full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
             buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
-            roads_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
+                full_gdf["Primary Object Type"] == "roads"
+            ]
             return buildings_gdf, roads_gdf
-        elif "setup_exposure_buildings" not in config_yaml.dict() and "setup_exposure_roads" in config_yaml.dict():
+        elif (
+            "setup_exposure_buildings" not in config_yaml.dict()
+            and "setup_exposure_roads" in config_yaml.dict()
+        ):
             # Only roads are set up
-            roads_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
+            roads_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db).drop(
+                ["SVI", "SVI_key_domain"], axis=1
+            )
             return None, roads_gdf

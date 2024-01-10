@@ -290,7 +290,8 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
-        occupancy_type_field: Union[str, None] = None,
+        occupancy_attr: Union[str, None] = None,
+        occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
         country: Union[str, None] = None,
@@ -313,7 +314,7 @@ class FiatModel(GridModel):
             height to the assets.
         unit : str
             The unit of the ground_floor_height
-        occupancy_type_field : Union[str, None], optional
+        occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
             only contains one column with the occupancy type).
@@ -330,7 +331,7 @@ class FiatModel(GridModel):
         """
         self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
 
-        if asset_locations == occupancy_type == max_potential_damage:
+        if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
@@ -349,10 +350,17 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
-                occupancy_type_field,
+                occupancy_attr,
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+            )
+
+        if asset_locations != occupancy_type:
+            self.exposure.setup_occupancy_type(
+                occupancy_source=occupancy_type,
+                occupancy_attr=occupancy_attr,
+                type_add=occupancy_object_type,
             )
 
         # Link the damage functions to assets
@@ -713,16 +721,18 @@ class FiatModel(GridModel):
                 # Only save the SVI_key_domain and composite_svi_z
                 cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
+            # Filter out the roads because they do not have an SVI score
+            filter_roads = exposure_data["Primary Object Type"] != "roads"
             svi_exp_joined = gpd.sjoin(
-                exposure_data, svi.svi_data_shp[cols_to_save], how="left"
+                exposure_data.loc[filter_roads],
+                svi.svi_data_shp[cols_to_save],
+                how="left",
             )
             svi_exp_joined.drop(columns=["geometry"], inplace=True)
             svi_exp_joined = pd.DataFrame(svi_exp_joined)
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
-            self.exposure.exposure_db = svi_exp_joined
-    
-            
+            self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
     def setup_equity_data(
         self,
         census_key: str,
@@ -786,9 +796,12 @@ class FiatModel(GridModel):
 
     def setup_aggregation_areas(
         self,
-        aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame],
+        aggregation_area_fn: Union[
+            List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
+        ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        filter_primary_object_type: str = "roads",
     ):
         """_summary_
 
@@ -802,8 +815,12 @@ class FiatModel(GridModel):
             The name that the new attribute will get in the exposure data.
         """
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_areas(
-            exposure_gdf, aggregation_area_fn, attribute_names, label_names
+        filter_by = exposure_gdf["Primary Object Type"] != filter_primary_object_type
+        self.exposure.exposure_db.loc[filter_by] = join_exposure_aggregation_areas(
+            exposure_gdf.loc[filter_by],
+            aggregation_area_fn,
+            attribute_names,
+            label_names,
         )
 
         # Set the additional_attributes_fn property to save the additional datasets
