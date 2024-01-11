@@ -2,9 +2,10 @@
 
 import csv
 import logging
+import os
 from pathlib import Path
 from typing import List, Optional, Union
-
+import xarray as xr
 import geopandas as gpd
 import hydromt
 import pandas as pd
@@ -512,18 +513,24 @@ class FiatModel(GridModel):
 
         for idx, da_map_fn in enumerate(params["map_fn_lst"]):
             # read maps and retrieve their attributes
-            da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
-
-            da = self.data_catalog.get_rasterdataset(
+            if isinstance(da_map_fn, os.PathLike) or isinstance(da_map_fn, str):
+                # if path is provided read and load it as xarray
+                da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
+                da = self.data_catalog.get_rasterdataset(
                 da_map_fn
             )  # removed geom=self.region because it is not always there
-
+            elif isinstance(da_map_fn, xr.DataArray):
+                # if xarray is provided directly assign that
+                da = da_map_fn
+                da_name = 'hazard_map'
+                da_type = map_type
+            else:
+                raise ValueError("The hazard map provided should be a path like object or an DataArray")
             # Convert to units of the exposure data if required
-            if (
-                self.exposure in locals() or self.exposure in globals()
-            ):  # change to be sure that the unit information is available from the expousure dataset
-                if self.exposure.unit != da.units:
-                    da = da * unit_conversion_factor
+            if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
+                if hasattr(da, "units"):
+                    if self.exposure.unit != da.units:
+                        da = da * unit_conversion_factor
 
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
@@ -611,7 +618,7 @@ class FiatModel(GridModel):
             "hazard.settings.subset",
             [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
             if not risk_output
-            else sorted_rp,
+            else sorted_names,
         )
 
         self.set_config(

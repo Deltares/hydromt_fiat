@@ -1,6 +1,5 @@
 from hydromt_fiat.validation import *
 from pathlib import Path
-import geopandas as gpd
 from ast import literal_eval
 import os
 import xarray as xr
@@ -10,8 +9,6 @@ import xarray as xr
 # from hydromt_sfincs import SfincsModel
 from typing import Union
 from typing import Tuple
-from hydromt.data_catalog import DataCatalog
-import geopandas as gpd
 
 
 def create_lists(
@@ -440,8 +437,7 @@ def create_risk_dataset(
     sorted_names = []
     
     for key, value in dict_rp_name.items():
-        map_ordered = maps[value].rename(str(key))
-        sorted_maps.append(map_ordered)
+        sorted_maps.append(maps[value])
         sorted_names.append(value)
 
     da = xr.merge(sorted_maps)

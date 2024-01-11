@@ -71,7 +71,7 @@ def test_aggregation_areas(case: ParameterSet | Sequence[object] | object):
     assert len(fm.vulnerability.functions) > 0
 
     # Check if the additional_attributes folder exists
-    assert root.joinpath("additional_attributes").exists()
+    assert Path(fm.root).joinpath("additional_attributes").exists()
 
     # Check if the files are copied to the right folder
     aggregation_area_fn = _cases[case]["configuration"]["setup_aggregation_areas"]["aggregation_area_fn"]
@@ -79,4 +79,4 @@ def test_aggregation_areas(case: ParameterSet | Sequence[object] | object):
         aggregation_area_fn = [aggregation_area_fn]
 
     for a in aggregation_area_fn:
-        assert root.joinpath("additional_attributes", a.name).exists()
+        assert Path(fm.root).joinpath("additional_attributes", a.name).exists()
