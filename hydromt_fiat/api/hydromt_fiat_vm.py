@@ -87,10 +87,10 @@ class HydroMtViewModel:
                 self.exposure_vm.exposure_damages_model
             )
 
-        if self.exposure_vm.exposure_ground_floor_height_model:
-            config_yaml.update_ground_floor_height = (
-                self.exposure_vm.exposure_ground_floor_height_model
-            )
+        #if self.exposure_vm.exposure_ground_floor_height_model:
+        #    config_yaml.update_ground_floor_height = (
+        #        self.exposure_vm.exposure_ground_floor_height_model
+        #    )
 
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
@@ -131,7 +131,7 @@ class HydroMtViewModel:
             raise Exception(
                 "Please set up the exposure and vulnerability data before creating a Delft-FIAT model."
             )
-
+        
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
 

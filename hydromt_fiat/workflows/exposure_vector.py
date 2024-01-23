@@ -568,9 +568,19 @@ class ExposureVector(Exposure):
             elif isinstance(ground_floor_height, str) or isinstance(
                 ground_floor_height, Path
             ):
+                                # Open Yaml file with variables
+                import yaml 
+                yaml_file_path = r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\Delft-FIAT\GUI\test_case\content_update_damage.yaml"
+
+                with open(yaml_file_path, 'r') as yaml_file:
+                    data = yaml.safe_load(yaml_file)
+                
+                max_dist = data["max_dist"]
+                attr_name= data["attr_name"]
+            
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
-                gdf = self.get_full_gdf(self.exposure_db)
+                gdf = gpd.GeoDataFrame(self.exposure_db, geometry=self.exposure_db.geometry)
                 gdf = join_spatial_data(
                     gdf, gfh, attr_name, method, max_dist, self.logger
                 )
