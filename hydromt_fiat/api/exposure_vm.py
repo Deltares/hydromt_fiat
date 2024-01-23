@@ -33,6 +33,7 @@ class ExposureViewModel:
         self.exposure_ground_floor_height_model = None
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
+        self.exposure_occupancy_type_model = None
 
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
@@ -54,6 +55,45 @@ class ExposureViewModel:
 
         self.data_catalog.from_dict(catalog_entry)  # type: ignore
 
+    def set_asset_locations_source_and_get_data(
+        self,
+        source: str,
+        ground_floor_height: str,
+        fiat_key_maps: Optional[Dict[str, str]] = None,
+        crs: Union[str, int] = None,
+    ):
+        if source == "NSI":
+            # NSI is already defined in the data catalog
+            self.set_asset_locations_source(source, ground_floor_height)
+
+            # Download NSI from the database
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+            self.exposure = ExposureVector(
+                data_catalog=self.data_catalog,
+                logger=self.logger,
+                region=region,
+                crs=crs,
+            )
+
+            self.exposure.setup_buildings_from_single_source(
+                source,
+                ground_floor_height,
+                "centroid",
+            )
+            primary_object_types = (
+                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+            )
+            secondary_object_types = (
+                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+            )
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+
+            return (
+                gdf,
+                primary_object_types,
+                secondary_object_types,
+            )
+            
     def set_asset_locations_source(
         self,
         source: str,
@@ -90,14 +130,25 @@ class ExposureViewModel:
             print(catalog_entry)
         # write to data catalog
 
+    def update_occupancy_types(self, source, attribute, type_add):
+        if self.exposure:
+            self.exposure.setup_occupancy_type(source, attribute, type_add)
+
     def get_object_types(self):
         if self.exposure:
-            primary_object_types = (
-                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
-            )
-            secondary_object_types = (
-                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
-            )
+            primary_object_types = []
+            secondary_object_types = []
+
+            if "Primary Object Type" in self.exposure.exposure_db.columns:
+                primary_object_types = (
+                    self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+                )
+            
+            if "Secondary Object Type" in self.exposure.exposure_db.columns:
+                secondary_object_types = (
+                    self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                )
+    
             return (
                 primary_object_types,
                 secondary_object_types,
@@ -142,7 +193,7 @@ class ExposureViewModel:
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
             source=source
         )
-
+    
     def set_roads_settings(
         self,
         road_types: List[str] = [

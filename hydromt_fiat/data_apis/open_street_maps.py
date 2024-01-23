@@ -52,7 +52,12 @@ def get_roads_from_osm(
         | (roads.geometry.type == "MultiLineString")
     ]
     roads = roads.reset_index(drop=True)
-    roads = roads.loc[:, ["highway", "name", "lanes", "geometry"]]
+
+    try:
+        roads = roads.loc[:, ["highway", "name", "lanes", "geometry"]]
+    except KeyError:
+        roads = roads.loc[:, ["highway", "name", "geometry"]]
+        logging.info("No attribute 'lanes' found in the OSM roads.")
 
     return roads
 
