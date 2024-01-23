@@ -77,7 +77,7 @@ class ExposureBuildingsSettings(BaseModel):
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str
-    attribute_name: Union[str, List[str], None]
+    attr_name: Union[str, List[str], None]
     method: Union[str, List[str], None]
     max_dist: Union[float, int, None]
 

@@ -37,7 +37,7 @@ from hydromt_fiat.workflows.roads import (
 )
 
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
-
+from delftdashboard.models.fiat.exposure_finished_floor_height import gfh_model_user_input
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -568,15 +568,12 @@ class ExposureVector(Exposure):
             elif isinstance(ground_floor_height, str) or isinstance(
                 ground_floor_height, Path
             ):
-                                # Open Yaml file with variables
-                import yaml 
-                yaml_file_path = r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\Delft-FIAT\GUI\test_case\content_update_damage.yaml"
-
-                with open(yaml_file_path, 'r') as yaml_file:
-                    data = yaml.safe_load(yaml_file)
-                
-                max_dist = data["max_dist"]
-                attr_name= data["attr_name"]
+                        
+                # Set parameters using user input
+                gfh_user_input= gfh_model_user_input()
+                max_dist = gfh_user_input["max_dist"]
+                attr_name= gfh_user_input["attr_name"]
+                method = gfh_user_input["method"]
             
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
