@@ -528,7 +528,7 @@ class ExposureVector(Exposure):
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
-        attr_name: Union[str, List[str], None] = None,
+        attribute_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
@@ -572,17 +572,17 @@ class ExposureVector(Exposure):
                 # Set parameters using user input
                 gfh_user_input= gfh_model_user_input()
                 max_dist = gfh_user_input["max_dist"]
-                attr_name= gfh_user_input["attr_name"]
+                attribute_name= gfh_user_input["attribute_name"]
                 method = gfh_user_input["method"]
             
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = gpd.GeoDataFrame(self.exposure_db, geometry=self.exposure_db.geometry)
                 gdf = join_spatial_data(
-                    gdf, gfh, attr_name, method, max_dist, self.logger
+                    gdf, gfh, attribute_name, method, max_dist, self.logger
                 )
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attr_name
+                    gdf, "Ground Floor Height", attribute_name
                 )
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
@@ -613,7 +613,7 @@ class ExposureVector(Exposure):
             _description_, by default None
         country : Union[str, None], optional
             _description_, by default None
-        attr_name : Union[str, List[str], None], optional
+        attribute_name : Union[str, List[str], None], optional
             _description_, by default None
         method : Union[str, List[str], None], optional
             _description_, by default "nearest"
