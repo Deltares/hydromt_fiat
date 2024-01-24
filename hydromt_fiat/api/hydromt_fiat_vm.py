@@ -14,6 +14,7 @@ from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 
+from delftdashboard.models.fiat.exposure_finished_floor_height import gfh_model_user_input
 
 class HydroMtViewModel:
     data_catalog: DataCatalog
@@ -87,10 +88,10 @@ class HydroMtViewModel:
                 self.exposure_vm.exposure_damages_model
             )
 
-        #if self.exposure_vm.exposure_ground_floor_height_model:
-        #    config_yaml.update_ground_floor_height = (
-        #        self.exposure_vm.exposure_ground_floor_height_model
-        #    )
+        if self.exposure_vm.exposure_ground_floor_height_model and gfh_model_user_input() == None:
+            config_yaml.update_ground_floor_height = (
+                self.exposure_vm.exposure_ground_floor_height_model
+            )
 
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
