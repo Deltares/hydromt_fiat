@@ -15,6 +15,7 @@ from hydromt_fiat.fiat import FiatModel
 from hydromt.log import setuplog
 
 from delftdashboard.models.fiat.exposure_finished_floor_height import gfh_model_user_input
+from delftdashboard.models.fiat.exposure_damages import damage_model_user_input
 
 class HydroMtViewModel:
     data_catalog: DataCatalog
@@ -83,7 +84,7 @@ class HydroMtViewModel:
                 self.exposure_vm.aggregation_areas_model
             )
 
-        if self.exposure_vm.exposure_damages_model:
+        if self.exposure_vm.exposure_damages_model and damage_model_user_input() == None:
             config_yaml.update_max_potential_damage = (
                 self.exposure_vm.exposure_damages_model
             )

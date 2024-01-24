@@ -38,6 +38,7 @@ from hydromt_fiat.workflows.roads import (
 
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from delftdashboard.models.fiat.exposure_finished_floor_height import gfh_model_user_input
+from delftdashboard.models.fiat.exposure_damages import damage_model_user_input
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
@@ -132,6 +133,7 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        max_potential_damage: Union[int, float, str, Path, None] = None, 
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
@@ -197,6 +199,10 @@ class ExposureVector(Exposure):
         # Set the ground floor height if not yet set
         if ground_floor_height != source:
             self.setup_ground_floor_height(ground_floor_height)
+
+        # Set the max potential damages
+        if max_potential_damage != source:
+            self.setup_max_potential_damage(max_potential_damage)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
@@ -638,7 +644,41 @@ class ExposureVector(Exposure):
                 self.exposure_db[
                     f"Max Potential Damage: {damage_type}"
                 ] = max_potential_damage
+        elif isinstance(max_potential_damage, str) or isinstance(
+                max_potential_damage, Path
+            ):
+                                   
+                # Set parameters using user input
+                mpd_user_input = damage_model_user_input()
+                if len(mpd_user_input) == 2:
+                    for i in mpd_user_input:
+                        if i["damage_types"] == "structure":
+                            max_dist = i["max_dist"]
+                            attribute_name= i["attribute_name"]
+                            method = i["method"]
+                        
+                            # A single file is used to assign the max potential damage: structure to the assets
+                            mpd = self.data_catalog.get_geodataframe(max_potential_damage)
+                            gdf = gpd.GeoDataFrame(self.exposure_db, geometry=self.exposure_db.geometry)
+                            gdf = join_spatial_data(
+                                gdf, mpd, attribute_name, method, max_dist, self.logger
+                            )
+                            self.exposure_db = self._set_values_from_other_column(
+                                gdf, "Max Potential Damage: Structure", attribute_name)
+                        elif i["damage_types"]== "content":
+                            max_dist = i["max_dist"]
+                            attribute_name= i["attribute_name"]
+                            method = i["method"]
+                        
+                            # A single file is used to assign the max potential damage: content to the assets
+                            mpd = self.data_catalog.get_geodataframe(max_potential_damage)
+                            gdf = join_spatial_data(
+                                gdf, mpd, attribute_name, method, max_dist, self.logger
+                            )
+                            self.exposure_db = self._set_values_from_other_column(
+                                gdf, "Max Potential Damage: Content", attribute_name)
 
+        
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
             NotImplemented

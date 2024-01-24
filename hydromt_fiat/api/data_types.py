@@ -91,6 +91,7 @@ class ExposureSetupDamages(BaseModel):
     attribute_name: Union[str, List[str], None]
     method: Union[str, List[str], None]
     max_dist: Union[float, int, None]
+    damage_types: Union[str, List[str], None]
 
 
 class RoadVulnerabilitySettings(BaseModel):
