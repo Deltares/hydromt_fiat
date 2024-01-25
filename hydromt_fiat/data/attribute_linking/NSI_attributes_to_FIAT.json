@@ -5,7 +5,7 @@
     "Secondary Object Type": "occtype",
     "Max Potential Damage: Structure": "val_struct",
     "Max Potential Damage: Content": "val_cont",
-    "Ground Floor Height": "found_ht",
+    "Finished Floor Height": "found_ht",
     "Ground Elevation": "ground_elv",
     "geometry": "geometry",
     "Aggregation Label: Census Blockgroup": "cbfips"

@@ -55,7 +55,7 @@ _cases = {
                 "asset_locations": "NSI",
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
-                "ground_floor_height": "NSI",
+                "finished_floor_height": "NSI",
                 "unit": "ft",
             },
             "setup_equity_data": {

@@ -87,9 +87,9 @@ class HydroMtViewModel:
                 self.exposure_vm.exposure_damages_model
             )
 
-        if self.exposure_vm.exposure_ground_floor_height_model:
-            config_yaml.update_ground_floor_height = (
-                self.exposure_vm.exposure_ground_floor_height_model
+        if self.exposure_vm.exposure_finished_floor_height_model:
+            config_yaml.update_finished_floor_height = (
+                self.exposure_vm.exposure_finished_floor_height_model
             )
 
         if self.exposure_vm.exposure_roads_model:

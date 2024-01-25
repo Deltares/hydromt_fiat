@@ -29,7 +29,7 @@ Vector data
 
 Exposure data can be build from a data_catalog_, a data API key, or by supplying an absolute path 
 to local data on the user's machine. The `asset_locations`, `occupancy_type`, and `max_potential_damage` 
-data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `ground_floor_height` can currently 
+data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `finished_floor_height` can currently 
 only be set to a single value (this will be updated soon!). The `damage_types` should be provided as a 
 list of strings (e.g. ["structure", "content"]). The `unit` should be provided as a string (e.g. "m"). 
 See below how the `setup_exposure_buildings` method can be used to build or update the exposure data::
@@ -39,8 +39,8 @@ See below how the `setup_exposure_buildings` method can be used to build or upda
    occupancy_type = <Key in the Data Catalog, data API key, or path to local data>
    damage_types = <List of damage types, e.g. ["structure", "content"]>
    max_potential_damage = <Key in the Data Catalog, data API key, or path to local data>
-   ground_floor_height = <For now only a number can be entered here for uniform ground floor heights>
-   unit = <The unit of the values in the exposure data inputs, e.g. if the ground floor height in meters, "m">
+   finished_floor_height = <For now only a number can be entered here for uniform Finished Floor Heights>
+   unit = <The unit of the values in the exposure data inputs, e.g. if the Finished Floor Height in meters, "m">
 
 The following method is used to build or update the **exposure** data:
 

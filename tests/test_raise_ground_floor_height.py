@@ -10,19 +10,19 @@ EXAMPLEDIR = Path(
 )
 
 _cases = {
-    "raise_ground_floor_height_geom": {
+    "raise_finished_floor_height_geom": {
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_geom",
-        "ground_floor_height_reference": EXAMPLEDIR
+        "new_root": EXAMPLEDIR / "test_raise_finished_floor_height_geom",
+        "finished_floor_height_reference": EXAMPLEDIR
         / "test_read"
         / "reference_groundHeight_test.shp",
         "height_reference": "geom",
         "attr_ref": "bfe",
     },
-    "raise_ground_floor_height_datum": {
+    "raise_finished_floor_height_datum": {
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_datum",
-        "ground_floor_height_reference": None,
+        "new_root": EXAMPLEDIR / "test_raise_finished_floor_height_datum",
+        "finished_floor_height_reference": None,
         "height_reference": "datum",
         "attr_ref": None,
     },
@@ -30,7 +30,7 @@ _cases = {
 
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
-def test_raise_ground_floor_height(case):
+def test_raise_finished_floor_height(case):
     # Read model in examples folder.
     root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
@@ -42,11 +42,11 @@ def test_raise_ground_floor_height(case):
     exposure_original = fm.exposure.exposure_db
 
     objectids = fm.exposure.get_object_ids(selection_type="all")
-    fm.exposure.raise_ground_floor_height(
+    fm.exposure.raise_finished_floor_height(
         raise_by=2,
         objectids=objectids,
         height_reference=_cases[case]["height_reference"],
-        path_ref=_cases[case]["ground_floor_height_reference"],
+        path_ref=_cases[case]["finished_floor_height_reference"],
         attr_ref=_cases[case]["attr_ref"],
     )
 
@@ -65,9 +65,9 @@ def test_raise_ground_floor_height(case):
     assert all(
         gfh1 + ge1 <= gfh2 + ge2
         for gfh1, ge1, gfh2, ge2 in zip(
-            exposure_original["Ground Floor Height"],
+            exposure_original["Finished Floor Height"],
             exposure_original["Ground Elevation"],
-            exposure_modified["Ground Floor Height"],
+            exposure_modified["Finished Floor Height"],
             exposure_modified["Ground Elevation"],
         )
     )

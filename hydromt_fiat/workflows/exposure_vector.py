@@ -40,7 +40,7 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 
 
 class ExposureVector(Exposure):
-    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
+    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Finished Floor Height"]
     _REQUIRED_VARIABLE_COLUMNS = ["Damage Function: {}", "Max Potential Damage: {}"]
     _OPTIONAL_COLUMNS = [
         "Object Name",
@@ -130,7 +130,7 @@ class ExposureVector(Exposure):
     def setup_buildings_from_single_source(
         self,
         source: Union[str, Path],
-        ground_floor_height: Union[int, float, str, Path, None],
+        finished_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
@@ -142,7 +142,7 @@ class ExposureVector(Exposure):
             The name of the vector dataset in the HydroMT Data Catalog or path to the
             vector dataset to be used to set up the asset locations. This can be either
             a point or polygon dataset.
-        ground_floor_height : Union[int, float, str, Path, None]
+        finished_floor_height : Union[int, float, str, Path, None]
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
@@ -194,9 +194,9 @@ class ExposureVector(Exposure):
         if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
             self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
 
-        # Set the ground floor height if not yet set
-        if ground_floor_height != source:
-            self.setup_ground_floor_height(ground_floor_height)
+        # Set the Finished Floor Height if not yet set
+        if finished_floor_height != source:
+            self.setup_finished_floor_height(finished_floor_height)
 
         # Set the extraction method
         self.setup_extraction_method(extraction_method)
@@ -209,7 +209,7 @@ class ExposureVector(Exposure):
         # Set the name to the geom_names
         self.set_geom_names("buildings")
 
-        # Set the ground floor height if not yet set
+        # Set the Finished Floor Height if not yet set
         # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
         if ground_elevation_file is not None:
             self.setup_ground_elevation(
@@ -281,7 +281,7 @@ class ExposureVector(Exposure):
         asset_locations: Union[str, Path],
         occupancy_source: Union[str, Path],
         max_potential_damage: Union[str, Path],
-        ground_floor_height: Union[int, float, str, Path, None],
+        finished_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
@@ -295,8 +295,8 @@ class ExposureVector(Exposure):
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
-        self.setup_ground_floor_height(
-            ground_floor_height, attr_name_gfh, method_gfh, max_dist
+        self.setup_finished_floor_height(
+            finished_floor_height, attr_name_gfh, method_gfh, max_dist
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file)
@@ -525,32 +525,32 @@ class ExposureVector(Exposure):
     def setup_aggregation_labels(self):
         NotImplemented
 
-    def setup_ground_floor_height(
+    def setup_finished_floor_height(
         self,
-        ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
+        finished_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
         attr_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
-        """Set the ground floor height of the exposure data. This function overwrites
-        the existing Ground Floor Height column if it already exists.
+        """Set the Finished Floor Height of the exposure data. This function overwrites
+        the existing Finished Floor Height column if it already exists.
 
         Parameters
         ----------
-        ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
-            A number to set the Ground Floor Height of all assets to the same value, a
-            path to a file that contains the Ground Floor Height of each asset, or a
-            list of paths to files that contain the Ground Floor Height of each asset,
+        finished_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
+            A number to set the Finished Floor Height of all assets to the same value, a
+            path to a file that contains the Finished Floor Height of each asset, or a
+            list of paths to files that contain the Finished Floor Height of each asset,
             in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
         attr_name : Union[str, List[str]], optional
-            The name of the attribute that contains the Ground Floor Height in the
-            file(s) that are submitted. If multiple `ground_floor_height` files are
+            The name of the attribute that contains the Finished Floor Height in the
+            file(s) that are submitted. If multiple `finished_floor_height` files are
             submitted, the attribute names are linked to the files in the same order as
             the files are submitted. By default None.
         method : Union[str, List[str]], optional
-            The method to use to assign the Ground Floor Height to the assets. If
-            multiple `ground_floor_height` files are submitted, the methods are linked
+            The method to use to assign the Finished Floor Height to the assets. If
+            multiple `finished_floor_height` files are submitted, the methods are linked
             to the files in the same order as the files are submitted. The method can
             be either 'nearest' (nearest neighbor) or 'intersection'. By default
             'nearest'.
@@ -558,32 +558,32 @@ class ExposureVector(Exposure):
             The maximum distance for the nearest join measured in meters, by default
             set to 10 meters.
         """
-        if ground_floor_height:
-            if isinstance(ground_floor_height, int) or isinstance(
-                ground_floor_height, float
+        if finished_floor_height:
+            if isinstance(finished_floor_height, int) or isinstance(
+                finished_floor_height, float
             ):
-                # If the Ground Floor Height is input as a number, assign all objects with
-                # the same Ground Floor Height.
-                self.exposure_db["Ground Floor Height"] = ground_floor_height
-            elif isinstance(ground_floor_height, str) or isinstance(
-                ground_floor_height, Path
+                # If the Finished Floor Height is input as a number, assign all objects with
+                # the same Finished Floor Height.
+                self.exposure_db["Finished Floor Height"] = finished_floor_height
+            elif isinstance(finished_floor_height, str) or isinstance(
+                finished_floor_height, Path
             ):
-                # A single file is used to assign the ground floor height to the assets
-                gfh = self.data_catalog.get_geodataframe(ground_floor_height)
+                # A single file is used to assign the Finished Floor Height to the assets
+                gfh = self.data_catalog.get_geodataframe(finished_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(
                     gdf, gfh, attr_name, method, max_dist, self.logger
                 )
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attr_name
+                    gdf, "Finished Floor Height", attr_name
                 )
-            elif isinstance(ground_floor_height, list):
-                # Multiple files are used to assign the ground floor height to the assets
+            elif isinstance(finished_floor_height, list):
+                # Multiple files are used to assign the Finished Floor Height to the assets
                 NotImplemented
         else:
-            # Set the Ground Floor Height to 0 if the user did not specify any
-            # Ground Floor Height.
-            self.exposure_db["Ground Floor Height"] = 0
+            # Set the Finished Floor Height to 0 if the user did not specify any
+            # Finished Floor Height.
+            self.exposure_db["Finished Floor Height"] = 0
 
     def setup_max_potential_damage(
         self,
@@ -633,7 +633,7 @@ class ExposureVector(Exposure):
                 ] = max_potential_damage
 
         elif isinstance(max_potential_damage, list):
-            # Multiple files are used to assign the ground floor height to the assets
+            # Multiple files are used to assign the Finished Floor Height to the assets
             NotImplemented
         elif max_potential_damage in [
             "jrc_damage_values",
@@ -682,7 +682,7 @@ class ExposureVector(Exposure):
         ):
             # When the max_potential_damage is a string but not jrc_damage_values
             # or hazus_max_potential_damages. Here, a single file is used to
-            # assign the ground floor height to the assets
+            # assign the Finished Floor Height to the assets
             gfh = self.data_catalog.get_geodataframe(max_potential_damage)
             gdf = self.get_full_gdf(self.exposure_db)
             gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
@@ -743,7 +743,7 @@ class ExposureVector(Exposure):
             damage_cols,
         ] = updated_max_potential_damages[damage_cols]
 
-    def raise_ground_floor_height(
+    def raise_finished_floor_height(
         self,
         raise_by: Union[int, float],
         objectids: List[int],
@@ -751,7 +751,7 @@ class ExposureVector(Exposure):
         path_ref: str = None,
         attr_ref: str = "STATIC_BFE",
     ):
-        """Raises the ground floor height of selected objects to a certain level.
+        """Raises the Finished Floor Height of selected objects to a certain level.
 
         Parameters
         ----------
@@ -761,8 +761,8 @@ class ExposureVector(Exposure):
             A list of Object IDs to select the exposure objects to raise the ground
             floor of.
         height_reference : str, optional
-            Either 'datum' when the Ground Floor Height should be raised relative to the
-            Datum or 'geom' when the Ground Floor Height should be raised relative to
+            Either 'datum' when the Finished Floor Height should be raised relative to the
+            Datum or 'geom' when the Finished Floor Height should be raised relative to
             the attribute `attr_ref` in the geometry file `path_ref`, by default ""
         path_ref : str, optional
             The full path to the geometry file used to calculate the Ground Floor
@@ -770,39 +770,39 @@ class ExposureVector(Exposure):
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default "STATIC_BFE"
         """
-        # ground floor height attr already exist, update relative to a reference file or datum
-        # Check if the Ground Floor Height column already exists
-        if "Ground Floor Height" not in self.exposure_db.columns:
+        # Finished Floor Height attr already exist, update relative to a reference file or datum
+        # Check if the Finished Floor Height column already exists
+        if "Finished Floor Height" not in self.exposure_db.columns:
             self.logger.warning(
-                "Trying to update the Ground Floor Height but the attribute does not "
+                "Trying to update the Finished Floor Height but the attribute does not "
                 "yet exist in the exposure data."
             )
             return
 
-        # Get the index of the objects to raise the ground floor height.
+        # Get the index of the objects to raise the Finished Floor Height.
         idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
         self.logger.info(
-            f"Raising the ground floor height of {len(idx)} properties to {raise_by}."
-        )  # TODO: add the unit of the ground floor height
+            f"Raising the Finished Floor Height of {len(idx)} properties to {raise_by}."
+        )  # TODO: add the unit of the Finished Floor Height
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
             self.logger.info(
-                "Raising the ground floor height of the properties relative to Datum."
+                "Raising the Finished Floor Height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                (self.exposure_db["Ground Floor Height"] < raise_by)
+                (self.exposure_db["Finished Floor Height"] < raise_by)
                 & self.exposure_db.index.isin(idx),
-                "Ground Floor Height",
+                "Finished Floor Height",
             ] = raise_by
 
         elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
             # user submitted.
             self.logger.info(
-                "Raising the ground floor height of the properties relative to "
+                "Raising the Finished Floor Height of the properties relative to "
                 f"{Path(path_ref).name}, with column {attr_ref}."
             )
 
@@ -825,7 +825,7 @@ class ExposureVector(Exposure):
 
         else:
             self.logger.warning(
-                "The height reference of the Ground Floor Height is set to "
+                "The height reference of the Finished Floor Height is set to "
                 f"'{height_reference}'. "
                 "This is not one of the allowed height references. Set the height "
                 "reference to 'datum', 'geom' or 'raster' (last option not yet "
@@ -921,7 +921,7 @@ class ExposureVector(Exposure):
         self,
         percent_growth: float,
         geom_file: str,
-        ground_floor_height: float,
+        finished_floor_height: float,
         damage_types: List[str],
         vulnerability: Vulnerability,
         elevation_reference: str,
@@ -944,7 +944,7 @@ class ExposureVector(Exposure):
             The full path to the file that contains the geometries of composite areas.
             Optionally this file can contain a feature 'FID' to link to the exposure
             database.
-        ground_floor_height : float
+        finished_floor_height : float
             The height that the ground floor should have relative to either 'datum' or
             'geom' as defined in the `elevation_reference` variable.
         damage_types : List[str]
@@ -953,8 +953,8 @@ class ExposureVector(Exposure):
         vulnerability : Vulnerability
             The Vulnerability object from the FiatModel.
         elevation_reference : str
-            Either 'datum' when the Ground Floor Height should be set relative to the
-            Datum or 'geom' when the Ground Floor Height should be set relative to the
+            Either 'datum' when the Finished Floor Height should be set relative to the
+            Datum or 'geom' when the Finished Floor Height should be set relative to the
             attribute `attr_ref` in the geometry file `path_ref`.
         path_ref : str, optional
             The full path to the geometry file used to calculate the Ground Floor
@@ -1042,7 +1042,7 @@ class ExposureVector(Exposure):
                 "Primary Object Type": ["New development area"],
                 "Secondary Object Type": ["New development area"],
                 "Extraction Method": ["area"],
-                "Ground Floor Height": [0],
+                "Finished Floor Height": [0],
                 "Ground Elevation": [0],
             }
             dict_new_objects_data.update(
@@ -1075,14 +1075,14 @@ class ExposureVector(Exposure):
         )
 
         if elevation_reference == "datum":
-            new_objects["Ground Floor Height"] = ground_floor_height
+            new_objects["Finished Floor Height"] = finished_floor_height
             self.logger.info(
-                f"The elevation of the new development area is {ground_floor_height} ft"
+                f"The elevation of the new development area is {finished_floor_height} ft"
                 " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
             self.logger.info(
-                f"The elevation of the new development area is {ground_floor_height} ft"
+                f"The elevation of the new development area is {finished_floor_height} ft"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
@@ -1092,7 +1092,7 @@ class ExposureVector(Exposure):
                 elevation_reference,
                 path_ref,
                 attr_ref,
-                ground_floor_height,
+                finished_floor_height,
                 self.crs,
             )
 
@@ -1500,7 +1500,7 @@ class ExposureVector(Exposure):
 
         # Find indices of properties that are below the required level
         properties_below_level = (
-            exposure_to_modify.loc[:, "Ground Floor Height"]
+            exposure_to_modify.loc[:, "Finished Floor Height"]
             + exposure_to_modify.loc[:, "Ground Elevation"]
             < modified_objects_gdf.loc[:, attr_ref] + raise_by
         )
@@ -1513,7 +1513,7 @@ class ExposureVector(Exposure):
         )
 
         original_df = exposure_to_modify.copy()  # to be used for metrics
-        exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
+        exposure_to_modify.loc[to_change, "Finished Floor Height"] = list(
             modified_objects_gdf.loc[to_change, attr_ref]
             + raise_by
             - exposure_to_modify.loc[to_change, "Ground Elevation"]
@@ -1522,8 +1522,8 @@ class ExposureVector(Exposure):
         # Get some metrics on changes
         no_builds_to_change = sum(to_change)
         avg_raise = np.average(
-            exposure_to_modify.loc[to_change, "Ground Floor Height"]
-            - original_df.loc[to_change, "Ground Floor Height"]
+            exposure_to_modify.loc[to_change, "Finished Floor Height"]
+            - original_df.loc[to_change, "Finished Floor Height"]
         )
         self.logger.info(
             f"Raised {no_builds_to_change} properties with an average of {avg_raise}."

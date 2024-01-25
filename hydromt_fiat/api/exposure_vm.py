@@ -30,7 +30,7 @@ class ExposureViewModel:
         self.exposure_buildings_model = None
         self.exposure_roads_model = None
         self.aggregation_areas_model = None
-        self.exposure_ground_floor_height_model = None
+        self.exposure_finished_floor_height_model = None
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
         self.exposure_occupancy_type_model = None
@@ -58,13 +58,13 @@ class ExposureViewModel:
     def set_asset_locations_source_and_get_data(
         self,
         source: str,
-        ground_floor_height: str,
+        finished_floor_height: str,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
-            self.set_asset_locations_source(source, ground_floor_height)
+            self.set_asset_locations_source(source, finished_floor_height)
 
             # Download NSI from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -77,7 +77,7 @@ class ExposureViewModel:
 
             self.exposure.setup_buildings_from_single_source(
                 source,
-                ground_floor_height,
+                finished_floor_height,
                 "centroid",
             )
             primary_object_types = (
@@ -97,7 +97,7 @@ class ExposureViewModel:
     def set_asset_locations_source(
         self,
         source: str,
-        ground_floor_height: str,
+        finished_floor_height: str,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ) -> None:
@@ -107,7 +107,7 @@ class ExposureViewModel:
                 asset_locations=source,
                 occupancy_type=source,
                 max_potential_damage=source,
-                ground_floor_height=ground_floor_height,
+                finished_floor_height=finished_floor_height,
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
@@ -161,14 +161,14 @@ class ExposureViewModel:
         if self.exposure:
             self.exposure.setup_extraction_method(extraction_method)
 
-    def set_ground_floor_height(
+    def set_finished_floor_height(
         self,
         source: str,
         attribute_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: Union[float, int, None] = 10,
     ):
-        self.exposure_ground_floor_height_model = ExposureSetupGroundFloorHeight(
+        self.exposure_finished_floor_height_model = ExposureSetupGroundFloorHeight(
             source=source,
             attribute_name=attribute_name,
             method=method,

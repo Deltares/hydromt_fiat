@@ -70,7 +70,7 @@ def test_setup_new_composite_areas_ground_elevation(case):
     fm.exposure.setup_new_composite_areas(
         percent_growth=10,
         geom_file=str(_cases[case]["composite_areas"]),
-        ground_floor_height=2,
+        finished_floor_height=2,
         damage_types=["Structure", "Content"],
         vulnerability=fm.vulnerability,
         elevation_reference=_cases[case]["type"],

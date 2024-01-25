@@ -288,7 +288,7 @@ class FiatModel(GridModel):
         asset_locations: Union[str, Path],
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
-        ground_floor_height: Union[int, float, str, Path, None],
+        finished_floor_height: Union[int, float, str, Path, None],
         unit: str,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
@@ -308,12 +308,12 @@ class FiatModel(GridModel):
             The path to the data that can be used for the occupancy type.
         max_potential_damage : Union[str, Path]
             The path to the data that can be used for the maximum potential damage.
-        ground_floor_height : Union[int, float, str, Path None]
+        finished_floor_height : Union[int, float, str, Path None]
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
         unit : str
-            The unit of the ground_floor_height
+            The unit of the finished_floor_height
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -336,7 +336,7 @@ class FiatModel(GridModel):
             # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
                 asset_locations,
-                ground_floor_height,
+                finished_floor_height,
                 extraction_method,
                 ground_elevation_file=ground_elevation_file,
             )
@@ -348,7 +348,7 @@ class FiatModel(GridModel):
                 asset_locations,
                 occupancy_type,
                 max_potential_damage,
-                ground_floor_height,
+                finished_floor_height,
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
@@ -407,7 +407,7 @@ class FiatModel(GridModel):
 
         # Combine the exposure database with pre-existing exposure data if available
 
-    def update_ground_floor_height(
+    def update_finished_floor_height(
         self,
         source: Union[int, float, str, Path, None],
         attr_name: Union[str, List[str], None] = None,
@@ -415,7 +415,7 @@ class FiatModel(GridModel):
         max_dist: float = 10,
     ):
         if self.exposure:
-            self.exposure.setup_ground_floor_height(source, attr_name, method, max_dist)
+            self.exposure.setup_finished_floor_height(source, attr_name, method, max_dist)
 
     def update_max_potential_damage(
         self,
