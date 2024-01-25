@@ -75,7 +75,7 @@ class ExposureBuildingsSettings(BaseModel):
     damage_types : Union[List[str], None]
 
 
-class ExposureSetupGroundFloorHeight(BaseModel):
+class ExposureSetupFinishedFloorHeight(BaseModel):
     source: str
     attribute_name: Union[str, List[str], None]
     method: Union[str, List[str], None]

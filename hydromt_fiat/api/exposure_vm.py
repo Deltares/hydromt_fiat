@@ -13,7 +13,7 @@ from .data_types import (
     DataType,
     Driver,
     ExposureBuildingsSettings,
-    ExposureSetupGroundFloorHeight,
+    ExposureSetupFinishedFloorHeight,
     ExposureSetupDamages,
     ExposureSetupGroundElevation,
     ExposureRoadsSettings,
@@ -168,7 +168,7 @@ class ExposureViewModel:
         method: Union[str, List[str], None] = "nearest",
         max_dist: Union[float, int, None] = 10,
     ):
-        self.exposure_finished_floor_height_model = ExposureSetupGroundFloorHeight(
+        self.exposure_finished_floor_height_model = ExposureSetupFinishedFloorHeight(
             source=source,
             attribute_name=attribute_name,
             method=method,
