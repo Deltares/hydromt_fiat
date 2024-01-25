@@ -26,7 +26,7 @@ _cases = {
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "finished_floor_height_file": EXAMPLEDIR
         / "fake_update_finished_floor_height.gpkg",
-        "attribute": "groundfloorheight",
+        "attribute": "finishedfloorheight",
         "method": "intersection",
         "max_dist": None,
     },
@@ -66,7 +66,7 @@ def test_update_finished_floor_height(case):
     unique_gfh_new = fm.exposure.exposure_db["Finished Floor Height"].unique()
     assert any(unique_gfh_original != unique_gfh_new), "The Finished Floor Height is the same"
 
-    # # Check if the Ground Floor Heigh attribute is set correctly
+    # # Check if the Finished Floor Heigh attribute is set correctly
     # finished_floor_height = gpd.read_file(_cases[case]["finished_floor_height_file"])
     # nearest_utm = utm_crs(finished_floor_height.total_bounds)
     # finished_floor_height = finished_floor_height.to_crs(nearest_utm)

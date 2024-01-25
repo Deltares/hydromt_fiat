@@ -143,8 +143,8 @@ class ExposureVector(Exposure):
             vector dataset to be used to set up the asset locations. This can be either
             a point or polygon dataset.
         finished_floor_height : Union[int, float, str, Path, None]
-            Either a number (int or float), to give all assets the same ground floor
-            height or a path to the data that can be used to add the ground floor
+            Either a number (int or float), to give all assets the same finished floor
+            height or a path to the data that can be used to add the finished floor
             height to the assets.
         extraction_method : str
             The extraction method to be used for all of the assets.
@@ -765,7 +765,7 @@ class ExposureVector(Exposure):
             Datum or 'geom' when the Finished Floor Height should be raised relative to
             the attribute `attr_ref` in the geometry file `path_ref`, by default ""
         path_ref : str, optional
-            The full path to the geometry file used to calculate the Ground Floor
+            The full path to the geometry file used to calculate the Finished Floor
             Height if the `height_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default "STATIC_BFE"
@@ -957,7 +957,7 @@ class ExposureVector(Exposure):
             Datum or 'geom' when the Finished Floor Height should be set relative to the
             attribute `attr_ref` in the geometry file `path_ref`.
         path_ref : str, optional
-            The full path to the geometry file used to calculate the Ground Floor
+            The full path to the geometry file used to calculate the Finished Floor
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None

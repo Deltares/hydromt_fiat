@@ -309,8 +309,8 @@ class FiatModel(GridModel):
         max_potential_damage : Union[str, Path]
             The path to the data that can be used for the maximum potential damage.
         finished_floor_height : Union[int, float, str, Path None]
-            Either a number (int or float), to give all assets the same ground floor
-            height or a path to the data that can be used to add the ground floor
+            Either a number (int or float), to give all assets the same finished floor
+            height or a path to the data that can be used to add the finished floor
             height to the assets.
         unit : str
             The unit of the finished_floor_height
