@@ -550,12 +550,12 @@ class FiatModel(GridModel):
             rp_list.append(da_rp)
             map_name_lst.append(da_name)
 
-            da.attrs.update({
+            da.attrs = {
                 "returnperiod": str(da_rp),
                 "type": da_type,
                 "name": da_name,
                 "analysis": "event",
-            })
+            }
 
             da = da.to_dataset(name=da_name)
 
@@ -571,14 +571,14 @@ class FiatModel(GridModel):
 
             self.set_grid(da)
 
-            self.grid.attrs.update({
+            self.grid.attrs = {
                 "rp": sorted_rp,
                 "type": params[
                     "map_type_lst"
                 ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
                 "name": sorted_names,
                 "analysis": "risk",
-            })
+            }
 
             list_maps = list(self.maps.keys())
 
