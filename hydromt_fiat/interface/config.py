@@ -30,9 +30,9 @@ class HazardModel(BaseModel):
     file: str
     crs: str
     risk: bool
-    return_periods: Optional[List[int]]
+    return_periods: Optional[List[int]] = None
     spatial_reference: SpatialReference
-    layer: Optional[str]
+    layer: Optional[str] = None
 
 
 class ExposureGeomModel(BaseModel):

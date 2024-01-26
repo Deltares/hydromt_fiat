@@ -41,8 +41,8 @@ class DataCatalogEntry(BaseModel):
     path: str
     data_type: DataType
     driver: Driver
-    crs: Optional[Union[str, int]]
-    translation_fn: Optional[str]
+    crs: Optional[Union[str, int]] = None
+    translation_fn: Optional[str] = None
     meta: Meta
 
 
@@ -61,8 +61,8 @@ class VulnerabilitySettings(BaseModel):
     vulnerability_identifiers_and_linking_fn: str
     unit: Units
     functions_mean: Union[str, list]
-    functions_max: Union[str, list, None]
-    step_size: Union[float, None]
+    functions_max: Optional[Union[str, list]] = None
+    step_size: Optional[float] = None #TODO should this have a default value?
 
 
 class ExposureBuildingsSettings(BaseModel):
@@ -72,14 +72,14 @@ class ExposureBuildingsSettings(BaseModel):
     ground_floor_height: str
     unit: Units
     extraction_method: ExtractionMethod
-    damage_types : Union[List[str], None]
+    damage_types : Optional[List[str]] = None
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str
-    attribute_name: Union[str, List[str], None]
-    method: Union[str, List[str], None]
-    max_dist: Union[float, int, None]
+    attribute_name: Optional[Union[str, List[str]]] = None
+    method: Optional[Union[str, List[str]]] = None
+    max_dist: Optional[Union[float, int]] = None
 
 
 class ExposureSetupGroundElevation(BaseModel):
@@ -88,9 +88,9 @@ class ExposureSetupGroundElevation(BaseModel):
     
 class ExposureSetupDamages(BaseModel):
     source: str
-    attribute_name: Union[str, List[str], None]
-    method: Union[str, List[str], None]
-    max_dist: Union[float, int, None]
+    attribute_name: Optional[Union[str, List[str]]] = None
+    method: Optional[Union[str, List[str]]] = None
+    max_dist: Optional[Union[float, int]] = None
 
 
 class RoadVulnerabilitySettings(BaseModel):
