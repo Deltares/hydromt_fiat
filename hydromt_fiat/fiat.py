@@ -982,9 +982,9 @@ class FiatModel(GridModel):
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
-            self.write_maps(fn="hazard/{name}.nc")
+            self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
-            self.write_grid(fn="hazard/risk_map.nc")
+            self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
         if self.geoms:
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:
