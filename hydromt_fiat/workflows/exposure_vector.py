@@ -429,10 +429,9 @@ class ExposureVector(Exposure):
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
-            gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-
             # Update the exposure database
             if type_add in self.exposure_db:
+                gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
                 self.exposure_db = pd.merge(
                     self.exposure_db, gdf, on="Object ID", how="left"
                 )

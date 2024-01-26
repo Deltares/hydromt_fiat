@@ -356,7 +356,7 @@ class FiatModel(GridModel):
                 ground_elevation_file=ground_elevation_file,
             )
 
-        if asset_locations != occupancy_type:
+        if (asset_locations != occupancy_type) and occupancy_object_type is not None:
             self.exposure.setup_occupancy_type(
                 occupancy_source=occupancy_type,
                 occupancy_attr=occupancy_attr,
