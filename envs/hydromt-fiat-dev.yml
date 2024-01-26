@@ -18,6 +18,7 @@ dependencies:
   - hydromt_sfincs
   - numpy
   - osmnx
+  - openpyxl
   - pandas
   - pydantic
   - pyogrio

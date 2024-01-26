@@ -19,6 +19,7 @@ dependencies = [
     "geopandas",
     "geopy",
     "numpy",
+    "openpyxl",
     "pandas",
     "pyogrio",
     "tomli-w",
