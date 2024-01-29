@@ -54,7 +54,7 @@ def test_update_max_potential_damage(case):
     fm.exposure.setup_max_potential_damage(
         max_potential_damage=_cases[case]["max_potential_damage_file"],
         damage_types=_cases[case]["damage_types"],    
-        attr_name=_cases[case]["attribute"],
+        attribute_name=_cases[case]["attribute"],
         method=_cases[case]["method"],
         max_dist=_cases[case]["max_dist"]
     )

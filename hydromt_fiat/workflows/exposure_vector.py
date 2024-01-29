@@ -527,7 +527,7 @@ class ExposureVector(Exposure):
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
-        attr_name: Union[str, List[str], None] = None,
+        attribute_name: Union[str, List[str], None] = None,
         join_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
@@ -571,10 +571,10 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(
-                    gdf, gfh, attr_name, join_method, max_dist, self.logger
+                    gdf, gfh, attribute_name, join_method, max_dist, self.logger
                 )
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attr_name
+                    gdf, "Ground Floor Height", attribute_name
                 )
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
@@ -590,7 +590,7 @@ class ExposureVector(Exposure):
             int, float, str, Path, List[str], List[Path], pd.DataFrame
         ] = None,
         damage_types: Union[List[str], str, None] = None,
-        attr_name: Union[str, List[str], None] = None,
+        attribute_name: Union[str, List[str], None] = None,
         method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
         country: Union[str, None] = None,
@@ -684,9 +684,9 @@ class ExposureVector(Exposure):
             # assign the ground floor height to the assets
             gfh = self.data_catalog.get_geodataframe(max_potential_damage)
             gdf = self.get_full_gdf(self.exposure_db)
-            gdf = join_spatial_data(gdf, gfh, attr_name, method, max_dist, self.logger)
+            gdf = join_spatial_data(gdf, gfh, attribute_name, method, max_dist, self.logger)
             self.exposure_db = self._set_values_from_other_column(
-                gdf, f"Max Potential Damage: {damage_types[0].capitalize()}", attr_name
+                gdf, f"Max Potential Damage: {damage_types[0].capitalize()}", attribute_name
             )
 
     def setup_ground_elevation(
