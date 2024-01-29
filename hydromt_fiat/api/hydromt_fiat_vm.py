@@ -91,6 +91,11 @@ class HydroMtViewModel:
             config_yaml.update_ground_floor_height = (
                 self.exposure_vm.exposure_ground_floor_height_model
             )
+        
+        if self.exposure_vm.exposure_ground_elevation_model:
+            config_yaml.update_ground_elevation = (
+                self.exposure_vm.exposure_ground_elevation_model
+            )
 
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
