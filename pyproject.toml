@@ -14,17 +14,18 @@ authors = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "hydromt==0.8.0",
+    "hydromt",
     "hydromt_sfincs",
     "geopandas",
     "geopy",
     "numpy",
+    "openpyxl",
     "pandas",
     "pyogrio",
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic==1.10.9",
+	"pydantic",
 	"osmnx",
 	"census",
 	"us",
