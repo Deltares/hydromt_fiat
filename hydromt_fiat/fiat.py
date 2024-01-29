@@ -556,6 +556,10 @@ class FiatModel(GridModel):
                 "name": da_name,
                 "analysis": "event",
             }
+            
+            # Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf
+            if "grid_mapping" in da.encoding:
+                del  da.encoding["grid_mapping"]
 
             da = da.to_dataset(name=da_name)
 
@@ -579,6 +583,10 @@ class FiatModel(GridModel):
                 "name": sorted_names,
                 "analysis": "risk",
             }
+            
+            # Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf
+            if "grid_mapping" in self.grid.encoding:
+                del  self.grid.encoding["grid_mapping"]
 
             list_maps = list(self.maps.keys())
 
@@ -982,9 +990,9 @@ class FiatModel(GridModel):
         if self.config:  # try to read default if not yet set
             self.write_config()
         if self.maps:
-            self.write_maps(fn="hazard/{name}.nc")
+            self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
-            self.write_grid(fn="hazard/risk_map.nc")
+            self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
         if self.geoms:
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:

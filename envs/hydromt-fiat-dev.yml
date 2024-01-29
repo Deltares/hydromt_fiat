@@ -14,12 +14,13 @@ dependencies:
   - gdal>=3.1
   - geopandas
   - geopy
-  - hydromt=0.8.0
+  - hydromt
   - hydromt_sfincs
   - numpy
   - osmnx
+  - openpyxl
   - pandas
-  - pydantic=1.10.9
+  - pydantic
   - pyogrio
   - pytest # tests
   - python=3.10
