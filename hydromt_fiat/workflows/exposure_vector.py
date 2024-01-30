@@ -287,7 +287,7 @@ class ExposureVector(Exposure):
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
         attr_name_gfh: Union[str, List[str], None] = None,
-        join_method: Union[str, List[str], None] = "nearest",
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float, None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
@@ -296,7 +296,7 @@ class ExposureVector(Exposure):
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(
-            ground_floor_height, attr_name_gfh, join_method, max_dist
+            ground_floor_height, attr_name_gfh, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file)
@@ -528,7 +528,7 @@ class ExposureVector(Exposure):
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
         attribute_name: Union[str, List[str], None] = None,
-        join_method: Union[str, List[str], None] = "nearest",
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
@@ -571,7 +571,7 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(
-                    gdf, gfh, attribute_name, join_method, max_dist, self.logger
+                    gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
                 )
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attribute_name

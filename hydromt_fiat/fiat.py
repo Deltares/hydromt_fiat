@@ -411,11 +411,11 @@ class FiatModel(GridModel):
         self,
         source: Union[int, float, str, Path, None],
         attribute_name: Union[str, List[str], None] = None,
-        join_method: Union[str, List[str], None] = "nearest",
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ):
         if self.exposure:
-            self.exposure.setup_ground_floor_height(source, attribute_name, join_method, max_dist)
+            self.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
 
     def update_max_potential_damage(
         self,
