@@ -644,6 +644,8 @@ class ExposureVector(Exposure):
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, f"Max Potential Damage: {damage_types[count].capitalize()}", attribute_name[count]
                 )
+                if "geometry" in self.exposure_db.columns:
+                    self.exposure_db.drop(columns=["geometry"], inplace=True)
                 count +=1
             
         elif max_potential_damage in [
