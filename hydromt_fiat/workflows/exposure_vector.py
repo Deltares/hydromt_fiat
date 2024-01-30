@@ -576,6 +576,9 @@ class ExposureVector(Exposure):
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attribute_name
                 )
+                if "geometry" in self.exposure_db.columns:
+                    self.exposure_db.drop(columns=["geometry"], inplace=True)
+                
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented
