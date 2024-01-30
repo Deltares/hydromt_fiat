@@ -179,14 +179,16 @@ class ExposureViewModel:
         self,
         source: str,
         attribute_name: Union[str, List[str], None] = None,
-        method: Union[str, List[str], None] = "nearest",
-        max_dist: Union[float, int, None] = 10,
+        damage_types: Union[str, List[str], None] = None,
+        method_damages: Union[str, List[str], None] = "nearest",
+        max_dist: Union[float, int, None, List[float], List[int]] = 10,
     ):
         self.exposure_damages_model = ExposureSetupDamages(
             source=source,
             attribute_name=attribute_name,
-            method=method,
+            method_damages=method_damages,
             max_dist=max_dist,
+            damage_types = damage_types,
         )
 
     def set_ground_elevation(self, source: Union[int, float, None, str]):
