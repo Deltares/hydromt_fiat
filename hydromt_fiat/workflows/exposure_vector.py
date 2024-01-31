@@ -296,7 +296,7 @@ class ExposureVector(Exposure):
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(
-            ground_floor_height, attr_name_gfh, method_gfh, max_dist
+            ground_floor_height, attribute_name, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file)
@@ -527,8 +527,8 @@ class ExposureVector(Exposure):
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
-        attr_name: Union[str, List[str], None] = None,
-        method: Union[str, List[str], None] = "nearest",
+        attribute_name: Union[str, List[str], None] = None,
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
@@ -542,12 +542,12 @@ class ExposureVector(Exposure):
             list of paths to files that contain the Ground Floor Height of each asset,
             in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
-        attr_name : Union[str, List[str]], optional
+        attribute_name : Union[str, List[str]], optional
             The name of the attribute that contains the Ground Floor Height in the
             file(s) that are submitted. If multiple `ground_floor_height` files are
             submitted, the attribute names are linked to the files in the same order as
             the files are submitted. By default None.
-        method : Union[str, List[str]], optional
+        gfh_method : Union[str, List[str]], optional
             The method to use to assign the Ground Floor Height to the assets. If
             multiple `ground_floor_height` files are submitted, the methods are linked
             to the files in the same order as the files are submitted. The method can
@@ -571,11 +571,14 @@ class ExposureVector(Exposure):
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(
-                    gdf, gfh, attr_name, method, max_dist, self.logger
+                    gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
                 )
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attr_name
+                    gdf, "Ground Floor Height", attribute_name
                 )
+                if "geometry" in self.exposure_db.columns:
+                    self.exposure_db.drop(columns=["geometry"], inplace=True)
+                
             elif isinstance(ground_floor_height, list):
                 # Multiple files are used to assign the ground floor height to the assets
                 NotImplemented

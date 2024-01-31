@@ -329,7 +329,10 @@ class FiatModel(GridModel):
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
         """
-        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
+        # In case the unit is passed as a pydantic value get the string
+        if hasattr(unit, "value"):
+            unit = unit.value
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
@@ -410,12 +413,12 @@ class FiatModel(GridModel):
     def update_ground_floor_height(
         self,
         source: Union[int, float, str, Path, None],
-        attr_name: Union[str, List[str], None] = None,
-        method: Union[str, List[str], None] = "nearest",
+        attribute_name: Union[str, List[str], None] = None,
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ):
         if self.exposure:
-            self.exposure.setup_ground_floor_height(source, attr_name, method, max_dist)
+            self.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
 
     def update_max_potential_damage(
         self,
@@ -424,9 +427,15 @@ class FiatModel(GridModel):
         ] = None,
         damage_types: Union[List[str], str, None] = None,
         country: Union[str, None] = None,
+<<<<<<< HEAD
         #target_attribute: Union[str, List[str], None] = None,
         attribute_name: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
+=======
+        target_attribute: Union[str, List[str], None] = None,
+        attribute_name: Union[str, List[str], None] = None,
+        method: Union[str, List[str], None] = "nearest",
+>>>>>>> 00355e952d241bcf6c41f04211649514705fa548
         max_dist: float = 10,
     ):
         if self.exposure:
@@ -434,9 +443,15 @@ class FiatModel(GridModel):
                 max_potential_damage=source,
                 damage_types=damage_types,
                 country=country,
+<<<<<<< HEAD
                 #target_attribute=target_attribute,
                 attribute_name=attribute_name,
                 method_damages=method_damages,
+=======
+                target_attribute=target_attribute,
+                attribute_name=attribute_name,
+                method=method,
+>>>>>>> 00355e952d241bcf6c41f04211649514705fa548
                 max_dist=max_dist,
             )
 
