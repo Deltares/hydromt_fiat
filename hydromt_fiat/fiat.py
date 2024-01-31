@@ -329,7 +329,10 @@ class FiatModel(GridModel):
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
         """
-        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region)
+        # In case the unit is passed as a pydantic value get the string
+        if hasattr(unit, "value"):
+            unit = unit.value
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
