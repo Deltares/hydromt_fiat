@@ -87,11 +87,11 @@ class ExposureSetupGroundElevation(BaseModel):
 
     
 class ExposureSetupDamages(BaseModel):
-    source: str
+    source: Union[str, List[str]]
     attribute_name: Optional[Union[str, List[str]]] = None
-    method: Optional[Union[str, List[str]]] = None
-    max_dist: Optional[Union[float, int]] = None
-
+    method_damages: Optional[Union[str, List[str]]] = None
+    max_dist: Optional[Union[float, int, List[float], List[int]]] = None
+    damage_types: Optional[Union[str, List[str]]] = None
 
 class RoadVulnerabilitySettings(BaseModel):
     threshold_value: float

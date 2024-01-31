@@ -286,9 +286,9 @@ class ExposureVector(Exposure):
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
-        attribute_name: Union[str, List[str], None] = None,
-        gfh_method: Union[str, List[str], None] = "nearest",
-        max_dist: Union[int, float, None] = 10,
+        attr_name_gfh: Union[str, List[str], None] = None,
+        method_gfh: Union[str, List[str], None] = "nearest",
+        max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
@@ -594,7 +594,7 @@ class ExposureVector(Exposure):
         ] = None,
         damage_types: Union[List[str], str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
-        method: Union[str, List[str], None] = "nearest",
+        method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
         country: Union[str, None] = None,
     ) -> None:
@@ -608,9 +608,9 @@ class ExposureVector(Exposure):
             _description_, by default None
         country : Union[str, None], optional
             _description_, by default None
-        attr_name : Union[str, List[str], None], optional
+        attribute_name : Union[str, List[str], None], optional
             _description_, by default None
-        method : Union[str, List[str], None], optional
+        method_damages : Union[str, List[str], None], optional
             _description_, by default "nearest"
         max_dist : float, optional
             _description_, by default 10
@@ -636,7 +636,21 @@ class ExposureVector(Exposure):
 
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
-            NotImplemented
+            count = 0
+            for i in max_potential_damage:
+                # When the max_potential_damage is a string but not jrc_damage_values
+                # or hazus_max_potential_damages. Here, a single file is used to
+                # assign the ground floor height to the assets
+                gfh = self.data_catalog.get_geodataframe(i)
+                gdf = self.get_full_gdf(self.exposure_db)
+                gdf = join_spatial_data(gdf, gfh, attribute_name[count], method_damages[count], max_dist[count], self.logger)
+                self.exposure_db = self._set_values_from_other_column(
+                    gdf, f"Max Potential Damage: {damage_types[count].capitalize()}", attribute_name[count]
+                )
+                if "geometry" in self.exposure_db.columns:
+                    self.exposure_db.drop(columns=["geometry"], inplace=True)
+                count +=1
+            
         elif max_potential_damage in [
             "jrc_damage_values",
             "hazus_max_potential_damages",
@@ -687,7 +701,7 @@ class ExposureVector(Exposure):
             # assign the ground floor height to the assets
             gfh = self.data_catalog.get_geodataframe(max_potential_damage)
             gdf = self.get_full_gdf(self.exposure_db)
-            gdf = join_spatial_data(gdf, gfh, attribute_name, method, max_dist, self.logger)
+            gdf = join_spatial_data(gdf, gfh, attribute_name, method_damages, max_dist, self.logger)
             self.exposure_db = self._set_values_from_other_column(
                 gdf, f"Max Potential Damage: {damage_types[0].capitalize()}", attribute_name
             )

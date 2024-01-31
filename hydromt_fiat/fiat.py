@@ -427,9 +427,9 @@ class FiatModel(GridModel):
         ] = None,
         damage_types: Union[List[str], str, None] = None,
         country: Union[str, None] = None,
-        target_attribute: Union[str, List[str], None] = None,
+        #target_attribute: Union[str, List[str], None] = None,
         attribute_name: Union[str, List[str], None] = None,
-        method: Union[str, List[str], None] = "nearest",
+        method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ):
         if self.exposure:
@@ -437,9 +437,9 @@ class FiatModel(GridModel):
                 max_potential_damage=source,
                 damage_types=damage_types,
                 country=country,
-                target_attribute=target_attribute,
+                #target_attribute=target_attribute,
                 attribute_name=attribute_name,
-                method=method,
+                method_damages=method_damages,
                 max_dist=max_dist,
             )
 
