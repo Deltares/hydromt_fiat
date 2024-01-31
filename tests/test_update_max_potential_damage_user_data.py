@@ -19,7 +19,7 @@ _cases = {
         / "fake_max_potential_damage_points.gpkg",
         "damage_types": "content",
         "attribute": "maxpotential_content",
-        "method": "nearest",
+        "method_damages": "nearest",
         "max_dist": 50,
     },
     "update_max_potential_damage_with_polygons": {
@@ -30,7 +30,7 @@ _cases = {
         / "fake_max_potential_damage_polygons.gpkg",
         "damage_types": "structure",
         "attribute": "maxpotential_structure",
-        "method": "intersection",
+        "method_damages": "intersection",
         "max_dist": None,
     },
 }
@@ -54,8 +54,8 @@ def test_update_max_potential_damage(case):
     fm.exposure.setup_max_potential_damage(
         max_potential_damage=_cases[case]["max_potential_damage_file"],
         damage_types=_cases[case]["damage_types"],    
-        attr_name=_cases[case]["attribute"],
-        method=_cases[case]["method"],
+        attribute_name=_cases[case]["attribute"],
+        method_damages=_cases[case]["method_damages"],
         max_dist=_cases[case]["max_dist"]
     )
 
