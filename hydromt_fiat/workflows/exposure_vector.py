@@ -286,8 +286,8 @@ class ExposureVector(Exposure):
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
-        attr_name_gfh: Union[str, List[str], None] = None,
-        method_gfh: Union[str, List[str], None] = "nearest",
+        attribute_name: Union[str, List[str], None] = None,
+        gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ):
