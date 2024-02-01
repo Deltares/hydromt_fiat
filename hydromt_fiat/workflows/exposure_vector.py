@@ -642,8 +642,30 @@ class ExposureVector(Exposure):
                 # or hazus_max_potential_damages. Here, a single file is used to
                 # assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(i)
+
+                # If method is "intersection" remove columns from gfh exept for attribute name and geometry
+                if method_damages[count] == "intersection":
+                    columns_to_drop = [col for col in gfh.columns if col != attribute_name[count] and col != "geometry"]
+                    gfh = gfh.drop(columns=columns_to_drop)
+                
+                # Get exposure data
                 gdf = self.get_full_gdf(self.exposure_db)
+                
+                # Spatial joint of damage data (user input) and exposure data 
                 gdf = join_spatial_data(gdf, gfh, attribute_name[count], method_damages[count], max_dist[count], self.logger)
+
+                # If method is "intersection" rename *"_left" to original exposure_db name 
+                if method_damages[count] == "intersection":
+                    duplicate_columns_left = [col for col in gdf.columns if col.endswith("_left")]
+                    if duplicate_columns_left:
+                        for item in duplicate_columns_left:
+                            exposure_db_name = item.rstrip("_left")
+                            position = gdf.columns.get_loc(item)
+                            gdf.insert(position, exposure_db_name, gdf[item])
+                            del gdf[item]
+                    
+
+                # Update exposure_db with updated dataframe
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, f"Max Potential Damage: {damage_types[count].capitalize()}", attribute_name[count]
                 )
