@@ -524,6 +524,28 @@ class ExposureVector(Exposure):
     def setup_aggregation_labels(self):
         NotImplemented
 
+    @staticmethod
+    def intersection_method(
+            gdf: gpd.GeoDataFrame,
+    ) -> gpd.GeoDataFrame:
+        """If the selected method is "intersection"  the intersection method duplicates columns if they have the same name in the geodataframe 
+        provided by the user and the original exposure_db. Newly added columns by the method are dropped 
+        and/or renamed and placed in the correct order of the exposure_db.  
+
+        Parameters
+        ----------
+        gdf : gpd.GeoDataFrame
+            The geodataframe after the spatial joint of the user input data and the exposure_db. 
+        """
+        duplicate_columns_left = [col for col in gdf.columns if col.endswith("_left")]
+        if duplicate_columns_left:
+            for item in duplicate_columns_left:
+                exposure_db_name = item.rstrip("_left")
+                position = gdf.columns.get_loc(item)
+                gdf.insert(position, exposure_db_name, gdf[item])
+                del gdf[item]   
+        return gdf  
+    
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
@@ -656,14 +678,7 @@ class ExposureVector(Exposure):
 
                 # If method is "intersection" rename *"_left" to original exposure_db name 
                 if method_damages[count] == "intersection":
-                    duplicate_columns_left = [col for col in gdf.columns if col.endswith("_left")]
-                    if duplicate_columns_left:
-                        for item in duplicate_columns_left:
-                            exposure_db_name = item.rstrip("_left")
-                            position = gdf.columns.get_loc(item)
-                            gdf.insert(position, exposure_db_name, gdf[item])
-                            del gdf[item]
-                    
+                    self.intersection_method(gdf) 
 
                 # Update exposure_db with updated dataframe
                 self.exposure_db = self._set_values_from_other_column(
