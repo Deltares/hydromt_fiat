@@ -569,10 +569,27 @@ class ExposureVector(Exposure):
             ):
                 # A single file is used to assign the ground floor height to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
+
+                # If method is "intersection" remove columns from gfh exept for attribute name and geometry
+                if gfh_method == "intersection":
+                    columns_to_drop = [col for col in gfh.columns if col != attribute_name and col != "geometry"]
+                    gfh = gfh.drop(columns=columns_to_drop)
+        
                 gdf = self.get_full_gdf(self.exposure_db)
                 gdf = join_spatial_data(
                     gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
                 )
+            
+                # If method is "intersection" rename *"_left" to original exposure_db name 
+                if gfh_method == "intersection":
+                    duplicate_columns_left = [col for col in gdf.columns if col.endswith("_left")]
+                    if duplicate_columns_left:
+                        for item in duplicate_columns_left:
+                            exposure_db_name = item.rstrip("_left")
+                            position = gdf.columns.get_loc(item)
+                            gdf.insert(position, exposure_db_name, gdf[item])
+                            del gdf[item]
+        
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attribute_name
                 )
