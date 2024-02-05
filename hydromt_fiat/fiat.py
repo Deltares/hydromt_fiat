@@ -810,7 +810,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
-        
+        filter_primary_object_type: str = "roads",
     ):
         """_summary_
 
@@ -824,8 +824,9 @@ class FiatModel(GridModel):
             The name that the new attribute will get in the exposure data.
         """
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_areas(
-            exposure_gdf,
+        filter_by = exposure_gdf["Primary Object Type"] != filter_primary_object_type
+        self.exposure.exposure_db.loc[filter_by] = join_exposure_aggregation_areas(
+            exposure_gdf.loc[filter_by],
             aggregation_area_fn,
             attribute_names,
             label_names,
