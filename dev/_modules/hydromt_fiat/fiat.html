@@ -17,12 +17,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
@@ -32,9 +32,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
-  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
@@ -56,7 +56,6 @@
   <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -96,10 +95,8 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
-
-  <header>
   
-    <div class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
 <div class="bd-header__inner bd-page-width">
   <label class="sidebar-toggle primary-toggle" for="__primary">
     <span class="fa-solid fa-bars"></span>
@@ -257,15 +254,10 @@
   
 
   
-    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
-      <span class="fa-solid fa-outdent"></span>
-    </label>
-  
 </div>
 
-    </div>
+    </header>
   
-  </header>
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
@@ -739,7 +731,8 @@
         <span class="n">max_potential_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">ground_floor_height</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">occupancy_type_field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">occupancy_attr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">occupancy_object_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extraction_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;centroid&quot;</span><span class="p">,</span>
         <span class="n">damage_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -762,7 +755,7 @@
 <span class="sd">            height to the assets.</span>
 <span class="sd">        unit : str</span>
 <span class="sd">            The unit of the ground_floor_height</span>
-<span class="sd">        occupancy_type_field : Union[str, None], optional</span>
+<span class="sd">        occupancy_attr : Union[str, None], optional</span>
 <span class="sd">            The name of the field in the occupancy type data that contains the</span>
 <span class="sd">            occupancy type, by default None (this means that the occupancy type data</span>
 <span class="sd">            only contains one column with the occupancy type).</span>
@@ -777,9 +770,12 @@
 <span class="sd">            The country that is used for the exposure data, by default None. This is</span>
 <span class="sd">            only required when using the JRC vulnerability curves.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+        <span class="c1"># In case the unit is passed as a pydantic value get the string</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">occupancy_type</span> <span class="o">==</span> <span class="n">max_potential_damage</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">max_potential_damage</span><span class="p">:</span>
             <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
             <span class="c1"># damage is the same, use one source to create the exposure data.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_buildings_from_single_source</span><span class="p">(</span>
@@ -798,10 +794,17 @@
                 <span class="n">max_potential_damage</span><span class="p">,</span>
                 <span class="n">ground_floor_height</span><span class="p">,</span>
                 <span class="n">extraction_method</span><span class="p">,</span>
-                <span class="n">occupancy_type_field</span><span class="p">,</span>
+                <span class="n">occupancy_attr</span><span class="p">,</span>
                 <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
                 <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
                 <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">asset_locations</span> <span class="o">!=</span> <span class="n">occupancy_type</span><span class="p">)</span> <span class="ow">and</span> <span class="n">occupancy_object_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_occupancy_type</span><span class="p">(</span>
+                <span class="n">occupancy_source</span><span class="o">=</span><span class="n">occupancy_type</span><span class="p">,</span>
+                <span class="n">occupancy_attr</span><span class="o">=</span><span class="n">occupancy_attr</span><span class="p">,</span>
+                <span class="n">type_add</span><span class="o">=</span><span class="n">occupancy_object_type</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># Link the damage functions to assets</span>
@@ -852,12 +855,12 @@
     <span class="k">def</span> <span class="nf">update_ground_floor_height</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="n">attr_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">attribute_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gfh_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
         <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">gfh_method</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_max_potential_damage</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -866,9 +869,8 @@
         <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">damage_types</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">target_attribute</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">attr_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">attribute_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method_damages</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
         <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
@@ -876,18 +878,17 @@
                 <span class="n">max_potential_damage</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
                 <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
                 <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
-                <span class="n">target_attribute</span><span class="o">=</span><span class="n">target_attribute</span><span class="p">,</span>
-                <span class="n">attr_name</span><span class="o">=</span><span class="n">attr_name</span><span class="p">,</span>
-                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span>
+                <span class="n">method_damages</span><span class="o">=</span><span class="n">method_damages</span><span class="p">,</span>
                 <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">,</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_ground_elevation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">ground_elevation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">ground_elevation</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>
@@ -1000,6 +1001,10 @@
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
                 <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
             <span class="p">}</span>
+            
+            <span class="c1"># Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf</span>
+            <span class="k">if</span> <span class="s2">&quot;grid_mapping&quot;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
+                <span class="k">del</span>  <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
 
             <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
 
@@ -1023,6 +1028,10 @@
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">sorted_names</span><span class="p">,</span>
                 <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;risk&quot;</span><span class="p">,</span>
             <span class="p">}</span>
+            
+            <span class="c1"># Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf</span>
+            <span class="k">if</span> <span class="s2">&quot;grid_mapping&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
+                <span class="k">del</span>  <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
 
             <span class="n">list_maps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
@@ -1168,17 +1177,19 @@
                 <span class="c1"># Only save the SVI_key_domain and composite_svi_z</span>
                 <span class="n">cols_to_save</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;composite_svi_z&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
 
+            <span class="c1"># Filter out the roads because they do not have an SVI score</span>
+            <span class="n">filter_roads</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="s2">&quot;Primary Object Type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;roads&quot;</span>
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
-                <span class="n">exposure_data</span><span class="p">,</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">[</span><span class="n">cols_to_save</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+                <span class="n">exposure_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">filter_roads</span><span class="p">],</span>
+                <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">[</span><span class="n">cols_to_save</span><span class="p">],</span>
+                <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">)</span>
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;composite_svi_z&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">svi_exp_joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">svi_exp_joined</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI&quot;</span><span class="p">]],</span> <span class="n">on</span> <span class="o">=</span> <span class="s2">&quot;Object ID&quot;</span><span class="p">,</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span></div>
 
-    
-            
     <span class="k">def</span> <span class="nf">setup_equity_data</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1242,9 +1253,12 @@
 
     <span class="k">def</span> <span class="nf">setup_aggregation_areas</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">aggregation_area_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">],</span>
+        <span class="n">aggregation_area_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span>
+        <span class="p">],</span>
         <span class="n">attribute_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">label_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
 
@@ -1259,7 +1273,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">join_exposure_aggregation_areas</span><span class="p">(</span>
-            <span class="n">exposure_gdf</span><span class="p">,</span> <span class="n">aggregation_area_fn</span><span class="p">,</span> <span class="n">attribute_names</span><span class="p">,</span> <span class="n">label_names</span>
+            <span class="n">exposure_gdf</span><span class="p">,</span>
+            <span class="n">aggregation_area_fn</span><span class="p">,</span>
+            <span class="n">attribute_names</span><span class="p">,</span>
+            <span class="n">label_names</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Set the additional_attributes_fn property to save the additional datasets</span>
@@ -1429,9 +1446,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>  <span class="c1"># try to read default if not yet set</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_config</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_maps</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/</span><span class="si">{name}</span><span class="s2">.nc&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_maps</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/</span><span class="si">{name}</span><span class="s2">.nc&quot;</span><span class="p">,</span> <span class="n">gdal_compliant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_grid</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/risk_map.nc&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_grid</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;hazard/risk_map.nc&quot;</span><span class="p">,</span> <span class="n">gdal_compliant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="s2">&quot;exposure/</span><span class="si">{name}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;GPKG&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
@@ -1593,8 +1610,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1627,7 +1644,7 @@
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
 </p></div>
       
     </div>

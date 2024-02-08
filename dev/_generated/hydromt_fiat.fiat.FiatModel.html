@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../_static/styles/bootstrap.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=bd9e20870c6007c4c509" rel="stylesheet" />
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
@@ -33,9 +33,9 @@
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509" />
-  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=bd9e20870c6007c4c509"></script>
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
@@ -59,7 +59,6 @@
   <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -99,10 +98,8 @@
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
 </form></div>
   </div>
-
-  <header>
   
-    <div class="bd-header navbar navbar-expand-lg bd-navbar">
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
 <div class="bd-header__inner bd-page-width">
   <label class="sidebar-toggle primary-toggle" for="__primary">
     <span class="fa-solid fa-bars"></span>
@@ -266,9 +263,8 @@
   
 </div>
 
-    </div>
+    </header>
   
-  </header>
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
@@ -509,23 +505,29 @@
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.get_config.html#hydromt_fiat.fiat.FiatModel.get_config" title="hydromt_fiat.fiat.FiatModel.get_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code></a>(*args[, fallback, abs_path])</p></td>
 <td><p>Get a config value at key(s).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read" title="hydromt_fiat.fiat.FiatModel.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tables_merged</span></code>()</p></td>
+<td><p>Return all tables of a model merged into one dataframe.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read" title="hydromt_fiat.fiat.FiatModel.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>()</p></td>
 <td><p>Method to read the complete model schematization and configuration from file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_config.html#hydromt_fiat.fiat.FiatModel.read_config" title="hydromt_fiat.fiat.FiatModel.read_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_config</span></code></a>([config_fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_config.html#hydromt_fiat.fiat.FiatModel.read_config" title="hydromt_fiat.fiat.FiatModel.read_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_config</span></code></a>([config_fn])</p></td>
 <td><p>Parse config from file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_forcing</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_forcing</span></code>([fn])</p></td>
 <td><p>Read forcing at &lt;root&gt;/&lt;fn&gt; and add to forcing property.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_geoms.html#hydromt_fiat.fiat.FiatModel.read_geoms" title="hydromt_fiat.fiat.FiatModel.read_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_geoms</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_geoms.html#hydromt_fiat.fiat.FiatModel.read_geoms" title="hydromt_fiat.fiat.FiatModel.read_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_geoms</span></code></a>()</p></td>
 <td><p>Read the geometries for the exposure data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_grid</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_grid</span></code>([fn])</p></td>
 <td><p>Read model grid data at &lt;root&gt;/&lt;fn&gt; and add to grid property.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_maps.html#hydromt_fiat.fiat.FiatModel.read_maps" title="hydromt_fiat.fiat.FiatModel.read_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_maps</span></code></a>([fn])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.read_maps.html#hydromt_fiat.fiat.FiatModel.read_maps" title="hydromt_fiat.fiat.FiatModel.read_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_maps</span></code></a>([fn])</p></td>
 <td><p>Read model map at &lt;root&gt;/&lt;fn&gt; and add to maps component.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_nc</span></code>(fn[, mask_and_scale, ...])</p></td>
+<td><p>Read netcdf files at &lt;root&gt;/&lt;fn&gt; and return as dict of xarray.Dataset.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_results</span></code>([fn])</p></td>
 <td><p>Read results at &lt;root&gt;/&lt;fn&gt; and add to results property.</p></td>
@@ -650,7 +652,7 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_model_api</span></code>()</p></td>
 <td><p>Test compliance with HydroMT Model API.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([model_out, write, opt])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([model_out, write, opt, ...])</p></td>
 <td><p>Single method to update a model based the settings in <cite>opt</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_all</span></code>()</p></td>
@@ -659,7 +661,7 @@
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_geoms</span></code>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_ground_elevation</span></code>(ground_elevation)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_ground_elevation</span></code>(source)</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_ground_floor_height</span></code>(source[, ...])</p></td>
@@ -686,7 +688,7 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_forcing</span></code>([fn])</p></td>
 <td><p>Write forcing to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms" title="hydromt_fiat.fiat.FiatModel.write_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_geoms</span></code></a>([fn])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms" title="hydromt_fiat.fiat.FiatModel.write_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_geoms</span></code></a>([fn, to_wgs84])</p></td>
 <td><p>Write model geometries to a vector file (by default GeoJSON) at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_grid</span></code>([fn, gdal_compliant, ...])</p></td>
@@ -695,17 +697,20 @@
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.fiat.FiatModel.write_maps.html#hydromt_fiat.fiat.FiatModel.write_maps" title="hydromt_fiat.fiat.FiatModel.write_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_maps</span></code></a>([fn])</p></td>
 <td><p>Write maps to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_states</span></code>([fn])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_nc</span></code>(nc_dict, fn[, gdal_compliant, ...])</p></td>
+<td><p>Write dictionnary of xarray.Dataset and/or xarray.DataArray to netcdf files.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_states</span></code>([fn])</p></td>
 <td><p>Write states to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticgeoms</span></code>()</p></td>
 <td><p>Write the geometries to disk.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code>([fn])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_staticmaps</span></code>([fn])</p></td>
 <td><p>Write static model maps to netcdf file at &lt;root&gt;/&lt;fn&gt;.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_tables</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_tables</span></code>()</p></td>
+<td><p>Write tables at &lt;root&gt;/tables.</p></td>
 </tr>
 </tbody>
 </table>
@@ -713,7 +718,7 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">api</span></code></p></td>
-<td><p>Return all model components and their data types.</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds</span></code></p></td>
 <td><p>Returns the bounding box of the model grid.</p></td>
@@ -769,16 +774,19 @@
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">staticmaps</span></code></p></td>
 <td><p>Model static maps.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tables</span></code></p></td>
+<td><p>Model tables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code></p></td>
 <td><p>Returns spatial transform of the model grid.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vulnerability_curves</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vulnerability_curves</span></code></p></td>
 <td><p>Returns a dataframe with the damage functions.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vulnerability_metadata</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vulnerability_metadata</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">width</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">width</span></code></p></td>
 <td><p>Returns the width of the model staticmaps.</p></td>
 </tr>
 </tbody>
@@ -878,8 +886,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../_static/scripts/bootstrap.js?digest=bd9e20870c6007c4c509"></script>
-<script src="../_static/scripts/pydata-sphinx-theme.js?digest=bd9e20870c6007c4c509"></script>
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -912,7 +920,7 @@
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.15.2.
 </p></div>
       
     </div>
