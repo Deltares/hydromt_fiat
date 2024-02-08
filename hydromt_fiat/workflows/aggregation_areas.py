@@ -35,6 +35,7 @@ def join_exposure_aggregation_multiple_areas(
         _description_
     """
     for file_path, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
+
         if isinstance(file_path, str) or isinstance(file_path, Path):
             aggregation_gdf = gpd.read_file(file_path)
         else:
@@ -46,7 +47,6 @@ def join_exposure_aggregation_multiple_areas(
 
             
         assert attribute_name in aggregation_gdf.columns, f"Attribute {attribute_name} not found in {file_path}"
-        
 
         # If you overwrite the exposure_gdf with the joined data, you can append all 
         # aggregation areas to the same exposure_gdf
@@ -56,9 +56,19 @@ def join_exposure_aggregation_multiple_areas(
             predicate="intersects",
             how="left",
         )
-        
-        assert exposure_gdf["Object ID"].is_unique, "Error! Aggregation polygons overlap! Please clean your aggregation data from overlapping features."
 
+        # aggregate the data if duplicates exist
+        aggregated = (
+            exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
+        )
+        exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
+        exposure_gdf.drop(columns=attribute_name, inplace=True)
+        exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
+
+        # Create a string from the list of values in the duplicated aggregation area 
+        # column
+        exposure_gdf[attribute_name] = exposure_gdf[attribute_name].apply(process_value)
+            
         # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
         # Documentation that the order the user put the label name must be the order of the gdf
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
