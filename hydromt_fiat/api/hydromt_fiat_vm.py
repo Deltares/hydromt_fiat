@@ -155,9 +155,13 @@ class HydroMtViewModel:
             # Buildings and roads are set up
             full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
             buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
-            roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
-                full_gdf["Primary Object Type"] == "roads"
-            ]
+            if "SVI" in full_gdf.columns and "SVI_key_domain" in full_gdf.columns:
+                roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
+                full_gdf["Primary Object Type"] == "roads"]
+            else:
+                roads_gdf = full_gdf.loc[
+                full_gdf["Primary Object Type"] == "roads"]
+            
             return buildings_gdf, roads_gdf
         elif (
             "setup_exposure_buildings" not in config_yaml.dict()
