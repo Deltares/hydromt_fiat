@@ -225,6 +225,8 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
+        vertical_unit: str = "ft", 
+        
     ):
         self.logger.info("Setting up roads...")
         if str(source).upper() == "OSM":
@@ -266,6 +268,7 @@ class ExposureVector(Exposure):
             ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, int):
             roads["Segment Length [m]"] = get_road_lengths(roads)
+            #Here I need to enter if statement for unit and then convert to feet
             roads["Max Potential Damage: Structure"] = road_damage
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])

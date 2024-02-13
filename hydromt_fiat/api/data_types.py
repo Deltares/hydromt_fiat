@@ -105,7 +105,7 @@ class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
     road_damage: int
-    unit: Units
+    vertical_unit: Units
 
 
 class AggregationAreaSettings(BaseModel):

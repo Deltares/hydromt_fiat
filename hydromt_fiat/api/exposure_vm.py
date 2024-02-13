@@ -213,7 +213,7 @@ class ExposureViewModel:
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            unit=Units.ft.value,
+            vertical_unit=Units.ft.value,
         )
 
             
@@ -254,7 +254,7 @@ class ExposureViewModel:
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            unit=Units.ft.value,
+            vertical_unit=Units.ft.value,
         )
 
         return gdf

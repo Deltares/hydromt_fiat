@@ -389,7 +389,7 @@ class FiatModel(GridModel):
         roads_fn: Union[str, Path],
         road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
-        unit: str = "m",
+        vertical_unit: str = "ft",
     ):
         """Setup road exposure data for Delft-FIAT.
 
@@ -402,9 +402,9 @@ class FiatModel(GridModel):
         """
         if not self.exposure:
             self.exposure = ExposureVector(
-                self.data_catalog, self.logger, self.region, unit=unit
+                self.data_catalog, self.logger, self.region, vetical_unit=vertical_unit
             )
-        self.exposure.setup_roads(roads_fn, road_damage, road_types)
+        self.exposure.setup_roads(roads_fn, road_damage, road_types, vertical_unit)
 
         # Link to vulnerability curves
 
