@@ -144,7 +144,7 @@ class HydroMtViewModel:
         buildings_gdf, roads_gdf = self.update_exposure_db(config_yaml)
         return buildings_gdf, roads_gdf
 
-    def update_ground_floor_height(self, parameter):
+    def update_model(self, parameter):
 
         #Update config yaml
         self.save_data_catalog()
@@ -158,12 +158,13 @@ class HydroMtViewModel:
             max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
             self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
         elif parameter == "Additional Attributes":
-                print("holla")
+            print("holla")
         elif parameter == "Ground Elevation":
-                print("holla")
+            source = config_yaml.model_extra["update_ground_elevation"].source
+            self.fiat_model.exposure.setup_ground_elevation(source)
         elif parameter == "Max Potential Damages":
                 print("holla")
-
+    
         # Write model
         self.fiat_model.write()
 

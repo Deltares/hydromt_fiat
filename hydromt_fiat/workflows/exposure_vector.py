@@ -598,9 +598,18 @@ class ExposureVector(Exposure):
                     gfh = gfh.drop(columns=columns_to_drop)
         
                 gdf = self.get_full_gdf(self.exposure_db)
-                gdf = join_spatial_data(
-                    gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
-                )
+                
+                # If roads in model filter out for spatial joint 
+                if gdf["Primary Object Type"].str.contains("roads").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
+                    gdf = join_spatial_data(
+                    gdf[~gdf.isin(gdf_roads)].dropna(subset=['geometry']), gfh, attribute_name, gfh_method, max_dist, self.logger
+                    )
+                    gdf = pd.concat([gdf, gdf_roads])
+                else:
+                    gdf = join_spatial_data(
+                        gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
+                    )
             
                 # If method is "intersection" rename *"_left" to original exposure_db name 
                 if gfh_method == "intersection":
