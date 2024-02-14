@@ -208,12 +208,13 @@ class ExposureViewModel:
             "secondary",
             "secondary_link",
         ],
+        vertical_unit: Union[str, Units] = "ft"
     ):
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            vertical_unit=Units.ft.value,
+            vertical_unit= vertical_unit,
         )
 
             
@@ -229,6 +230,7 @@ class ExposureViewModel:
             "secondary",
             "secondary_link",
         ],
+        vertical_unit: Union[str, Units] = "ft",
         crs=4326,
     ):
         if self.exposure is None:
@@ -244,6 +246,7 @@ class ExposureViewModel:
             source="OSM",
             road_damage=1,
             road_types=road_types,
+            vertical_unit = vertical_unit
         )
         roads = self.exposure.exposure_db.loc[
             self.exposure.exposure_db["Primary Object Type"] == "roads"
@@ -254,7 +257,7 @@ class ExposureViewModel:
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            vertical_unit=Units.ft.value,
+            vertical_unit= vertical_unit,
         )
 
         return gdf

@@ -264,7 +264,7 @@ class FiatModel(GridModel):
 
     def setup_road_vulnerability(
         self,
-        vertical_unit: str,
+        vertical_unit: str = "ft",
         threshold_value: float = 0.6,
         min_hazard_value: float = 0,
         max_hazard_value: float = 10,

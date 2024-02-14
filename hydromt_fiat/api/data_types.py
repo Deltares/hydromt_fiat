@@ -98,14 +98,14 @@ class RoadVulnerabilitySettings(BaseModel):
     min_hazard_value: float
     max_hazard_value: float
     step_hazard_value: float
-    vertical_unit: Units
+    vertical_unit: Union[str, Units]
 
 
 class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
     road_damage: int
-    vertical_unit: Units
+    vertical_unit: Union[str, Units]
 
 
 class AggregationAreaSettings(BaseModel):
