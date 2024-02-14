@@ -140,6 +140,38 @@ class HydroMtViewModel:
         region = self.data_catalog.get_geodataframe("area_of_interest")
         self.fiat_model.build(region={"geom": region}, opt=config_yaml.dict())
 
+        # Update exposure dataframe
+        buildings_gdf, roads_gdf = self.update_exposure_db(config_yaml)
+        return buildings_gdf, roads_gdf
+
+    def update_ground_floor_height(self, parameter):
+
+        #Update config yaml
+        self.save_data_catalog()
+        config_yaml = self.build_config_yaml()
+
+        # Update parameter with user-input
+        if parameter == "Finished Floor Height":
+            source = config_yaml.model_extra["update_ground_floor_height"].source
+            attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
+            gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
+            max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
+            self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+        elif parameter == "Additional Attributes":
+                print("holla")
+        elif parameter == "Ground Elevation":
+                print("holla")
+        elif parameter == "Max Potential Damages":
+                print("holla")
+
+        # Write model
+        self.fiat_model.write()
+
+        buildings_gdf, roads_gdf = self.update_exposure_db(config_yaml)
+        return buildings_gdf, roads_gdf
+        
+    # Update exposure dataframe
+    def update_exposure_db(self, config_yaml):
         exposure_db = self.fiat_model.exposure.exposure_db
         if (
             "setup_exposure_buildings" in config_yaml.dict()
