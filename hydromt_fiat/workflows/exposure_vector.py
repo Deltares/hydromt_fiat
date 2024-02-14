@@ -1414,7 +1414,7 @@ class ExposureVector(Exposure):
                 non_building_names=non_building_names,
                 return_gdf=True,
             )
-            polygon = gpd.read_file(polygon_file, engine="pyogrio")
+            polygon = gpd.read_file(polygon_file, engine="pyogrio").to_crs(buildings.crs)
             ids = gpd.sjoin(buildings, polygon)["Object ID"]
         elif selection_type == "list":
             ids = objectids
