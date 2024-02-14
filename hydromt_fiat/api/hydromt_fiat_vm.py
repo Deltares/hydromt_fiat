@@ -158,7 +158,10 @@ class HydroMtViewModel:
             max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
             self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
         elif parameter == "Additional Attributes":
-            print("holla")
+            aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
+            attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
+            label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
+            self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
         elif parameter == "Ground Elevation":
             source = config_yaml.model_extra["update_ground_elevation"].source
             self.fiat_model.exposure.setup_ground_elevation(source)
