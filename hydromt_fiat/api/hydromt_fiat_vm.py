@@ -166,7 +166,7 @@ class HydroMtViewModel:
             source = config_yaml.model_extra["update_ground_elevation"].source
             self.fiat_model.exposure.setup_ground_elevation(source)
         elif parameter == "Max Potential Damages":
-                print("holla")
+                NotImplemented
     
         # Write model
         self.fiat_model.write()
