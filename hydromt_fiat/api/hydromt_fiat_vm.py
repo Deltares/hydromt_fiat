@@ -154,48 +154,22 @@ class HydroMtViewModel:
         if isinstance(parameter,list):
             for item in parameter:
                 if "Finished Floor Height" in item:
-                    source = config_yaml.model_extra["update_ground_floor_height"].source
-                    attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
-                    gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
-                    max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
-                    self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+                    self.new_ground_floor_height(config_yaml)
                 elif "Additional Attributes" in item :
-                    aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
-                    attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
-                    label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
-                    self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
-                elif"Ground Elevation" in item :
-                    source = config_yaml.model_extra["update_ground_elevation"].source
-                    self.fiat_model.exposure.setup_ground_elevation(source)
+                    self.new_additional_attributes(config_yaml)
+                elif"Ground Elevation" in item:
+                    self.new_ground_elevation(config_yaml)
                 elif "Max Potential Damages" in item :
-                    source = config_yaml.model_extra["update_max_potential_damage"].source
-                    attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
-                    method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
-                    max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
-                    damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
-                    self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
+                    self.new_max_potential_damages(config_yaml)
         else:
             if parameter == "Finished Floor Height" :
-                source = config_yaml.model_extra["update_ground_floor_height"].source
-                attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
-                gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
-                max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
-                self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+                self.new_ground_floor_height(config_yaml)
             elif parameter == "Additional Attributes" :
-                aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
-                attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
-                label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
-                self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
+                self.new_additional_attributes(config_yaml)
             elif parameter == "Ground Elevation" :
-                source = config_yaml.model_extra["update_ground_elevation"].source
-                self.fiat_model.exposure.setup_ground_elevation(source)
+                self.new_ground_elevation(config_yaml)
             elif parameter == "Max Potential Damages" :
-                source = config_yaml.model_extra["update_max_potential_damage"].source
-                attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
-                method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
-                max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
-                damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
-                self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
+                self.new_max_potential_damages(config_yaml)
        
         # Write model
         self.fiat_model.write()
@@ -237,3 +211,28 @@ class HydroMtViewModel:
                 ["SVI", "SVI_key_domain"], axis=1
             )
             return None, roads_gdf
+
+    def new_ground_floor_height(self, config_yaml):
+        source = config_yaml.model_extra["update_ground_floor_height"].source
+        attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
+        gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
+        max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
+        self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+    
+    def new_additional_attributes(self, config_yaml):
+        aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
+        attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
+        label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
+        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
+
+    def new_ground_elevation(self, config_yaml):
+        source = config_yaml.model_extra["update_ground_elevation"].source
+        self.fiat_model.exposure.setup_ground_elevation(source)
+
+    def new_max_potential_damages(self, config_yaml):
+        source = config_yaml.model_extra["update_max_potential_damage"].source
+        attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
+        method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
+        max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
+        damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
+        self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
