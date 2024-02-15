@@ -166,7 +166,12 @@ class HydroMtViewModel:
             source = config_yaml.model_extra["update_ground_elevation"].source
             self.fiat_model.exposure.setup_ground_elevation(source)
         elif parameter == "Max Potential Damages":
-                NotImplemented
+            source = config_yaml.model_extra["update_max_potential_damage"].source
+            attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
+            method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
+            max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
+            damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
+            self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
     
         # Write model
         self.fiat_model.write()
