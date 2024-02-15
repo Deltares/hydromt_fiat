@@ -151,24 +151,16 @@ class HydroMtViewModel:
         config_yaml = self.build_config_yaml()
 
         # Update parameter with user-input
-        if isinstance(parameter,list):
-            for item in parameter:
-                if "Finished Floor Height" in item:
-                    self.new_ground_floor_height(config_yaml)
-                elif "Additional Attributes" in item :
-                    self.new_additional_attributes(config_yaml)
-                elif"Ground Elevation" in item:
-                    self.new_ground_elevation(config_yaml)
-                elif "Max Potential Damages" in item :
-                    self.new_max_potential_damages(config_yaml)
-        else:
-            if parameter == "Finished Floor Height" :
+        if isinstance(parameter, str):
+            parameter = [parameter]
+        for item in parameter:
+            if "Finished Floor Height" in item:
                 self.new_ground_floor_height(config_yaml)
-            elif parameter == "Additional Attributes" :
+            elif "Additional Attributes" in item :
                 self.new_additional_attributes(config_yaml)
-            elif parameter == "Ground Elevation" :
+            elif"Ground Elevation" in item:
                 self.new_ground_elevation(config_yaml)
-            elif parameter == "Max Potential Damages" :
+            elif "Max Potential Damages" in item :
                 self.new_max_potential_damages(config_yaml)
        
         # Write model
