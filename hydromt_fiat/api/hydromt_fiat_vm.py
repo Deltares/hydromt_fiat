@@ -151,28 +151,52 @@ class HydroMtViewModel:
         config_yaml = self.build_config_yaml()
 
         # Update parameter with user-input
-        if parameter == "Finished Floor Height":
-            source = config_yaml.model_extra["update_ground_floor_height"].source
-            attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
-            gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
-            max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
-            self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
-        elif parameter == "Additional Attributes":
-            aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
-            attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
-            label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
-            self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
-        elif parameter == "Ground Elevation":
-            source = config_yaml.model_extra["update_ground_elevation"].source
-            self.fiat_model.exposure.setup_ground_elevation(source)
-        elif parameter == "Max Potential Damages":
-            source = config_yaml.model_extra["update_max_potential_damage"].source
-            attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
-            method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
-            max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
-            damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
-            self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
-    
+        if isinstance(parameter,list):
+            for item in parameter:
+                if "Finished Floor Height" in item:
+                    source = config_yaml.model_extra["update_ground_floor_height"].source
+                    attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
+                    gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
+                    max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
+                    self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+                elif "Additional Attributes" in item :
+                    aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
+                    attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
+                    label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
+                    self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
+                elif"Ground Elevation" in item :
+                    source = config_yaml.model_extra["update_ground_elevation"].source
+                    self.fiat_model.exposure.setup_ground_elevation(source)
+                elif "Max Potential Damages" in item :
+                    source = config_yaml.model_extra["update_max_potential_damage"].source
+                    attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
+                    method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
+                    max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
+                    damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
+                    self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
+        else:
+            if parameter == "Finished Floor Height" :
+                source = config_yaml.model_extra["update_ground_floor_height"].source
+                attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
+                gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
+                max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
+                self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
+            elif parameter == "Additional Attributes" :
+                aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
+                attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
+                label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
+                self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
+            elif parameter == "Ground Elevation" :
+                source = config_yaml.model_extra["update_ground_elevation"].source
+                self.fiat_model.exposure.setup_ground_elevation(source)
+            elif parameter == "Max Potential Damages" :
+                source = config_yaml.model_extra["update_max_potential_damage"].source
+                attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
+                method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
+                max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
+                damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
+                self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
+       
         # Write model
         self.fiat_model.write()
 
