@@ -181,7 +181,26 @@ class HydroMtViewModel:
         
     # Update exposure dataframe
     def update_exposure_db(self, config_yaml):
+        prim = self.exposure_vm.exposure.exposure_db[["Primary Object Type", "Object ID"]]
+        sec = self.exposure_vm.exposure.exposure_db[["Secondary Object Type", "Object ID"]]
+
         exposure_db = self.fiat_model.exposure.exposure_db
+
+        # Replace Classifications if updated by user
+        if prim["Primary Object Type"] is not exposure_db["Primary Object Type"]:
+            exposure_db.rename(columns = {"Primary Object Type": "pot"}, inplace = True)
+            idx_prim = exposure_db.columns.get_loc("pot")
+            exposure_db = exposure_db.merge(prim, on='Object ID', how='outer')
+            exposure_db.drop(columns = "pot", inplace = True)
+            exposure_db.insert(loc=idx_prim, column="Primary Object Type", value=exposure_db.pop("Primary Object Type"))
+        # If Primary Object type is changed with linking of secondary Object type then secondary object type should also be changed to exactly Primary type
+        if sec["Secondary Object Type"] is not exposure_db["Secondary Object Type"]:
+            exposure_db.rename(columns = {"Secondary Object Type": "pot"}, inplace = True)
+            idx_sec = exposure_db.columns.get_loc("pot")
+            exposure_db = exposure_db.merge(sec, on='Object ID', how='outer')
+            exposure_db.drop(columns = "pot", inplace = True)
+            exposure_db.insert(loc=idx_sec, column="Secondary Object Type", value=exposure_db.pop("Secondary Object Type"))
+        # create function out of it and use "Primary/Secondary" as input 
         if (
             "setup_exposure_buildings" in config_yaml.dict()
             and "setup_exposure_roads" not in config_yaml.dict()
