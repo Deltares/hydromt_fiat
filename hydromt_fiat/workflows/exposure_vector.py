@@ -406,23 +406,24 @@ class ExposureVector(Exposure):
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
-            nr_without_primary_object_type = len(
-                gdf.loc[gdf["Primary Object Type"] == ""].index
-            )
-            if nr_without_primary_object_type > 0:
-                self.logger.warning(
-                    f"{nr_without_primary_object_type} objects do not have a Primary Object "
-                    "Type and will be removed from the exposure data."
+            if "Primary Object Type" in gdf.columns:
+                nr_without_primary_object_type = len(
+                    gdf.loc[gdf["Primary Object Type"] == ""].index
                 )
-            gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+                if nr_without_primary_object_type > 0:
+                    self.logger.warning(
+                        f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                        "Type and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"] != ""]
 
-            nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
-            if nr_without_landuse > 0:
-                self.logger.warning(
-                    f"{nr_without_landuse} objects were not overlapping with the "
-                    "land use data and will be removed from the exposure data."
-                )
-            gdf = gdf.loc[gdf["Primary Object Type"].notna()]
+                nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
+                if nr_without_landuse > 0:
+                    self.logger.warning(
+                        f"{nr_without_landuse} objects were not overlapping with the "
+                        "land use data and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
@@ -431,13 +432,22 @@ class ExposureVector(Exposure):
             del gdf["geometry"]
             # Update the exposure database
             if type_add in self.exposure_db:
-                gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-                self.exposure_db = pd.merge(
-                    self.exposure_db, gdf, on="Object ID", how="left"
-                )
-                self.exposure_db = self._set_values_from_other_column(
-                    self.exposure_db, "Primary Object Type", "pot"
-                )
+                if "Primary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Primary Object Type", "pot"
+                    )
+                elif "Secondary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
             else:
                 self.exposure_db = gdf.copy()
         else:
