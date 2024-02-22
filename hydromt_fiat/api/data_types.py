@@ -113,6 +113,14 @@ class AggregationAreaSettings(BaseModel):
     attribute_names: Union[List[str], str]
     label_names: Union[List[str], str]
 
+class ClassificationSettings(BaseModel):
+    source: Union[List[str], str]
+    attribute: Union[List[str], str]
+    type_add: Union[List[str], str]
+    old_values: Union[List[str], str]
+    new_values: Union[List[str], str]
+    damage_types: Union[List[str], str]
+    remove_object_type : bool
 
 class SocialVulnerabilityIndexSettings(BaseModel):
     census_key: str

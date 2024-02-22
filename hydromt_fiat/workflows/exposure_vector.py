@@ -384,7 +384,7 @@ class ExposureVector(Exposure):
             )
             occupancy_map.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
-
+            
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:
             occupancy_map = occupancy_map.to_crs(self.crs)
@@ -425,8 +425,6 @@ class ExposureVector(Exposure):
                     )
                 gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
-            # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
@@ -1222,13 +1220,14 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
-        exposure_linking_table["Damage function name"] = [
-            name + "_" + type
-            for name, type in zip(
-                exposure_linking_table["FIAT Damage Function Name"].values,
-                exposure_linking_table["Damage Type"].values,
-            )
-        ]
+        if "Damage function name" not in exposure_linking_table.columns:
+            exposure_linking_table["Damage function name"] = [
+                name + "_" + type
+                for name, type in zip(
+                    exposure_linking_table["FIAT Damage Function Name"].values,
+                    exposure_linking_table["Damage Type"].values,
+                )
+            ]
         for damage_type in damage_types:
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
@@ -1271,11 +1270,11 @@ class ExposureVector(Exposure):
             # Check if the linking column is the Primary Object Type or the Secondary
             # Object Type
             if (len(unique_types_primary) > 0) and (
-                unique_types_primary.issubset(unique_linking_types)
+                unique_types_primary.issubset(unique_linking_types) 
             ):
                 linking_column = "Primary Object Type"
             elif (len(unique_types_secondary) > 0) and (
-                unique_types_secondary.issubset(unique_linking_types)
+                unique_types_secondary.issubset(unique_linking_types) 
             ):
                 linking_column = "Secondary Object Type"
             else:
@@ -1500,7 +1499,7 @@ class ExposureVector(Exposure):
                 assert col.format("Structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
-                    
+    
     def set_height_relative_to_reference(
         self,
         exposure_to_modify: pd.DataFrame,
@@ -1623,6 +1622,21 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    def update_user_linking_table(self, old_value: Union[list, str], new_value: Union[list, str], linking_table_new: pd.DataFrame):
+        if isinstance(old_value, str):
+            old_value = [old_value]
+        if isinstance(new_value, str):
+            new_value = [new_value]
+        for item, new_item in zip(old_value,new_value):
+            desired_rows = linking_table_new[linking_table_new["Exposure Link"].str.contains(item, na=False)]
+            desired_rows.reset_index(drop=True, inplace=True)
+            linking_table_new = linking_table_new.append(desired_rows,ignore_index = True)
+            duplicates_table = linking_table_new.duplicated(keep='first')
+            idx_duplicates = duplicates_table[duplicates_table].index
+            for idx in idx_duplicates:
+                linking_table_new["Exposure Link"][idx:].replace({item: new_item}, inplace=True)
+        return linking_table_new
 
     @staticmethod
     def _set_values_from_other_column(

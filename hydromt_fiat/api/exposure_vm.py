@@ -19,6 +19,7 @@ from .data_types import (
     ExposureRoadsSettings,
     ExtractionMethod,
     AggregationAreaSettings,
+    ClassificationSettings,
     Units,
 )
 
@@ -30,6 +31,7 @@ class ExposureViewModel:
         self.exposure_buildings_model = None
         self.exposure_roads_model = None
         self.aggregation_areas_model = None
+        self.classification_model = None
         self.exposure_ground_floor_height_model = None
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
@@ -74,7 +76,7 @@ class ExposureViewModel:
                 region=region,
                 crs=crs,
             )
-
+            
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
@@ -264,4 +266,15 @@ class ExposureViewModel:
             aggregation_area_fn=files,
             attribute_names=attribute_names,
             label_names=label_names,
+        )
+    
+    def set_classification_config(self, source, attribute, type_add, old_values, new_values, damage_types, remove_object_type):
+        self.classification_model = ClassificationSettings(
+            source = source,
+            attribute = attribute,
+            type_add = type_add,
+            old_values= old_values,
+            new_values= new_values,
+            damage_types = damage_types,
+            remove_object_type = remove_object_type
         )

@@ -81,6 +81,11 @@ class HydroMtViewModel:
             config_yaml.setup_aggregation_areas = (
                 self.exposure_vm.aggregation_areas_model
             )
+        
+        if self.exposure_vm.classification_model:
+            config_yaml.setup_classification = (
+                self.exposure_vm.classification_model
+            )
 
         if self.exposure_vm.exposure_damages_model:
             config_yaml.update_max_potential_damage = (
