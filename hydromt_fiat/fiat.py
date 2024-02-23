@@ -857,7 +857,7 @@ class FiatModel(GridModel):
         Parameters
         ----------
         source : Union[List[str], List[Path], str, Path]
-            Path(s) to the nuser classification file.
+            Path(s) to the user classification file.
         attribute : Union[List[str], str]
             Name of the column of the user data 
        type_add : Union[List[str], str]
