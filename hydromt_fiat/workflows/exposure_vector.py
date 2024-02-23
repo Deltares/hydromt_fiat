@@ -438,6 +438,14 @@ class ExposureVector(Exposure):
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Primary Object Type", "pot"
                     )
+                    
+                    # Also rpelace Secondary Object with new classification to assign correct damage curves
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
                 elif "Secondary Object Type" in gdf.columns:
                     gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
                     self.exposure_db = pd.merge(

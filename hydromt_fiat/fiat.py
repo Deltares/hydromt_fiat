@@ -878,7 +878,7 @@ class FiatModel(GridModel):
         self.exposure.setup_occupancy_type(source, attribute, type_add)
 
         # Drop Object Type that has not been updated. 
-        #TODO add button to ask if should be removed in GUI and then add this as TRUE/FALSE variable.
+        
         if remove_object_type:
             if type_add == "Primary Object Type":
                 self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
