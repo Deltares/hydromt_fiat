@@ -801,6 +801,7 @@ class FiatModel(GridModel):
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
             label_names="Aggregation Label: Census Blockgroup",
+            new_composite_area=False
         )
 
     def setup_aggregation_areas(
@@ -810,6 +811,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
         
     ):
         """_summary_
@@ -822,6 +824,8 @@ class FiatModel(GridModel):
             Name of the attribute(s) to join.
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
+        new_composite_area: bool
+            Check whether exposure is a new composite area 
         """
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_aggregation_areas(
@@ -829,6 +833,7 @@ class FiatModel(GridModel):
             aggregation_area_fn,
             attribute_names,
             label_names,
+            new_composite_area
         )
 
         # Set the additional_attributes_fn property to save the additional datasets
