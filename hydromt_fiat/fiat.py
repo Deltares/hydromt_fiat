@@ -834,7 +834,7 @@ class FiatModel(GridModel):
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
-            label_names="Census Blockgroup",
+            label_names="Census Blockgroup", new_composite_area=False
             file_names="block_groups"
         )
         # Update spatial join metadata for equity data connection
@@ -851,6 +851,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
     ):
         """_summary_
@@ -863,6 +864,8 @@ class FiatModel(GridModel):
             Name of the attribute(s) to join.
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
+        new_composite_area: bool
+            Check whether exposure is a new composite area 
         file_names : Union[List[str], str]
             The name of the spatial file(s) if saved in aggregation_areas/ 
             folder in the root directory (Default is None).
@@ -925,6 +928,7 @@ class FiatModel(GridModel):
             aggregation_area_fn,
             attribute_names,
             label_names,
+            new_composite_area,
             keep_all=False
         )
         

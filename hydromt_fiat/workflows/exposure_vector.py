@@ -1243,6 +1243,7 @@ class ExposureVector(Exposure):
         aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
+        new_composite_area: bool = True
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -1273,6 +1274,8 @@ class ExposureVector(Exposure):
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
+        new_composite_area : bool
+            Define whether new composite area to select correct aggregation zones functionality.
         """
         self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -1429,6 +1432,7 @@ class ExposureVector(Exposure):
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
+                new_composite_area = True
             )
 
         # Update the exposure_db

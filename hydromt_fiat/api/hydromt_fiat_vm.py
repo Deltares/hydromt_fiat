@@ -222,6 +222,7 @@ class HydroMtViewModel:
         aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
         attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
         label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
+        new_composite_area = config_yaml.model_extra["setup_aggregation_areas"].new_composite_area
         # Check if additional attributes already exist
         add_attrs_existing = [attr["name"] for attr in self.fiat_model.spatial_joins["additional_attributes"]]
         for i, label_name in enumerate(label_names):
@@ -230,7 +231,7 @@ class HydroMtViewModel:
                 attribute_names.pop(i)
                 label_names.pop(i)
 
-        self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names)
+        self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names,new_composite_area)
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source

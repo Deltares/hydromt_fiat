@@ -15,6 +15,7 @@ def spatial_joins(
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
     label_names: List[str],
+    new_composite_area: bool
     keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
     """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
@@ -30,6 +31,8 @@ def spatial_joins(
         A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
         A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
+    new_composite_area : bool
+        _description_
 
     Returns
     -------
@@ -92,36 +95,36 @@ def spatial_joins(
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
         )
         exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
+        
+        if new_composite_area[0] is True:
+            if aggregated[attribute_name].apply(lambda x: len(x) >= 2).any():
+                # If new composite area falls in multiple aggregation zones should do an overlay function and where they overlay, split the composite area into
+                # polygons and assign the aggregation area
+                new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
+                res_intersection = new_exposure_gdf.overlay(aggregation_gdf[[attribute_name, 'geometry']], how='intersection')
+                res_intersection.drop(["index_right", "pot"], axis = 1, inplace = True)
 
-        if len(aggregated[attribute_name].values.any()) >= 2:
-            # If new composite area falls in multiple aggregation zones should do an overlay function and where they overlay, split the composite area into
-            # polygons and assign the aggregation area
-            new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
-            res_intersection = new_exposure_gdf.overlay(aggregation_gdf[[attribute_name, 'geometry']], how='intersection')
-            res_intersection.drop(["index_right", "pot"], axis = 1, inplace = True)
+                # exposure area - res_intersection = left over shape in no zone 
+                exposure_outside_aggregation = new_exposure_gdf.overlay(res_intersection[["geometry"]], how = "symmetric_difference")
+                exposure_outside_aggregation.drop(["index_right", "pot"], axis = 1, inplace = True)
+                exposure_outside_aggregation = exposure_outside_aggregation.dropna()
 
-            # exposure area - res_intersection = left over shape in no zone 
-            exposure_outside_aggregation = new_exposure_gdf.overlay(res_intersection[["geometry"]], how = "symmetric_difference")
-            exposure_outside_aggregation.drop(["index_right", "pot"], axis = 1, inplace = True)
-            exposure_outside_aggregation = exposure_outside_aggregation.dropna()
-
-            # Combine divided objects of new composite area within aggregation zone and outside #TODO create OBJECT IDs
-            exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True)
-            idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated("Object ID") == True]
-            exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
-            exposure_gdf.loc[idx_duplicates, "Object ID"] = np.random.choice(range(exposure_gdf["Object ID"].values.max() + 1 ,exposure_gdf["Object ID"].values.max() +1 + len(idx_duplicates)), size=len(idx_duplicates), replace=False)
-            
-            
-            # Create an empty GeoDataFrame and append the exposure data
-            try:
-                new_exposure_aggregation
-            except NameError:
-                data = pd.DataFrame(columns=['geometry'])
-                final_exposure = gpd.GeoDataFrame(data, geometry='geometry')
-                new_exposure_aggregation = pd.concat([final_exposure, exposure_gdf], ignore_index=True) 
-                exposure_gdf = new_exposure_aggregation
-            else:
-                exposure_gdf = pd.concat([new_exposure_aggregation, exposure_gdf], ignore_index=True)            
+                # Combine divided objects of new composite area within aggregation zone and outside #TODO create OBJECT IDs
+                exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True)
+                idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated("Object ID") == True]
+                exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
+                exposure_gdf.loc[idx_duplicates, "Object ID"] = np.random.choice(range(exposure_gdf["Object ID"].values.max() + 1 ,exposure_gdf["Object ID"].values.max() +1 + len(idx_duplicates)), size=len(idx_duplicates), replace=False)
+                        
+                # Create an empty GeoDataFrame and append the exposure data
+                try:
+                    new_exposure_aggregation
+                except NameError:
+                    data = pd.DataFrame(columns=['geometry'])
+                    final_exposure = gpd.GeoDataFrame(data, geometry='geometry')
+                    new_exposure_aggregation = pd.concat([final_exposure, exposure_gdf], ignore_index=True) 
+                    exposure_gdf = new_exposure_aggregation
+                else:
+                    exposure_gdf = pd.concat([new_exposure_aggregation, exposure_gdf], ignore_index=True)            
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
@@ -147,6 +150,7 @@ def join_exposure_aggregation_areas(
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame],
     attribute_names: Union[List[str], str],
     label_names: Union[List[str], str],
+    new_composite_area: bool,
     keep_all: bool=True
 ) -> gpd.GeoDataFrame:
     """Join aggregation area labels to the exposure data.
@@ -161,6 +165,8 @@ def join_exposure_aggregation_areas(
         Name of the attribute(s) to join.
     label_names : Union[List[str], str]
         Name of the label(s) to join.
+    new_composite_area : bool
+        Check whether aggregation is done for a new composite area.
     """
     
     exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all)
