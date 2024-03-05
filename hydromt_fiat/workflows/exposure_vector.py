@@ -1427,13 +1427,16 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, _ = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
                 new_composite_area = True
             )
+            # Update the exposure_geoms incl aggregation
+            self.set_geom_names("new_development_area_aggregated")
+            self.set_exposure_geoms(aggregated_objects_geoms)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(

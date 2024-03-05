@@ -95,10 +95,16 @@ def spatial_joins(
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
         )
         exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
-        
-        if new_composite_area[0] is True:
-            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name)     
+                # Check if new gdf was already created in previous loop
+        try:
+            new_exposure_aggregation
+        except NameError:
+            new_exposure_aggregation = None
+        else:
+            new_exposure_aggregation = new_exposure_aggregation
 
+        if new_composite_area[0] is True:
+            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name, new_exposure_aggregation)     
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
@@ -118,7 +124,7 @@ def spatial_joins(
 
     return exposure_gdf, filtered_areas
 
-def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name):
+def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name, new_exposure_aggregation):
     if aggregated[attribute_name].apply(lambda x: len(x) >= 2).any():
         # Split exposure_gdf by aggregation zone 
         new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
@@ -132,14 +138,13 @@ def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_na
 
         # Combine divided objects of new composite area with areas that fall in no zone
         exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True)
-        idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated("Object ID") == True]
+        idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated(subset = "Object ID")]
         exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
         exposure_gdf.loc[idx_duplicates, "Object ID"] = np.random.choice(range(exposure_gdf["Object ID"].values.max() + 1 ,exposure_gdf["Object ID"].values.max() +1 + len(idx_duplicates)), size=len(idx_duplicates), replace=False)
                 
     # Create an empty GeoDataFrame and append the exposure data
-    try:
-        new_exposure_aggregation
-    except NameError:
+    
+    if new_exposure_aggregation is None:
         data = pd.DataFrame(columns=['geometry'])
         final_exposure = gpd.GeoDataFrame(data, geometry='geometry')
         new_exposure_aggregation = pd.concat([final_exposure, exposure_gdf], ignore_index=True) 
@@ -180,6 +185,8 @@ def join_exposure_aggregation_areas(
     exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all)
     
     # Remove the geometry column from the exposure_gdf to return a dataframe
+    exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
+
     del exposure_gdf["geometry"]
     
-    return exposure_gdf, areas_gdf
+    return exposure_gdf, exposure_geoms , areas_gdf
