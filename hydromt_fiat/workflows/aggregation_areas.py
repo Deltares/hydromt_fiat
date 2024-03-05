@@ -97,7 +97,7 @@ def spatial_joins(
         exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
         
         if new_composite_area[0] is True:
-            split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name)         
+            exposure_gdf = split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name)         
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
@@ -145,6 +145,8 @@ def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_na
         exposure_gdf = new_exposure_aggregation
     else:
         exposure_gdf = pd.concat([new_exposure_aggregation, exposure_gdf], ignore_index=True) 
+   
+    return exposure_gdf
 
 def join_exposure_aggregation_areas(
     exposure_gdf: gpd.GeoDataFrame,
