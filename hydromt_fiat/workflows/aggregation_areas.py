@@ -91,24 +91,23 @@ def join_exposure_aggregation_multiple_areas(
 
 def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name):
     if aggregated[attribute_name].apply(lambda x: len(x) >= 2).any():
-    # If new composite area falls in multiple aggregation zones should do an overlay function and where they overlay, split the composite area into
-        # polygons and assign the aggregation area
+        # Split exposure_gdf by aggregation zone 
         new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
         res_intersection = new_exposure_gdf.overlay(aggregation_gdf[[attribute_name, 'geometry']], how='intersection')
         res_intersection.drop(["index_right", "pot"], axis = 1, inplace = True)
 
-        # exposure area - res_intersection = left over shape in no zone 
+        # Grab the area that falls in no zone 
         exposure_outside_aggregation = new_exposure_gdf.overlay(res_intersection[["geometry"]], how = "symmetric_difference")
         exposure_outside_aggregation.drop(["index_right", "pot"], axis = 1, inplace = True)
         exposure_outside_aggregation = exposure_outside_aggregation.dropna()
 
-        # Combine divided objects of new composite area within aggregation zone and outside #TODO create OBJECT IDs
+        # Combine divided objects of new composite area with areas that fall in no zone
         exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True)
         idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated("Object ID") == True]
         exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
         exposure_gdf.loc[idx_duplicates, "Object ID"] = np.random.choice(range(exposure_gdf["Object ID"].values.max() + 1 ,exposure_gdf["Object ID"].values.max() +1 + len(idx_duplicates)), size=len(idx_duplicates), replace=False)
                 
-        # Create an empty GeoDataFrame and append the exposure data
+    # Create an empty GeoDataFrame and append the exposure data
     try:
         new_exposure_aggregation
     except NameError:
