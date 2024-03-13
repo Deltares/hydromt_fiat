@@ -11,7 +11,6 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
-import os
 import shutil
 
 from hydromt_fiat import DATADIR
