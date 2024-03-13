@@ -34,7 +34,7 @@ from hydromt_fiat.workflows.social_vulnerability_index import (
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
-from hydromt_fiat.workflows.gis import locate_from_bounding_box
+from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
 
 __all__ = ["FiatModel"]
@@ -672,7 +672,7 @@ class FiatModel(GridModel):
             # First find the state(s) and county/counties where the exposure data is
             # located in
             us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
-            counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+            counties, states = locate_from_exposure(self.exposure.exposure_geoms[0]["geometry"])
             states_dict = list_of_states()
             state_abbreviation = []
             for state in states:
@@ -763,7 +763,7 @@ class FiatModel(GridModel):
         # First find the state(s) and county/counties where the exposure data is
         # located in
         us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
-        counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+        counties, states = locate_from_exposure(self.exposure.exposure_geoms[0]["geometry"])
         states_dict = list_of_states()
         state_abbreviation = []
         for state in states:

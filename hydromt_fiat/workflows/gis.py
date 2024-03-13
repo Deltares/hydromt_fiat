@@ -304,23 +304,34 @@ def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):
         raise
 
     
-def locate_from_bounding_box(bounding_box):
+def locate_from_exposure(buildings):
     geolocator = Nominatim(user_agent="hydromt-fiat")
+    
+    # Filter buildings to reduce size
+    if len(buildings.geometry) > 100000:
+        buildings_filtered = buildings.geometry[::10000] 
+    elif len(buildings.geometry) > 10000:
+        buildings_filtered = buildings.geometry[::1000] 
+    elif len(buildings.geometry) > 1000:
+        buildings_filtered = buildings.geometry[::100] 
 
-    search = [
-        (bounding_box[1], bounding_box[0]),
-        (bounding_box[1], bounding_box[2]),
-        (bounding_box[3], bounding_box[0]),
-        (bounding_box[3], bounding_box[2]),
-    ]
+    # Find all counties that exposure overlays
+    search= []
+    for coords in buildings_filtered:
+        coordinates =  tuple(reversed(coords.coords[0]))
+        search.append(coordinates)
+
+
     # Find the county and state of the corner points (corners of the bounding box) of the exposure data
+    #TODO It should not just be the corner points but also overlapping points
+
     locations = [do_geocode(geolocator, s) for s in search]
     locations_list = [location[0].split(", ") for location in locations]
     locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
 
     # TODO: Read from the CSV the counties and check whether the name of the county is in the outcome
     # of the geolocator
-    counties = [y for x in locations_list for y in x if ("county" in y.lower()) or ("parish" in y.lower())]
+    counties =[y for x in locations_list for y in x if ("county" in y.lower()) or ("parish" in y.lower())]
     states = [x[-2] for x in locations_list_no_numbers]
 
     counties_states_combo = set(list(zip(counties, states)))
