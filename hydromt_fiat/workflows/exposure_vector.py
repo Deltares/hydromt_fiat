@@ -1014,6 +1014,7 @@ class ExposureVector(Exposure):
         aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
+        new_composite_area: bool = True
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -1044,6 +1045,8 @@ class ExposureVector(Exposure):
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
+        new_composite_area : bool
+            Define whether new composite area to select correct aggregation zones functionality.
         """
         self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -1195,12 +1198,16 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
+                new_composite_area = True
             )
+            # Update the exposure_geoms incl aggregation
+            self.set_geom_names("new_development_area_aggregated")
+            self.set_exposure_geoms(aggregated_objects_geoms)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(

@@ -1993,6 +1993,6 @@ Object ID,Object Name,Primary Object Type,Secondary Object Type,Max Potential Da
 574488848,574488848,RES,RES1-2SNB,322415.251,161207.625,13.14323291,-79.92763108,32.77497895,450190000000000.0,1.0,centroid,RES1-2SNB,RES1-2SNB
 574488851,574488851,RES,RES1-2SNB,222897.785,111448.892,10.150554,-79.92671547,32.7755542,450190000000000.0,1.0,centroid,RES1-2SNB,RES1-2SNB
 574488874,574488874,RES,RES3A,480189.335,240094.667,8.900641428,-79.92914469,32.77176507,450190000000000.0,1.0,centroid,RES3A,RES3A
-574507807,New development area: 574507807,New development area,New development area,42804025.98393736,26468929.704139814,5.35474157333374,,,,0.0,area,new_composite_area_structure,new_composite_area_content
-574507808,New development area: 574507808,New development area,New development area,34126193.93100962,21102777.308113553,1.2411025762557983,,,,0.0,area,new_composite_area_structure,new_composite_area_content
-574507809,New development area: 574507809,New development area,New development area,6629114.270542782,4099277.009446545,4.435575485229492,,,,0.0,area,new_composite_area_structure,new_composite_area_content
+574507807,New development area: 574507807,New development area,New development area,42804025.98393736,26468929.704139814,0.0,,,,0.0,area,new_composite_area_structure,new_composite_area_content
+574507808,New development area: 574507808,New development area,New development area,34126193.93100962,21102777.308113553,0.0,,,,0.0,area,new_composite_area_structure,new_composite_area_content
+574507809,New development area: 574507809,New development area,New development area,6629114.270542782,4099277.009446545,0.0,,,,0.0,area,new_composite_area_structure,new_composite_area_content

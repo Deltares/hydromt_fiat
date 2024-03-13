@@ -112,6 +112,7 @@ class AggregationAreaSettings(BaseModel):
     aggregation_area_fn: Union[List[str], str]
     attribute_names: Union[List[str], str]
     label_names: Union[List[str], str]
+    new_composite_area: bool
 
 
 class SocialVulnerabilityIndexSettings(BaseModel):
