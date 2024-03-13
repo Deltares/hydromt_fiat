@@ -257,6 +257,8 @@ class ExposureVector(Exposure):
         self.logger.info(
             "The damage function 'roads' is selected for all of the structure damage to the roads."
         )
+        # Clip road to model boundaries
+        roads = roads.clip(self.region)
 
         if isinstance(road_damage, str):
             # Add the max potential damage and the length of the segments to the roads
