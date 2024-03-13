@@ -9,6 +9,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List
+from itertools import zip_longest
 import shutil
 from hydromt_fiat.workflows.social_vulnerability_index import list_of_states
 
@@ -149,7 +150,7 @@ class EquityData:
             A list of county codes in which your area of interest lies
         """
         block_groups_list = []
-        for sf, county in zip(self.state_fips, counties):
+        for sf, county in zip_longest(self.state_fips, counties, fillvalue=self.state_fips[0]):
             # Download shapefile of blocks 
             if year_data == 2022:
                 url = f"https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/FACES/tl_rd22_{sf}{county}_faces.zip"
@@ -183,6 +184,7 @@ class EquityData:
             block_groups_shp["GEOID_short"] = block_groups_shp["GEO_ID"].str.split("US").str[1]
             block_groups_list.append(block_groups_shp)
 
+        #TODO Save final file as geopackage
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
 
         # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
