@@ -321,10 +321,7 @@ def locate_from_exposure(buildings):
         coordinates =  tuple(reversed(coords.coords[0]))
         search.append(coordinates)
 
-
-    # Find the county and state of the corner points (corners of the bounding box) of the exposure data
-    #TODO It should not just be the corner points but also overlapping points
-
+    # Find the county and state of the exposure points
     locations = [do_geocode(geolocator, s) for s in search]
     locations_list = [location[0].split(", ") for location in locations]
     locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
