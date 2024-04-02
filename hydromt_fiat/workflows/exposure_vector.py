@@ -315,7 +315,7 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.iloc[0].values[0]
+            polygon = self.region.geometry.values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -455,7 +455,7 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        polygon = self.region.iloc[0][0]
+        polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:
