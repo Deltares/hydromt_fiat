@@ -72,7 +72,7 @@ class ExposureBuildingsSettings(BaseModel):
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
-    monetary_damage_unit: str 
+    damage_unit: str 
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
@@ -88,7 +88,6 @@ class ExposureSetupGroundElevation(BaseModel):
     
 class ExposureSetupDamages(BaseModel):
     source: Union[str, List[str]]
-    monetary_damage_unit: str = "$"
     attribute_name: Optional[Union[str, List[str]]] = None
     method_damages: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int, List[float], List[int]]] = None

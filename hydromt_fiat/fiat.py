@@ -293,7 +293,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"], 
-        monetary_damage_unit: str = "$", 
+        damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
@@ -325,7 +325,7 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
-        monetary_damage_unit: str, optional
+        damage_unit: str, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
@@ -385,7 +385,7 @@ class FiatModel(GridModel):
         self.set_config("exposure.csv.file", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
-        self.set_config("exposure.csv.monetary_damage_unit", monetary_damage_unit)
+        self.set_config("exposure.csv.damage_unit", damage_unit)
 
     def setup_exposure_roads(
         self,
@@ -428,7 +428,6 @@ class FiatModel(GridModel):
         source: Union[
             int, float, str, Path, List[str], List[Path], pd.DataFrame
         ] = None,
-        monetary_damage_unit: str = None,
         damage_types: Union[List[str], str, None] = None,
         country: Union[str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
@@ -438,7 +437,6 @@ class FiatModel(GridModel):
         if self.exposure:
             self.exposure.setup_max_potential_damage(
                 max_potential_damage=source,
-                monetary_damage_unit = monetary_damage_unit,
                 damage_types=damage_types,
                 country=country,
                 attribute_name=attribute_name,

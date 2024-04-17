@@ -111,7 +111,7 @@ class ExposureViewModel:
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                monetary_damage_unit = "$"
+                damage_unit = "$"
             )
         elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
@@ -179,7 +179,6 @@ class ExposureViewModel:
     def set_damages(
         self,
         source: str,
-        monetary_damage_unit: str = "$",
         attribute_name: Union[str, List[str], None] = None,
         damage_types: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
@@ -187,7 +186,6 @@ class ExposureViewModel:
     ):
         self.exposure_damages_model = ExposureSetupDamages(
             source=source,
-            monetary_damage_unit = monetary_damage_unit,
             attribute_name=attribute_name,
             method_damages=method_damages,
             max_dist=max_dist,
