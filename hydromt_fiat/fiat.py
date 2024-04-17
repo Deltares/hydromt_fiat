@@ -79,6 +79,7 @@ class FiatModel(GridModel):
     def setup_global_settings(
         self,
         crs: str = None,
+        monetary_damage_unit: str = None,
         gdal_cache: int = None,
         keep_temp_files: bool = None,
         thread: int = None,
@@ -93,6 +94,8 @@ class FiatModel(GridModel):
         """
         if crs:
             self.set_config("global.crs",  f"EPSG:{crs}")
+        if  monetary_damage_unit:
+            self.set_config(monetary_damage_unit)
         if gdal_cache:
             self.set_config("global.gdal_cache", gdal_cache)
         if keep_temp_files:
