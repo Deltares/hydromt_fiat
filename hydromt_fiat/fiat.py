@@ -292,8 +292,8 @@ class FiatModel(GridModel):
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
-        damage_types: List[str] = ["structure", "content"],
-        monetary_damage_unit: str = "$",
+        damage_types: List[str] = ["structure", "content"], 
+        monetary_damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
@@ -326,7 +326,7 @@ class FiatModel(GridModel):
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
         monetary_damage_unit: str, optional
-            The curren/unit of the potential and total damages
+            The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
@@ -357,7 +357,6 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
-                monetary_damage_unit = monetary_damage_unit,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
             )

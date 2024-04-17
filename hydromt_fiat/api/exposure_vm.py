@@ -111,6 +111,7 @@ class ExposureViewModel:
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
+                monetary_damage_unit = "$"
             )
         elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database

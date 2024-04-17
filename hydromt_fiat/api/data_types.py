@@ -72,6 +72,7 @@ class ExposureBuildingsSettings(BaseModel):
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
+    monetary_damage_unit: str 
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
