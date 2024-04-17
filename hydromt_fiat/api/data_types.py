@@ -48,8 +48,6 @@ class DataCatalogEntry(BaseModel):
 
 class GlobalSettings(BaseModel):
     crs: Union[str, int]
-    monetary_damage_unit: str
-
 
 class OutputSettings(BaseModel):
     output_dir: str
@@ -89,10 +87,12 @@ class ExposureSetupGroundElevation(BaseModel):
     
 class ExposureSetupDamages(BaseModel):
     source: Union[str, List[str]]
+    monetary_damage_unit: str = "$"
     attribute_name: Optional[Union[str, List[str]]] = None
     method_damages: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int, List[float], List[int]]] = None
     damage_types: Optional[Union[str, List[str]]] = None
+    
 
 class RoadVulnerabilitySettings(BaseModel):
     threshold_value: float

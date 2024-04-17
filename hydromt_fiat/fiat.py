@@ -79,7 +79,6 @@ class FiatModel(GridModel):
     def setup_global_settings(
         self,
         crs: str = None,
-        monetary_damage_unit: str = None,
         gdal_cache: int = None,
         keep_temp_files: bool = None,
         thread: int = None,
@@ -94,8 +93,6 @@ class FiatModel(GridModel):
         """
         if crs:
             self.set_config("global.crs",  f"EPSG:{crs}")
-        if  monetary_damage_unit:
-            self.set_config("global.monetary_damage_unit", monetary_damage_unit)
         if gdal_cache:
             self.set_config("global.gdal_cache", gdal_cache)
         if keep_temp_files:
@@ -296,6 +293,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
+        monetary_damage_unit: str = "$",
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
@@ -327,6 +325,8 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
+        monetary_damage_unit: str, optional
+            The curren/unit of the potential and total damages
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
@@ -357,6 +357,7 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
+                monetary_damage_unit = monetary_damage_unit,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
             )
@@ -385,6 +386,7 @@ class FiatModel(GridModel):
         self.set_config("exposure.csv.file", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
+        self.set_config("exposure.csv.monetary_damage_unit", monetary_damage_unit)
 
     def setup_exposure_roads(
         self,
@@ -427,6 +429,7 @@ class FiatModel(GridModel):
         source: Union[
             int, float, str, Path, List[str], List[Path], pd.DataFrame
         ] = None,
+        monetary_damage_unit: str = None,
         damage_types: Union[List[str], str, None] = None,
         country: Union[str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
@@ -436,6 +439,7 @@ class FiatModel(GridModel):
         if self.exposure:
             self.exposure.setup_max_potential_damage(
                 max_potential_damage=source,
+                monetary_damage_unit = monetary_damage_unit,
                 damage_types=damage_types,
                 country=country,
                 attribute_name=attribute_name,
