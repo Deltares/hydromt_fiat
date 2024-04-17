@@ -49,6 +49,7 @@ class DataCatalogEntry(BaseModel):
 class GlobalSettings(BaseModel):
     crs: Union[str, int]
 
+
 class OutputSettings(BaseModel):
     output_dir: str
     output_csv_name: str
