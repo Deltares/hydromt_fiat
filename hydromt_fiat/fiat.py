@@ -95,7 +95,7 @@ class FiatModel(GridModel):
         if crs:
             self.set_config("global.crs",  f"EPSG:{crs}")
         if  monetary_damage_unit:
-            self.set_config(monetary_damage_unit)
+            self.set_config("global.monetary_damage_unit", monetary_damage_unit)
         if gdal_cache:
             self.set_config("global.gdal_cache", gdal_cache)
         if keep_temp_files:
