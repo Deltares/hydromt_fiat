@@ -92,7 +92,7 @@ class FiatModel(GridModel):
             The CRS of the model.
         """
         if crs:
-            self.set_config("global.crs", crs)
+            self.set_config("global.crs",  f"EPSG:{crs}")
         if gdal_cache:
             self.set_config("global.gdal_cache", gdal_cache)
         if keep_temp_files:
