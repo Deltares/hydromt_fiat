@@ -48,6 +48,7 @@ class DataCatalogEntry(BaseModel):
 
 class GlobalSettings(BaseModel):
     crs: Union[str, int]
+    monetary_damage_unit: str
 
 
 class OutputSettings(BaseModel):
