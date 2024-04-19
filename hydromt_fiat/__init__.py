@@ -3,6 +3,6 @@
 from pathlib import Path
 
 # NOTE version number without "v"
-__version__ = "0.2.1.dev"
+__version__ = "0.3.0"
 
 DATADIR = Path().absolute() / "data"
