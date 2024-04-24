@@ -10,8 +10,8 @@ class ExtractionMethod(str, Enum):
 
 
 class Units(str, Enum):
-    m = "m"
-    ft = "ft"
+    m = "meter"
+    ft = "feet"
 
 
 class Category(str, Enum):
