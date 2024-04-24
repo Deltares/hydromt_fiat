@@ -334,7 +334,7 @@ class FiatModel(GridModel):
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
             unit = unit.value
-        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit, damage_unit=damage_unit)
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
@@ -393,6 +393,7 @@ class FiatModel(GridModel):
         road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
         unit: str = "m",
+
     ):
         """Setup road exposure data for Delft-FIAT.
 
@@ -405,7 +406,7 @@ class FiatModel(GridModel):
         """
         if not self.exposure:
             self.exposure = ExposureVector(
-                self.data_catalog, self.logger, self.region, unit=unit
+                self.data_catalog, self.logger, self.region, unit=unit,
             )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
@@ -966,6 +967,7 @@ class FiatModel(GridModel):
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
                 unit=self.get_config("exposure.geom.unit"),
+                damage_unit= self.get_config("exposure.damage_unit"),
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)

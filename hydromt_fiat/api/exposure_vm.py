@@ -73,6 +73,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
+                damage_unit= "$"
             )
 
             self.exposure.setup_buildings_from_single_source(
