@@ -72,6 +72,7 @@ class ExposureVector(Exposure):
         region: gpd.GeoDataFrame = None,
         crs: str = None,
         unit: str = "m",
+        damage_unit = "$"
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -85,6 +86,8 @@ class ExposureVector(Exposure):
             The region of interest, by default None
         crs : str, optional
             The CRS of the Exposure data, by default None
+        damage_unit : str, optional
+            The unit/currency of the (potential) damages, by default USD$
         """
         super().__init__(
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
@@ -92,6 +95,7 @@ class ExposureVector(Exposure):
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
         self.unit = unit
+        self.damage_unit = damage_unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
 
     def bounding_box(self):
