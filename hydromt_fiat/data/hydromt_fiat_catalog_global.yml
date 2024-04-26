@@ -28,3 +28,13 @@ jrc_damage_values:
       source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
       paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
       paper_doi: https://dx.doi.org/10.2760/16510
+  
+country_boundaries:
+    path: country_boundaries/geoBoundariesCGAZ_ADM0.gpkg
+    data_type: GeoDataFrame
+    driver: vector
+    meta:
+      category: country boundaries
+      source_url: https://www.geoboundaries.org/globalDownloads.html
+      paper_ref: Runfola, D. et al. (2020) geoBoundaries - A global database of political administrative boundaries. PLoS ONE 15(4) - e0231866.
+      paper_doi: https://doi.org/10.1371/journal.pone.0231866
