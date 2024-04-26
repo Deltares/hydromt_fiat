@@ -59,6 +59,8 @@ class ExposureViewModel:
         self,
         source: str,
         ground_floor_height: str,
+        country: str = None,
+        max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ):
@@ -94,11 +96,47 @@ class ExposureViewModel:
                 primary_object_types,
                 secondary_object_types,
             )
-            
+        elif source == "OSM":
+            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage)
+
+            # Download OSM from the database
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+
+            self.exposure = ExposureVector(
+                data_catalog= self.data_catalog,
+                logger=self.logger,
+                region=region,
+                crs=crs,
+                damage_unit= "$"
+            )
+            self.exposure.setup_buildings_from_multiple_sources(
+                asset_locations = source,
+                occupancy_source = source,
+                max_potential_damage = 'jrc_damage_values',
+                ground_floor_height = ground_floor_height,
+                extraction_method = "centroid",
+                damage_types= ['structure', 'content'],
+                country=country,
+            )
+            primary_object_types = (
+                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+            )
+            secondary_object_types = (
+                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+            )
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+
+            return (
+                gdf,
+                primary_object_types,
+                secondary_object_types,
+            )
+        
     def set_asset_locations_source(
         self,
         source: str,
         ground_floor_height: str,
+        max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
     ) -> None:
@@ -136,7 +174,7 @@ class ExposureViewModel:
             self.exposure_buildings_model = ExposureBuildingsSettings(
                 asset_locations=source,
                 occupancy_type=source,
-                max_potential_damage=source,
+                max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,

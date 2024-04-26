@@ -2,6 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
+from shapely.geometry import Polygon
 
 import geopandas as gpd
 import numpy as np
@@ -165,8 +166,7 @@ class ExposureVector(Exposure):
             self.logger.info(
                 "Downloading assets from Open Street Map."
             )
-            polygon = self.region["geometry"].iloc[0]
-            source_data = get_assets_from_osm(polygon) 
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region) 
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
@@ -326,7 +326,10 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.iloc[0].values[0]
+            if self.region.boundary is not None:
+               polygon = Polygon(self.region.boundary.values[0])
+            else: 
+                polygon = self.region.iloc[0].values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -466,7 +469,10 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        polygon = self.region.iloc[0][0]
+        if self.region.boundary is not None:
+            polygon = Polygon(self.region.boundary.values[0])
+        else:
+            polygon = self.region.iloc[0][0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:

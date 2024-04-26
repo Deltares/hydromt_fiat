@@ -69,7 +69,7 @@ class ExposureBuildingsSettings(BaseModel):
     asset_locations: str
     occupancy_type: str
     max_potential_damage: str
-    ground_floor_height: str
+    ground_floor_height: Union[str, float]
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
