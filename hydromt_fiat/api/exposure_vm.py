@@ -6,6 +6,7 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
 import logging
+import geopandas as gpd
 
 from .data_types import (
     Category,
@@ -124,8 +125,10 @@ class ExposureViewModel:
             secondary_object_types = (
                 self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
             )
-            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+            gdf_bf = self.exposure.get_full_gdf(self.exposure.exposure_db)
 
+            gdf = convert_bf_into_centroids(gdf_bf)
+                
             return (
                 gdf,
                 primary_object_types,
@@ -318,3 +321,19 @@ class ExposureViewModel:
             attribute_names=attribute_names,
             label_names=label_names,
         )
+@staticmethod
+def convert_bf_into_centroids(gdf_bf):
+    list_centroid = []
+    list_object_id = []
+    for index, row in gdf_bf.iterrows():
+        centroid = row["geometry"].centroid 
+        list_centroid.append(centroid)
+        list_object_id.append(row["Object ID"])
+    data = {"Object ID": list_object_id, "geometry": list_centroid}
+    gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
+    gdf = gdf_bf.merge(gpf_centroid, on='Object ID', suffixes=('_gdf1', '_gdf2'))
+    gdf.drop(columns = "geometry_gdf1", inplace = True)
+    gdf.rename(columns = {"geometry_gdf2": "geometry"}, inplace = True)
+    gdf = gpd.GeoDataFrame(gdf, geometry = gdf["geometry"])
+    
+    return gdf
