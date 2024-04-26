@@ -388,7 +388,7 @@ class FiatModel(GridModel):
         roads_fn: Union[str, Path],
         road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
-        unit: str = "meter",
+        unit: str = "meters",
     ):
         """Setup road exposure data for Delft-FIAT.
 
