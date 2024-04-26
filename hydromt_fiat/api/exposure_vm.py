@@ -131,6 +131,19 @@ class ExposureViewModel:
             # make backend calls to create translation file with fiat_key_maps
             print(catalog_entry)
         # write to data catalog
+        elif source == "OSM":
+            # download OSM data
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage=source,
+                ground_floor_height=ground_floor_height,
+                unit=Units.ft.value,  # TODO: make flexible
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+                damage_unit = "$"
+            )
+
 
     def update_occupancy_types(self, source, attribute, type_add):
         if self.exposure:

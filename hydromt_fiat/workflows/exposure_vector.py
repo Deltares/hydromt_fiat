@@ -160,6 +160,7 @@ class ExposureVector(Exposure):
             )
             polygon = self.region["geometry"].iloc[0]
             source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
+        # Add here elif source == OSM and download OSM data....
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
