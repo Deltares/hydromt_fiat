@@ -38,3 +38,11 @@ country_boundaries:
       source_url: https://www.geoboundaries.org/globalDownloads.html
       paper_ref: Runfola, D. et al. (2020) geoBoundaries - A global database of political administrative boundaries. PLoS ONE 15(4) - e0231866.
       paper_doi: https://doi.org/10.1371/journal.pone.0231866
+
+country_continent_linking:
+    path: country_boundaries/countrie_continent_linking.xlsx
+    data_type: DataFrame
+    driver: xlsx
+    meta:
+      category: vulnerability
+      description:linking countries to continents
