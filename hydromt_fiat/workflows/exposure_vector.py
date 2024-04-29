@@ -71,7 +71,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = "m",
+        unit: str = "meters",
         damage_unit = "$"
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
