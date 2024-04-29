@@ -63,6 +63,7 @@ class VulnerabilitySettings(BaseModel):
     functions_mean: Union[str, list]
     functions_max: Optional[Union[str, list]] = None
     step_size: Optional[float] = None #TODO should this have a default value?
+    continent: Optional[str]
 
 
 class ExposureBuildingsSettings(BaseModel):
