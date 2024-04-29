@@ -10,8 +10,8 @@ class ExtractionMethod(str, Enum):
 
 
 class Units(str, Enum):
-    m = "m"
-    ft = "ft"
+    meters = "meters"
+    feet = "feet"
 
 
 class Category(str, Enum):
@@ -73,6 +73,7 @@ class ExposureBuildingsSettings(BaseModel):
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
+    damage_unit: str 
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):

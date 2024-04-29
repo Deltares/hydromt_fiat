@@ -71,7 +71,8 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = "m",
+        unit: str = "meters",
+        damage_unit = "$"
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -85,6 +86,8 @@ class ExposureVector(Exposure):
             The region of interest, by default None
         crs : str, optional
             The CRS of the Exposure data, by default None
+        damage_unit : str, optional
+            The unit/currency of the (potential) damages, by default USD$
         """
         super().__init__(
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
@@ -92,6 +95,7 @@ class ExposureVector(Exposure):
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
         self.unit = unit
+        self.damage_unit = damage_unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
 
     def bounding_box(self):
@@ -878,10 +882,10 @@ class ExposureVector(Exposure):
                 "Raising the ground floor height of the properties relative to Datum."
             )
             self.exposure_db.loc[
-                (self.exposure_db["Ground Floor Height"] < raise_by)
+                (self.exposure_db["Ground Floor Height"] + self.exposure_db["Ground Elevation"] < raise_by)
                 & self.exposure_db.index.isin(idx),
                 "Ground Floor Height",
-            ] = raise_by
+            ] += raise_by - (self.exposure_db["Ground Floor Height"] + self.exposure_db["Ground Elevation"])
 
         elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
