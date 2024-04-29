@@ -52,6 +52,9 @@ version = { attr = "hydromt_fiat.__version__" }
 [tool.setuptools.packages.find]
 include = ["hydromt_fiat*"]
 
+[tool.setuptools.package-data]
+"hydromt_fiat.data" = ["*.csv", "*.xlsx", "*.yml"]
+
 [project.optional-dependencies]
 test = [
 	"testpath",
