@@ -35,7 +35,7 @@ class ExposureViewModel:
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
         self.exposure_occupancy_type_model = None
-
+        
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
@@ -125,9 +125,7 @@ class ExposureViewModel:
             secondary_object_types = (
                 self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
             )
-            gdf_bf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-
-            gdf = convert_bf_into_centroids(gdf_bf)
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
                 
             return (
                 gdf,
@@ -321,19 +319,3 @@ class ExposureViewModel:
             attribute_names=attribute_names,
             label_names=label_names,
         )
-@staticmethod
-def convert_bf_into_centroids(gdf_bf):
-    list_centroid = []
-    list_object_id = []
-    for index, row in gdf_bf.iterrows():
-        centroid = row["geometry"].centroid 
-        list_centroid.append(centroid)
-        list_object_id.append(row["Object ID"])
-    data = {"Object ID": list_object_id, "geometry": list_centroid}
-    gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
-    gdf = gdf_bf.merge(gpf_centroid, on='Object ID', suffixes=('_gdf1', '_gdf2'))
-    gdf.drop(columns = "geometry_gdf1", inplace = True)
-    gdf.rename(columns = {"geometry_gdf2": "geometry"}, inplace = True)
-    gdf = gpd.GeoDataFrame(gdf, geometry = gdf["geometry"])
-    
-    return gdf

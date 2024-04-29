@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, Point
 
 import geopandas as gpd
 import numpy as np
@@ -306,6 +306,8 @@ class ExposureVector(Exposure):
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
+        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
+            self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(
@@ -997,6 +999,25 @@ class ExposureVector(Exposure):
         self.exposure_db.iloc[idx, damage_function_column_idx] = (
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
+
+    
+    def convert_bf_into_centroids(self, gdf_bf,crs):
+        list_centroid = []
+        list_object_id = []
+        for index, row in gdf_bf.iterrows():
+            centroid = row["geometry"].centroid 
+            list_centroid.append(centroid)
+            list_object_id.append(row["Object ID"])
+        data = {"Object ID": list_object_id, "geometry": list_centroid}
+        gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
+        gdf = gdf_bf.merge(gpf_centroid, on='Object ID', suffixes=('_gdf1', '_gdf2'))
+        gdf.drop(columns = "geometry_gdf1", inplace = True)
+        gdf.rename(columns = {"geometry_gdf2": "geometry"}, inplace = True)
+        gdf = gpd.GeoDataFrame(gdf, geometry = gdf["geometry"])
+        
+        # Update geoms
+        self.exposure_geoms[0] =gdf
+        self.exposure_geoms[0].crs = crs
 
     def calculate_damages_new_exposure_object(
         self, percent_growth: float, damage_types: List[str]
