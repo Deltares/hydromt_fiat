@@ -306,10 +306,10 @@ class ExposureVector(Exposure):
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
+        self.setup_occupancy_type(occupancy_source, occupancy_attr)
+        self.setup_max_potential_damage(max_potential_damage, damage_types, country = country)
         if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
             self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
-        self.setup_occupancy_type(occupancy_source, occupancy_attr)
-        self.setup_max_potential_damage(max_potential_damage, damage_types, country)
         self.setup_ground_floor_height(
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
