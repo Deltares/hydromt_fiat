@@ -71,6 +71,7 @@ class FiatModel(GridModel):
         self.exposure = None
         self.vulnerability = None
         self.vf_ids_and_linking_df = pd.DataFrame()
+        self.spatial_joins = dict(aggregations=[], spatial_joins=[]) # Dictionary containing all the spatial join metadata
         self.additional_attributes_fn = (
             ""  # Path or paths to the additional attributes dataset(s)
         )
@@ -745,6 +746,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
+    
+    
     def setup_equity_data(
         self,
         census_key: str,
@@ -834,11 +837,16 @@ class FiatModel(GridModel):
             label_names,
         )
 
+        # Save metadata on spatial joins
+        # aggr_area = "Aggregation Label:" in label_names
+        # attrs = {"name": "", "": "", "": ""}
+        # self.spatial_joins = 
+        
         # Set the additional_attributes_fn property to save the additional datasets
         if isinstance(aggregation_area_fn, list):
             the_type = type(aggregation_area_fn[0])
         else:
-            the_type = type(aggregation_area_fn)
+            the_type = type(aggregation_area_fn)      
         if the_type != gpd.GeoDataFrame:
             # This copies data from one location to the root folder for the FIAT
             # model, only use user-input data here (not the census blocks)
