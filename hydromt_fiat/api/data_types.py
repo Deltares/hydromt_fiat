@@ -75,6 +75,7 @@ class ExposureBuildingsSettings(BaseModel):
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
     damage_unit: str 
+    country: str
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):

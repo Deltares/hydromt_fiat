@@ -98,7 +98,7 @@ class ExposureViewModel:
                 secondary_object_types,
             )
         elif source == "OSM":
-            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage)
+            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country)
 
             # Download OSM from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -108,7 +108,8 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                damage_unit= "$"
+                damage_unit= "$",
+                country = country
             )
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations = source,
@@ -140,6 +141,7 @@ class ExposureViewModel:
         max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
+        country: str = None
     ) -> None:
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -180,7 +182,8 @@ class ExposureViewModel:
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "$"
+                damage_unit = "$",
+                country = country
             )
 
 
@@ -210,6 +213,9 @@ class ExposureViewModel:
 
     def set_asset_data_source(self, source):
         self.exposure_buildings_model.asset_locations = source
+    
+    def set_country(self, country):
+        self.exposure_buildings_model.country = country
 
     def setup_extraction_method(self, extraction_method):
         if self.exposure:
