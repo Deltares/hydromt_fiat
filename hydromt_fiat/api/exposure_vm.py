@@ -76,7 +76,8 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                damage_unit= "$"
+                damage_unit= "$",
+                country = "United States"
             )
 
             self.exposure.setup_buildings_from_single_source(
@@ -153,7 +154,8 @@ class ExposureViewModel:
                 unit=Units.ft.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "$"
+                damage_unit = "$",
+                country = "United States"
             )
         elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
