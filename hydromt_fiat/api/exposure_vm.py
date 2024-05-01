@@ -181,7 +181,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
-                unit=Units.ft.value,  # TODO: make flexible
+                unit=Units.meters.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit = "$",
