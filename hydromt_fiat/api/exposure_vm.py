@@ -151,7 +151,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                unit=Units.ft.value,  # TODO: make flexible
+                unit=Units.feet.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit = "$",
@@ -275,7 +275,7 @@ class ExposureViewModel:
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            unit=Units.ft.value,
+            unit=Units.feet.value,
         )
 
             
@@ -316,7 +316,7 @@ class ExposureViewModel:
             roads_fn="OSM",
             road_types=road_types,
             road_damage=1,
-            unit=Units.ft.value,
+            unit=Units.feet.value,
         )
 
         return gdf
