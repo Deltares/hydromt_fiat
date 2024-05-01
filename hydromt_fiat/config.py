@@ -7,6 +7,7 @@ from hydromt_fiat.interface.config import IConfig
 
 
 class Config(IConfig):
+    # TODO write now the pydantic models created are not used!
     def load_file(self, filepath: Union[str, os.PathLike]):
         """create Projection from toml file"""
 
