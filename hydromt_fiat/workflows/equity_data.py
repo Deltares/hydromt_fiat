@@ -120,7 +120,11 @@ class EquityData:
                 self.pd_domain_scores_geo["GEOID_short"] = (
                     self.pd_domain_scores_geo["GEO_ID"].str.split("US").str[1]
                 )
-
+        # Create string from GEO_ID short 
+        for index, row,in self.pd_domain_scores_geo.iterrows():
+            BG_string = f"BG: {row['GEOID_short']}"
+            self.pd_domain_scores_geo.at[index, 'GEOID_short'] = BG_string
+ 
     def download_and_unzip(self, url, extract_to='.'):
         """function to download the shapefile data from census tiger website
 
@@ -186,6 +190,11 @@ class EquityData:
 
         #TODO Save final file as geopackage
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
+        
+        # Create string from GEO_ID short 
+        for index, row,in self.block_groups.iterrows():
+            BG_string = f"BG: {row['GEOID_short']}"
+            self.block_groups.at[index, 'GEOID_short'] = BG_string
 
         # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
         # Delete the shapefile, that is not used anymore
