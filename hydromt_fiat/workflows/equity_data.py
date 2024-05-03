@@ -120,10 +120,6 @@ class EquityData:
                 self.pd_domain_scores_geo["GEOID_short"] = (
                     self.pd_domain_scores_geo["GEO_ID"].str.split("US").str[1]
                 )
-        # Create string from GEO_ID short 
-        for index, row,in self.pd_domain_scores_geo.iterrows():
-            BG_string = f"BG: {row['GEOID_short']}"
-            self.pd_domain_scores_geo.at[index, 'GEOID_short'] = BG_string
  
     def download_and_unzip(self, url, extract_to='.'):
         """function to download the shapefile data from census tiger website
@@ -223,3 +219,9 @@ class EquityData:
     def clean(self):
         """Removes unnecessary columns"""
         self.equity_data_shp = self.equity_data_shp[["GEOID_short", "TotalPopulationBG", "PerCapitaIncomeBG"]]
+
+    def rename_geoid_short(self):
+        # Create string from GEO_ID short 
+        for index, row in self.equity_data_shp.iterrows():
+            BG_string = f"BG: {row['GEOID_short']}"
+            self.equity_data_shp.at[index, 'GEOID_short'] = BG_string
