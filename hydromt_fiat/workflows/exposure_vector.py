@@ -3,7 +3,12 @@ import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon, Point
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+from typing import Tuple
+from tqdm import tqdm
 
+import pycountry_convert as pc
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -1654,6 +1659,43 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    def get_continent(self):
+        region =  self.data_catalog.get_geodataframe("area_of_interest")
+        lon = region.geometry[0].centroid.x
+        lat = region.geometry[0].centroid.y
+
+        geolocator = Nominatim(user_agent="<APP_NAME>", timeout=10)
+        geocode = RateLimiter(geolocator.reverse, min_delay_seconds=1)
+
+        location = geocode(f"{lat}, {lon}", language="en")
+
+        # for cases where the location is not found, coordinates are antarctica
+        if location is None:
+            return "global", "global"
+
+        # extract country code
+        address = location.raw["address"]
+        country_code = address["country_code"].upper()
+        country_name = address["country"]
+
+        # get continent code from country code
+        continent_code = pc.country_alpha2_to_continent_code(country_code)
+        continent_name = self.get_continent_name(continent_code)
+        
+        return country_name, continent_name
+
+    def get_continent_name(self,continent_code: str) -> str:
+        continent_dict = {
+            "NA": "north america",
+            "SA": "south america",
+            "AS": "asia",
+            "AF": "africa",
+            "OC": "oceania",
+            "EU": "europe",
+            "AQ" : "antarctica"
+        }
+        return continent_dict[continent_code]
 
     @staticmethod
     def _set_values_from_other_column(
