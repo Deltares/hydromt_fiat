@@ -184,7 +184,7 @@ class ExposureViewModel:
                 unit=Units.meters.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "$",
+                damage_unit = "€",
                 country = country
             )
 
