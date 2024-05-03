@@ -120,7 +120,6 @@ class EquityData:
                 self.pd_domain_scores_geo["GEOID_short"] = (
                     self.pd_domain_scores_geo["GEO_ID"].str.split("US").str[1]
                 )
- 
     def download_and_unzip(self, url, extract_to='.'):
         """function to download the shapefile data from census tiger website
 

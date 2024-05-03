@@ -713,7 +713,6 @@ class FiatModel(GridModel):
             svi.rename_geoid_short()
 
             # store the relevant tables coming out of the social vulnerability module
-
             self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
@@ -794,7 +793,6 @@ class FiatModel(GridModel):
         equity.merge_equity_data_shp()
         equity.clean()
         equity.rename_geoid_short()
-        
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
         # Save the census block aggregation area data
