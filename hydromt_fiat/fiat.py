@@ -710,8 +710,10 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
+            svi.rename_geoid_short()
 
             # store the relevant tables coming out of the social vulnerability module
+
             self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
