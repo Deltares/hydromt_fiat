@@ -808,9 +808,9 @@ class FiatModel(GridModel):
             label_names="Aggregation Label: Census Blockgroup",
         )
         # Create string from GEO_ID short 
-        for index, row,in self.exposure.exposure_db.iterrows():
-            BG_string = f"BG: {row['Aggregation Label: Census Blockgroup']}"
-            self.exposure.exposure_db.at[index, 'Aggregation Label: Census Blockgroup'] = BG_string
+        #for index, row,in self.exposure.exposure_db.iterrows():
+        #    BG_string = f"BG: {row['Aggregation Label: Census Blockgroup']}"
+        #    self.exposure.exposure_db.at[index, 'Aggregation Label: Census Blockgroup'] = BG_string
 
     def setup_aggregation_areas(
         self,
