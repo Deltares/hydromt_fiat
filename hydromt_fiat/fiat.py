@@ -711,10 +711,10 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
-            rename_geoid_short(svi.svi_data_shp)
+            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
+            self.set_tables(df=gdf, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -793,8 +793,8 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-        rename_geoid_short(equity.equity_data_shp)
-        self.set_tables(df=equity.equity_data_shp, name="equity_data")
+        gdf = rename_geoid_short(equity.equity_data_shp)
+        self.set_tables(df= gdf, name="equity_data")
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
