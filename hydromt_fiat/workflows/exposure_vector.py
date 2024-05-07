@@ -2,7 +2,13 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
+from shapely.geometry import Polygon, Point
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+from typing import Tuple
+from tqdm import tqdm
 
+import pycountry_convert as pc
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -72,7 +78,8 @@ class ExposureVector(Exposure):
         region: gpd.GeoDataFrame = None,
         crs: str = None,
         unit: str = "meters",
-        damage_unit = "$"
+        damage_unit = "$",
+        country: str = None
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -160,6 +167,12 @@ class ExposureVector(Exposure):
             )
             polygon = self.region["geometry"].iloc[0]
             source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
+        elif str(source).upper() == "OSM":
+            # The OSM data is selected, so get the assets from  OSM
+            self.logger.info(
+                "Downloading assets from Open Street Map."
+            )
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region) 
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
@@ -300,7 +313,9 @@ class ExposureVector(Exposure):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
-        self.setup_max_potential_damage(max_potential_damage, damage_types, country)
+        self.setup_max_potential_damage(max_potential_damage, damage_types, country = country)
+        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
+            self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
         self.setup_ground_floor_height(
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
@@ -319,7 +334,10 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.iloc[0].values[0]
+            if self.region.boundary is not None:
+               polygon = Polygon(self.region.boundary.values[0])
+            else: 
+                polygon = self.region.iloc[0].values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -459,7 +477,10 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        polygon = self.region.iloc[0][0]
+        if self.region.boundary is not None:
+            polygon = Polygon(self.region.boundary.values[0])
+        else:
+            polygon = self.region.iloc[0][0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:
@@ -984,6 +1005,25 @@ class ExposureVector(Exposure):
         self.exposure_db.iloc[idx, damage_function_column_idx] = (
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
+
+    
+    def convert_bf_into_centroids(self, gdf_bf,crs):
+        list_centroid = []
+        list_object_id = []
+        for index, row in gdf_bf.iterrows():
+            centroid = row["geometry"].centroid 
+            list_centroid.append(centroid)
+            list_object_id.append(row["Object ID"])
+        data = {"Object ID": list_object_id, "geometry": list_centroid}
+        gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
+        gdf = gdf_bf.merge(gpf_centroid, on='Object ID', suffixes=('_gdf1', '_gdf2'))
+        gdf.drop(columns = "geometry_gdf1", inplace = True)
+        gdf.rename(columns = {"geometry_gdf2": "geometry"}, inplace = True)
+        gdf = gpd.GeoDataFrame(gdf, geometry = gdf["geometry"])
+        
+        # Update geoms
+        self.exposure_geoms[0] =gdf
+        self.exposure_geoms[0].crs = crs
 
     def calculate_damages_new_exposure_object(
         self, percent_growth: float, damage_types: List[str]
@@ -1619,6 +1659,43 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    def get_continent(self):
+        region =  self.data_catalog.get_geodataframe("area_of_interest")
+        lon = region.geometry[0].centroid.x
+        lat = region.geometry[0].centroid.y
+
+        geolocator = Nominatim(user_agent="<APP_NAME>", timeout=10)
+        geocode = RateLimiter(geolocator.reverse, min_delay_seconds=1)
+
+        location = geocode(f"{lat}, {lon}", language="en")
+
+        # for cases where the location is not found, coordinates are antarctica
+        if location is None:
+            return "global", "global"
+
+        # extract country code
+        address = location.raw["address"]
+        country_code = address["country_code"].upper()
+        country_name = address["country"]
+
+        # get continent code from country code
+        continent_code = pc.country_alpha2_to_continent_code(country_code)
+        continent_name = self.get_continent_name(continent_code)
+        
+        return country_name, continent_name
+
+    def get_continent_name(self,continent_code: str) -> str:
+        continent_dict = {
+            "NA": "north america",
+            "SA": "south america",
+            "AS": "asia",
+            "AF": "africa",
+            "OC": "oceania",
+            "EU": "europe",
+            "AQ" : "antarctica"
+        }
+        return continent_dict[continent_code]
 
     @staticmethod
     def _set_values_from_other_column(
