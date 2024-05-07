@@ -803,6 +803,7 @@ class ExposureVector(Exposure):
     def setup_ground_elevation(
         self,
         ground_elevation: Union[int, float, None, str, Path],
+        unit: str
     ) -> None:
         if ground_elevation:
             self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
@@ -810,6 +811,14 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
+            # Unit conversion
+            if (unit == "meters" or unit == "m") and (self.unit == "feet" or self.unit == "ft"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x * 3.28084)
+
+            elif (unit == "feet" or unit == "ft") and (self.unit == "meters" or self.unit == "m"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x / 3.28084) 
+            else:
+                self.logger.warning("The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'")
 
         else:
             print(

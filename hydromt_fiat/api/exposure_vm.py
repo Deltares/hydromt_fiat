@@ -253,9 +253,9 @@ class ExposureViewModel:
             damage_types = damage_types,
         )
 
-    def set_ground_elevation(self, source: Union[int, float, None, str]):
+    def set_ground_elevation(self, source: Union[int, float, None, str,], unit: Union[str, Units]):
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
-            source=source
+            source=source, unit = unit
         )
     
     def set_roads_settings(

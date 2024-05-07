@@ -448,9 +448,10 @@ class FiatModel(GridModel):
     def update_ground_elevation(
         self,
         source: Union[int, float, None, str, Path],
+        unit: str
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source)
+            self.exposure.setup_ground_elevation(source, unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
