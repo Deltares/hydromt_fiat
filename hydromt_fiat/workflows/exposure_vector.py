@@ -811,13 +811,14 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
-        # Unit conversion
-        if (unit == "meters" or unit == "m") and (self.unit == "feet" or self.unit == "ft"):
-            self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x * 3.28084)
-            if "dep_subgrid" in Path(ground_elevation).stem:
-                self.logger.warning("SFINCS Ground Elevation is automatically converted from meters into feet")
-        elif (unit == "feet" or unit == "ft") and (self.unit == "meters" or self.unit == "m"):
-            self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x / 3.28084) 
+            # Unit conversion
+            if (unit == "meters" or unit == "m") and (self.unit == "feet" or self.unit == "ft"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x * 3.28084)
+
+            elif (unit == "feet" or unit == "ft") and (self.unit == "meters" or self.unit == "m"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x / 3.28084) 
+            else:
+                self.logger.warning("unit is not valid")
 
         else:
             print(
