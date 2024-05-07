@@ -87,6 +87,7 @@ class ExposureSetupGroundFloorHeight(BaseModel):
 
 class ExposureSetupGroundElevation(BaseModel):
     source: Union[int, float, None, str]
+    unit: Union[str, Units]
 
     
 class ExposureSetupDamages(BaseModel):

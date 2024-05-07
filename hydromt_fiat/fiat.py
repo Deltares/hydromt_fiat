@@ -35,6 +35,7 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
+from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
@@ -447,9 +448,10 @@ class FiatModel(GridModel):
     def update_ground_elevation(
         self,
         source: Union[int, float, None, str, Path],
+        unit: str
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source)
+            self.exposure.setup_ground_elevation(source, unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -710,9 +712,10 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
+            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
+            self.set_tables(df=gdf, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -791,8 +794,8 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-
-        self.set_tables(df=equity.equity_data_shp, name="equity_data")
+        gdf = rename_geoid_short(equity.equity_data_shp)
+        self.set_tables(df= gdf, name="equity_data")
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
