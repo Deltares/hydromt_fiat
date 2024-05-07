@@ -35,6 +35,7 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
+from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
@@ -710,7 +711,7 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
-            svi.rename_geoid_short()
+            rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
             self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
@@ -792,7 +793,7 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-        equity.rename_geoid_short()
+        rename_geoid_short(equity.equity_data_shp)
         self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
         # Save the census block aggregation area data
