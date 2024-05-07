@@ -309,6 +309,7 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_unit: str = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
@@ -320,7 +321,7 @@ class ExposureVector(Exposure):
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
-        self.setup_ground_elevation(ground_elevation_file)
+        self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
