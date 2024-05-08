@@ -29,3 +29,5 @@ dependencies:
   - tomli-w
   - tomli
   - ipykernel # examples
+  - pycountry-convert
+  - tqdm

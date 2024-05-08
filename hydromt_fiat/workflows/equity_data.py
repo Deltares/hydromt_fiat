@@ -9,6 +9,7 @@ from io import BytesIO
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List
+from itertools import zip_longest
 import shutil
 from hydromt_fiat.workflows.social_vulnerability_index import list_of_states
 
@@ -119,7 +120,6 @@ class EquityData:
                 self.pd_domain_scores_geo["GEOID_short"] = (
                     self.pd_domain_scores_geo["GEO_ID"].str.split("US").str[1]
                 )
-
     def download_and_unzip(self, url, extract_to='.'):
         """function to download the shapefile data from census tiger website
 
@@ -149,7 +149,7 @@ class EquityData:
             A list of county codes in which your area of interest lies
         """
         block_groups_list = []
-        for sf, county in zip(self.state_fips, counties):
+        for sf, county in zip_longest(self.state_fips, counties, fillvalue=self.state_fips[0]):
             # Download shapefile of blocks 
             if year_data == 2022:
                 url = f"https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/FACES/tl_rd22_{sf}{county}_faces.zip"
@@ -183,7 +183,13 @@ class EquityData:
             block_groups_shp["GEOID_short"] = block_groups_shp["GEO_ID"].str.split("US").str[1]
             block_groups_list.append(block_groups_shp)
 
+        #TODO Save final file as geopackage
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
+        
+        # Create string from GEO_ID short 
+        for index, row,in self.block_groups.iterrows():
+            BG_string = f"BG: {row['GEOID_short']}"
+            self.block_groups.at[index, 'GEOID_short'] = BG_string
 
         # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
         # Delete the shapefile, that is not used anymore
