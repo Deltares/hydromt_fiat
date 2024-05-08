@@ -461,9 +461,8 @@ class ExposureVector(Exposure):
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Primary Object Type", "pot"
-                    )
-                    
-                    # Also rpelace Secondary Object with new classification to assign correct damage curves
+                    ) 
+                    # Replace Secondary Object Type with new classification to assign correct damage curves
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="Object ID", how="left"
                     )
@@ -1692,7 +1691,7 @@ class ExposureVector(Exposure):
         if isinstance(new_value, str):
             new_value = [new_value]
         for item, new_item in zip(old_value,new_value):
-            desired_rows = linking_table_new[linking_table_new["Exposure Link"].str.contains(item, na=False)]
+            desired_rows = linking_table_new[linking_table_new["Exposure Link"] == item]
             desired_rows.reset_index(drop=True, inplace=True)
             linking_table_new = linking_table_new.append(desired_rows,ignore_index = True)
             duplicates_table = linking_table_new.duplicated(keep='first')
