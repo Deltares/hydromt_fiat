@@ -11,7 +11,6 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
-import os
 import shutil
 
 from hydromt_fiat import DATADIR
@@ -34,8 +33,9 @@ from hydromt_fiat.workflows.social_vulnerability_index import (
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
-from hydromt_fiat.workflows.gis import locate_from_bounding_box
+from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
+from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
@@ -93,7 +93,7 @@ class FiatModel(GridModel):
             The CRS of the model.
         """
         if crs:
-            self.set_config("global.crs", crs)
+            self.set_config("global.crs",  f"EPSG:{crs}")
         if gdal_cache:
             self.set_config("global.gdal_cache", gdal_cache)
         if keep_temp_files:
@@ -293,7 +293,8 @@ class FiatModel(GridModel):
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
-        damage_types: List[str] = ["structure", "content"],
+        damage_types: List[str] = ["structure", "content"], 
+        damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,     
     ) -> None:
@@ -325,6 +326,8 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
+        damage_unit: str, optional
+            The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
@@ -332,8 +335,8 @@ class FiatModel(GridModel):
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
             unit = unit.value
-        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit)
-    
+        self.exposure = ExposureVector(self.data_catalog, self.logger, self.region, unit=unit, damage_unit=damage_unit)
+
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is the same, use one source to create the exposure data.            
@@ -383,13 +386,14 @@ class FiatModel(GridModel):
         self.set_config("exposure.csv.file", "./exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
+        self.set_config("exposure.damage_unit", damage_unit)
 
     def setup_exposure_roads(
         self,
         roads_fn: Union[str, Path],
         road_damage: Union[str, Path, int],
         road_types: Union[str, List[str], bool] = True,
-        unit: str = "m",
+        unit: str = "meters",
     ):
         """Setup road exposure data for Delft-FIAT.
 
@@ -402,7 +406,7 @@ class FiatModel(GridModel):
         """
         if not self.exposure:
             self.exposure = ExposureVector(
-                self.data_catalog, self.logger, self.region, unit=unit
+                self.data_catalog, self.logger, self.region, unit=unit,
             )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
@@ -444,9 +448,10 @@ class FiatModel(GridModel):
     def update_ground_elevation(
         self,
         source: Union[int, float, None, str, Path],
+        unit: str
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source)
+            self.exposure.setup_ground_elevation(source, unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -672,7 +677,7 @@ class FiatModel(GridModel):
             # First find the state(s) and county/counties where the exposure data is
             # located in
             us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
-            counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+            counties, states = locate_from_exposure(self.exposure.exposure_geoms[0]["geometry"])
             states_dict = list_of_states()
             state_abbreviation = []
             for state in states:
@@ -707,9 +712,10 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
+            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
+            self.set_tables(df=gdf, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -763,7 +769,7 @@ class FiatModel(GridModel):
         # First find the state(s) and county/counties where the exposure data is
         # located in
         us_states_counties = self.data_catalog.get_dataframe("us_states_counties")
-        counties, states = locate_from_bounding_box(self.exposure.bounding_box())
+        counties, states = locate_from_exposure(self.exposure.exposure_geoms[0]["geometry"])
         states_dict = list_of_states()
         state_abbreviation = []
         for state in states:
@@ -788,8 +794,8 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-
-        self.set_tables(df=equity.equity_data_shp, name="equity_data")
+        gdf = rename_geoid_short(equity.equity_data_shp)
+        self.set_tables(df= gdf, name="equity_data")
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
@@ -1010,6 +1016,7 @@ class FiatModel(GridModel):
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
                 unit=self.get_config("exposure.geom.unit"),
+                damage_unit= self.get_config("exposure.damage_unit"),
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
             self.exposure.read_table(exposure_fn)
@@ -1050,6 +1057,9 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
+        if "social_vulnerability_scores" in self.tables:   
+            folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
+            self.tables["social_vulnerability_scores"].to_file(folder)
 
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]

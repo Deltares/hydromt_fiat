@@ -41,6 +41,7 @@ class ExposureGeomModel(BaseModel):
     file1: str
     file2: str
     unit: str
+    damage_unit: str
 
 
 class ExposureModel(BaseModel):

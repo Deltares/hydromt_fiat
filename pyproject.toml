@@ -1,9 +1,10 @@
 [build-system]
-requires = ["flit_core >=3.4.0,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hydromt_fiat"
+# TODO description = "Hydrological model for flood impact assessment and adaptation planning"
 authors = [
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
 	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
@@ -15,7 +16,6 @@ authors = [
 requires-python = ">=3.8"
 dependencies = [
     "hydromt",
-    "hydromt_sfincs",
     "geopandas",
     "geopy",
     "numpy",
@@ -37,11 +37,20 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Climate impact",
+    "Topic :: Scientific/Engineering :: Information Analysis",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
-dynamic = ['version', 'description']
+dynamic = ["version"]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = { attr = "hydromt_fiat.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["hydromt_fiat", "hydromt_fiat.*"]
 
 [project.optional-dependencies]
 test = [
@@ -67,6 +76,3 @@ fiat = "hydromt_fiat.fiat:FiatModel"
 line-length = 88
 target-version = ['py38']
 
-[tool.flit.sdist]
-include = ["hydromt_fiat"]
-exclude = ["docs", "examples", "envs", "tests", "binder", ".github"]
