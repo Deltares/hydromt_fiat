@@ -327,9 +327,9 @@ class ExposureViewModel:
         self.aggregation_areas_model = AggregationAreaSettings(
             aggregation_area_fn=files,
             attribute_names=attribute_names,
-            label_names=label_names,
+            label_names=label_names,)
     
-    def set_classification_config(self, source, attribute, type_add, old_values, new_values, damage_types, remove_object_type):
+    def set_classification_config(self, source, attribute, type_add, old_values, new_values, damage_types, remove_object_type): 
         self.classification_model = ClassificationSettings(
             source = source,
             attribute = attribute,
