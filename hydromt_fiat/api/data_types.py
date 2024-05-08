@@ -63,17 +63,19 @@ class VulnerabilitySettings(BaseModel):
     functions_mean: Union[str, list]
     functions_max: Optional[Union[str, list]] = None
     step_size: Optional[float] = None #TODO should this have a default value?
+    continent: Optional[str] = None
 
 
 class ExposureBuildingsSettings(BaseModel):
     asset_locations: str
     occupancy_type: str
     max_potential_damage: str
-    ground_floor_height: str
+    ground_floor_height: Union[str, float]
     unit: Units
     extraction_method: ExtractionMethod
     damage_types : Optional[List[str]] = None
     damage_unit: str 
+    country: str = None
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
@@ -85,6 +87,7 @@ class ExposureSetupGroundFloorHeight(BaseModel):
 
 class ExposureSetupGroundElevation(BaseModel):
     source: Union[int, float, None, str]
+    unit: Union[str, Units]
 
     
 class ExposureSetupDamages(BaseModel):

@@ -7,6 +7,7 @@ from typing import Union, List
 
 def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
+    
     footprints = ox.features.features_from_polygon(
         polygon, tags
     )  # then we query the data
