@@ -253,6 +253,9 @@ def ground_elevation_from_dem(
     # Read in the DEM
     dem = rasterio.open(ground_elevation)
     # gdf = self.get_full_gdf(exposure_db)
+    
+    # TODO if exposure.geoms is not POINTS: either take average value of pixels or create a centroid
+
     gdf = exposure_geoms.to_crs(dem.crs.data)
     # Create a list of geometries plus a label for rasterize
     # The labels start at 1 since the label 0 is reserved for everything not in a geometry
