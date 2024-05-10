@@ -30,8 +30,8 @@ class AggregationModel(SpatialJoinModel):
 class SpatialJoinsModel(BaseModel):
     """BaseModel describing the expected variables and data types of a Delft-FIAT spatial_joins.toml"""
 
-    aggregations: Optional[list[AggregationModel]] = None
-    spatial_joins: Optional[list[SpatialJoinModel]] = None
+    aggregation_areas: Optional[list[AggregationModel]] = None
+    additional_attributes: Optional[list[SpatialJoinModel]] = None
 
 class ISpatialJoins(ABC):
     attrs: SpatialJoinsModel
