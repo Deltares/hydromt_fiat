@@ -2,6 +2,8 @@ import geopandas as gpd
 from typing import List, Union
 from pathlib import Path
 
+import numpy as np
+
 def process_value(value):
     if isinstance(value, list) and len(value) == 1:
         return value[0]
@@ -10,53 +12,82 @@ def process_value(value):
     else:
         return value
 
-def join_exposure_aggregation_multiple_areas(
+def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
-    aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
+    areas: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
     label_names: List[str],
+    keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
-    """_summary_
+    """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
 
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
-        _description_
-    aggregation_area_fn : Union[List[str], List[Path]]
-        _description_
+        The GeoDataFrame representing the exposure data.
+    areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
+        A list of aggregation areas. Each area can be specified as a file path (str or Path),
+        or as a GeoDataFrame.
     attribute_names : List[str]
-        _description_
+        A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
-        _description_
+        A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
 
     Returns
     -------
     gpd.GeoDataFrame
-        _description_
-    """
-    for file_path, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
+        The exposure GeoDataFrame with the joined attributes from the aggregation areas.
 
-        if isinstance(file_path, str) or isinstance(file_path, Path):
-            aggregation_gdf = gpd.read_file(file_path)
+    Raises
+    ------
+    AssertionError
+        If the specified attribute name is not found in the aggregation area.
+
+    Notes
+    -----
+    - If the exposure GeoDataFrame and the aggregation area have different coordinate reference systems (CRS),
+      the aggregation area will be reprojected to match the CRS of the exposure GeoDataFrame.
+    - The function performs a spatial join using the 'intersects' predicate.
+    - If duplicates exist in the joined data, the function aggregates the data by grouping on the 'Object ID'
+      column and creating a list of values for each attribute.
+    - The function expects the order of the label names to match the order of the aggregation areas in the 'areas'
+      parameter.
+
+    """
+    
+    filtered_areas = []
+    
+    for area, attribute_name, label_name in zip(areas, attribute_names, label_names):
+
+        if isinstance(area, str) or isinstance(area, Path):
+            area_gdf = gpd.read_file(area)
         else:
-            aggregation_gdf = file_path
+            area_gdf = area
 
         ## check the projection of both gdf and if not match, reproject
-        if exposure_gdf.crs != aggregation_gdf.crs:
-            aggregation_gdf = aggregation_gdf.to_crs(exposure_gdf.crs)
+        if exposure_gdf.crs != area_gdf.crs:
+            area_gdf = area_gdf.to_crs(exposure_gdf.crs)
 
-            
-        assert attribute_name in aggregation_gdf.columns, f"Attribute {attribute_name} not found in {file_path}"
-
+        assert attribute_name in area_gdf.columns, f"Attribute {attribute_name} not found in {area}"
+        
+        # Keep only used column
+        area_gdf = area_gdf[[attribute_name, "geometry"]].reset_index(drop=True)
+        
         # If you overwrite the exposure_gdf with the joined data, you can append all 
         # aggregation areas to the same exposure_gdf
         exposure_gdf = gpd.sjoin(
             exposure_gdf,
-            aggregation_gdf[["geometry", attribute_name]],
+            area_gdf,
             predicate="intersects",
             how="left",
         )
-
+        # If we want to keep only used area we filter based on the intersections else we provide the whole dataframe
+        if not keep_all:
+            inds = np.sort(exposure_gdf["index_right"].dropna().unique())
+            # TODO instead of keeping the ones that are joined keep everything that overlaps with the region?
+            filtered_areas.append(area_gdf.iloc[inds].reset_index(drop=True))
+        else:
+            filtered_areas.append(area_gdf)
         # aggregate the data if duplicates exist
         aggregated = (
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
@@ -77,7 +108,7 @@ def join_exposure_aggregation_multiple_areas(
         if "index_right" in exposure_gdf.columns:
             del exposure_gdf["index_right"]
 
-    return exposure_gdf
+    return exposure_gdf, filtered_areas
 
 
 def join_exposure_aggregation_areas(
@@ -85,6 +116,7 @@ def join_exposure_aggregation_areas(
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame],
     attribute_names: Union[List[str], str],
     label_names: Union[List[str], str],
+    keep_all: bool=True
 ) -> gpd.GeoDataFrame:
     """Join aggregation area labels to the exposure data.
 
@@ -99,15 +131,10 @@ def join_exposure_aggregation_areas(
     label_names : Union[List[str], str]
         Name of the label(s) to join.
     """
-    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path) or isinstance(aggregation_area_fn, gpd.GeoDataFrame):
-        aggregation_area_fn = [aggregation_area_fn]
-    if isinstance(attribute_names, str):
-        attribute_names = [attribute_names]
-    if isinstance(label_names, str):
-        label_names = [label_names]
     
-    exposure_gdf = join_exposure_aggregation_multiple_areas(exposure_gdf, aggregation_area_fn, attribute_names, label_names)
+    exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all)
     
     # Remove the geometry column from the exposure_gdf to return a dataframe
     del exposure_gdf["geometry"]
-    return exposure_gdf
+    
+    return exposure_gdf, areas_gdf
