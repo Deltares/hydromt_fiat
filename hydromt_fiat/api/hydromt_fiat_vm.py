@@ -78,7 +78,7 @@ class HydroMtViewModel:
             )
 
         if self.exposure_vm.aggregation_areas_model:
-            config_yaml.setup_aggregation_areas = (
+            config_yaml.setup_additional_attributes = (
                 self.exposure_vm.aggregation_areas_model
             )
 
@@ -215,7 +215,7 @@ class HydroMtViewModel:
         aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
         attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
         label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
-        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names)
+        self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names)
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
