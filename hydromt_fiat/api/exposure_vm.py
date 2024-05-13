@@ -64,6 +64,7 @@ class ExposureViewModel:
         max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
+        ground_elevation_unit: str = None
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -120,6 +121,7 @@ class ExposureViewModel:
                 extraction_method = "centroid",
                 damage_types= ['structure', 'content'],
                 country=country,
+                ground_elevation_unit = ground_elevation_unit
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
