@@ -78,3 +78,4 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
 
     # check if the new development area was added
     assert len(exposure_modified) > len(exposure_original), 'The composite areas were not added'
+    assert not exposure_modified.duplicated("Object ID").values.all()

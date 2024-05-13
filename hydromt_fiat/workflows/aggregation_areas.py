@@ -3,6 +3,7 @@ from typing import List, Union
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from shapely import Point, Polygon, MultiPolygon
 
 def process_value(value):
     if isinstance(value, list):
@@ -126,6 +127,7 @@ def spatial_joins(
 
 def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name, new_exposure_aggregation):
     if aggregated[attribute_name].apply(lambda x: len(x) >= 2).any():
+
         # Split exposure_gdf by aggregation zone 
         new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
         res_intersection = new_exposure_gdf.overlay(aggregation_gdf[[attribute_name, 'geometry']], how='intersection')
@@ -134,23 +136,31 @@ def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_na
         # Grab the area that falls in no zone 
         exposure_outside_aggregation = new_exposure_gdf.overlay(res_intersection[["geometry"]], how = "symmetric_difference")
         exposure_outside_aggregation.drop(["index_right", "pot"], axis = 1, inplace = True)
-        exposure_outside_aggregation = exposure_outside_aggregation.dropna()
 
-        # Combine divided objects of new composite area with areas that fall in no zone
-        exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True)
-        idx_duplicates = exposure_gdf.index[exposure_gdf.duplicated(subset = "Object ID")]
+        # Combine divided objects of new composite area with areas that fall in no zone 
+        exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True) 
+        exposure_gdf.dropna(subset = [ "Object ID"] , inplace =True)
+
+        # Explode Multipolygons
+        exposure_gdf = exposure_gdf.explode().reset_index()
+        idx_multiploygon = exposure_gdf[exposure_gdf['geometry'].area < 1e-10].index
+        if not idx_multiploygon.empty:
+            exposure_gdf.drop(idx_multiploygon, inplace = True)
+        exposure_gdf.drop(["level_0", "level_1"], axis = 1, inplace = True)
+
+        # create new Object IDs       
         exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
-        exposure_gdf.loc[idx_duplicates, "Object ID"] = np.random.choice(range(exposure_gdf["Object ID"].values.max() + 1 ,exposure_gdf["Object ID"].values.max() +1 + len(idx_duplicates)), size=len(idx_duplicates), replace=False)
-                
+        init_Object_ID = exposure_gdf.loc[0,"Object ID"]
+        exposure_gdf.loc[0:, "Object ID"] = np.arange(init_Object_ID + 1 , init_Object_ID + 1 + int(len(exposure_gdf)), 1).tolist()
+
     # Create an empty GeoDataFrame and append the exposure data
-    
     if new_exposure_aggregation is None:
         data = pd.DataFrame(columns=['geometry'])
         final_exposure = gpd.GeoDataFrame(data, geometry='geometry')
         new_exposure_aggregation = pd.concat([final_exposure, exposure_gdf], ignore_index=True) 
         exposure_gdf = new_exposure_aggregation
-    else:
-        exposure_gdf = pd.concat([new_exposure_aggregation, exposure_gdf], ignore_index=True) 
+    else: 
+        new_exposure_aggregation = exposure_gdf
     
     # Remove the index_right column
     if "index_right" in exposure_gdf.columns:
