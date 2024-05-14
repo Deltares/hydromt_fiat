@@ -104,6 +104,9 @@ jobs:
           
 
   upload-to-test-pypi:
+    environment: release
+    permissions:
+      id-token: write
     needs: test-built-dist
     if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -122,6 +125,9 @@ jobs:
           skip_existing: true
 
   upload-to-pypi:
+    environment: release
+    permissions:
+      id-token: write
     needs: upload-to-test-pypi
     if: ${{ github.event_name == 'release' && !github.event.act  }}
     runs-on: ubuntu-latest
