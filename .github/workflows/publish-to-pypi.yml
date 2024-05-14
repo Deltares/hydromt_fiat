@@ -122,7 +122,7 @@ jobs:
     permissions:
       id-token: write
     needs: upload-to-test-pypi
-    if: ${{ github.event_name == 'release' && (github.event.action == 'created' || github.event.action == 'published') }}    
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
