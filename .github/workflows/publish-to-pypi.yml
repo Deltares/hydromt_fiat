@@ -21,17 +21,11 @@ env:
 
 name: Build and Upload to PyPI
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - v*
   pull_request:
     branches:
       - main
   release:
-    types:
-      - published
+    types: [created, published]
   workflow_dispatch:
 
 
@@ -108,7 +102,6 @@ jobs:
     permissions:
       id-token: write
     needs: test-built-dist
-    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
@@ -129,7 +122,7 @@ jobs:
     permissions:
       id-token: write
     needs: upload-to-test-pypi
-    if: ${{ github.event_name == 'release' && !github.event.act  }}
+    if: ${{ github.event_name == 'release' && (github.event.action == 'created' || github.event.action == 'published') }}    
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
