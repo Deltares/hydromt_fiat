@@ -63,6 +63,10 @@ def join_exposure_aggregation_multiple_areas(
             predicate="intersects",
             how="left")
 
+        ##remove the index_right column
+        if "index_right" in exposure_gdf.columns:
+            del exposure_gdf["index_right"]
+
         # aggregate the data if duplicates exist
         aggregated = (
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
@@ -78,7 +82,7 @@ def join_exposure_aggregation_multiple_areas(
             new_exposure_aggregation = new_exposure_aggregation
 
         if new_composite_area[0] is True:
-            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name, new_exposure_aggregation)     
+            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation)     
 
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
@@ -99,17 +103,19 @@ def join_exposure_aggregation_multiple_areas(
 
     return exposure_gdf
 
-def split_composite_area(exposure_gdf, aggregated, aggregation_gdf, attribute_name, new_exposure_aggregation):
-    if aggregated[attribute_name].apply(lambda x: len(x) >= 2).any():
-
+def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation):
+    if any(
+    exposure_geometry.intersects(aggregation_geometry)
+    for exposure_geometry in exposure_gdf.geometry
+    for aggregation_geometry in aggregation_gdf.geometry):
         # Split exposure_gdf by aggregation zone 
         new_exposure_gdf = exposure_gdf.rename(columns = {attribute_name: "pot"})
         res_intersection = new_exposure_gdf.overlay(aggregation_gdf[[attribute_name, 'geometry']], how='intersection')
-        res_intersection.drop(["index_right", "pot"], axis = 1, inplace = True)
+        res_intersection.drop("pot", axis = 1, inplace = True)
 
         # Grab the area that falls in no zone 
         exposure_outside_aggregation = new_exposure_gdf.overlay(res_intersection[["geometry"]], how = "symmetric_difference")
-        exposure_outside_aggregation.drop(["index_right", "pot"], axis = 1, inplace = True)
+        exposure_outside_aggregation.drop("pot", axis = 1, inplace = True)
 
         # Combine divided objects of new composite area with areas that fall in no zone 
         exposure_gdf = pd.concat([res_intersection, exposure_outside_aggregation], ignore_index=True) 
