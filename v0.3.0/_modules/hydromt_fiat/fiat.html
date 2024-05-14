@@ -457,6 +457,7 @@
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.building_footprints</span> <span class="kn">import</span> <span class="n">join_exposure_building_footprints</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.gis</span> <span class="kn">import</span> <span class="n">locate_from_exposure</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.utils</span> <span class="kn">import</span> <span class="n">get_us_county_numbers</span>
+<span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.utils</span> <span class="kn">import</span> <span class="n">rename_geoid_short</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FiatModel&quot;</span><span class="p">]</span>
 
@@ -889,9 +890,10 @@
     <span class="k">def</span> <span class="nf">update_ground_elevation</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>
@@ -1157,9 +1159,10 @@
             <span class="n">svi</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
             <span class="n">svi</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
             <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">rename_geoid_short</span><span class="p">(</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">)</span>
 
             <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">gdf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
             <span class="c1"># TODO: Think about adding an indicator for missing data to the svi.svi_data_shp</span>
 
             <span class="c1"># Link the SVI score to the exposure data</span>
@@ -1239,8 +1242,8 @@
         <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">merge_equity_data_shp</span><span class="p">()</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">rename_geoid_short</span><span class="p">(</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span> <span class="n">gdf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
 
         <span class="c1"># Save the census block aggregation area data</span>
         <span class="n">block_groups</span> <span class="o">=</span> <span class="n">equity</span><span class="o">.</span><span class="n">get_block_groups</span><span class="p">()</span>
