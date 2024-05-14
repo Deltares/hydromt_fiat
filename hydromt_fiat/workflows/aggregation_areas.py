@@ -114,15 +114,13 @@ def spatial_joins(
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
 
-            # Create a string from the list of values in the duplicated aggregation area 
-            # column
+            # Create a string from the list of values in the duplicated aggregation area and keep the first
             exposure_gdf[attribute_name] = exposure_gdf[attribute_name].apply(process_value)
                 
             # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
             # Documentation that the order the user put the label name must be the order of the gdf
             exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
             
-            exposure_gdf
             ##remove the index_right column
             if "index_right" in exposure_gdf.columns:
                 del exposure_gdf["index_right"]
