@@ -296,7 +296,7 @@ class FiatModel(GridModel):
         damage_types: List[str] = ["structure", "content"], 
         damage_unit: str = "$", 
         country: Union[str, None] = None,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_file: Union[int, float, str, Path, None] = None,     
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -339,13 +339,13 @@ class FiatModel(GridModel):
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
-            # damage is the same, use one source to create the exposure data.
+            # damage is the same, use one source to create the exposure data.            
             self.exposure.setup_buildings_from_single_source(
-                asset_locations,
-                ground_floor_height,
-                extraction_method,
-                ground_elevation_file=ground_elevation_file,
-            )
+                    asset_locations,
+                    ground_floor_height,
+                    extraction_method,
+                    ground_elevation_file=ground_elevation_file,
+                )
 
         else:
             # The source for the asset locations, occupancy type and maximum potential
@@ -376,7 +376,7 @@ class FiatModel(GridModel):
             logging.error(
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_buildings' function. Error message: {e}"
-            )
+            )        
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
@@ -846,6 +846,53 @@ class FiatModel(GridModel):
             # This copies data from one location to the root folder for the FIAT
             # model, only use user-input data here (not the census blocks)
             self.additional_attributes_fn = aggregation_area_fn
+
+    def setup_classification(
+        self,
+        source = Union[List[str], str, Path, List[Path]],
+        attribute = Union[List[str], str],
+        type_add = Union[List[str], str],
+        old_values= Union[List[str], str],
+        new_values= Union[List[str], str],
+        damage_types = Union[List[str], str],
+        remove_object_type = bool
+        
+    ):
+        """_summary_
+
+        Parameters
+        ----------
+        source : Union[List[str], List[Path], str, Path]
+            Path(s) to the user classification file.
+        attribute : Union[List[str], str]
+            Name of the column of the user data 
+       type_add : Union[List[str], str]
+            Name of the attribute the user wants to update. Primary or Secondary
+        old_values : Union[List[str], List[Path], str, Path]
+            Name of the default (NSI) exposure classification
+        new_values : Union[List[str], str]
+            Name of the user exposure classification.
+        exposure_linking_table : Union[List[str], str]
+            Path(s) to the new exposure linking table(s).
+        damage_types : Union[List[str], str]
+            "structure"or/and "content"
+        remove_object_type: bool
+            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
+        """
+
+        self.exposure.setup_occupancy_type(source, attribute, type_add)
+
+        # Drop Object Type that has not been updated. 
+        
+        if remove_object_type:
+            if type_add == "Primary Object Type":
+                self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
+            else:
+                self.exposure.exposure_db.drop("Primary Object Type", axis =1 , inplace = True) 
+        linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
+        self.vf_ids_and_linking_df = linking_table_new
+        self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
 
     def setup_building_footprint(
         self,
