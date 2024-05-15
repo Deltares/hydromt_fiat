@@ -309,6 +309,7 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_unit: str = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
@@ -320,7 +321,7 @@ class ExposureVector(Exposure):
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
-        self.setup_ground_elevation(ground_elevation_file)
+        self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -408,7 +409,7 @@ class ExposureVector(Exposure):
             )
             occupancy_map.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
-
+            
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:
             occupancy_map = occupancy_map.to_crs(self.crs)
@@ -430,38 +431,53 @@ class ExposureVector(Exposure):
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
-            nr_without_primary_object_type = len(
-                gdf.loc[gdf["Primary Object Type"] == ""].index
-            )
-            if nr_without_primary_object_type > 0:
-                self.logger.warning(
-                    f"{nr_without_primary_object_type} objects do not have a Primary Object "
-                    "Type and will be removed from the exposure data."
+            if "Primary Object Type" in gdf.columns:
+                nr_without_primary_object_type = len(
+                    gdf.loc[gdf["Primary Object Type"] == ""].index
                 )
-            gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+                if nr_without_primary_object_type > 0:
+                    self.logger.warning(
+                        f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                        "Type and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"] != ""]
 
-            nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
-            if nr_without_landuse > 0:
-                self.logger.warning(
-                    f"{nr_without_landuse} objects were not overlapping with the "
-                    "land use data and will be removed from the exposure data."
-                )
-            gdf = gdf.loc[gdf["Primary Object Type"].notna()]
+                nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
+                if nr_without_landuse > 0:
+                    self.logger.warning(
+                        f"{nr_without_landuse} objects were not overlapping with the "
+                        "land use data and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
-            # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
             # Update the exposure database
             if type_add in self.exposure_db:
-                gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-                self.exposure_db = pd.merge(
-                    self.exposure_db, gdf, on="Object ID", how="left"
-                )
-                self.exposure_db = self._set_values_from_other_column(
-                    self.exposure_db, "Primary Object Type", "pot"
-                )
+                if "Primary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Primary Object Type", "pot"
+                    ) 
+                    # Replace Secondary Object Type with new classification to assign correct damage curves
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
+                elif "Secondary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
             else:
                 self.exposure_db = gdf.copy()
         else:
@@ -1267,13 +1283,14 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
-        exposure_linking_table["Damage function name"] = [
-            name + "_" + type
-            for name, type in zip(
-                exposure_linking_table["FIAT Damage Function Name"].values,
-                exposure_linking_table["Damage Type"].values,
-            )
-        ]
+        if "Damage function name" not in exposure_linking_table.columns:
+            exposure_linking_table["Damage function name"] = [
+                name + "_" + type
+                for name, type in zip(
+                    exposure_linking_table["FIAT Damage Function Name"].values,
+                    exposure_linking_table["Damage Type"].values,
+                )
+            ]
         for damage_type in damage_types:
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
@@ -1316,11 +1333,11 @@ class ExposureVector(Exposure):
             # Check if the linking column is the Primary Object Type or the Secondary
             # Object Type
             if (len(unique_types_primary) > 0) and (
-                unique_types_primary.issubset(unique_linking_types)
+                unique_types_primary.issubset(unique_linking_types) 
             ):
                 linking_column = "Primary Object Type"
             elif (len(unique_types_secondary) > 0) and (
-                unique_types_secondary.issubset(unique_linking_types)
+                unique_types_secondary.issubset(unique_linking_types) 
             ):
                 linking_column = "Secondary Object Type"
             else:
@@ -1545,7 +1562,7 @@ class ExposureVector(Exposure):
                 assert col.format("Structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
-                    
+    
     def set_height_relative_to_reference(
         self,
         exposure_to_modify: pd.DataFrame,
@@ -1668,6 +1685,21 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    def update_user_linking_table(self, old_value: Union[list, str], new_value: Union[list, str], linking_table_new: pd.DataFrame):
+        if isinstance(old_value, str):
+            old_value = [old_value]
+        if isinstance(new_value, str):
+            new_value = [new_value]
+        for item, new_item in zip(old_value,new_value):
+            desired_rows = linking_table_new[linking_table_new["Exposure Link"] == item]
+            desired_rows.reset_index(drop=True, inplace=True)
+            linking_table_new = linking_table_new.append(desired_rows,ignore_index = True)
+            duplicates_table = linking_table_new.duplicated(keep='first')
+            idx_duplicates = duplicates_table[duplicates_table].index
+            for idx in idx_duplicates:
+                linking_table_new["Exposure Link"][idx:].replace({item: new_item}, inplace=True)
+        return linking_table_new
 
     def get_continent(self):
         region =  self.data_catalog.get_geodataframe("area_of_interest")

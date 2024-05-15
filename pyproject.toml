@@ -25,11 +25,13 @@ dependencies = [
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic",
-	"osmnx",
-	"census",
-	"us",
-    "xarray-spatial"
+    "pydantic",
+    "osmnx",
+    "census",
+    "us",
+    "xarray-spatial",
+    "tqdm",
+    "pycountry-convert"
 ]
 readme = "README.rst"
 classifiers = [
