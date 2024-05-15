@@ -212,9 +212,9 @@ class HydroMtViewModel:
         self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
     
     def new_additional_attributes(self, config_yaml):
-        aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
-        attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
-        label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
+        aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
+        attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
+        label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
         self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names)
 
     def new_ground_elevation(self, config_yaml):
