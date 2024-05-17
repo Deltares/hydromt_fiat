@@ -107,7 +107,7 @@ def spatial_joins(
         else:
             new_exposure_aggregation = new_exposure_aggregation
 
-        if new_composite_area[0] is True:
+        if new_composite_area[0]:
             new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation)     
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
@@ -123,7 +123,14 @@ def spatial_joins(
         # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
         # Documentation that the order the user put the label name must be the order of the gdf
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
-
+    
+    # Split Maximum Potential Damages
+    if new_composite_area[0]:
+        exposure_total_area = exposure_gdf_copy.area.values.tolist()
+        exposure_max_potential_damage_struct = list(exposure_gdf_copy["Max Potential Damage: Structure"].values)
+        exposure_max_potential_damage_cont = list(exposure_gdf_copy["Max Potential Damage: Content"].values)
+        exposure_gdf = split_max_damages_new_composite_area(exposure_gdf, exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont)
+    
     return exposure_gdf, filtered_areas
 
 def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation):
@@ -168,6 +175,7 @@ def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_expo
     # Remove the index_right column
     if "index_right" in exposure_gdf.columns:
         del exposure_gdf["index_right"]
+    
         
     return new_exposure_aggregation, exposure_gdf
 
@@ -191,14 +199,18 @@ def split_max_damages_new_composite_area(
         Max potential damage: Content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     """
     
-    for exposure_total_area, exposure_max_potential_damage in zip[exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont ]:
+    for exposure_total_area, exposure_max_potential_damage_struct,exposure_max_potential_damage_cont in zip(exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont):
         filtered_exposure_gdf = exposure_gdf[exposure_gdf["Max Potential Damage: Structure"] == exposure_max_potential_damage_struct]
         for index, row in filtered_exposure_gdf.iterrows():
             filtered_exposure_gdf.at[index,"rel_area"] = row.geometry.area / exposure_total_area
-            filtered_exposure_gdf.at[index, "rel_max_pot_damages"] = row["rel_area"] * row["Max Potential Damage: Structure"]
-            filtered_exposure_gdf.at[index, "rel_max_pot_damages"] = row["rel_area"] * row["Max Potential Damage: Content"]
+            filtered_exposure_gdf.at[index, "rel_max_pot_damages_struct"] = filtered_exposure_gdf.at[index,"rel_area"] * row["Max Potential Damage: Structure"]
+            filtered_exposure_gdf.at[index, "rel_max_pot_damages_cont"] = filtered_exposure_gdf.at[index,"rel_area"] * row["Max Potential Damage: Content"]
 
+    filtered_exposure_gdf["Max Potential Damage: Structure"] = filtered_exposure_gdf["rel_max_pot_damages_struct"]
+    filtered_exposure_gdf["Max Potential Damage: Content"] = filtered_exposure_gdf["rel_max_pot_damages_cont"]
+    filtered_exposure_gdf.drop(columns = ["rel_max_pot_damages_struct", "rel_max_pot_damages_cont", "rel_area"], inplace = True)
     
+    return filtered_exposure_gdf
 
 def join_exposure_aggregation_areas(
     exposure_gdf: gpd.GeoDataFrame,
