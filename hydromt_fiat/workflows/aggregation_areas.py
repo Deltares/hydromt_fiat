@@ -174,7 +174,8 @@ def split_max_damages_new_composite_area(
     exposure_max_potential_damage_cont: Union[int, List[int]]
         Max potential damage: Content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     """
-    new_composite_areas = []
+    new_composite_areas_struct = []
+    new_composite_areas_cont = []
     for exposure_total_area, exposure_max_potential_damage_struct,exposure_max_potential_damage_cont in zip(exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont):
 
         # Calculate relative Max Potential Damages for Structure and Content based on area
@@ -194,12 +195,19 @@ def split_max_damages_new_composite_area(
         filtered_exposure_gdf_cont.drop(columns = ["rel_max_pot_damages_cont", "rel_area"], inplace = True)
         
         # Add all gdfs to a list 
-        new_composite_areas.append(filtered_exposure_gdf_struct, filtered_exposure_gdf_cont)
+        new_composite_areas_struct.append(filtered_exposure_gdf_struct)
+        new_composite_areas_cont.append(filtered_exposure_gdf_cont)
    
-   # Combine all individual new composite areas back to one gdf
-    exposure_gdf = pd.concat(new_composite_areas, ignore_index = True)
-    exposure_gdf.reset_index(inplace=True)
-
+   # Combine all individual new composite areas back to one gdf for each Damage Type
+    exposure_gdf_struct = pd.concat(new_composite_areas_struct, ignore_index = True)
+    exposure_gdf_cont = pd.concat(new_composite_areas_cont, ignore_index = True)
+    
+    # Combine Damage Type gdfs to one gdf
+    exposure_gdf = exposure_gdf_struct.merge(exposure_gdf_cont[["Object ID", "Max Potential Damage: Content"]], on = "Object ID", how = "left")
+    exposure_gdf["Max Potential Damage: Content_x"] = exposure_gdf["Max Potential Damage: Content_y"]
+    exposure_gdf.drop("Max Potential Damage: Content_y", axis =1, inplace = True)
+    exposure_gdf = exposure_gdf.rename(columns= {"Max Potential Damage: Content_x": "Max Potential Damage: Content"})
+    
     return exposure_gdf
 
 def join_exposure_aggregation_areas(
