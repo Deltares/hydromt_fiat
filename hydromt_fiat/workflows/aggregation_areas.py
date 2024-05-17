@@ -174,9 +174,8 @@ def split_max_damages_new_composite_area(
     exposure_max_potential_damage_cont: Union[int, List[int]]
         Max potential damage: Content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     """
-    
+    new_composite_areas = []
     for exposure_total_area, exposure_max_potential_damage_struct,exposure_max_potential_damage_cont in zip(exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont):
-        new_composite_areas = []
 
         # Calculate relative Max Potential Damages for Structure and Content based on area
         filtered_exposure_gdf_struct = exposure_gdf[exposure_gdf["Max Potential Damage: Structure"] == exposure_max_potential_damage_struct]
