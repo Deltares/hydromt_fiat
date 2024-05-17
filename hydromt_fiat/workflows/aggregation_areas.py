@@ -173,9 +173,9 @@ def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_expo
 
 def split_max_damages_new_composite_area(
         exposure_gdf: gpd.GeoDataFrame,
-        exposure_total_area: Union[float, int, List[float, int]],
-        exposure_max_potential_damage_struct: Union[float, int, List[float, int]], 
-        exposure_max_potential_damage_cont: Union[float, int, List[float, int]]
+        exposure_total_area: Union[float, int, List[Union[float, int]]],
+        exposure_max_potential_damage_struct: Union[float, int, List[Union[float, int]]], 
+        exposure_max_potential_damage_cont: Union[float, int, List[Union[float, int]]]
         ) -> gpd.GeoDataFrame:
     """Split the max potential damages by area size
 
