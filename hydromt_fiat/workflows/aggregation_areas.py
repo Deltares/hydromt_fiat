@@ -200,17 +200,32 @@ def split_max_damages_new_composite_area(
     """
     
     for exposure_total_area, exposure_max_potential_damage_struct,exposure_max_potential_damage_cont in zip(exposure_total_area, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont):
-        filtered_exposure_gdf = exposure_gdf[exposure_gdf["Max Potential Damage: Structure"] == exposure_max_potential_damage_struct]
-        for index, row in filtered_exposure_gdf.iterrows():
-            filtered_exposure_gdf.at[index,"rel_area"] = row.geometry.area / exposure_total_area
-            filtered_exposure_gdf.at[index, "rel_max_pot_damages_struct"] = filtered_exposure_gdf.at[index,"rel_area"] * row["Max Potential Damage: Structure"]
-            filtered_exposure_gdf.at[index, "rel_max_pot_damages_cont"] = filtered_exposure_gdf.at[index,"rel_area"] * row["Max Potential Damage: Content"]
+        new_composite_areas = []
 
-    filtered_exposure_gdf["Max Potential Damage: Structure"] = filtered_exposure_gdf["rel_max_pot_damages_struct"]
-    filtered_exposure_gdf["Max Potential Damage: Content"] = filtered_exposure_gdf["rel_max_pot_damages_cont"]
-    filtered_exposure_gdf.drop(columns = ["rel_max_pot_damages_struct", "rel_max_pot_damages_cont", "rel_area"], inplace = True)
-    
-    return filtered_exposure_gdf
+        # Calculate relative Max Potential Damages for Structure and Content based on area
+        filtered_exposure_gdf_struct = exposure_gdf[exposure_gdf["Max Potential Damage: Structure"] == exposure_max_potential_damage_struct]
+        for index, row in filtered_exposure_gdf_struct.iterrows():
+            filtered_exposure_gdf_struct.at[index,"rel_area"] = row.geometry.area / exposure_total_area
+            filtered_exposure_gdf_struct.at[index, "rel_max_pot_damages_struct"] = filtered_exposure_gdf_struct.at[index,"rel_area"] * row["Max Potential Damage: Structure"]
+        
+        filtered_exposure_gdf_cont = exposure_gdf[exposure_gdf["Max Potential Damage: Content"] == exposure_max_potential_damage_cont]
+        for index, row in filtered_exposure_gdf_cont .iterrows():
+            filtered_exposure_gdf_cont.at[index,"rel_area"] = row.geometry.area / exposure_total_area
+            filtered_exposure_gdf_cont.at[index, "rel_max_pot_damages_cont"] = filtered_exposure_gdf_cont.at[index,"rel_area"] * row["Max Potential Damage: Content"]
+
+        filtered_exposure_gdf_struct["Max Potential Damage: Structure"] = filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
+        filtered_exposure_gdf_cont["Max Potential Damage: Content"] = filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
+        filtered_exposure_gdf_struct.drop(columns = ["rel_max_pot_damages_struct", "rel_area"], inplace = True)
+        filtered_exposure_gdf_cont.drop(columns = ["rel_max_pot_damages_cont", "rel_area"], inplace = True)
+        
+        # Add all gdfs to a list 
+        new_composite_areas.append(filtered_exposure_gdf_struct, filtered_exposure_gdf_cont)
+   
+   # Combine all individual new composite areas back to one gdf
+    exposure_gdf = pd.concat(new_composite_areas, ignore_index = True)
+    exposure_gdf.reset_index(inplace=True)
+
+    return exposure_gdf
 
 def join_exposure_aggregation_areas(
     exposure_gdf: gpd.GeoDataFrame,
