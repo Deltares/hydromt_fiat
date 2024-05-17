@@ -206,12 +206,12 @@ def split_max_damages_new_composite_area(
         filtered_exposure_gdf_struct = exposure_gdf[exposure_gdf["Max Potential Damage: Structure"] == exposure_max_potential_damage_struct]
         for index, row in filtered_exposure_gdf_struct.iterrows():
             filtered_exposure_gdf_struct.at[index,"rel_area"] = row.geometry.area / exposure_total_area
-            filtered_exposure_gdf_struct.at[index, "rel_max_pot_damages_struct"] = filtered_exposure_gdf_struct.at[index,"rel_area"] * row["Max Potential Damage: Structure"]
+            filtered_exposure_gdf_struct.at[index, "rel_max_pot_damages_struct"] = (filtered_exposure_gdf_struct.at[index,"rel_area"] * exposure_max_potential_damage_struct).round()
         
         filtered_exposure_gdf_cont = exposure_gdf[exposure_gdf["Max Potential Damage: Content"] == exposure_max_potential_damage_cont]
         for index, row in filtered_exposure_gdf_cont .iterrows():
             filtered_exposure_gdf_cont.at[index,"rel_area"] = row.geometry.area / exposure_total_area
-            filtered_exposure_gdf_cont.at[index, "rel_max_pot_damages_cont"] = filtered_exposure_gdf_cont.at[index,"rel_area"] * row["Max Potential Damage: Content"]
+            filtered_exposure_gdf_cont.at[index, "rel_max_pot_damages_cont"] = (filtered_exposure_gdf_cont.at[index,"rel_area"] * exposure_max_potential_damage_cont).round()
 
         filtered_exposure_gdf_struct["Max Potential Damage: Structure"] = filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
         filtered_exposure_gdf_cont["Max Potential Damage: Content"] = filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
