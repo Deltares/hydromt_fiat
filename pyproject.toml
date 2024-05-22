@@ -49,15 +49,14 @@ dynamic = ["version"]
 zip-safe = false
 
 [tool.setuptools.dynamic]
-version = { attr = "hydromt_fiat.__version__" }
+version = { attr = "hydromt_fiat.version.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["hydromt_fiat", "hydromt_fiat.*"]
-exclude = ["tests", "examples", "envs", "docs", "notebooks"]
+include = ["hydromt_fiat*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.*"]
+"hydromt_fiat_data" = ["hydromt_fiat/data/*"]
 
 [project.optional-dependencies]
 test = [
