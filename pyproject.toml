@@ -53,7 +53,7 @@ version = { attr = "hydromt_fiat.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["hydromt_fiat"]
+include = ["hydromt_fiat", "hydromt_fiat.*"]
 exclude = ["tests", "examples", "envs", "docs", "notebooks"]
 
 [tool.setuptools.package-data]
