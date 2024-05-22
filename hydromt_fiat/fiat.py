@@ -1,6 +1,7 @@
 """Implement fiat model class"""
 
 import csv
+import glob
 import logging
 import os
 from pathlib import Path
@@ -48,7 +49,7 @@ class FiatModel(GridModel):
     _CONF = "settings.toml"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
-    _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
+    _FOLDERS = ["geoms", "hazard", "exposure", "vulnerability", "output"]
     _CLI_ARGS = {"region": "setup_region"}
     _DATADIR = DATADIR
 
@@ -160,7 +161,7 @@ class FiatModel(GridModel):
             )
 
         # Set the model region geometry (to be accessed through the shortcut self.region).
-        self.set_geoms(geom, "region")
+        self.set_geoms(geom.dissolve(), "region")
 
         # Set the region crs
         if geom.crs:
@@ -979,6 +980,9 @@ class FiatModel(GridModel):
 
     def read_geoms(self):
         """Read the geometries for the exposure data."""
+        if not self._write:
+            self._geoms = dict()  # fresh start in read-only mode
+
         if self.exposure:
             self.logger.info("Reading exposure geometries.")
             exposure_files = [
@@ -990,6 +994,13 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
+        fns = glob.glob(Path(self.root, "geoms", "*.geojson"))
+        if len(fns) >= 1:
+            self.logger.info("Reading static geometries")
+        for fn in fns:
+            name = Path(fn).stem
+            self.set_geoms(gpd.read_file(fn), name=name)
+        
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
         self.update_all()
@@ -1001,8 +1012,7 @@ class FiatModel(GridModel):
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
-        if self.geoms:
-            self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
+        self.write_geoms()
         if self._tables:
             self.write_tables()
         if self.additional_attributes_fn:
@@ -1036,6 +1046,17 @@ class FiatModel(GridModel):
                 shutil.copy2(file, folder)
         elif isinstance(data, Path) or isinstance(data, str):
             shutil.copy2(data, folder)
+
+    def write_geoms(self):
+        """_summary_."""
+        if not self.geoms:
+            return
+
+        if "region" in self.geoms:
+            gdf = self.geoms.pop("region")
+            gdf.to_file(Path(self.root, "geoms", "region.geojson")) 
+        
+        GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG") 
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:

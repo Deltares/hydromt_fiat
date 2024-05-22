@@ -335,10 +335,7 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            if self.region.boundary is not None:
-               polygon = Polygon(self.region.boundary.values[0])
-            else: 
-                polygon = self.region.geometry.values[0]
+            polygon = self.region.geometry.values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -493,10 +490,7 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        if self.region.boundary is not None:
-            polygon = Polygon(self.region.boundary.values[0])
-        else:
-            polygon = self.region.geometry.values[0]
+        polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:
@@ -1537,7 +1531,7 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            gdf = self.set_exposure_geoms[0].merge(
+            gdf = self.exposure_geoms[0].merge(
                 df, on="Object ID", how="left",
             )
             return gdf
