@@ -1537,16 +1537,17 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
-            df["geometry"] = self.exposure_geoms[0]["geometry"]
-            gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
-        elif len(self.exposure_geoms) > 1:
-            gdf_list = []
-            for i in range(len(self.exposure_geoms)):
-                gdf_list.append(
-                    self.exposure_geoms[i].merge(df, on="Object ID", how="left")
-                )
-            gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
+            gdf = self.set_exposure_geoms[0].merge(
+                df, on="Object ID", how="left",
+            )
+            return gdf
+        
+        gdf_list = []
+        for i in range(len(self.exposure_geoms)):
+            gdf_list.append(
+                self.exposure_geoms[i].merge(df, on="Object ID", how="left")
+            )
+        gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
         return gdf
 
     def check_required_columns(self):

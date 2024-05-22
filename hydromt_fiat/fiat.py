@@ -13,8 +13,8 @@ from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
 
-from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
+from hydromt_fiat.util import DATADIR
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.hazard import (
     create_lists,
@@ -35,7 +35,6 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
-from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
@@ -61,6 +60,10 @@ class FiatModel(GridModel):
         data_libs=None,
         logger=_logger,
     ):
+        # Add the global catalog (tables etc.) to the data libs by default
+        if data_libs is None:
+            data_libs = []
+        data_libs += [Path(DATADIR, "hydromt_fiat_catalog_global.yml")]
         super().__init__(
             root=root,
             mode=mode,
@@ -296,7 +299,7 @@ class FiatModel(GridModel):
         damage_types: List[str] = ["structure", "content"], 
         damage_unit: str = "$", 
         country: Union[str, None] = None,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,     
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -339,13 +342,13 @@ class FiatModel(GridModel):
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
-            # damage is the same, use one source to create the exposure data.            
+            # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
-                    asset_locations,
-                    ground_floor_height,
-                    extraction_method,
-                    ground_elevation_file=ground_elevation_file,
-                )
+                asset_locations,
+                ground_floor_height,
+                extraction_method,
+                ground_elevation_file=ground_elevation_file,
+            )
 
         else:
             # The source for the asset locations, occupancy type and maximum potential
@@ -376,7 +379,7 @@ class FiatModel(GridModel):
             logging.error(
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_buildings' function. Error message: {e}"
-            )        
+            )
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
@@ -448,10 +451,9 @@ class FiatModel(GridModel):
     def update_ground_elevation(
         self,
         source: Union[int, float, None, str, Path],
-        unit: str
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source, unit)
+            self.exposure.setup_ground_elevation(source)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -712,10 +714,9 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
-            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=gdf, name="social_vulnerability_scores")
+            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -794,8 +795,8 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-        gdf = rename_geoid_short(equity.equity_data_shp)
-        self.set_tables(df= gdf, name="equity_data")
+
+        self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
@@ -846,53 +847,6 @@ class FiatModel(GridModel):
             # This copies data from one location to the root folder for the FIAT
             # model, only use user-input data here (not the census blocks)
             self.additional_attributes_fn = aggregation_area_fn
-
-    def setup_classification(
-        self,
-        source = Union[List[str], str, Path, List[Path]],
-        attribute = Union[List[str], str],
-        type_add = Union[List[str], str],
-        old_values= Union[List[str], str],
-        new_values= Union[List[str], str],
-        damage_types = Union[List[str], str],
-        remove_object_type = bool
-        
-    ):
-        """_summary_
-
-        Parameters
-        ----------
-        source : Union[List[str], List[Path], str, Path]
-            Path(s) to the user classification file.
-        attribute : Union[List[str], str]
-            Name of the column of the user data 
-       type_add : Union[List[str], str]
-            Name of the attribute the user wants to update. Primary or Secondary
-        old_values : Union[List[str], List[Path], str, Path]
-            Name of the default (NSI) exposure classification
-        new_values : Union[List[str], str]
-            Name of the user exposure classification.
-        exposure_linking_table : Union[List[str], str]
-            Path(s) to the new exposure linking table(s).
-        damage_types : Union[List[str], str]
-            "structure"or/and "content"
-        remove_object_type: bool
-            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
-        """
-
-        self.exposure.setup_occupancy_type(source, attribute, type_add)
-
-        # Drop Object Type that has not been updated. 
-        
-        if remove_object_type:
-            if type_add == "Primary Object Type":
-                self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
-            else:
-                self.exposure.exposure_db.drop("Primary Object Type", axis =1 , inplace = True) 
-        linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
-        self.vf_ids_and_linking_df = linking_table_new
-        self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
 
     def setup_building_footprint(
         self,
