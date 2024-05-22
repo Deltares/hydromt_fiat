@@ -2,7 +2,13 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
+from shapely.geometry import Polygon, Point
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+from typing import Tuple
+from tqdm import tqdm
 
+import pycountry_convert as pc
 import geopandas as gpd
 import numpy as np
 import pandas as pd
@@ -72,7 +78,8 @@ class ExposureVector(Exposure):
         region: gpd.GeoDataFrame = None,
         crs: str = None,
         unit: str = "meters",
-        damage_unit = "$"
+        damage_unit = "$",
+        country: str = None
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -160,6 +167,12 @@ class ExposureVector(Exposure):
             )
             polygon = self.region["geometry"].iloc[0]
             source_data = get_assets_from_nsi(self.data_catalog["NSI"].path, polygon)
+        elif str(source).upper() == "OSM":
+            # The OSM data is selected, so get the assets from  OSM
+            self.logger.info(
+                "Downloading assets from Open Street Map."
+            )
+            source_data = self.data_catalog.get_geodataframe(source, geom=self.region) 
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
@@ -296,16 +309,19 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_unit: str = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
-        self.setup_max_potential_damage(max_potential_damage, damage_types, country)
+        self.setup_max_potential_damage(max_potential_damage, damage_types, country = country)
+        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
+            self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
         self.setup_ground_floor_height(
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
-        self.setup_ground_elevation(ground_elevation_file)
+        self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -319,7 +335,10 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.geometry.values[0]
+            if self.region.boundary is not None:
+               polygon = Polygon(self.region.boundary.values[0])
+            else: 
+                polygon = self.region.geometry.values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -390,7 +409,7 @@ class ExposureVector(Exposure):
             )
             occupancy_map.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
-
+            
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_map.crs != self.crs:
             occupancy_map = occupancy_map.to_crs(self.crs)
@@ -412,38 +431,53 @@ class ExposureVector(Exposure):
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
-            nr_without_primary_object_type = len(
-                gdf.loc[gdf["Primary Object Type"] == ""].index
-            )
-            if nr_without_primary_object_type > 0:
-                self.logger.warning(
-                    f"{nr_without_primary_object_type} objects do not have a Primary Object "
-                    "Type and will be removed from the exposure data."
+            if "Primary Object Type" in gdf.columns:
+                nr_without_primary_object_type = len(
+                    gdf.loc[gdf["Primary Object Type"] == ""].index
                 )
-            gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+                if nr_without_primary_object_type > 0:
+                    self.logger.warning(
+                        f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                        "Type and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"] != ""]
 
-            nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
-            if nr_without_landuse > 0:
-                self.logger.warning(
-                    f"{nr_without_landuse} objects were not overlapping with the "
-                    "land use data and will be removed from the exposure data."
-                )
-            gdf = gdf.loc[gdf["Primary Object Type"].notna()]
+                nr_without_landuse = len(gdf.loc[gdf["Primary Object Type"].isna()].index)
+                if nr_without_landuse > 0:
+                    self.logger.warning(
+                        f"{nr_without_landuse} objects were not overlapping with the "
+                        "land use data and will be removed from the exposure data."
+                    )
+                gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
-            # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
             # Update the exposure database
             if type_add in self.exposure_db:
-                gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-                self.exposure_db = pd.merge(
-                    self.exposure_db, gdf, on="Object ID", how="left"
-                )
-                self.exposure_db = self._set_values_from_other_column(
-                    self.exposure_db, "Primary Object Type", "pot"
-                )
+                if "Primary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Primary Object Type", "pot"
+                    ) 
+                    # Replace Secondary Object Type with new classification to assign correct damage curves
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
+                elif "Secondary Object Type" in gdf.columns:
+                    gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
+                    self.exposure_db = pd.merge(
+                        self.exposure_db, gdf, on="Object ID", how="left"
+                    )
+                    self.exposure_db = self._set_values_from_other_column(
+                        self.exposure_db, "Secondary Object Type", "pot"
+                    )
             else:
                 self.exposure_db = gdf.copy()
         else:
@@ -459,7 +493,10 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        polygon = self.region.geometry.values[0]
+        if self.region.boundary is not None:
+            polygon = Polygon(self.region.boundary.values[0])
+        else:
+            polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:
@@ -782,6 +819,7 @@ class ExposureVector(Exposure):
     def setup_ground_elevation(
         self,
         ground_elevation: Union[int, float, None, str, Path],
+        unit: str
     ) -> None:
         if ground_elevation:
             self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
@@ -789,6 +827,14 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
+            # Unit conversion
+            if (unit == "meters" or unit == "m") and (self.unit == "feet" or self.unit == "ft"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x * 3.28084)
+
+            elif (unit == "feet" or unit == "ft") and (self.unit == "meters" or self.unit == "m"):
+                self.exposure_db["Ground Elevation"] = self.exposure_db["Ground Elevation"].apply(lambda x: x / 3.28084) 
+            else:
+                self.logger.warning("The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'")
 
         else:
             print(
@@ -984,6 +1030,25 @@ class ExposureVector(Exposure):
         self.exposure_db.iloc[idx, damage_function_column_idx] = (
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
+
+    
+    def convert_bf_into_centroids(self, gdf_bf,crs):
+        list_centroid = []
+        list_object_id = []
+        for index, row in gdf_bf.iterrows():
+            centroid = row["geometry"].centroid 
+            list_centroid.append(centroid)
+            list_object_id.append(row["Object ID"])
+        data = {"Object ID": list_object_id, "geometry": list_centroid}
+        gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
+        gdf = gdf_bf.merge(gpf_centroid, on='Object ID', suffixes=('_gdf1', '_gdf2'))
+        gdf.drop(columns = "geometry_gdf1", inplace = True)
+        gdf.rename(columns = {"geometry_gdf2": "geometry"}, inplace = True)
+        gdf = gpd.GeoDataFrame(gdf, geometry = gdf["geometry"])
+        
+        # Update geoms
+        self.exposure_geoms[0] =gdf
+        self.exposure_geoms[0].crs = crs
 
     def calculate_damages_new_exposure_object(
         self, percent_growth: float, damage_types: List[str]
@@ -1218,13 +1283,14 @@ class ExposureVector(Exposure):
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["Structure", "Content"],
     ):
-        exposure_linking_table["Damage function name"] = [
-            name + "_" + type
-            for name, type in zip(
-                exposure_linking_table["FIAT Damage Function Name"].values,
-                exposure_linking_table["Damage Type"].values,
-            )
-        ]
+        if "Damage function name" not in exposure_linking_table.columns:
+            exposure_linking_table["Damage function name"] = [
+                name + "_" + type
+                for name, type in zip(
+                    exposure_linking_table["FIAT Damage Function Name"].values,
+                    exposure_linking_table["Damage Type"].values,
+                )
+            ]
         for damage_type in damage_types:
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
@@ -1267,11 +1333,11 @@ class ExposureVector(Exposure):
             # Check if the linking column is the Primary Object Type or the Secondary
             # Object Type
             if (len(unique_types_primary) > 0) and (
-                unique_types_primary.issubset(unique_linking_types)
+                unique_types_primary.issubset(unique_linking_types) 
             ):
                 linking_column = "Primary Object Type"
             elif (len(unique_types_secondary) > 0) and (
-                unique_types_secondary.issubset(unique_linking_types)
+                unique_types_secondary.issubset(unique_linking_types) 
             ):
                 linking_column = "Secondary Object Type"
             else:
@@ -1496,7 +1562,7 @@ class ExposureVector(Exposure):
                 assert col.format("Structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
-                    
+    
     def set_height_relative_to_reference(
         self,
         exposure_to_modify: pd.DataFrame,
@@ -1619,6 +1685,58 @@ class ExposureVector(Exposure):
         )
 
         return exposure_to_modify.reset_index(drop=True)
+
+    def update_user_linking_table(self, old_value: Union[list, str], new_value: Union[list, str], linking_table_new: pd.DataFrame):
+        if isinstance(old_value, str):
+            old_value = [old_value]
+        if isinstance(new_value, str):
+            new_value = [new_value]
+        for item, new_item in zip(old_value,new_value):
+            desired_rows = linking_table_new[linking_table_new["Exposure Link"] == item]
+            desired_rows.reset_index(drop=True, inplace=True)
+            linking_table_new = linking_table_new.append(desired_rows,ignore_index = True)
+            duplicates_table = linking_table_new.duplicated(keep='first')
+            idx_duplicates = duplicates_table[duplicates_table].index
+            for idx in idx_duplicates:
+                linking_table_new["Exposure Link"][idx:].replace({item: new_item}, inplace=True)
+        return linking_table_new
+
+    def get_continent(self):
+        region =  self.data_catalog.get_geodataframe("area_of_interest")
+        lon = region.geometry[0].centroid.x
+        lat = region.geometry[0].centroid.y
+
+        geolocator = Nominatim(user_agent="<APP_NAME>", timeout=10)
+        geocode = RateLimiter(geolocator.reverse, min_delay_seconds=1)
+
+        location = geocode(f"{lat}, {lon}", language="en")
+
+        # for cases where the location is not found, coordinates are antarctica
+        if location is None:
+            return "global", "global"
+
+        # extract country code
+        address = location.raw["address"]
+        country_code = address["country_code"].upper()
+        country_name = address["country"]
+
+        # get continent code from country code
+        continent_code = pc.country_alpha2_to_continent_code(country_code)
+        continent_name = self.get_continent_name(continent_code)
+        
+        return country_name, continent_name
+
+    def get_continent_name(self,continent_code: str) -> str:
+        continent_dict = {
+            "NA": "north america",
+            "SA": "south america",
+            "AS": "asia",
+            "AF": "africa",
+            "OC": "oceania",
+            "EU": "europe",
+            "AQ" : "antarctica"
+        }
+        return continent_dict[continent_code]
 
     @staticmethod
     def _set_values_from_other_column(

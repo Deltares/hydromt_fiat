@@ -1,0 +1,137 @@
+# This is a basic workflow to help you get started with uploading to pypi automatically
+# https://packaging.python.org/tutorials/packaging-projects/
+# 
+# Before running this workflow in your repository, you will need to set up Secrets in your repository settings:
+# - Log in to your (test)PyPI account, go to your account -> your_project -> Publishing
+# - Fill in the required fields
+# - Create an API token for the repository and this workflow
+
+# - Go to your repository on GitHub, click on the "Settings" tab, and then "Secrets"
+# - Add a new secret with the name PYPI_TOKEN and the value is your pypi token
+# - Add a new secret with the name TEST_PYPI_TOKEN and the value is your test pypi token
+# Then, define the name of your package and the python version you want to use in the env block below.
+
+# This workflow will then automatically build and upload your package to PyPI/TestPypi:
+# - When a new commit is pushed to main, it will build and upload to TestPyPI to catch errors early
+# - When a new release is created, it will build and upload to the real PyPI
+---
+env:
+  PACKAGE_NAME: "hydromt_fiat"
+  PYTHON_VERSION: "3.10"
+
+name: Build and Upload to PyPI
+on:
+  pull_request:
+    branches:
+      - main
+  release:
+    types: [created, published]
+  workflow_dispatch:
+
+
+jobs:
+  build-artifacts: # Install your build env and build your package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - uses: conda-incubator/setup-miniconda@v2
+        name: Setup Miniconda
+        with:
+          auto-update-conda: true
+          python-version: ${{ env.PYTHON_VERSION }}
+    
+      - name: Install GDAL
+        shell: bash -l {0}
+        run: conda install -c conda-forge gdal
+
+      - name: Install dependencies and build tools
+        shell: bash -l {0}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install . 
+          python -m pip install build
+
+      - name: Build package
+        shell: bash -l {0}
+        run: python -m build
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: releases
+          path: dist
+
+  test-built-dist: # Install the built package and test it has been built correctly
+    needs: build-artifacts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: releases
+          path: dist
+      - name: List contents of built dist
+        run: |
+          ls -ltrh
+          ls -ltrh dist
+      
+      - uses: conda-incubator/setup-miniconda@v2
+        name: Setup Miniconda
+        with:
+          auto-update-conda: true
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install GDAL
+        shell: bash -l {0}
+        run: conda install -c conda-forge gdal
+
+      - name: Verify the built dist/wheel is valid
+        run: |
+          python -m pip install dist/*.whl
+          python -c "import ${{ env.PACKAGE_NAME }}; print(${{ env.PACKAGE_NAME }}.__version__)"
+          
+
+  upload-to-test-pypi:
+    environment: release
+    permissions:
+      id-token: write
+    needs: test-built-dist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: releases
+          path: dist
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.5.1
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
+          verbose: true
+          skip_existing: true
+
+  upload-to-pypi:
+    environment: release
+    permissions:
+      id-token: write
+    needs: upload-to-test-pypi
+    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}    
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: releases
+          path: dist
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@v1.5.1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          verbose: true

@@ -6,6 +6,7 @@ from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
 import logging
+import geopandas as gpd
 
 from .data_types import (
     Category,
@@ -19,6 +20,7 @@ from .data_types import (
     ExposureRoadsSettings,
     ExtractionMethod,
     AggregationAreaSettings,
+    ClassificationSettings,
     Units,
 )
 
@@ -30,11 +32,12 @@ class ExposureViewModel:
         self.exposure_buildings_model = None
         self.exposure_roads_model = None
         self.aggregation_areas_model = None
+        self.classification_model = None
         self.exposure_ground_floor_height_model = None
         self.exposure_damages_model = None
         self.exposure_ground_elevation_model = None
         self.exposure_occupancy_type_model = None
-
+        
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
@@ -59,8 +62,11 @@ class ExposureViewModel:
         self,
         source: str,
         ground_floor_height: str,
+        country: str = None,
+        max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
+        ground_elevation_unit: str = None
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -73,9 +79,10 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                damage_unit= "$"
+                damage_unit= "$",
+                country = "United States"
             )
-
+            
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
@@ -94,13 +101,52 @@ class ExposureViewModel:
                 primary_object_types,
                 secondary_object_types,
             )
-            
+        elif source == "OSM":
+            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country)
+
+            # Download OSM from the database
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+
+            self.exposure = ExposureVector(
+                data_catalog= self.data_catalog,
+                logger=self.logger,
+                region=region,
+                crs=crs,
+                damage_unit= "€",
+                country = country
+            )
+            self.exposure.setup_buildings_from_multiple_sources(
+                asset_locations = source,
+                occupancy_source = source,
+                max_potential_damage = 'jrc_damage_values',
+                ground_floor_height = ground_floor_height,
+                extraction_method = "centroid",
+                damage_types= ['structure', 'content'],
+                country=country,
+                ground_elevation_unit = ground_elevation_unit
+            )
+            primary_object_types = (
+                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+            )
+            secondary_object_types = (
+                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+            )
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                
+            return (
+                gdf,
+                primary_object_types,
+                secondary_object_types,
+            )
+        
     def set_asset_locations_source(
         self,
         source: str,
         ground_floor_height: str,
+        max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
+        country: str = None
     ) -> None:
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -112,7 +158,8 @@ class ExposureViewModel:
                 unit=Units.feet.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "$"
+                damage_unit = "$",
+                country = "United States"
             )
         elif source == "file" and fiat_key_maps is not None:
             # maybe save fiat_key_maps file in database
@@ -131,6 +178,20 @@ class ExposureViewModel:
             # make backend calls to create translation file with fiat_key_maps
             print(catalog_entry)
         # write to data catalog
+        elif source == "OSM":
+            # download OSM data
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage=max_potential_damage,
+                ground_floor_height=ground_floor_height,
+                unit=Units.meters.value,  # TODO: make flexible
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+                damage_unit = "€",
+                country = country
+            )
+
 
     def update_occupancy_types(self, source, attribute, type_add):
         if self.exposure:
@@ -158,6 +219,9 @@ class ExposureViewModel:
 
     def set_asset_data_source(self, source):
         self.exposure_buildings_model.asset_locations = source
+    
+    def set_country(self, country):
+        self.exposure_buildings_model.country = country
 
     def setup_extraction_method(self, extraction_method):
         if self.exposure:
@@ -193,9 +257,9 @@ class ExposureViewModel:
             damage_types = damage_types,
         )
 
-    def set_ground_elevation(self, source: Union[int, float, None, str]):
+    def set_ground_elevation(self, source: Union[int, float, None, str,], unit: Union[str, Units]):
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
-            source=source
+            source=source, unit = unit
         )
     
     def set_roads_settings(
@@ -265,5 +329,38 @@ class ExposureViewModel:
         self.aggregation_areas_model = AggregationAreaSettings(
             aggregation_area_fn=files,
             attribute_names=attribute_names,
-            label_names=label_names,
+            label_names=label_names,)
+    
+    def set_classification_config(self, source, attribute, type_add, old_values, new_values, damage_types, remove_object_type): 
+        self.classification_model = ClassificationSettings(
+            source = source,
+            attribute = attribute,
+            type_add = type_add,
+            old_values= old_values,
+            new_values= new_values,
+            damage_types = damage_types,
+            remove_object_type = remove_object_type
         )
+    
+        """_summary_
+
+        Parameters
+        ----------
+        source : Union[List[str], List[Path], str, Path]
+            Path(s) to the user classification file.
+        attribute : Union[List[str], str]
+            Name of the column of the user data 
+       type_add : Union[List[str], str]
+            Name of the attribute the user wants to update. Primary or Secondary
+        old_values : Union[List[str], List[Path], str, Path]
+            Name of the default (NSI) exposure classification
+        new_values : Union[List[str], str]
+            Name of the user exposure classification.
+        exposure_linking_table : Union[List[str], str]
+            Path(s) to the new exposure linking table(s).
+        damage_types : Union[List[str], str]
+            "structure"or/and "content"
+        remove_object_type: bool
+            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
+        """

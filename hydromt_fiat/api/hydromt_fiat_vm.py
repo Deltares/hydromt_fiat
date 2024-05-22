@@ -81,6 +81,11 @@ class HydroMtViewModel:
             config_yaml.setup_aggregation_areas = (
                 self.exposure_vm.aggregation_areas_model
             )
+        
+        if self.exposure_vm.classification_model:
+            config_yaml.setup_classification = (
+                self.exposure_vm.classification_model
+            )
 
         if self.exposure_vm.exposure_damages_model:
             config_yaml.update_max_potential_damage = (
@@ -182,6 +187,8 @@ class HydroMtViewModel:
     # Update exposure dataframe
     def update_exposure_db(self, config_yaml):
         exposure_db = self.fiat_model.exposure.exposure_db
+
+        # create function out of it and use "Primary/Secondary" as input 
         if (
             "setup_exposure_buildings" in config_yaml.dict()
             and "setup_exposure_roads" not in config_yaml.dict()
@@ -229,7 +236,8 @@ class HydroMtViewModel:
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
-        self.fiat_model.exposure.setup_ground_elevation(source)
+        unit = config_yaml.model_extra["update_ground_elevation"].unit
+        self.fiat_model.exposure.setup_ground_elevation(source, unit)
 
     def new_max_potential_damages(self, config_yaml):
         source = config_yaml.model_extra["update_max_potential_damage"].source
