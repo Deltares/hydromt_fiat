@@ -4,6 +4,8 @@ from shapely.geometry import Polygon
 import geopandas as gpd
 from typing import Union, List
 
+logger = logging.getLogger(__name__)
+
 
 def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
@@ -15,7 +17,7 @@ def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     if footprints.empty:
         return None
 
-    logging.info(f"Total number of buildings found from OSM: {len(footprints)}")
+    logger.info(f"Total number of buildings found from OSM: {len(footprints)}")
 
     # We filter the data on polygons and multipolygons
     footprints = footprints.loc[
@@ -45,7 +47,7 @@ def get_roads_from_osm(
     if roads.empty:
         return None
 
-    logging.info(f"Total number of roads found from OSM: {len(roads)}")
+    logger.info(f"Total number of roads found from OSM: {len(roads)}")
 
     # Not sure if this is needed here and maybe filter for the columns that we need
     roads = roads.loc[
@@ -58,7 +60,7 @@ def get_roads_from_osm(
         roads = roads.loc[:, ["highway", "name", "lanes", "geometry"]]
     except KeyError:
         roads = roads.loc[:, ["highway", "name", "geometry"]]
-        logging.info("No attribute 'lanes' found in the OSM roads.")
+        logger.info("No attribute 'lanes' found in the OSM roads.")
 
     return roads
 
@@ -68,10 +70,10 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data
 
     if landuse.empty:
-        logging.warning("No land use data found from OSM")
+        logger.warning("No land use data found from OSM")
         return None
 
-    logging.info(f"Total number of land use polygons found from OSM: {len(landuse)}")
+    logger.info(f"Total number of land use polygons found from OSM: {len(landuse)}")
 
     # TODO Check this piece of code, no data found for the currently tested polygon
     # We filter the data on polygons and multipolygons and select the columns we need

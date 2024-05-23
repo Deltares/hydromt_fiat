@@ -379,7 +379,7 @@ class FiatModel(GridModel):
         try:
             assert not self.vf_ids_and_linking_df.empty
         except AssertionError:
-            logging.error(
+            self.logger.error(
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_buildings' function. Error message: {e}"
             )
@@ -963,7 +963,7 @@ class FiatModel(GridModel):
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
         else:
-            logging.warning(f"File {vulnerability_fn} does not exist!")
+            self.logger.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
         exposure_fn = Path(self.root) / self.get_config("exposure.csv.file")
@@ -978,7 +978,7 @@ class FiatModel(GridModel):
             )
             self.exposure.read_table(exposure_fn)
         else:
-            logging.warning(f"File {exposure_fn} does not exist!")
+            self.logger.warning(f"File {exposure_fn} does not exist!")
 
     def read_geoms(self):
         """Read the geometries for the exposure data."""
