@@ -315,8 +315,8 @@ class ExposureVector(Exposure):
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country = country)
-        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
-            self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
+        # if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
+        #     self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
         self.setup_ground_floor_height(
             ground_floor_height, attribute_name, gfh_method, max_dist
         )
@@ -447,6 +447,8 @@ class ExposureVector(Exposure):
                     )
                 gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
+            # Update the exposure geoms
+            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
@@ -778,6 +780,7 @@ class ExposureVector(Exposure):
                 ["Primary Object Type", "geometry"]
             ]
             gdf = get_area(gdf)
+            gdf = gdf.dropna(subset="Primary Object Type")
 
             # Set the damage values to the exposure data
             for damage_type in damage_types:

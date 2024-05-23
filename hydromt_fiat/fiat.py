@@ -49,7 +49,7 @@ class FiatModel(GridModel):
     _CONF = "settings.toml"
     _GEOMS = {}  # FIXME Mapping from hydromt names to model specific names
     _MAPS = {}  # FIXME Mapping from hydromt names to model specific names
-    _FOLDERS = ["geoms", "hazard", "exposure", "vulnerability", "output"]
+    _FOLDERS = ["hazard", "exposure", "vulnerability", "output"]
     _CLI_ARGS = {"region": "setup_region"}
     _DATADIR = DATADIR
 
@@ -64,6 +64,8 @@ class FiatModel(GridModel):
         # Add the global catalog (tables etc.) to the data libs by default
         if data_libs is None:
             data_libs = []
+        if not isinstance(data_libs, (list, tuple)):
+            data_libs = [data_libs]
         data_libs += [Path(DATADIR, "hydromt_fiat_catalog_global.yml")]
         super().__init__(
             root=root,
@@ -560,7 +562,7 @@ class FiatModel(GridModel):
             map_name_lst.append(da_name)
 
             da.attrs = {
-                "returnperiod": str(da_rp),
+                "return_period": str(da_rp),
                 "type": da_type,
                 "name": da_name,
                 "analysis": "event",
@@ -994,7 +996,7 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-        fns = glob.glob(Path(self.root, "geoms", "*.geojson"))
+        fns = glob.glob(Path(self.root, "exposure", "*.geojson").as_posix())
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
@@ -1054,7 +1056,7 @@ class FiatModel(GridModel):
 
         if "region" in self.geoms:
             gdf = self.geoms.pop("region")
-            gdf.to_file(Path(self.root, "geoms", "region.geojson")) 
+            gdf.to_file(Path(self.root, "exposure", "region.geojson")) 
         
         GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG") 
 
