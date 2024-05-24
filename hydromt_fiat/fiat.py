@@ -242,7 +242,7 @@ class FiatModel(GridModel):
 
         # Update config
         self.set_config(
-            "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
+            "vulnerability.file", "vulnerability/vulnerability_curves.csv"
         )
         self.set_config("vulnerability.unit", unit)
 
@@ -389,7 +389,7 @@ class FiatModel(GridModel):
         self.exposure.check_required_columns()
 
         # Update the other config settings
-        self.set_config("exposure.csv.file", "./exposure/exposure.csv")
+        self.set_config("exposure.csv.file", "exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
         self.set_config("exposure.damage_unit", damage_unit)
@@ -528,8 +528,8 @@ class FiatModel(GridModel):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
-                da_map_fn
-            )  # removed geom=self.region because it is not always there
+                    da_map_fn, geom=self.region,
+                )  # removed geom=self.region because it is not always there
             elif isinstance(da_map_fn, xr.DataArray):
                 # if xarray is provided directly assign that
                 da = da_map_fn
@@ -561,12 +561,12 @@ class FiatModel(GridModel):
             rp_list.append(da_rp)
             map_name_lst.append(da_name)
 
-            da.attrs = {
+            da = da.assign_attrs({
                 "return_period": str(da_rp),
                 "type": da_type,
                 "name": da_name,
                 "analysis": "event",
-            }
+            })
             
             # Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf
             if "grid_mapping" in da.encoding:
@@ -579,6 +579,7 @@ class FiatModel(GridModel):
         check_map_uniqueness(map_name_lst)
 
         # in case of risk analysis, create a single netcdf with multibans per rp
+        list_maps = list(self.maps.keys())
         if risk_output:
             da, sorted_rp, sorted_names = create_risk_dataset(
                 params, rp_list, map_name_lst, self.maps
@@ -587,7 +588,7 @@ class FiatModel(GridModel):
             self.set_grid(da)
 
             self.grid.attrs = {
-                "rp": sorted_rp,
+               "rp": sorted_rp,
                 "type": params[
                     "map_type_lst"
                 ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
@@ -599,10 +600,13 @@ class FiatModel(GridModel):
             if "grid_mapping" in self.grid.encoding:
                 del  self.grid.encoding["grid_mapping"]
 
-            list_maps = list(self.maps.keys())
-
             for item in list_maps[:]:
                 self.maps.pop(item)
+        
+        else:
+            for item in list_maps:
+                da = self.maps.pop(item)
+                self.set_grid(da, item)
 
         # set configuration .toml file
         self.set_config(
@@ -611,21 +615,13 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.file",
-            [
-                str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys()
-            ][0]
+            Path("hazard", "hazard_map.nc").as_posix()            
             if not risk_output
-            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
+            else Path("hazard", "risk_map.nc").as_posix(),
         )
         self.set_config(
             "hazard.crs",
-            [
-                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else ["EPSG:" + str((self.crs.to_epsg()))][0],
+            "EPSG:" + str((self.crs.to_epsg())),
         )
 
         self.set_config(
@@ -635,7 +631,7 @@ class FiatModel(GridModel):
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
+            list(self.grid.data_vars)[0]
             if not risk_output
             else sorted_names,
         )
@@ -752,6 +748,7 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
+
     def setup_equity_data(
         self,
         census_key: str,
@@ -916,7 +913,7 @@ class FiatModel(GridModel):
                 self.set_geoms(geom=geom, name=name)
                 self.set_config(
                     f"exposure.geom.file{str(i+1)}",
-                    f"./exposure/{name}.gpkg",
+                    f"exposure/{name}.gpkg",
                 )
 
         if not self.region.empty:
