@@ -39,12 +39,13 @@ def join_exposure_aggregation_multiple_areas(
     gpd.GeoDataFrame
         _description_
     """
-    exposure_gdf_copy = exposure_gdf.copy()
-    
-    # Create column to assign new composite area ID
+
+    # Create column to assign new composite area ID and create copy of new composite area gdf
     if new_composite_area[0]:
         exposure_gdf["ca_ID"] = range(0,len(exposure_gdf),1)
+        exposure_gdf_copy = exposure_gdf.copy()
 
+    # Assign aggregation area to exposure gdf
     for file_path, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
 
         if isinstance(file_path, str) or isinstance(file_path, Path):
@@ -86,6 +87,7 @@ def join_exposure_aggregation_multiple_areas(
         else:
             new_exposure_aggregation = new_exposure_aggregation
 
+        # If new composite area, split into the aggregation zones 
         if new_composite_area[0]:
             new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation)     
 
@@ -100,17 +102,18 @@ def join_exposure_aggregation_multiple_areas(
             if "index_right" in exposure_gdf.columns:
                 del exposure_gdf["index_right"]
         
-        # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
-        # Documentation that the order the user put the label name must be the order of the gdf
+        # Rename the 'aggregation_attribute' column to 'new_column_name'. 
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
-    
-    total_area = exposure_gdf.geometry.area.sum()
-    filter_percentage = 0.0001
-    area_threshold = total_area * filter_percentage
-    exposure_gdf = exposure_gdf[exposure_gdf.geometry.area >= area_threshold]
 
-    # Split Maximum Potential Damages
+    # If new composite area, split Maximum Potential Damages of new composite areas per aggregation
     if new_composite_area[0]:
+        # Filter out erroneous polygons by 0.001% 
+        total_area = exposure_gdf.geometry.area.sum()
+        filter_percentage = 0.0001
+        area_threshold = total_area * filter_percentage
+        exposure_gdf = exposure_gdf[exposure_gdf.geometry.area >= area_threshold]
+
+        # Split max potential damages into new composite areas
         exposure_max_potential_damage_struct = list(exposure_gdf_copy["Max Potential Damage: Structure"].values)
         exposure_max_potential_damage_cont = list(exposure_gdf_copy["Max Potential Damage: Content"].values)
         exposure_gdf = split_max_damages_new_composite_area(exposure_gdf, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont)
@@ -118,7 +121,19 @@ def join_exposure_aggregation_multiple_areas(
     return exposure_gdf
 
 def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation):
-    
+    """Split the new composite areas into the aggregation zones
+
+    Parameters
+    ----------
+    exposure_gdf : gpd.GeoDataFrame
+        Exposure data (new composite areas) geodataframe
+   aggregation_gdf:  gpd.GeoDataFrame
+        Aggregation geodataframe
+    attribute_name: str
+       The column name of the aggregation layer in the aggregatio_gdf. 
+    new_exposure_aggregation: gpd.GeoDataFrame
+        new exposure to begin splitting with in case multiple aggregation zones are used for splitting. New exposure startng point per loop.
+    """
     if any(
     exposure_geometry.intersects(aggregation_geometry)
     for exposure_geometry in exposure_gdf.geometry
@@ -219,7 +234,7 @@ def split_max_damages_new_composite_area(
     exposure_gdf = exposure_gdf.rename(columns= {"Max Potential Damage: Content_x": "Max Potential Damage: Content"})
     
     del exposure_gdf["ca_ID"]
-    
+
     return exposure_gdf
 
 def join_exposure_aggregation_areas(
