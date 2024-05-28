@@ -296,7 +296,8 @@ class FiatModel(GridModel):
         damage_types: List[str] = ["structure", "content"], 
         damage_unit: str = "$", 
         country: Union[str, None] = None,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,     
+        ground_elevation_file: Union[int, float, str, Path, None] = None,
+        bf_conversion: bool = False    
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -331,6 +332,8 @@ class FiatModel(GridModel):
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
+        bf_conversion: bool, optional
+            If building footprints shall be converted into point data.
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -360,6 +363,7 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+                bf_conversion = bf_conversion
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
