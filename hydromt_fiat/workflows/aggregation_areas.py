@@ -5,16 +5,14 @@ from pathlib import Path
 import numpy as np
 
 def process_value(value):
-    if isinstance(value, list) and len(value) == 1:
+    if isinstance(value, list):
         return value[0]
-    elif isinstance(value, list) and len(value) > 1:
-        return int(value[0])
     else:
         return value
 
 def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
-    areas: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
+    aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
     label_names: List[str],
     keep_all: bool=True,
@@ -57,7 +55,7 @@ def spatial_joins(
     
     filtered_areas = []
     
-    for area, attribute_name, label_name in zip(areas, attribute_names, label_names):
+    for area, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
 
         if isinstance(area, str) or isinstance(area, Path):
             area_gdf = gpd.read_file(area)

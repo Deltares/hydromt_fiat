@@ -836,6 +836,9 @@ class FiatModel(GridModel):
             Name of the attribute(s) to join.
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
+        file_names : Union[List[str], str]
+            The name of the spatial file(s) if saved in aggregation_areas/ 
+            folder in the root directory (Default is None).
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if not isinstance(aggregation_area_fn, list):
