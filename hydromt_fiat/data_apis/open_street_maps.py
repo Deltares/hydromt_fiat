@@ -88,7 +88,6 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
         (landuse.geometry.type == "Polygon") | (landuse.geometry.type == "MultiPolygon")
     ]
     landuse = landuse.reset_index(drop=True)
-    landuse.rename(columns={"element_type": "type"}, inplace=True)
     return landuse
 
 
@@ -109,3 +108,42 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
 #     # tiles="CartoDB positron", # use "CartoDB positron" tiles
 #     style_kwds=dict(color="black") # use black outline
 # )
+def get_tags_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
+    tags = {"building": True}  # this is the tag we use to find the correct OSM data
+    tags = ox.features.features_from_polygon(polygon, tags)  # then we query the data
+
+    if tags.empty:
+        logging.warning("No tags data found from OSM")
+        return None
+
+    logging.info(f"Total number of tags found from OSM: {len(tags)}")
+
+    # TODO Check this piece of code, no data found for the currently tested polygon
+    # We filter the data on polygons and multipolygons and select the columns we need
+    tags = tags.loc[
+        (tags.geometry.type == "Polygon") | (tags.geometry.type == "MultiPolygon")
+    ]
+    tags = tags.loc[tags["building"].notna()]
+    tags = tags.reset_index(drop=True)
+    return tags # "building" column with information  https://taginfo.openstreetmap.org/keys/building#values
+    
+def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
+    amenity = {"amenity": True}  # this is the tag we use to find the correct OSM data
+    amenity = ox.features.features_from_polygon(polygon, amenity)  # then we query the data
+
+    if amenity.empty:
+        logging.warning("No amenity data found from OSM")
+        return None
+
+    logging.info(f"Total number of amenity found from OSM: {len(amenity)}")
+
+    # TODO Check this piece of code, no data found for the currently tested polygon
+    # We filter the data on polygons and multipolygons and select the columns we need
+    amenity = amenity.loc[
+        (amenity.geometry.type == "Polygon") | (amenity.geometry.type == "MultiPolygon")
+    ]
+    amenity = amenity.loc[amenity["amenity"].notna()]
+    amenity = amenity.reset_index(drop=True)  
+
+    return amenity # "amenity" column with information  https://taginfo.openstreetmap.org/keys/building#values
+

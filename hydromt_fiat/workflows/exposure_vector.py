@@ -17,6 +17,8 @@ from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
+    get_tags_from_osm,
+    get_amenity_from_osm,
     get_roads_from_osm,
 )
 
@@ -404,7 +406,11 @@ class ExposureVector(Exposure):
     ) -> None:
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
-            occupancy_map = self.setup_occupancy_type_from_osm()
+            occupancy_type = self.setup_occupancy_type_from_osm()
+            occupancy_map = occupancy_type[0]
+            occupancy_tag =occupancy_type[1]
+            occupancy_amenity = occupancy_type[2]
+                
             occupancy_types = ["Primary Object Type", "Secondary Object Type"]
         else:
             occupancy_map = self.data_catalog.get_geodataframe(
@@ -430,8 +436,13 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
             # occupancy_map.
-            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
+            gdf_landuse = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
 
+            gdf_tags = sjoin_largest_area(gdf_landuse, occupancy_tag[to_keep])
+
+            gdf = sjoin_largest_area(gdf_tags, occupancy_amenity[to_keep])
+                
+            
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
@@ -497,24 +508,28 @@ class ExposureVector(Exposure):
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
         # contains the land use type.
-        occupancy_attribute = "landuse"
-
+        occupancy_attributes = [ "landuse", "building", "amenity"]
         # Get the land use from OSM
         polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
+        occupancy_tags = get_tags_from_osm(polygon)
+        occupancy_amenity = get_amenity_from_osm(polygon)
+        occupancy_types = [occupancy_map, occupancy_tags, occupancy_amenity]
+                
+        for occupancy, occupancy_attribute in zip(occupancy_types, occupancy_attributes):
+            if occupancy.empty:
+                self.logger.warning(
+                    f"No {occupancy_attribute } data found in the selected region from source 'OSM'."
+                )
 
-        if occupancy_map.empty:
-            self.logger.warning(
-                "No land use data found in the selected region from source 'OSM'."
+            # Log the unique occupancy types
+            self.logger.info(
+                f"The following unique {occupancy_attribute} are found in the OSM data: "
+                f"{list(occupancy[occupancy_attribute].unique())}"
             )
 
-        # Log the unique landuse types
-        self.logger.info(
-            "The following unique landuse types are found in the OSM data: "
-            f"{list(occupancy_map[occupancy_attribute].unique())}"
-        )
-
-        # Map the landuse types to types used in the JRC global vulnerability curves
+        # TODO ALL THIS SHOULD GO INTO EXCEL
+            # Map the landuse types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
         landuse_to_jrc_mapping = {
             "commercial": "commercial",
@@ -556,14 +571,59 @@ class ExposureVector(Exposure):
             "street": "",
         }
 
-        occupancy_map["Primary Object Type"] = occupancy_map[occupancy_attribute].map(
-            landuse_to_jrc_mapping
-        )
-        occupancy_map.rename(
-            columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
-        )
+        # Tags
+        tags_to_jrc_mapping = {
+            "yes": "residential",
+            "house": "residential",
+            "residential": "residential",
+            "detached": "residential",
+            "garage": "",
+            "apartments": "residential",
+            "shed": "",
+            "hut": "",
+            "industrial": "industrial",  
+            "farm_auxiliary": "", 
+        }
 
-        return occupancy_map
+        # amenity
+        amenity_to_jrc_mapping = {
+            "parking": "",
+            "parking_space": "",
+            "bench": "",
+            "place_of_worship": "commercial",
+            "restaurant": "commercial",
+            "school": "commercial",
+            "waste_basket": "",
+            "bicycle_parking": "",
+            "fast_food": "",  
+            "cafe": "commercial", 
+            "shelter": "",  
+            "fuel": "", 
+            "recycling": "",
+            "toilets": "",
+            "pharmacy": "commercial", 
+            "bank": "commercial",
+            "post_box": "",  
+            "kindergarten": "commercial",  
+            "drinking_water": "", 
+            "vending_machine": "",
+            "hunting_stand": "",
+            "waste_disposal": "",
+            "bar": "commercial",
+        }
+
+        jrc_mapping_type = [landuse_to_jrc_mapping,tags_to_jrc_mapping, amenity_to_jrc_mapping]
+    
+    # Create Primary Object Type column for OSM data
+        for occupancy, occupancy_attribute, jrc_mapping in zip(occupancy_types, occupancy_attributes, jrc_mapping_type):
+            occupancy["Primary Object Type"] = occupancy[occupancy_attribute].map(
+                jrc_mapping
+            )
+            occupancy.rename(
+                columns={occupancy_attribute: "Secondary Object Type"}, inplace=True)
+    # In next step where spatial joint of exposure and occupancy map do a spatial joint with tags, where are Nan values.
+
+        return occupancy_types
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
