@@ -451,6 +451,8 @@ class ExposureVector(Exposure):
                     )
                 gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
+            # Update the exposure geoms
+            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
