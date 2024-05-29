@@ -1044,8 +1044,10 @@ class FiatModel(GridModel):
         self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
 
         # Read spatial joins configurations
-        sj = SpatialJoins.load_file(Path(self.root).joinpath("spatial_joins.toml"))
-        self.spatial_joins = dict(sj.attrs)
+        sj_path = Path(self.root).joinpath("spatial_joins.toml")
+        if sj_path.exists():
+            sj = SpatialJoins.load_file(sj_path )
+            self.spatial_joins = dict(sj.attrs)
         
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
