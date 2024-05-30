@@ -3,10 +3,8 @@ from typing import List, Union
 from pathlib import Path
 
 def process_value(value):
-    if isinstance(value, list) and len(value) == 1:
+    if isinstance(value, list):
         return value[0]
-    elif isinstance(value, list) and len(value) > 1:
-        return int(value[0])
     else:
         return value
 
