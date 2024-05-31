@@ -453,6 +453,7 @@ class ExposureVector(Exposure):
                 gdf_amenity["Primary Object Type"].isna(), "pot"
                 ] 
             gdf_amenity.drop(columns = "pot", inplace = True)
+
             gdf = gdf_amenity
 
             # Remove the objects that do not have a Primary Object Type, that were not
@@ -476,12 +477,16 @@ class ExposureVector(Exposure):
                         f"{nr_without_landuse} objects were not overlapping with the "
                         "land use data and will be removed from the exposure data."
                     )
-
+            
+            # Convert Primary Object Types to strings
+            for index, row in gdf.iterrows():
+                gdf.loc[index, "Primary Object Type"] = row.to_string    
+            
             # Update the exposure geoms
-                self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
-                # Remove the geometry column from the exposure database
-                del gdf["geometry"]
+            # Remove the geometry column from the exposure database
+            del gdf["geometry"]
                                
             # Update the exposure database
             if type_add in self.exposure_db:
