@@ -436,13 +436,25 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
             # occupancy_map.
-            gdf_landuse = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])
-
-            gdf_tags = sjoin_largest_area(gdf_landuse, occupancy_tag[to_keep])
-
-            gdf = sjoin_largest_area(gdf_tags, occupancy_amenity[to_keep])
-                
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])    
             
+            # Fill nan values with values from tags
+            occupancy_tag.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+            gdf_tags = sjoin_largest_area(gdf, occupancy_tag[["geometry", "pot"]])
+            gdf_tags.loc[gdf_tags["Primary Object Type"].isna(), "Primary Object Type"] = gdf_tags.loc[
+                gdf_tags["Primary Object Type"].isna(), "pot"
+                ]
+            gdf_tags.drop(columns = "pot", inplace = True)
+
+            # Fill nan values with values amenity
+            occupancy_amenity.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+            gdf_amenity = sjoin_largest_area(gdf_tags,occupancy_amenity[["geometry", "pot"]])
+            gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"] = gdf_amenity.loc[
+                gdf_amenity["Primary Object Type"].isna(), "pot"
+                ] 
+            gdf_amenity.drop(columns = "pot", inplace = True)
+            gdf = gdf_amenity
+
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
@@ -464,13 +476,13 @@ class ExposureVector(Exposure):
                         f"{nr_without_landuse} objects were not overlapping with the "
                         "land use data and will be removed from the exposure data."
                     )
-                gdf = gdf.loc[gdf["Primary Object Type"].notna()]
 
             # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+                self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
-            # Remove the geometry column from the exposure database
-            del gdf["geometry"]
+                # Remove the geometry column from the exposure database
+                del gdf["geometry"]
+                               
             # Update the exposure database
             if type_add in self.exposure_db:
                 if "Primary Object Type" in gdf.columns:
@@ -480,7 +492,7 @@ class ExposureVector(Exposure):
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Primary Object Type", "pot"
-                    )
+                    ) 
                     # Replace Secondary Object Type with new classification to assign correct damage curves
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="Object ID", how="left"
@@ -496,6 +508,7 @@ class ExposureVector(Exposure):
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Secondary Object Type", "pot"
                     )
+                       
             else:
                 self.exposure_db = gdf.copy()
         else:
