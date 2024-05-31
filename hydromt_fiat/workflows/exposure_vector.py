@@ -480,7 +480,7 @@ class ExposureVector(Exposure):
             
             # Convert Primary Object Types to strings
             for index, row in gdf.iterrows():
-                gdf.loc[index, "Primary Object Type"] = row.to_string    
+                gdf.loc[index, "Primary Object Type"] = row.to_string()    
             
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
