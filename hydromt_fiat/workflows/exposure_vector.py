@@ -403,6 +403,7 @@ class ExposureVector(Exposure):
         occupancy_source: str,
         occupancy_attr: str,
         type_add: str = "Primary Object Type",
+        keep_all: bool = True
     ) -> None:
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
@@ -462,7 +463,14 @@ class ExposureVector(Exposure):
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
                 nr_without_primary_object = len(gdf.loc[gdf["Primary Object Type"].isna()].index) + len(gdf.loc[gdf["Primary Object Type"]!= ""].index)
-                if nr_without_primary_object > 0:
+                if keep_all:
+                    gdf.loc[gdf["Primary Object Type"].isna(), "Primary Object Type"] =  "residential"
+                    gdf.loc[gdf["Primary Object Type"]== "", "Primary Object Type"] =  "residential"
+                    self.logger.warning(
+                        f"{nr_without_primary_object} objects were not overlapping with the "
+                        "land use data and will be classified as residential buildings."
+                    )
+                else:
                     self.logger.warning(
                         f"{nr_without_primary_object_type} objects do not have a Primary Object "
                         "Type and will be removed from the exposure data."
@@ -477,8 +485,9 @@ class ExposureVector(Exposure):
                         f"{nr_without_landuse} objects were not overlapping with the "
                         "land use data and will be removed from the exposure data."
                     )
-                gdf = gdf[gdf["Primary Object Type"].notna()]
-                gdf = gdf[gdf["Primary Object Type"] != ""] 
+                    gdf = gdf[gdf["Primary Object Type"].notna()]
+                    gdf = gdf[gdf["Primary Object Type"] != ""] 
+
                 gdf.loc[gdf["Secondary Object Type"] == "yes", "Secondary Object Type"] =  gdf.loc[gdf["Secondary Object Type"] == "yes", "Primary Object Type"]
             
             # Update the exposure geoms
@@ -545,8 +554,7 @@ class ExposureVector(Exposure):
                 f"{list(occupancy[occupancy_attribute].unique())}"
             )
 
-        # TODO ALL THIS SHOULD GO INTO EXCEL
-            # Map the landuse types to types used in the JRC global vulnerability curves
+            # Map the landuse/tags/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
         jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
         # landuse
