@@ -163,7 +163,7 @@ class EquityData:
             
             # Save shapefiles 
             folder = Path(self.save_folder) / "shapefiles" / (sf + county) / str(year_data)
-            self.logger.info(f"Downloading the county shapefile for {str(year_data)}")
+            self.logger.info(f"Downloading the county {str(sf + county)} shapefile for {str(year_data)}")
             self.download_and_unzip(url, folder)
             shapefiles = list(Path(folder).glob("*.shp"))
             if shapefiles:

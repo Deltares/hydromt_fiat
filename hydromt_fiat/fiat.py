@@ -15,6 +15,7 @@ import shutil
 
 from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
+from hydromt_fiat.spatial_joins import SpatialJoins
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.hazard import (
     create_lists,
@@ -72,9 +73,8 @@ class FiatModel(GridModel):
         self.exposure = None
         self.vulnerability = None
         self.vf_ids_and_linking_df = pd.DataFrame()
-        self.additional_attributes_fn = (
-            ""  # Path or paths to the additional attributes dataset(s)
-        )
+        self.spatial_joins = dict(aggregation_areas=None, additional_attributes=None) # Dictionary containing all the spatial join metadata
+
         self.building_footprint_fn = ""  # Path to the building footprints dataset
 
     def setup_global_settings(
@@ -748,6 +748,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
+    
+    
     def setup_equity_data(
         self,
         census_key: str,
@@ -781,7 +783,7 @@ class FiatModel(GridModel):
         county_numbers = get_us_county_numbers(counties, us_states_counties)
 
         # Create equity object
-        save_folder = str(Path(self.root) / "equity")
+        save_folder = str(Path(self.root) / "exposure" / "equity")
         equity = EquityData(self.data_catalog, self.logger, save_folder)
 
         # Call functionalities of equity
@@ -799,15 +801,21 @@ class FiatModel(GridModel):
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
-        self.set_geoms(block_groups, "aggregation_areas/block_groups")
 
-        # Update the aggregation label: census block
+        # Update the aggregation label: Census Blockgroup
         del self.exposure.exposure_db["Aggregation Label: Census Blockgroup"]
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
-            label_names="Aggregation Label: Census Blockgroup",
+            label_names="Census Blockgroup",
+            file_names="block_groups"
         )
+        # Update spatial join metadata for equity data connection
+        ind = [i for i, name in enumerate([aggr["name"] for aggr in self.spatial_joins["aggregation_areas"]])][0]
+        attrs = {"census_data": "exposure/equity/equity_data.csv", #TODO check how and where this is defined
+                 "percapitaincome_label": "PerCapitaIncomeBG",
+                 "totalpopulation_label": "TotalPopulationBG",}
+        self.spatial_joins["aggregation_areas"][ind]["equity"] = attrs
 
     def setup_aggregation_areas(
         self,
@@ -816,7 +824,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
-        
+        file_names: Union[List[str], str] = None,
     ):
         """_summary_
 
@@ -828,24 +836,85 @@ class FiatModel(GridModel):
             Name of the attribute(s) to join.
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
+        file_names : Union[List[str], str]
+            The name of the spatial file(s) if saved in aggregation_areas/ 
+            folder in the root directory (Default is None).
         """
+        # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
+        if not isinstance(aggregation_area_fn, list):
+            aggregation_area_fn = [aggregation_area_fn]
+            attribute_names = [attribute_names]
+            label_names = [label_names]
+            if file_names:
+                file_names = [file_names]
+                
+        # Perform spatial join for each aggregation area provided
+        # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_areas(
+        # Then perform spatial joins
+        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+            exposure_gdf,
+            aggregation_area_fn,
+            attribute_names,
+            # Make sure that column name for aggregation areas includes the Aggregation Label part
+            ["Aggregation Label: " + name for name in label_names],
+            keep_all=False
+        )
+        
+        if file_names:
+            for area_gdf, file_name in zip(areas_gdf, file_names):
+                self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
+
+        # Save metadata on spatial joins
+        if not self.spatial_joins["aggregation_areas"]:
+            self.spatial_joins["aggregation_areas"] = []
+        for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
+            attrs = {"name": label_name, 
+                     "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
+                     "field_name": attribute_name}
+            self.spatial_joins["aggregation_areas"].append(attrs) 
+        
+
+    def setup_additional_attributes(
+        self,
+        aggregation_area_fn: Union[
+            List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
+        ],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
+        if not isinstance(aggregation_area_fn, list):
+            aggregation_area_fn = [aggregation_area_fn]
+            attribute_names = [attribute_names]
+            label_names = [label_names]
+                
+        # Perform spatial join for each aggregation area provided
+        # First get all exposure geometries
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        # Then perform spatial joins
+        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
             label_names,
+            keep_all=False
         )
+        
+        file_names = []
+        for area_gdf, file_name in zip(areas_gdf, aggregation_area_fn):
+            name = Path(file_name).stem
+            self.set_geoms(area_gdf, f"additional_attributes/{name}")
+            file_names.append(name)
 
-        # Set the additional_attributes_fn property to save the additional datasets
-        if isinstance(aggregation_area_fn, list):
-            the_type = type(aggregation_area_fn[0])
-        else:
-            the_type = type(aggregation_area_fn)
-        if the_type != gpd.GeoDataFrame:
-            # This copies data from one location to the root folder for the FIAT
-            # model, only use user-input data here (not the census blocks)
-            self.additional_attributes_fn = aggregation_area_fn
+        # Save metadata on spatial joins
+        if not self.spatial_joins["additional_attributes"]:
+            self.spatial_joins["additional_attributes"] = []
+        for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
+            attrs = {"name": label_name, 
+                     "file": f"exposure/additional_attributes/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
+                     "field_name": attribute_name}
+            self.spatial_joins["additional_attributes"].append(attrs) 
 
     def setup_classification(
         self,
@@ -977,6 +1046,12 @@ class FiatModel(GridModel):
         # Read the configuration file
         self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
 
+        # Read spatial joins configurations
+        sj_path = Path(self.root).joinpath("spatial_joins.toml")
+        if sj_path.exists():
+            sj = SpatialJoins.load_file(sj_path )
+            self.spatial_joins = dict(sj.attrs)
+        
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
         # self.read_grid(fn="hazard/{name}.nc")
@@ -1051,9 +1126,8 @@ class FiatModel(GridModel):
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:
             self.write_tables()
-        if self.additional_attributes_fn:
-            folder = Path(self.root).joinpath("additional_attributes")
-            self.copy_datasets(self.additional_attributes_fn, folder)
+        if self.spatial_joins["aggregation_areas"] or self.spatial_joins["additional_attributes"]:
+            self.write_spatial_joins()
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
@@ -1082,12 +1156,16 @@ class FiatModel(GridModel):
                 shutil.copy2(file, folder)
         elif isinstance(data, Path) or isinstance(data, str):
             shutil.copy2(data, folder)
+            
+    def write_spatial_joins(self) -> None:
+        spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
+        spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode
+        self._assert_write_mode()
 
         for name in self._tables.keys():
             # Vulnerability
@@ -1118,7 +1196,7 @@ class FiatModel(GridModel):
                 fn = f"exposure/SVI/{name}.csv"
                 kwargs = {"index": False}
             elif name == "equity_data":
-                fn = f"equity/{name}.csv"
+                fn = f"exposure/equity/{name}.csv"
                 kwargs = {"index": False}
 
             # Other, can also return an error or pass silently
