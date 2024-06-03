@@ -310,12 +310,13 @@ class ExposureVector(Exposure):
         max_dist: Union[int, float,List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         ground_elevation_unit: str = None,
+        bf_conversion: bool = False
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(occupancy_source, occupancy_attr)
         self.setup_max_potential_damage(max_potential_damage, damage_types, country = country)
-        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']):
+        if any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]['geometry']) and bf_conversion:
             self.convert_bf_into_centroids(self.exposure_geoms[0], self.exposure_geoms[0].crs)
         self.setup_ground_floor_height(
             ground_floor_height, attribute_name, gfh_method, max_dist
@@ -1035,6 +1036,15 @@ class ExposureVector(Exposure):
 
     
     def convert_bf_into_centroids(self, gdf_bf,crs):
+        """Convert building footprints into point data.
+
+        Parameters
+        ----------
+        gdf_bf : gpd.GeoDataFrame
+            Path(s) to the aggregation area(s).
+        crs : str
+            The CRS of the model.
+        """
         list_centroid = []
         list_object_id = []
         for index, row in gdf_bf.iterrows():
