@@ -554,10 +554,10 @@ class ExposureVector(Exposure):
         landuse_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
         # Tags
         tags_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='tags')
-        tags_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
+        tags_to_jrc_mapping = dict(zip(tags_to_jrc_mapping['osm_key'], tags_to_jrc_mapping['jrc_key']))
         # amenity
         amenity_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='amenity')
-        amenity_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
+        amenity_to_jrc_mapping = dict(zip(amenity_to_jrc_mapping['osm_key'], amenity_to_jrc_mapping['jrc_key']))
          
         jrc_mapping_type = [landuse_to_jrc_mapping,tags_to_jrc_mapping, amenity_to_jrc_mapping]
     
