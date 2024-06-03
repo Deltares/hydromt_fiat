@@ -431,38 +431,38 @@ class ExposureVector(Exposure):
 
         to_keep = ["geometry"] + occupancy_types
 
-        # Spatially join the exposure data with the occupancy map
+        # Spatially join the exposure data with the occupancy tags
         if len(self.exposure_geoms) == 1:
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
             # occupancy_map.
-            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_map[to_keep])    
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_tag[to_keep])    
             
-            # Fill nan values with values from tags
-            occupancy_tag.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-            gdf_tags = sjoin_largest_area(gdf, occupancy_tag[["geometry", "pot"]])
-            gdf_tags.loc[gdf_tags["Primary Object Type"].isna(), "Primary Object Type"] = gdf_tags.loc[
-                gdf_tags["Primary Object Type"].isna(), "pot"
-                ]
-            gdf_tags.drop(columns = "pot", inplace = True)
+            # Replace values with landuse if applicable for Primary and Secondary Object Type
+            occupancy_map.rename(columns={"Primary Object Type": "pot", "Secondary Object Type": "pot_2"}, inplace=True)
+            gdf_landuse = gpd.sjoin(gdf,occupancy_map[["geometry", "pot", "pot_2"]], how="left")
+            gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
+            gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
+            gdf_landuse.drop(columns = ["index_right", "pot", "pot_2"], inplace = True)
 
-            # Fill nan values with values amenity
-            occupancy_amenity.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-            gdf_amenity = sjoin_largest_area(gdf_tags,occupancy_amenity[["geometry", "pot"]])
+            # Fill nan values with values amenity for Primary and Secondary Object Type
+            occupancy_amenity.rename(columns={"Primary Object Type": "pot","Secondary Object Type": "pot_2"}, inplace=True)
+            gdf_amenity = gdf_landuse.sjoin(occupancy_amenity[["geometry", "pot", "pot_2"]], how = "left")
+            gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "Secondary Object Type"] = gdf_amenity.loc[
+                gdf_amenity["Primary Object Type"].isna(), "pot_2"
+                ] 
             gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"] = gdf_amenity.loc[
                 gdf_amenity["Primary Object Type"].isna(), "pot"
                 ] 
-            gdf_amenity.drop(columns = "pot", inplace = True)
+            gdf_amenity.drop(columns = ["index_right","pot", "pot_2"], inplace = True)
 
             gdf = gdf_amenity
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
-                nr_without_primary_object_type = len(
-                    gdf.loc[gdf["Primary Object Type"] == ""].index
-                )
-                if nr_without_primary_object_type > 0:
+                nr_without_primary_object = len(gdf.loc[gdf["Primary Object Type"].isna()].index) + len(gdf.loc[gdf["Primary Object Type"]!= ""].index)
+                if nr_without_primary_object > 0:
                     self.logger.warning(
                         f"{nr_without_primary_object_type} objects do not have a Primary Object "
                         "Type and will be removed from the exposure data."
@@ -477,10 +477,9 @@ class ExposureVector(Exposure):
                         f"{nr_without_landuse} objects were not overlapping with the "
                         "land use data and will be removed from the exposure data."
                     )
-            
-            # Convert Primary Object Types to strings
-            for index, row in gdf.iterrows():
-                gdf.loc[index, "Primary Object Type"] = row.to_string()    
+                gdf = gdf[gdf["Primary Object Type"].notna()]
+                gdf = gdf[gdf["Primary Object Type"] != ""] 
+                gdf.loc["Secondary Object Type" == "yes", "Secondary Object Type"] =  gdf.loc["Secondary Object Type" == "yes", "Primary Object Type"]
             
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
@@ -628,6 +627,7 @@ class ExposureVector(Exposure):
             "hunting_stand": "",
             "waste_disposal": "",
             "bar": "commercial",
+            "university": "commercial"
         }
 
         jrc_mapping_type = [landuse_to_jrc_mapping,tags_to_jrc_mapping, amenity_to_jrc_mapping]

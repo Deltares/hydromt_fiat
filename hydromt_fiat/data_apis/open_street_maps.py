@@ -88,6 +88,7 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
         (landuse.geometry.type == "Polygon") | (landuse.geometry.type == "MultiPolygon")
     ]
     landuse = landuse.reset_index(drop=True)
+    landuse = landuse[["geometry", "landuse"]]
     return landuse
 
 
@@ -125,6 +126,7 @@ def get_tags_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     ]
     tags = tags.loc[tags["building"].notna()]
     tags = tags.reset_index(drop=True)
+    tags = tags[["geometry", "building"]]
     return tags # "building" column with information  https://taginfo.openstreetmap.org/keys/building#values
     
 def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
@@ -144,6 +146,6 @@ def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     ]
     amenity = amenity.loc[amenity["amenity"].notna()]
     amenity = amenity.reset_index(drop=True)  
-
+    amenity = amenity[["geometry", "amenity"]]
     return amenity # "amenity" column with information  https://taginfo.openstreetmap.org/keys/building#values
 
