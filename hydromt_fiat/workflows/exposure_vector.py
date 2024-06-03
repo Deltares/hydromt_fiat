@@ -548,88 +548,17 @@ class ExposureVector(Exposure):
         # TODO ALL THIS SHOULD GO INTO EXCEL
             # Map the landuse types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
-        landuse_to_jrc_mapping = {
-            "commercial": "commercial",
-            "construction": "",
-            "fairground": "commercial",
-            "industrial": "industrial",
-            "residential": "residential",
-            "retail": "commercial",
-            "institutional": "commercial",
-            "aquaculture": "",
-            "allotments": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "farmland": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "farmyard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "animal_keeping": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "flowerbed": "",
-            "forest": "",
-            "greenhouse_horticulture": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "meadow": "",
-            "orchard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "plant_nursery": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "vineyard": "",  # TODO: add agriculture to the JRC curves and include "agriculture"
-            "basin": "",
-            "salt_pond": "",
-            "grass": "",
-            "brownfield": "",
-            "cemetary": "",
-            "depot": "",
-            "garages": "",
-            "greenfield": "",
-            "landfill": "",
-            "military": "",
-            "port": "industrial",
-            "quarry": "",
-            "railway": "",
-            "recreation_ground": "",
-            "religious": "",
-            "village_green": "",
-            "winter_sports": "",
-            "street": "",
-        }
-
+        jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
+        # landuse
+        landuse_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='landuse')
+        landuse_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
         # Tags
-        tags_to_jrc_mapping = {
-            "yes": "residential",
-            "house": "residential",
-            "residential": "residential",
-            "detached": "residential",
-            "garage": "",
-            "apartments": "residential",
-            "shed": "",
-            "hut": "",
-            "industrial": "industrial",  
-            "farm_auxiliary": "", 
-        }
-
+        tags_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='tags')
+        tags_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
         # amenity
-        amenity_to_jrc_mapping = {
-            "parking": "",
-            "parking_space": "",
-            "bench": "",
-            "place_of_worship": "commercial",
-            "restaurant": "commercial",
-            "school": "commercial",
-            "waste_basket": "",
-            "bicycle_parking": "",
-            "fast_food": "",  
-            "cafe": "commercial", 
-            "shelter": "",  
-            "fuel": "", 
-            "recycling": "",
-            "toilets": "",
-            "pharmacy": "commercial", 
-            "bank": "commercial",
-            "post_box": "",  
-            "kindergarten": "commercial",  
-            "drinking_water": "", 
-            "vending_machine": "",
-            "hunting_stand": "",
-            "waste_disposal": "",
-            "bar": "commercial",
-            "university": "commercial"
-        }
-
+        amenity_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='amenity')
+        amenity_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
+         
         jrc_mapping_type = [landuse_to_jrc_mapping,tags_to_jrc_mapping, amenity_to_jrc_mapping]
     
     # Create Primary Object Type column for OSM data
