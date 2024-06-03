@@ -403,8 +403,20 @@ class ExposureVector(Exposure):
         occupancy_source: str,
         occupancy_attr: str,
         type_add: str = "Primary Object Type",
-        keep_all: bool = True
+        keep_all: bool = False
     ) -> None:
+        """Set up the Primary and Secondary Object Type.
+        Parameters
+        ----------
+        occupancy_source : str
+            The occupancy source (default: Open Street Map or National Structure Inventory )
+        occupancy_attr : str
+            Other classification to be updated by Primary/Secondary Classification
+        type_add : str
+            "Primary Object Type" or "Secondary Object Type" 
+        keep_all : Bool
+            Whether to re-classify Primary/Secondary Object Types as "residential" or remove rows if no Object Type
+        """
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
             occupancy_type = self.setup_occupancy_type_from_osm()
@@ -464,7 +476,9 @@ class ExposureVector(Exposure):
             if "Primary Object Type" in gdf.columns:
                 nr_without_primary_object = len(gdf.loc[gdf["Primary Object Type"].isna()].index) + len(gdf.loc[gdf["Primary Object Type"]!= ""].index)
                 if keep_all:
+                    gdf.loc[gdf["Primary Object Type"].isna(), "Secondary Object Type"] =  "residential"
                     gdf.loc[gdf["Primary Object Type"].isna(), "Primary Object Type"] =  "residential"
+                    gdf.loc[gdf["Primary Object Type"]== "", "Secondary Object Type"] =  "residential"
                     gdf.loc[gdf["Primary Object Type"]== "", "Primary Object Type"] =  "residential"
                     self.logger.warning(
                         f"{nr_without_primary_object} objects were not overlapping with the "
