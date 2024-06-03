@@ -1035,7 +1035,7 @@ class ExposureVector(Exposure):
         )
 
     
-    def convert_bf_into_centroids(self, gdf_bf,crs, bf_conversion = False):
+    def convert_bf_into_centroids(self, gdf_bf,crs):
         """Convert building footprints into point data.
 
         Parameters
@@ -1044,8 +1044,6 @@ class ExposureVector(Exposure):
             Path(s) to the aggregation area(s).
         crs : str
             The CRS of the model.
-        bf_conversion : Boolean
-            True/False whether building footprints should be converted into point data. False as default. 
         """
         list_centroid = []
         list_object_id = []
