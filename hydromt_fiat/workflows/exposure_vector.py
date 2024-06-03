@@ -479,7 +479,7 @@ class ExposureVector(Exposure):
                     )
                 gdf = gdf[gdf["Primary Object Type"].notna()]
                 gdf = gdf[gdf["Primary Object Type"] != ""] 
-                gdf.loc["Secondary Object Type" == "yes", "Secondary Object Type"] =  gdf.loc["Secondary Object Type" == "yes", "Primary Object Type"]
+                gdf.loc[gdf["Secondary Object Type"] == "yes", "Secondary Object Type"] =  gdf.loc[gdf["Secondary Object Type"] == "yes", "Primary Object Type"]
             
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
