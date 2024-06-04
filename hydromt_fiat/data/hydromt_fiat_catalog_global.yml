@@ -36,4 +36,4 @@ jrc_osm_mapping:
     meta:
       category: vulnerability
       description:  Default linking table for the JRC damage functions and OSM keys (landuse, tags, amenity) (e.g., OSM_key = retail responds to JRC_key = commercial).
-      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688, https://taginfo.openstreetmap.org/keys/building#values
+      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688, https://taginfo.openstreetmap.org/keys/building#values, https://dashboard.ohsome.org/
