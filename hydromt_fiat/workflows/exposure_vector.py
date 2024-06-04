@@ -403,7 +403,7 @@ class ExposureVector(Exposure):
         occupancy_source: str,
         occupancy_attr: str,
         type_add: str = "Primary Object Type",
-        keep_all: bool = False
+        occupancy_keep_all: bool = True
     ) -> None:
         """Set up the Primary and Secondary Object Type.
         Parameters
@@ -414,7 +414,7 @@ class ExposureVector(Exposure):
             Other classification to be updated by Primary/Secondary Classification
         type_add : str
             "Primary Object Type" or "Secondary Object Type" 
-        keep_all : Bool
+        occupancy_keep_all : Bool
             Whether to re-classify Primary/Secondary Object Types as "residential" or remove rows if no Object Type
         """
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
@@ -475,7 +475,7 @@ class ExposureVector(Exposure):
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
                 nr_without_primary_object = len(gdf.loc[gdf["Primary Object Type"].isna()].index) + len(gdf.loc[gdf["Primary Object Type"]!= ""].index)
-                if keep_all:
+                if occupancy_keep_all:
                     gdf.loc[gdf["Primary Object Type"].isna(), "Secondary Object Type"] =  "residential"
                     gdf.loc[gdf["Primary Object Type"].isna(), "Primary Object Type"] =  "residential"
                     gdf.loc[gdf["Primary Object Type"]== "", "Secondary Object Type"] =  "residential"

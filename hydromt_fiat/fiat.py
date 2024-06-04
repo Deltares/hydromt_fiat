@@ -293,7 +293,7 @@ class FiatModel(GridModel):
     def setup_exposure_buildings(
         self,
         asset_locations: Union[str, Path],
-        occupancy_type: Union[str, Path],
+        occupancy_type: Union[str, Path], 
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
@@ -304,7 +304,8 @@ class FiatModel(GridModel):
         damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
-        bf_conversion: bool = False    
+        bf_conversion: bool = False,    
+        occupancy_keep_all: bool = True
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -341,6 +342,8 @@ class FiatModel(GridModel):
             only required when using the JRC vulnerability curves.
         bf_conversion: bool, optional
             If building footprints shall be converted into point data.
+        occupancy_keep_all: bool, optional
+            Whether building footprints without classification are removed or reclassified as "residential"
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -370,7 +373,8 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
-                bf_conversion = bf_conversion
+                bf_conversion = bf_conversion, 
+                occupancy_keep_all =occupancy_keep_all
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -378,6 +382,7 @@ class FiatModel(GridModel):
                 occupancy_source=occupancy_type,
                 occupancy_attr=occupancy_attr,
                 type_add=occupancy_object_type,
+                occupancy_keep_all = occupancy_keep_all
             )
 
         # Link the damage functions to assets
@@ -952,9 +957,11 @@ class FiatModel(GridModel):
         remove_object_type: bool
             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
+        occupancy_keep_all: bool, optional
+            Whether building footprints without classification are removed or reclassified as "residential"
         """
 
-        self.exposure.setup_occupancy_type(source, attribute, type_add)
+        self.exposure.setup_occupancy_type(source, attribute, type_add, occupancy_keep_all)
 
         # Drop Object Type that has not been updated. 
 

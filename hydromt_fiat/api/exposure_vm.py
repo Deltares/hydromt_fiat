@@ -67,7 +67,8 @@ class ExposureViewModel:
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
         ground_elevation_unit: str = None,
-        bf_conversion: bool = False
+        bf_conversion: bool = False,
+        occupancy_keep_all : bool = True
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -103,7 +104,8 @@ class ExposureViewModel:
                 secondary_object_types,
             )
         elif source == "OSM":
-            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country, bf_conversion = bf_conversion)
+            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country,
+                bf_conversion = bf_conversion, occupancy_keep_all = occupancy_keep_all )
 
             # Download OSM from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -125,7 +127,8 @@ class ExposureViewModel:
                 damage_types= ['structure', 'content'],
                 country=country,
                 ground_elevation_unit = ground_elevation_unit,
-                bf_conversion = bf_conversion
+                bf_conversion = bf_conversion,
+                occupancy_keep_all = occupancy_keep_all
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
@@ -149,7 +152,8 @@ class ExposureViewModel:
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
         country: str = None,
-        bf_conversion: bool = False
+        bf_conversion: bool = False,
+        occupancy_keep_all:bool = True
     ) -> None:
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -186,6 +190,7 @@ class ExposureViewModel:
             self.exposure_buildings_model = ExposureBuildingsSettings(
                 asset_locations=source,
                 occupancy_type=source,
+                occupancy_keep_all = occupancy_keep_all,
                 max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
                 unit=Units.meters.value,  # TODO: make flexible
@@ -197,9 +202,9 @@ class ExposureViewModel:
             )
 
 
-    def update_occupancy_types(self, source, attribute, type_add):
+    def update_occupancy_types(self, source, attribute, type_add, occupancy_keep_all = True):
         if self.exposure:
-            self.exposure.setup_occupancy_type(source, attribute, type_add)
+            self.exposure.setup_occupancy_type(source, attribute, type_add, occupancy_keep_all)
 
     def get_object_types(self):
         if self.exposure:
