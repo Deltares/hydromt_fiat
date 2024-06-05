@@ -1,7 +1,6 @@
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Union, Optional, List
-from enum import Enum
+from typing import Any, Union, Optional
 from pydantic import BaseModel
 
 
@@ -21,7 +20,7 @@ class SpatialJoinModel(BaseModel):
 
 class EquityModel(BaseModel):
     census_data: str
-    percapitalincome_label: Optional[str] = "PerCapitalIncome"
+    percapitaincome_label: Optional[str] = "PerCapitaIncome"
     totalpopulation_label: Optional[str] = "TotalPopulation"
  
 class AggregationModel(SpatialJoinModel):
