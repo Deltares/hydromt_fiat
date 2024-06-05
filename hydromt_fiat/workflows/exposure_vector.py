@@ -17,7 +17,7 @@ from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
-    get_tags_from_osm,
+    get_buildings_from_osm,
     get_amenity_from_osm,
     get_roads_from_osm,
 )
@@ -444,7 +444,7 @@ class ExposureVector(Exposure):
 
         to_keep = ["geometry"] + occupancy_types
 
-        # Spatially join the exposure data with the occupancy tags
+        # Spatially join the exposure data with the occupancy buildings
         if len(self.exposure_geoms) == 1:
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_map. Only take the largest overlapping object from the
@@ -552,9 +552,9 @@ class ExposureVector(Exposure):
         # Get the land use from OSM
         polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
-        occupancy_tags = get_tags_from_osm(polygon)
+        occupancy_buildings = get_buildings_from_osm(polygon)
         occupancy_amenity = get_amenity_from_osm(polygon)
-        occupancy_types = [occupancy_map, occupancy_tags, occupancy_amenity]
+        occupancy_types = [occupancy_map, occupancy_buildings, occupancy_amenity]
                 
         for occupancy, occupancy_attribute in zip(occupancy_types, occupancy_attributes):
             if occupancy.empty:
@@ -568,20 +568,20 @@ class ExposureVector(Exposure):
                 f"{list(occupancy[occupancy_attribute].unique())}"
             )
 
-            # Map the landuse/tags/amenity types to types used in the JRC global vulnerability curves
+            # Map the landuse/buildings/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
         jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
         # landuse
         landuse_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='landuse')
         landuse_to_jrc_mapping = dict(zip(landuse_to_jrc_mapping['osm_key'], landuse_to_jrc_mapping['jrc_key']))
-        # Tags
-        tags_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='tags')
-        tags_to_jrc_mapping = dict(zip(tags_to_jrc_mapping['osm_key'], tags_to_jrc_mapping['jrc_key']))
+        # buildings
+        buildings_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='building')
+        buildings_to_jrc_mapping = dict(zip(buildings_to_jrc_mapping['osm_key'], buildings_to_jrc_mapping['jrc_key']))
         # amenity
         amenity_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name='amenity')
         amenity_to_jrc_mapping = dict(zip(amenity_to_jrc_mapping['osm_key'], amenity_to_jrc_mapping['jrc_key']))
          
-        jrc_mapping_type = [landuse_to_jrc_mapping,tags_to_jrc_mapping, amenity_to_jrc_mapping]
+        jrc_mapping_type = [landuse_to_jrc_mapping,buildings_to_jrc_mapping, amenity_to_jrc_mapping]
     
     # Create Primary Object Type column for OSM data
         for occupancy, occupancy_attribute, jrc_mapping in zip(occupancy_types, occupancy_attributes, jrc_mapping_type):
@@ -590,7 +590,7 @@ class ExposureVector(Exposure):
             )
             occupancy.rename(
                 columns={occupancy_attribute: "Secondary Object Type"}, inplace=True)
-    # In next step where spatial joint of exposure and occupancy map do a spatial joint with tags, where are Nan values.
+    # In next step where spatial joint of exposure and occupancy map do a spatial joint with buildings, where are Nan values.
 
         return occupancy_types
 
