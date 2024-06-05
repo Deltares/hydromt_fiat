@@ -11,6 +11,7 @@ def process_value(value):
         return value
 
 def spatial_joins(
+def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
@@ -19,7 +20,6 @@ def spatial_joins(
     keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
     """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
-
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
@@ -27,13 +27,18 @@ def spatial_joins(
     areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
         A list of aggregation areas. Each area can be specified as a file path (str or Path),
         or as a GeoDataFrame.
+        The GeoDataFrame representing the exposure data.
+    areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
+        A list of aggregation areas. Each area can be specified as a file path (str or Path),
+        or as a GeoDataFrame.
     attribute_names : List[str]
+        A list of attribute names to be joined from the aggregation areas.
         A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
         A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
+        A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
     new_composite_area : bool
-        _description_
-
+        If a new composite area is added split it according to aggregation
     Returns
     -------
     gpd.GeoDataFrame
@@ -56,6 +61,7 @@ def spatial_joins(
 
     """
     
+    filtered_areas = []
     exposure_gdf_copy = exposure_gdf.copy()
 
     # Create column to assign new composite area ID and create copy of new composite area gdf
@@ -116,19 +122,21 @@ def spatial_joins(
 
         # If new composite area, split into the aggregation zones 
         if new_composite_area[0]:
-            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation)     
+            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, area_gdf, attribute_name, new_exposure_aggregation)     
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
 
-            # Create a string from the list of values in the duplicated aggregation area and keep the first
+            # Create a string from the list of values in the duplicated aggregation area 
+            # column
             exposure_gdf[attribute_name] = exposure_gdf[attribute_name].apply(process_value)
             
             ##remove the index_right column
             if "index_right" in exposure_gdf.columns:
                 del exposure_gdf["index_right"]
-        
-        # Rename the 'aggregation_attribute' column to 'new_column_name'. 
+            
+        # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
+        # Documentation that the order the user put the label name must be the order of the gdf
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
     # If new composite area, split Maximum Potential Damages of new composite areas per aggregation
@@ -143,7 +151,7 @@ def spatial_joins(
         exposure_max_potential_damage_struct = list(exposure_gdf_copy["Max Potential Damage: Structure"].values)
         exposure_max_potential_damage_cont = list(exposure_gdf_copy["Max Potential Damage: Content"].values)
         exposure_gdf = split_max_damages_new_composite_area(exposure_gdf, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont)
-    
+
     return exposure_gdf, filtered_areas
 
 def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation):
@@ -287,7 +295,7 @@ def join_exposure_aggregation_areas(
         Check whether aggregation is done for a new composite area.
     """
     
-    exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all)
+    exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all, new_composite_area)
     
     # Remove the geometry column from the exposure_gdf to return a dataframe
     exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
