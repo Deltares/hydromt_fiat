@@ -66,7 +66,8 @@ class ExposureViewModel:
         max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
-        ground_elevation_unit: str = None
+        ground_elevation_unit: str = None,
+        bf_conversion: bool = False
     ):
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -102,7 +103,7 @@ class ExposureViewModel:
                 secondary_object_types,
             )
         elif source == "OSM":
-            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country)
+            self.set_asset_locations_source(source, ground_floor_height, max_potential_damage, country = country, bf_conversion = bf_conversion)
 
             # Download OSM from the database
             region = self.data_catalog.get_geodataframe("area_of_interest")
@@ -123,7 +124,8 @@ class ExposureViewModel:
                 extraction_method = "centroid",
                 damage_types= ['structure', 'content'],
                 country=country,
-                ground_elevation_unit = ground_elevation_unit
+                ground_elevation_unit = ground_elevation_unit,
+                bf_conversion = bf_conversion
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
@@ -146,7 +148,8 @@ class ExposureViewModel:
         max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
-        country: str = None
+        country: str = None,
+        bf_conversion: bool = False
     ) -> None:
         if source == "NSI":
             # NSI is already defined in the data catalog
@@ -189,7 +192,8 @@ class ExposureViewModel:
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit = "€",
-                country = country
+                country = country,
+                bf_conversion = bf_conversion
             )
 
 
