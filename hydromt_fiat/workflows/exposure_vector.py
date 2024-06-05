@@ -535,6 +535,10 @@ class ExposureVector(Exposure):
                     gdf = gdf[gdf["Primary Object Type"].notna()]
                     gdf = gdf[gdf["Primary Object Type"] != ""]
 
+            # Remove Object ID duplicates
+            gdf = gdf.drop_duplicates()
+            gdf = gdf.reset_index(drop=True)
+
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
