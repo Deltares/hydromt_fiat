@@ -12,74 +12,97 @@ def process_value(value):
     else:
         return value
 
-def join_exposure_aggregation_multiple_areas(
+def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
     label_names: List[str],
-    new_composite_area: bool
+    new_composite_area: bool,
+    keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
-    """_summary_
+    """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
 
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
-        _description_
-    aggregation_area_fn : Union[List[str], List[Path]]
-        _description_
+        The GeoDataFrame representing the exposure data.
+    areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
+        A list of aggregation areas. Each area can be specified as a file path (str or Path),
+        or as a GeoDataFrame.
     attribute_names : List[str]
-        _description_
+        A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
-        _description_
+        A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
     new_composite_area : bool
-        _description_
-
+        If a new composite area is added split it according to aggregation
     Returns
     -------
     gpd.GeoDataFrame
-        _description_
-    """
+        The exposure GeoDataFrame with the joined attributes from the aggregation areas.
 
+    Raises
+    ------
+    AssertionError
+        If the specified attribute name is not found in the aggregation area.
+
+    Notes
+    -----
+    - If the exposure GeoDataFrame and the aggregation area have different coordinate reference systems (CRS),
+      the aggregation area will be reprojected to match the CRS of the exposure GeoDataFrame.
+    - The function performs a spatial join using the 'intersects' predicate.
+    - If duplicates exist in the joined data, the function aggregates the data by grouping on the 'Object ID'
+      column and creating a list of values for each attribute.
+    - The function expects the order of the label names to match the order of the aggregation areas in the 'areas'
+      parameter.
+
+    """
+    
+    filtered_areas = []
+    
     # Create column to assign new composite area ID and create copy of new composite area gdf
     if new_composite_area[0]:
         exposure_gdf["ca_ID"] = range(0,len(exposure_gdf),1)
         exposure_gdf_copy = exposure_gdf.copy()
+    
+    for area, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
 
-    # Assign aggregation area to exposure gdf
-    for file_path, attribute_name, label_name in zip(aggregation_area_fn, attribute_names, label_names):
-
-        if isinstance(file_path, str) or isinstance(file_path, Path):
-            aggregation_gdf = gpd.read_file(file_path)
+        if isinstance(area, str) or isinstance(area, Path):
+            area_gdf = gpd.read_file(area)
         else:
-            aggregation_gdf = file_path
+            area_gdf = area
 
         ## check the projection of both gdf and if not match, reproject
-        if exposure_gdf.crs != aggregation_gdf.crs:
-            aggregation_gdf = aggregation_gdf.to_crs(exposure_gdf.crs)
+        if exposure_gdf.crs != area_gdf.crs:
+            area_gdf = area_gdf.to_crs(exposure_gdf.crs)
 
-            
-        assert attribute_name in aggregation_gdf.columns, f"Attribute {attribute_name} not found in {file_path}"
-
+        assert attribute_name in area_gdf.columns, f"Attribute {attribute_name} not found in {area}"
+        
+        # Keep only used column
+        area_gdf = area_gdf[[attribute_name, "geometry"]].reset_index(drop=True)
+        
         # If you overwrite the exposure_gdf with the joined data, you can append all 
         # aggregation areas to the same exposure_gdf
        
         exposure_gdf = gpd.sjoin(
             exposure_gdf,
-            aggregation_gdf[["geometry", attribute_name]],
+            area_gdf,
             predicate="intersects",
-            how="left")
-
-        ##remove the index_right column
-        if "index_right" in exposure_gdf.columns:
-            del exposure_gdf["index_right"]
-
+            how="left",
+        )
+        # If we want to keep only used area we filter based on the intersections else we provide the whole dataframe
+        if not keep_all:
+            inds = np.sort(exposure_gdf["index_right"].dropna().unique())
+            # TODO instead of keeping the ones that are joined keep everything that overlaps with the region?
+            filtered_areas.append(area_gdf.iloc[inds].reset_index(drop=True))
+        else:
+            filtered_areas.append(area_gdf)
         # aggregate the data if duplicates exist
         aggregated = (
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
         )
         exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
         
-        # Check if new gdf was already created in previous loop
+                # Check if new gdf was already created in previous loop
         try:
             new_exposure_aggregation
         except NameError:
@@ -89,20 +112,21 @@ def join_exposure_aggregation_multiple_areas(
 
         # If new composite area, split into the aggregation zones 
         if new_composite_area[0]:
-            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation)     
-
+            new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, area_gdf, attribute_name, new_exposure_aggregation)     
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
             exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
 
-            # Create a string from the list of values in the duplicated aggregation area and keep the first
+            # Create a string from the list of values in the duplicated aggregation area 
+            # column
             exposure_gdf[attribute_name] = exposure_gdf[attribute_name].apply(process_value)
             
             ##remove the index_right column
             if "index_right" in exposure_gdf.columns:
                 del exposure_gdf["index_right"]
-        
-        # Rename the 'aggregation_attribute' column to 'new_column_name'. 
+            
+        # Rename the 'aggregation_attribute' column to 'new_column_name'. Put in 
+        # Documentation that the order the user put the label name must be the order of the gdf
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
     # If new composite area, split Maximum Potential Damages of new composite areas per aggregation
@@ -117,8 +141,8 @@ def join_exposure_aggregation_multiple_areas(
         exposure_max_potential_damage_struct = list(exposure_gdf_copy["Max Potential Damage: Structure"].values)
         exposure_max_potential_damage_cont = list(exposure_gdf_copy["Max Potential Damage: Content"].values)
         exposure_gdf = split_max_damages_new_composite_area(exposure_gdf, exposure_max_potential_damage_struct, exposure_max_potential_damage_cont)
-    
-    return exposure_gdf
+
+    return exposure_gdf, filtered_areas
 
 def split_composite_area(exposure_gdf, aggregation_gdf, attribute_name, new_exposure_aggregation):
     """Split the new composite areas into the aggregation zones
@@ -268,7 +292,7 @@ def join_exposure_aggregation_areas(
     if isinstance(new_composite_area, bool):
         new_composite_area = [new_composite_area]
 
-    exposure_gdf = join_exposure_aggregation_multiple_areas(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area)
+    exposure_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area)
     
     # Remove the geometry column from the exposure_gdf to return a dataframe
     exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
