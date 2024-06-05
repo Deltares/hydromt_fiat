@@ -101,6 +101,7 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
 # print('{:.1f} % of the buildings were not classified'.format(sum(footprints_join["Class"].isnull())/len(footprints_join)*100))
 # footprints_join
 
+
 # # Plot a sample of the joined data to check results
 # footprints_join.clip(polygon).explore(
 #     column="Class", # make choropleth based on "Class" column
@@ -110,8 +111,12 @@ def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
 #     style_kwds=dict(color="black") # use black outline
 # )
 def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
-    buildings = {"building": True}  # this is the tag we use to find the correct OSM data
-    buildings = ox.features.features_from_polygon(polygon, buildings)  # then we query the data
+    buildings = {
+        "building": True
+    }  # this is the tag we use to find the correct OSM data
+    buildings = ox.features.features_from_polygon(
+        polygon, buildings
+    )  # then we query the data
 
     if buildings.empty:
         logging.warning("No buildings data found from OSM")
@@ -122,16 +127,20 @@ def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     # TODO Check this piece of code, no data found for the currently tested polygon
     # We filter the data on polygons and multipolygons and select the columns we need
     buildings = buildings.loc[
-        (buildings.geometry.type == "Polygon") | (buildings.geometry.type == "MultiPolygon")
+        (buildings.geometry.type == "Polygon")
+        | (buildings.geometry.type == "MultiPolygon")
     ]
     buildings = buildings.loc[buildings["building"].notna()]
     buildings = buildings.reset_index(drop=True)
     buildings = buildings[["geometry", "building"]]
-    return buildings# "building" column with information  https://taginfo.openstreetmap.org/keys/building#values
-    
+    return buildings  # "building" column with information  https://taginfo.openstreetmap.org/keys/building#values
+
+
 def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     amenity = {"amenity": True}  # this is the tag we use to find the correct OSM data
-    amenity = ox.features.features_from_polygon(polygon, amenity)  # then we query the data
+    amenity = ox.features.features_from_polygon(
+        polygon, amenity
+    )  # then we query the data
 
     if amenity.empty:
         logging.warning("No amenity data found from OSM")
@@ -145,7 +154,6 @@ def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
         (amenity.geometry.type == "Polygon") | (amenity.geometry.type == "MultiPolygon")
     ]
     amenity = amenity.loc[amenity["amenity"].notna()]
-    amenity = amenity.reset_index(drop=True)  
+    amenity = amenity.reset_index(drop=True)
     amenity = amenity[["geometry", "amenity"]]
-    return amenity # "amenity" column with information  https://taginfo.openstreetmap.org/keys/building#values
-
+    return amenity  # "amenity" column with information  https://taginfo.openstreetmap.org/keys/building#values
