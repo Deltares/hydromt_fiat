@@ -423,21 +423,21 @@ class ExposureVector(Exposure):
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
             occupancy_type = self.setup_occupancy_type_from_osm()
-            occupancy_map = occupancy_type[0]
-            occupancy_tag = occupancy_type[1]
+            occupancy_landuse = occupancy_type[0]
+            occupancy_building = occupancy_type[1]
             occupancy_amenity = occupancy_type[2]
 
             occupancy_types = ["Primary Object Type", "Secondary Object Type"]
         else:
-            occupancy_map = self.data_catalog.get_geodataframe(
+            occupancy_landuse = self.data_catalog.get_geodataframe(
                 occupancy_source, geom=self.region
             )
-            occupancy_map.rename(columns={occupancy_attr: type_add}, inplace=True)
+            occupancy_landuse.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
-        if occupancy_map.crs != self.crs:
-            occupancy_map = occupancy_map.to_crs(self.crs)
+        if occupancy_landuse.crs != self.crs:
+            occupancy_landuse = occupancy_landuse.to_crs(self.crs)
             self.logger.warning(
                 "The CRS of the occupancy map is not the same as that "
                 "of the exposure data. The occupancy map has been "
@@ -450,12 +450,12 @@ class ExposureVector(Exposure):
         # Spatially join the exposure data with the occupancy buildings
         if len(self.exposure_geoms) == 1:
             # If there is only one exposure geom, do the spatial join with the
-            # occupancy_map. Only take the largest overlapping object from the
-            # occupancy_map.
-            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_tag[to_keep])
+            # occupancy_landuse. Only take the largest overlapping object from the
+            # occupancy_landuse.
+            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_building[to_keep])
 
             # Replace values with landuse if applicable for Primary and Secondary Object Type
-            occupancy_map.rename(
+            occupancy_landuse.rename(
                 columns={
                     "Primary Object Type": "pot",
                     "Secondary Object Type": "pot_2",
@@ -463,7 +463,7 @@ class ExposureVector(Exposure):
                 inplace=True,
             )
             gdf_landuse = gpd.sjoin(
-                gdf, occupancy_map[["geometry", "pot", "pot_2"]], how="left"
+                gdf, occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
             )
             gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
                 gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
@@ -587,11 +587,14 @@ class ExposureVector(Exposure):
         # contains the land use type.
         occupancy_attributes = ["landuse", "building", "amenity"]
         # Get the land use from OSM
-        polygon = self.region.geometry.values[0]
-        occupancy_map = get_landuse_from_osm(polygon)
+        if self.region.boundary is not None:
+            polygon = Polygon(self.region.boundary.values[0])
+        else:
+            polygon = self.region.iloc[0][0]
+        occupancy_landuse = get_landuse_from_osm(polygon)
         occupancy_buildings = get_buildings_from_osm(polygon)
         occupancy_amenity = get_amenity_from_osm(polygon)
-        occupancy_types = [occupancy_map, occupancy_buildings, occupancy_amenity]
+        occupancy_types = [occupancy_landuse, occupancy_buildings, occupancy_amenity]
 
         for occupancy, occupancy_attribute in zip(
             occupancy_types, occupancy_attributes
