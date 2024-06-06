@@ -10,7 +10,6 @@ import geopandas as gpd
 
 from .data_types import (
     Category,
-    ClassificationSettings,
     DataCatalogEntry,
     DataType,
     Driver,
@@ -21,6 +20,7 @@ from .data_types import (
     ExposureRoadsSettings,
     ExtractionMethod,
     AggregationAreaSettings,
+    ClassificationSettings,
     Units,
 )
 
