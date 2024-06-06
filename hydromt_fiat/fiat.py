@@ -953,6 +953,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
     ):
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if not isinstance(aggregation_area_fn, list):
@@ -969,6 +970,7 @@ class FiatModel(GridModel):
             aggregation_area_fn,
             attribute_names,
             label_names,
+            new_composite_area,
             keep_all=False
         )
         
