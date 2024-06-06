@@ -295,6 +295,9 @@ def join_exposure_aggregation_areas(
 
     exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area, keep_all)
 
+    # Remove the geometry column from the exposure_gdf to return a dataframe
+    exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
+
     del exposure_gdf["geometry"]
 
-    return exposure_gdf, areas_gdf
+    return exposure_gdf, exposure_geoms, areas_gdf
