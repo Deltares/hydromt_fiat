@@ -267,6 +267,7 @@ def join_exposure_aggregation_areas(
     attribute_names: Union[List[str], str],
     label_names: Union[List[str], str],
     new_composite_area: bool,
+    keep_all: bool=True
 ) -> gpd.GeoDataFrame:
     """Join aggregation area labels to the exposure data.
 
@@ -292,11 +293,8 @@ def join_exposure_aggregation_areas(
     if isinstance(new_composite_area, bool):
         new_composite_area = [new_composite_area]
 
-    exposure_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area)
-    
-    # Remove the geometry column from the exposure_gdf to return a dataframe
-    exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
+    exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area, keep_all)
 
     del exposure_gdf["geometry"]
 
-    return exposure_gdf, exposure_geoms 
+    return exposure_gdf, areas_gdf
