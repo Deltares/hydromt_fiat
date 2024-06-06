@@ -927,75 +927,25 @@ class FiatModel(GridModel):
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
-            label_names,
+            # Make sure that column name for aggregation areas includes the Aggregation Label part
+            ["Aggregation Label: " + name for name in label_names],
             new_composite_area,
             keep_all=False
         )
-        
-        file_names = []
-        for area_gdf, file_name in zip(areas_gdf, aggregation_area_fn):
-            name = Path(file_name).stem
-            self.set_geoms(area_gdf, f"additional_attributes/{name}")
-            file_names.append(name)
+
+        if file_names:
+            for area_gdf, file_name in zip(areas_gdf, file_names):
+                self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
 
         # Save metadata on spatial joins
-        if not self.spatial_joins["additional_attributes"]:
-            self.spatial_joins["additional_attributes"] = []
+        if not self.spatial_joins["aggregation_areas"]:
+            self.spatial_joins["aggregation_areas"] = []
         for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
             attrs = {"name": label_name, 
-                     "file": f"exposure/additional_attributes/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
+                     "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
                      "field_name": attribute_name}
-            self.spatial_joins["additional_attributes"].append(attrs) 
+            self.spatial_joins["aggregation_areas"].append(attrs) 
 
-    def setup_classification(
-        self,
-        source = Union[List[str], str, Path, List[Path]],
-        attribute = Union[List[str], str],
-        type_add = Union[List[str], str],
-        old_values= Union[List[str], str],
-        new_values= Union[List[str], str],
-        damage_types = Union[List[str], str],
-        remove_object_type = bool,
-        keep_unclassified: bool = True
-        
-    ):
-        """_summary_
-        Parameters
-        ----------
-        source : Union[List[str], List[Path], str, Path]
-            Path(s) to the user classification file.
-        attribute : Union[List[str], str]
-            Name of the column of the user data 
-       type_add : Union[List[str], str]
-            Name of the attribute the user wants to update. Primary or Secondary
-        old_values : Union[List[str], List[Path], str, Path]
-            Name of the default (NSI) exposure classification
-        new_values : Union[List[str], str]
-            Name of the user exposure classification.
-        exposure_linking_table : Union[List[str], str]
-            Path(s) to the new exposure linking table(s).
-        damage_types : Union[List[str], str]
-            "structure"or/and "content"
-        remove_object_type: bool
-            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
-        keep_unclassified: bool, optional
-            Whether building footprints without classification are removed or reclassified as "residential"
-        """
-
-        self.exposure.setup_occupancy_type(source, attribute, type_add, keep_unclassified)
-
-        # Drop Object Type that has not been updated. 
-
-        if remove_object_type:
-            if type_add == "Primary Object Type":
-                self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
-            else:
-                self.exposure.exposure_db.drop("Primary Object Type", axis =1 , inplace = True) 
-        linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
-        self.vf_ids_and_linking_df = linking_table_new
-        self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
-                
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
