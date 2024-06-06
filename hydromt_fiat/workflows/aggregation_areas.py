@@ -11,7 +11,6 @@ def process_value(value):
         return value
 
 def spatial_joins(
-def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
     attribute_names: List[str],
