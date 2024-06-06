@@ -1,6 +1,7 @@
 """Implement fiat model class"""
 
 import csv
+import glob
 import logging
 import os
 from pathlib import Path
@@ -13,8 +14,8 @@ from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
 
-from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
+from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.hazard import (
@@ -36,7 +37,6 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
-from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
@@ -62,6 +62,12 @@ class FiatModel(GridModel):
         data_libs=None,
         logger=_logger,
     ):
+        # Add the global catalog (tables etc.) to the data libs by default
+        if data_libs is None:
+            data_libs = []
+        if not isinstance(data_libs, (list, tuple)):
+            data_libs = [data_libs]
+        data_libs += [Path(DATADIR, "hydromt_fiat_catalog_global.yml")]
         super().__init__(
             root=root,
             mode=mode,
@@ -157,7 +163,7 @@ class FiatModel(GridModel):
             )
 
         # Set the model region geometry (to be accessed through the shortcut self.region).
-        self.set_geoms(geom, "region")
+        self.set_geoms(geom.dissolve(), "region")
 
         # Set the region crs
         if geom.crs:
@@ -236,7 +242,7 @@ class FiatModel(GridModel):
 
         # Update config
         self.set_config(
-            "vulnerability.file", "./vulnerability/vulnerability_curves.csv"
+            "vulnerability.file", "vulnerability/vulnerability_curves.csv"
         )
         self.set_config("vulnerability.unit", unit)
 
@@ -342,13 +348,13 @@ class FiatModel(GridModel):
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
-            # damage is the same, use one source to create the exposure data.            
+            # damage is the same, use one source to create the exposure data.
             self.exposure.setup_buildings_from_single_source(
-                    asset_locations,
-                    ground_floor_height,
-                    extraction_method,
-                    ground_elevation_file=ground_elevation_file,
-                )
+                asset_locations,
+                ground_floor_height,
+                extraction_method,
+                ground_elevation_file=ground_elevation_file,
+            )
 
         else:
             # The source for the asset locations, occupancy type and maximum potential
@@ -377,17 +383,17 @@ class FiatModel(GridModel):
         try:
             assert not self.vf_ids_and_linking_df.empty
         except AssertionError:
-            logging.error(
+            self.logger.error(
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_buildings' function. Error message: {e}"
-            )        
+            )
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
         self.exposure.check_required_columns()
 
         # Update the other config settings
-        self.set_config("exposure.csv.file", "./exposure/exposure.csv")
+        self.set_config("exposure.csv.file", "exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
         self.set_config("exposure.geom.unit", unit)
         self.set_config("exposure.damage_unit", damage_unit)
@@ -452,10 +458,9 @@ class FiatModel(GridModel):
     def update_ground_elevation(
         self,
         source: Union[int, float, None, str, Path],
-        unit: str
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source, unit)
+            self.exposure.setup_ground_elevation(source)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -527,8 +532,8 @@ class FiatModel(GridModel):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
-                da_map_fn
-            )  # removed geom=self.region because it is not always there
+                    da_map_fn, geom=self.region,
+                )  # removed geom=self.region because it is not always there
             elif isinstance(da_map_fn, xr.DataArray):
                 # if xarray is provided directly assign that
                 da = da_map_fn
@@ -560,12 +565,12 @@ class FiatModel(GridModel):
             rp_list.append(da_rp)
             map_name_lst.append(da_name)
 
-            da.attrs = {
-                "returnperiod": str(da_rp),
+            da = da.assign_attrs({
+                "return_period": str(da_rp),
                 "type": da_type,
                 "name": da_name,
                 "analysis": "event",
-            }
+            })
             
             # Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf
             if "grid_mapping" in da.encoding:
@@ -578,6 +583,7 @@ class FiatModel(GridModel):
         check_map_uniqueness(map_name_lst)
 
         # in case of risk analysis, create a single netcdf with multibans per rp
+        list_maps = list(self.maps.keys())
         if risk_output:
             da, sorted_rp, sorted_names = create_risk_dataset(
                 params, rp_list, map_name_lst, self.maps
@@ -586,7 +592,7 @@ class FiatModel(GridModel):
             self.set_grid(da)
 
             self.grid.attrs = {
-                "rp": sorted_rp,
+               "rp": sorted_rp,
                 "type": params[
                     "map_type_lst"
                 ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
@@ -598,10 +604,13 @@ class FiatModel(GridModel):
             if "grid_mapping" in self.grid.encoding:
                 del  self.grid.encoding["grid_mapping"]
 
-            list_maps = list(self.maps.keys())
-
             for item in list_maps[:]:
                 self.maps.pop(item)
+        
+        else:
+            for item in list_maps:
+                da = self.maps.pop(item)
+                self.set_grid(da, item)
 
         # set configuration .toml file
         self.set_config(
@@ -610,21 +619,13 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.file",
-            [
-                str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys()
-            ][0]
+            Path("hazard", "hazard_map.nc").as_posix()            
             if not risk_output
-            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
+            else Path("hazard", "risk_map.nc").as_posix(),
         )
         self.set_config(
             "hazard.crs",
-            [
-                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else ["EPSG:" + str((self.crs.to_epsg()))][0],
+            "EPSG:" + str((self.crs.to_epsg())),
         )
 
         self.set_config(
@@ -634,7 +635,7 @@ class FiatModel(GridModel):
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
+            list(self.grid.data_vars)[0]
             if not risk_output
             else sorted_names,
         )
@@ -716,10 +717,9 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
-            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=gdf, name="social_vulnerability_scores")
+            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -752,6 +752,7 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
+
     
     def setup_equity_data(
         self,
@@ -799,8 +800,8 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-        gdf = rename_geoid_short(equity.equity_data_shp)
-        self.set_tables(df= gdf, name="equity_data")
+
+        self.set_tables(df=equity.equity_data_shp, name="equity_data")
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
@@ -935,10 +936,9 @@ class FiatModel(GridModel):
         new_values= Union[List[str], str],
         damage_types = Union[List[str], str],
         remove_object_type = bool
-        
+
     ):
         """_summary_
-
         Parameters
         ----------
         source : Union[List[str], List[Path], str, Path]
@@ -963,7 +963,7 @@ class FiatModel(GridModel):
         self.exposure.setup_occupancy_type(source, attribute, type_add)
 
         # Drop Object Type that has not been updated. 
-        
+
         if remove_object_type:
             if type_add == "Primary Object Type":
                 self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
@@ -1038,7 +1038,7 @@ class FiatModel(GridModel):
                 self.set_geoms(geom=geom, name=name)
                 self.set_config(
                     f"exposure.geom.file{str(i+1)}",
-                    f"./exposure/{name}.gpkg",
+                    f"exposure/{name}.gpkg",
                 )
 
         if not self.region.empty:
@@ -1091,7 +1091,7 @@ class FiatModel(GridModel):
             self.logger.debug(f"Reading vulnerability table {vulnerability_fn}")
             self.vulnerability = Vulnerability(fn=vulnerability_fn, logger=self.logger)
         else:
-            logging.warning(f"File {vulnerability_fn} does not exist!")
+            self.logger.warning(f"File {vulnerability_fn} does not exist!")
 
         # Now with exposure
         exposure_fn = Path(self.root) / self.get_config("exposure.csv.file")
@@ -1106,10 +1106,13 @@ class FiatModel(GridModel):
             )
             self.exposure.read_table(exposure_fn)
         else:
-            logging.warning(f"File {exposure_fn} does not exist!")
+            self.logger.warning(f"File {exposure_fn} does not exist!")
 
     def read_geoms(self):
         """Read the geometries for the exposure data."""
+        if not self._write:
+            self._geoms = dict()  # fresh start in read-only mode
+
         if self.exposure:
             self.logger.info("Reading exposure geometries.")
             exposure_files = [
@@ -1121,6 +1124,13 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
+        fns = glob.glob(Path(self.root, "exposure", "*.geojson").as_posix())
+        if len(fns) >= 1:
+            self.logger.info("Reading static geometries")
+        for fn in fns:
+            name = Path(fn).stem
+            self.set_geoms(gpd.read_file(fn), name=name)
+        
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
         self.update_all()
@@ -1132,8 +1142,7 @@ class FiatModel(GridModel):
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
-        if self.geoms:
-            self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
+        self.write_geoms()
         if self._tables:
             self.write_tables()
         if self.spatial_joins["aggregation_areas"] or self.spatial_joins["additional_attributes"]:
@@ -1170,6 +1179,17 @@ class FiatModel(GridModel):
     def write_spatial_joins(self) -> None:
         spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
         spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
+
+    def write_geoms(self):
+        """_summary_."""
+        if not self.geoms:
+            return
+
+        if "region" in self.geoms:
+            gdf = self.geoms.pop("region")
+            gdf.to_file(Path(self.root, "exposure", "region.geojson")) 
+        
+        GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG") 
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:

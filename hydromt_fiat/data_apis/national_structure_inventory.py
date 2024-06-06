@@ -3,6 +3,8 @@ from shapely.geometry import Polygon
 import logging
 import geopandas as gpd
 
+logger = logging.getLogger(__name__)
+
 
 def nsi_post_request(url: str, polygon: Polygon) -> requests.models.Response:
     """Post request to the National Structure Inventory (NSI) database.
@@ -26,7 +28,7 @@ def nsi_post_request(url: str, polygon: Polygon) -> requests.models.Response:
         return response
     # If the request fails (404) then print the error.
     except requests.exceptions.HTTPError as error:
-        logging.error(error)
+        logger.error(error)
         return None
 
 

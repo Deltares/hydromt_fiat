@@ -1,5 +1,6 @@
 from typing import Any, Union, List
 import geopandas as gpd
+import logging
 
 import tomli_w
 from hydromt import DataCatalog
@@ -12,8 +13,8 @@ from hydromt_fiat.api.model_vm import ModelViewModel
 from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
 from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
 
+logger = logging.getLogger(__name__)
 
 class HydroMtViewModel:
     data_catalog: DataCatalog
@@ -30,7 +31,6 @@ class HydroMtViewModel:
         HydroMtViewModel.database = LocalDatabase.create_database(database_path)
         HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
 
-        logger = setuplog("hydromt_fiat", log_level=10)
         # NOTE: with w+ hydromt_fiat allows to create a model in a folder that
         # already contains data, with w this is not allowed (I would say the
         # latter is preferred, but w is handy for testing)
