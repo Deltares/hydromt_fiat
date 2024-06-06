@@ -166,7 +166,7 @@ def spatial_joins(
         init_Object_ID = exposure_gdf_copy.loc[0, "Object Name"]
         init_Object_ID = int(init_Object_ID.split(": ",1)[1])
         exposure_gdf.loc[0:, "Object ID"] = np.arange(
-            init_Object_ID + 1, init_Object_ID + 1 + int(len(exposure_gdf)), 1
+            init_Object_ID, init_Object_ID + 1 + int(len(exposure_gdf)), 1
         ).tolist()
 
         # Filter out erroneous polygons by 0.001%
