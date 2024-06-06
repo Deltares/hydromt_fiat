@@ -19,7 +19,7 @@ def spatial_joins(
     keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
     """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
-    
+
     Parameters
     ----------
     exposure_gdf : gpd.GeoDataFrame
@@ -311,8 +311,6 @@ def join_exposure_aggregation_areas(
         attribute_names = [attribute_names]
     if isinstance(label_names, str):
         label_names = [label_names]
-    if isinstance(new_composite_area, bool):
-        new_composite_area = [new_composite_area]
 
     exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, new_composite_area, keep_all)
 
