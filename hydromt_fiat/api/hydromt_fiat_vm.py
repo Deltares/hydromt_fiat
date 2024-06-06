@@ -78,7 +78,7 @@ class HydroMtViewModel:
             )
 
         if self.exposure_vm.aggregation_areas_model:
-            config_yaml.setup_aggregation_areas = (
+            config_yaml.setup_additional_attributes = (
                 self.exposure_vm.aggregation_areas_model
             )
 
@@ -222,11 +222,18 @@ class HydroMtViewModel:
         self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
     
     def new_additional_attributes(self, config_yaml):
-        aggregation_area_fn = config_yaml.model_extra["setup_aggregation_areas"].aggregation_area_fn
-        attribute_names = config_yaml.model_extra["setup_aggregation_areas"].attribute_names
-        label_names = config_yaml.model_extra["setup_aggregation_areas"].label_names
-        new_composite_area = config_yaml.model_extra["setup_aggregation_areas"].new_composite_area
-        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names,new_composite_area)
+        aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
+        attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
+        label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
+        new_composite_area = config_yaml.model_extra["setup_additional_attributes"].new_composite_area
+        # Check if additional attributes already exist
+        add_attrs_existing = [attr["name"] for attr in self.fiat_model.spatial_joins["additional_attributes"]]
+        for i, label_name in enumerate(label_names):
+            if label_name in add_attrs_existing: # if it exists exclude it from the list
+                aggregation_area_fn.pop(i)
+                attribute_names.pop(i)
+                label_names.pop(i)
+        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names,new_composite_area) 
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
