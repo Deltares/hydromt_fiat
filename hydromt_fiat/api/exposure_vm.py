@@ -11,6 +11,7 @@ import geopandas as gpd
 
 from .data_types import (
     Category,
+    ClassificationSettings,
     DataCatalogEntry,
     DataType,
     Driver,
