@@ -1195,7 +1195,7 @@ class FiatModel(GridModel):
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode()
+        self._assert_write_mode
 
         for name in self._tables.keys():
             # Vulnerability
