@@ -811,6 +811,13 @@ class FiatModel(GridModel):
             new_composite_area=False,
             file_names="block_groups"
         )
+        
+        # Update spatial join metadata for equity data connection
+        ind = [i for i, name in enumerate([aggr["name"] for aggr in self.spatial_joins["aggregation_areas"]])][0]
+        attrs = {"census_data": "exposure/equity/equity_data.csv", #TODO check how and where this is defined
+                 "percapitaincome_label": "PerCapitaIncomeBG",
+                 "totalpopulation_label": "TotalPopulationBG",}
+        self.spatial_joins["aggregation_areas"][ind]["equity"] = attrs
 
     def setup_aggregation_areas(
         self,
@@ -872,6 +879,47 @@ class FiatModel(GridModel):
                      "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
                      "field_name": attribute_name}
             self.spatial_joins["aggregation_areas"].append(attrs) 
+
+    def setup_additional_attributes(
+        self,
+        aggregation_area_fn: Union[
+            List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
+        ],
+        attribute_names: Union[List[str], str],
+        label_names: Union[List[str], str],
+    ):
+        # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
+        if not isinstance(aggregation_area_fn, list):
+            aggregation_area_fn = [aggregation_area_fn]
+            attribute_names = [attribute_names]
+            label_names = [label_names]
+                
+        # Perform spatial join for each aggregation area provided
+        # First get all exposure geometries
+        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        # Then perform spatial joins
+        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+            exposure_gdf,
+            aggregation_area_fn,
+            attribute_names,
+            label_names,
+            keep_all=False
+        )
+        
+        file_names = []
+        for area_gdf, file_name in zip(areas_gdf, aggregation_area_fn):
+            name = Path(file_name).stem
+            self.set_geoms(area_gdf, f"additional_attributes/{name}")
+            file_names.append(name)
+
+        # Save metadata on spatial joins
+        if not self.spatial_joins["additional_attributes"]:
+            self.spatial_joins["additional_attributes"] = []
+        for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
+            attrs = {"name": label_name, 
+                     "file": f"exposure/additional_attributes/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
+                     "field_name": attribute_name}
+            self.spatial_joins["additional_attributes"].append(attrs)
 
     def setup_building_footprint(
         self,
