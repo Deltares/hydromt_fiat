@@ -748,6 +748,7 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
+    
     def setup_equity_data(
         self,
         census_key: str,
@@ -806,8 +807,9 @@ class FiatModel(GridModel):
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
-            label_names="Aggregation Label: Census Blockgroup",
-            new_composite_area=False
+            label_names="Census Blockgroup",
+            new_composite_area=False,
+            file_names="block_groups"
         )
 
     def setup_aggregation_areas(
