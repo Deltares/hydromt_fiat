@@ -1436,6 +1436,11 @@ class ExposureVector(Exposure):
             # Update the exposure_geoms incl aggregation
             self.set_geom_names("new_development_area_aggregated")
             self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            # Remove initial composite areas
+            idx = self.geom_names.index("new_development_area")
+            self.geom_names.pop(idx)
+            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
