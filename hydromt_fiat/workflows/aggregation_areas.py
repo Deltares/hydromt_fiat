@@ -63,7 +63,7 @@ def spatial_joins(
     filtered_areas = []
     
     # Create column to assign new composite area ID and create copy of new composite area gdf
-    if new_composite_area[0]:
+    if new_composite_area:
         exposure_gdf["ca_ID"] = range(0,len(exposure_gdf),1)
         exposure_gdf_copy = exposure_gdf.copy()
     
@@ -99,7 +99,6 @@ def spatial_joins(
         exposure_gdf = gpd.sjoin(
             exposure_gdf,
             area_gdf,
-            area_gdf,
             predicate="intersects",
             how="left",
         )
@@ -132,7 +131,7 @@ def spatial_joins(
             new_exposure_aggregation = new_exposure_aggregation
 
         # If new composite area, split into the aggregation zones 
-        if new_composite_area[0]:
+        if new_composite_area:
             new_exposure_aggregation, exposure_gdf = split_composite_area(exposure_gdf, area_gdf, attribute_name, new_exposure_aggregation)     
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
@@ -151,7 +150,7 @@ def spatial_joins(
         exposure_gdf.rename(columns={attribute_name: label_name}, inplace=True)
 
     # If new composite area, split Maximum Potential Damages of new composite areas per aggregation
-    if new_composite_area[0]:
+    if new_composite_area:
         # Filter out erroneous polygons by 0.001% 
         total_area = exposure_gdf.geometry.area.sum()
         filter_percentage = 0.0001
