@@ -818,6 +818,7 @@ class FiatModel(GridModel):
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
         new_composite_area: bool = False,
+        file_names: Union[List[str], str] = None,
         
     ):
         """_summary_
@@ -832,25 +833,43 @@ class FiatModel(GridModel):
             The name that the new attribute will get in the exposure data.
         new_composite_area: bool
             Check whether exposure is a new composite area 
+        file_names : Union[List[str], str]
+            The name of the spatial file(s) if saved in aggregation_areas/ 
+            folder in the root directory (Default is None).
         """
+        # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
+        if not isinstance(aggregation_area_fn, list):
+            aggregation_area_fn = [aggregation_area_fn]
+            attribute_names = [attribute_names]
+            label_names = [label_names]
+            if file_names:
+                file_names = [file_names]
+
+        # Perform spatial join for each aggregation area provided
+        # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
-            label_names,
-            new_composite_area
+            # Make sure that column name for aggregation areas includes the Aggregation Label part
+            ["Aggregation Label: " + name for name in label_names],
+            new_composite_area,
+            keep_all=False
         )
 
-        # Set the additional_attributes_fn property to save the additional datasets
-        if isinstance(aggregation_area_fn, list):
-            the_type = type(aggregation_area_fn[0])
-        else:
-            the_type = type(aggregation_area_fn)
-        if the_type != gpd.GeoDataFrame:
-            # This copies data from one location to the root folder for the FIAT
-            # model, only use user-input data here (not the census blocks)
-            self.additional_attributes_fn = aggregation_area_fn
+        if file_names:
+            for area_gdf, file_name in zip(areas_gdf, file_names):
+                self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
+
+        # Save metadata on spatial joins
+        if not self.spatial_joins["aggregation_areas"]:
+            self.spatial_joins["aggregation_areas"] = []
+        for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
+            attrs = {"name": label_name, 
+                     "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
+                     "field_name": attribute_name}
+            self.spatial_joins["aggregation_areas"].append(attrs) 
 
     def setup_building_footprint(
         self,
