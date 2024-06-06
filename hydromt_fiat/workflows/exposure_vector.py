@@ -1427,7 +1427,7 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, aggregated_objects_geoms = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms, _  = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
