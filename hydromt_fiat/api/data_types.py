@@ -76,7 +76,7 @@ class ExposureBuildingsSettings(BaseModel):
     damage_types : Optional[List[str]] = None
     damage_unit: str 
     country: str = None
-
+    bf_conversion: bool = False
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str

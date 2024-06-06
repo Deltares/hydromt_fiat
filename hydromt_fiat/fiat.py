@@ -15,6 +15,7 @@ import shutil
 
 from hydromt_fiat import DATADIR
 from hydromt_fiat.config import Config
+from hydromt_fiat.spatial_joins import SpatialJoins
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.hazard import (
     create_lists,
@@ -72,9 +73,8 @@ class FiatModel(GridModel):
         self.exposure = None
         self.vulnerability = None
         self.vf_ids_and_linking_df = pd.DataFrame()
-        self.additional_attributes_fn = (
-            ""  # Path or paths to the additional attributes dataset(s)
-        )
+        self.spatial_joins = dict(aggregation_areas=None, additional_attributes=None) # Dictionary containing all the spatial join metadata
+
         self.building_footprint_fn = ""  # Path to the building footprints dataset
 
     def setup_global_settings(
@@ -297,6 +297,7 @@ class FiatModel(GridModel):
         damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        bf_conversion: bool = False    
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -331,6 +332,8 @@ class FiatModel(GridModel):
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
+        bf_conversion: bool, optional
+            If building footprints shall be converted into point data.
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -339,13 +342,13 @@ class FiatModel(GridModel):
 
         if asset_locations == max_potential_damage:
             # The source for the asset locations, occupancy type and maximum potential
-            # damage is the same, use one source to create the exposure data.
+            # damage is the same, use one source to create the exposure data.            
             self.exposure.setup_buildings_from_single_source(
-                asset_locations,
-                ground_floor_height,
-                extraction_method,
-                ground_elevation_file=ground_elevation_file,
-            )
+                    asset_locations,
+                    ground_floor_height,
+                    extraction_method,
+                    ground_elevation_file=ground_elevation_file,
+                )
 
         else:
             # The source for the asset locations, occupancy type and maximum potential
@@ -360,6 +363,7 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+                bf_conversion = bf_conversion
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -376,7 +380,7 @@ class FiatModel(GridModel):
             logging.error(
                 "Please call the 'setup_vulnerability' function before "
                 "the 'setup_exposure_buildings' function. Error message: {e}"
-            )
+            )        
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
@@ -782,7 +786,7 @@ class FiatModel(GridModel):
         county_numbers = get_us_county_numbers(counties, us_states_counties)
 
         # Create equity object
-        save_folder = str(Path(self.root) / "equity")
+        save_folder = str(Path(self.root) / "exposure" / "equity")
         equity = EquityData(self.data_catalog, self.logger, save_folder)
 
         # Call functionalities of equity
@@ -800,9 +804,8 @@ class FiatModel(GridModel):
 
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
-        self.set_geoms(block_groups, "aggregation_areas/block_groups")
 
-        # Update the aggregation label: census block
+        # Update the aggregation label: Census Blockgroup
         del self.exposure.exposure_db["Aggregation Label: Census Blockgroup"]
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
@@ -1053,6 +1056,12 @@ class FiatModel(GridModel):
         # Read the configuration file
         self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
 
+        # Read spatial joins configurations
+        sj_path = Path(self.root).joinpath("spatial_joins.toml")
+        if sj_path.exists():
+            sj = SpatialJoins.load_file(sj_path )
+            self.spatial_joins = dict(sj.attrs)
+        
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
         # self.read_grid(fn="hazard/{name}.nc")
@@ -1127,9 +1136,8 @@ class FiatModel(GridModel):
             self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self._tables:
             self.write_tables()
-        if self.additional_attributes_fn:
-            folder = Path(self.root).joinpath("additional_attributes")
-            self.copy_datasets(self.additional_attributes_fn, folder)
+        if self.spatial_joins["aggregation_areas"] or self.spatial_joins["additional_attributes"]:
+            self.write_spatial_joins()
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
@@ -1158,12 +1166,16 @@ class FiatModel(GridModel):
                 shutil.copy2(file, folder)
         elif isinstance(data, Path) or isinstance(data, str):
             shutil.copy2(data, folder)
+            
+    def write_spatial_joins(self) -> None:
+        spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
+        spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode
+        self._assert_write_mode()
 
         for name in self._tables.keys():
             # Vulnerability
@@ -1194,7 +1206,7 @@ class FiatModel(GridModel):
                 fn = f"exposure/SVI/{name}.csv"
                 kwargs = {"index": False}
             elif name == "equity_data":
-                fn = f"equity/{name}.csv"
+                fn = f"exposure/equity/{name}.csv"
                 kwargs = {"index": False}
 
             # Other, can also return an error or pass silently

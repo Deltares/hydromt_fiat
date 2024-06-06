@@ -38,10 +38,17 @@ def get_roads_from_osm(
         "highway": road_types
     }  # this is the tag we use to find the correct OSM data
     
-    roads = ox.features.features_from_polygon(
-        polygon, tags=tag
-    )  # then we query the data
-
+    # Make sure that polygon is valid
+    if not polygon.is_valid:
+        polygon = polygon.buffer(0)
+    try:
+        roads = ox.features.features_from_polygon(
+            polygon, tags=tag
+        )  # then we query the data
+    except:
+        logging.warning("Could not download road data from OSM for the given region and road types.")
+        return None
+        
     if roads.empty:
         return None
 

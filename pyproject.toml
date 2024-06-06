@@ -25,11 +25,13 @@ dependencies = [
     "tomli-w",
     "tomli",
     "xarray",
-	"pydantic",
-	"osmnx",
-	"census",
-	"us",
-    "xarray-spatial"
+    "pydantic",
+    "osmnx",
+    "census",
+    "us",
+    "xarray-spatial",
+    "tqdm",
+    "pycountry-convert"
 ]
 readme = "README.rst"
 classifiers = [
@@ -50,7 +52,12 @@ zip-safe = false
 version = { attr = "hydromt_fiat.__version__" }
 
 [tool.setuptools.packages.find]
+where = ["."]
 include = ["hydromt_fiat", "hydromt_fiat.*"]
+exclude = ["tests", "examples", "envs", "docs", "notebooks"]
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
 
 [project.optional-dependencies]
 test = [

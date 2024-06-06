@@ -5,13 +5,12 @@ import pandas as pd
 import numpy as np
 
 def process_value(value):
-    if isinstance(value, list) and len(value) == 1:
+    if isinstance(value, list):
         return value[0]
-    elif isinstance(value, list) and len(value) > 1:
-        return int(value[0])
     else:
         return value
 
+def spatial_joins(
 def spatial_joins(
     exposure_gdf: gpd.GeoDataFrame,
     aggregation_area_fn: Union[List[str], List[Path], List[gpd.GeoDataFrame]],
@@ -21,6 +20,7 @@ def spatial_joins(
     keep_all: bool=True,
 ) -> gpd.GeoDataFrame:
     """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
+    """Perform spatial joins between the exposure GeoDataFrame and aggregation areas.
 
     Parameters
     ----------
@@ -29,7 +29,12 @@ def spatial_joins(
     areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
         A list of aggregation areas. Each area can be specified as a file path (str or Path),
         or as a GeoDataFrame.
+        The GeoDataFrame representing the exposure data.
+    areas : Union[List[str], List[Path], List[gpd.GeoDataFrame]]
+        A list of aggregation areas. Each area can be specified as a file path (str or Path),
+        or as a GeoDataFrame.
     attribute_names : List[str]
+        A list of attribute names to be joined from the aggregation areas.
         A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
         A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
@@ -68,13 +73,23 @@ def spatial_joins(
 
         if isinstance(area, str) or isinstance(area, Path):
             area_gdf = gpd.read_file(area)
+        if isinstance(area, str) or isinstance(area, Path):
+            area_gdf = gpd.read_file(area)
         else:
+            area_gdf = area
             area_gdf = area
 
         ## check the projection of both gdf and if not match, reproject
         if exposure_gdf.crs != area_gdf.crs:
             area_gdf = area_gdf.to_crs(exposure_gdf.crs)
+        if exposure_gdf.crs != area_gdf.crs:
+            area_gdf = area_gdf.to_crs(exposure_gdf.crs)
 
+        assert attribute_name in area_gdf.columns, f"Attribute {attribute_name} not found in {area}"
+        
+        # Keep only used column
+        area_gdf = area_gdf[[attribute_name, "geometry"]].reset_index(drop=True)
+        
         assert attribute_name in area_gdf.columns, f"Attribute {attribute_name} not found in {area}"
         
         # Keep only used column
@@ -86,9 +101,17 @@ def spatial_joins(
         exposure_gdf = gpd.sjoin(
             exposure_gdf,
             area_gdf,
+            area_gdf,
             predicate="intersects",
             how="left",
         )
+        # If we want to keep only used area we filter based on the intersections else we provide the whole dataframe
+        if not keep_all:
+            inds = np.sort(exposure_gdf["index_right"].dropna().unique())
+            # TODO instead of keeping the ones that are joined keep everything that overlaps with the region?
+            filtered_areas.append(area_gdf.iloc[inds].reset_index(drop=True))
+        else:
+            filtered_areas.append(area_gdf)
         # If we want to keep only used area we filter based on the intersections else we provide the whole dataframe
         if not keep_all:
             inds = np.sort(exposure_gdf["index_right"].dropna().unique())
