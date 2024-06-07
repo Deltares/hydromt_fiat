@@ -861,7 +861,7 @@ class FiatModel(GridModel):
         # Perform spatial join for each aggregation area provided
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
@@ -903,7 +903,7 @@ class FiatModel(GridModel):
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         # Then perform spatial joins
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
