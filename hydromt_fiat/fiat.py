@@ -802,9 +802,9 @@ class FiatModel(GridModel):
         equity.download_shp_geom(year_data, county_numbers)
         equity.merge_equity_data_shp()
         equity.clean()
-
-        self.set_tables(df=equity.equity_data_shp, name="equity_data")
-
+        gdf = rename_geoid_short(equity.equity_data_shp)
+        self.set_tables(df= gdf, name="equity_data")
+        
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
 
