@@ -2,11 +2,9 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
-from typing import Tuple
-from tqdm import tqdm
 
 import pycountry_convert as pc
 import geopandas as gpd
