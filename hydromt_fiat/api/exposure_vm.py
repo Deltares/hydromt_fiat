@@ -333,7 +333,7 @@ class ExposureViewModel:
 
         return gdf
 
-    def set_aggregation_areas_config(self, files, attribute_names, label_names,new_composite_area):
+    def set_aggregation_areas_config(self, files, attribute_names, label_names,new_composite_area= False):
         self.aggregation_areas_model = AggregationAreaSettings(
             aggregation_area_fn=files,
             attribute_names=attribute_names,
