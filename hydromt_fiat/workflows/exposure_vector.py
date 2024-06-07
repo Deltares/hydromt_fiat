@@ -2,11 +2,9 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
-from typing import Tuple
-from tqdm import tqdm
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -1278,7 +1276,7 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects = join_exposure_aggregation_areas(
+            new_objects, _ = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
