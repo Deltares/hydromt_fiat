@@ -79,7 +79,6 @@ class HydroMtViewModel:
 
         if self.exposure_vm.aggregation_areas_model:
             config_yaml.setup_additional_attributes = (
-            config_yaml.setup_additional_attributes = (
                 self.exposure_vm.aggregation_areas_model
             )
         
