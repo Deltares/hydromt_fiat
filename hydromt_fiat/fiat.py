@@ -37,6 +37,7 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
+from hydromt_fiat.workflows.utils import rename_geoid_short
 
 __all__ = ["FiatModel"]
 
