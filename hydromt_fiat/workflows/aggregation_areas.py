@@ -148,6 +148,12 @@ def spatial_joins(
 
     # If new composite area, split Maximum Potential Damages of new composite areas per aggregation
     if new_composite_area:
+        # Filter out erroneous polygons by 0.001%
+        total_area = exposure_gdf.geometry.area.sum()
+        filter_percentage = 0.0001
+        area_threshold = total_area * filter_percentage
+        exposure_gdf = exposure_gdf[exposure_gdf.geometry.area >= area_threshold]
+
         # Create new Object IDs
         init_Object_ID = exposure_gdf_copy.loc[0, "Object Name"]
         init_Object_ID = int(init_Object_ID.split(": ",1)[1])
@@ -156,12 +162,6 @@ def spatial_joins(
         ).tolist()
         # Create new Object Names
         exposure_gdf["Object Name"] = exposure_gdf["Object ID"].apply(lambda x: f"New development area: {int(x)}")
-
-        # Filter out erroneous polygons by 0.001%
-        total_area = exposure_gdf.geometry.area.sum()
-        filter_percentage = 0.0001
-        area_threshold = total_area * filter_percentage
-        exposure_gdf = exposure_gdf[exposure_gdf.geometry.area >= area_threshold]
 
         # Split max potential damages into new composite areas
         exposure_max_potential_damage_struct = list(
@@ -226,6 +226,11 @@ def split_composite_area(
             exposure_gdf.drop(idx_multiploygon, inplace=True)
         exposure_gdf.drop(["level_0", "level_1"], axis=1, inplace=True)
 
+           # create new Object IDs       
+        exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
+        init_Object_ID = exposure_gdf.loc[0,"Object ID"]
+        exposure_gdf.loc[0:, "Object ID"] = np.arange(init_Object_ID + 1 , init_Object_ID + 1 + int(len(exposure_gdf)), 1).tolist()
+
     # Create an empty GeoDataFrame and append the exposure data
     if new_exposure_aggregation is None:
         data = pd.DataFrame(columns=["geometry"])
@@ -240,7 +245,7 @@ def split_composite_area(
     # Remove the index_right column
     if "index_right" in exposure_gdf.columns:
         del exposure_gdf["index_right"]
-
+    
     return new_exposure_aggregation, exposure_gdf
 
 
