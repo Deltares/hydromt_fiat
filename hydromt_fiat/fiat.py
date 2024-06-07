@@ -718,9 +718,10 @@ class FiatModel(GridModel):
             svi.match_geo_ID()
             svi.download_shp_geom(year_data, county_numbers)
             svi.merge_svi_data_shp()
+            gdf = rename_geoid_short(svi.svi_data_shp)
 
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=svi.svi_data_shp, name="social_vulnerability_scores")
+            self.set_tables(df=gdf, name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -753,7 +754,6 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
-
     
     def setup_equity_data(
         self,
