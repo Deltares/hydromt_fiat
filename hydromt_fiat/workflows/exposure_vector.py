@@ -280,9 +280,9 @@ class ExposureVector(Exposure):
         if isinstance(road_damage, str):
             # Add the max potential damage and the length of the segments to the roads
             road_damage = self.data_catalog.get_dataframe(road_damage)
-            roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = (
-                get_max_potential_damage_roads(roads, road_damage)
-            )
+            roads[
+                ["Max Potential Damage: Structure", "Segment Length [m]"]
+            ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, int):
             roads["Segment Length [m]"] = get_road_lengths(roads)
             roads["Max Potential Damage: Structure"] = road_damage
@@ -312,10 +312,13 @@ class ExposureVector(Exposure):
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         ground_elevation_unit: str = None,
         bf_conversion: bool = False,
+        keep_unclassified: bool = True,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
-        self.setup_occupancy_type(occupancy_source, occupancy_attr)
+        self.setup_occupancy_type(
+            occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
+        )
         self.setup_max_potential_damage(
             max_potential_damage, damage_types, country=country
         )
@@ -406,7 +409,7 @@ class ExposureVector(Exposure):
         occupancy_source: str,
         occupancy_attr: str,
         type_add: str = "Primary Object Type",
-        occupancy_keep_all: bool = True,
+        keep_unclassified: bool = True,
     ) -> None:
         """Set up the Primary and Secondary Object Type.
         Parameters
@@ -417,7 +420,7 @@ class ExposureVector(Exposure):
             Other classification to be updated by Primary/Secondary Classification
         type_add : str
             "Primary Object Type" or "Secondary Object Type"
-        occupancy_keep_all : Bool
+        keep_unclassified : Bool
             Whether to re-classify Primary/Secondary Object Types as "residential" or remove rows if no Object Type
         """
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
@@ -452,7 +455,9 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
-            gdf = sjoin_largest_area(self.exposure_geoms[0], occupancy_building[to_keep])
+            gdf = sjoin_largest_area(
+                self.exposure_geoms[0], occupancy_building[to_keep]
+            )
 
             # Replace values with landuse if applicable for Primary and Secondary Object Type
             occupancy_landuse.rename(
@@ -465,12 +470,12 @@ class ExposureVector(Exposure):
             gdf_landuse = gpd.sjoin(
                 gdf, occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
             )
-            gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
-            )
-            gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = (
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
-            )
+            gdf_landuse.loc[
+                gdf_landuse["pot"].notna(), "Primary Object Type"
+            ] = gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
+            gdf_landuse.loc[
+                gdf_landuse["pot"].notna(), "Secondary Object Type"
+            ] = gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
             gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
             # Fill nan values with values amenity for Primary and Secondary Object Type
@@ -500,7 +505,7 @@ class ExposureVector(Exposure):
                 nr_without_primary_object = len(
                     gdf.loc[gdf["Primary Object Type"].isna()].index
                 ) + len(gdf.loc[gdf["Primary Object Type"] != ""].index)
-                if occupancy_keep_all:
+                if keep_unclassified:
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Secondary Object Type"
                     ] = "residential"
@@ -510,9 +515,9 @@ class ExposureVector(Exposure):
                     gdf.loc[
                         gdf["Primary Object Type"] == "", "Secondary Object Type"
                     ] = "residential"
-                    gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = (
-                        "residential"
-                    )
+                    gdf.loc[
+                        gdf["Primary Object Type"] == "", "Primary Object Type"
+                    ] = "residential"
                     self.logger.warning(
                         f"{nr_without_primary_object} objects were not overlapping with the "
                         "land use data and will be classified as residential buildings."
@@ -611,24 +616,25 @@ class ExposureVector(Exposure):
             # Map the landuse/buildings/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
         jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
+        jrc_osm_mapping = pd.read_csv(jrc_osm_mapping_fn)
         # landuse
-        landuse_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name="landuse")
+        landuse_to_jrc_mapping = jrc_osm_mapping[["osm_key_landuse", "jrc_key_landuse"]]
         landuse_to_jrc_mapping = dict(
-            zip(landuse_to_jrc_mapping["osm_key"], landuse_to_jrc_mapping["jrc_key"])
+            zip(landuse_to_jrc_mapping["osm_key_landuse"], landuse_to_jrc_mapping["jrc_key_landuse"])
         )
         # buildings
-        buildings_to_jrc_mapping = pd.read_excel(
-            jrc_osm_mapping_fn, sheet_name="building"
-        )
+        buildings_to_jrc_mapping = jrc_osm_mapping[
+            ["osm_key_building", "jrc_key_building"]
+        ]
         buildings_to_jrc_mapping = dict(
             zip(
-                buildings_to_jrc_mapping["osm_key"], buildings_to_jrc_mapping["jrc_key"]
+                buildings_to_jrc_mapping["osm_key_building"], buildings_to_jrc_mapping["jrc_key_building"]
             )
         )
         # amenity
-        amenity_to_jrc_mapping = pd.read_excel(jrc_osm_mapping_fn, sheet_name="amenity")
+        amenity_to_jrc_mapping = jrc_osm_mapping[["osm_key_amenity", "jrc_key_amenity"]]
         amenity_to_jrc_mapping = dict(
-            zip(amenity_to_jrc_mapping["osm_key"], amenity_to_jrc_mapping["jrc_key"])
+            zip(amenity_to_jrc_mapping["osm_key_amenity"], amenity_to_jrc_mapping["jrc_key_amenity"])
         )
 
         jrc_mapping_type = [
@@ -815,9 +821,9 @@ class ExposureVector(Exposure):
         ):
             # Set the column(s) to a single value
             for damage_type in damage_types:
-                self.exposure_db[f"Max Potential Damage: {damage_type}"] = (
-                    max_potential_damage
-                )
+                self.exposure_db[
+                    f"Max Potential Damage: {damage_type}"
+                ] = max_potential_damage
 
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
@@ -968,9 +974,7 @@ class ExposureVector(Exposure):
             self.logger.warning(
                 "Ground elevation is not recognized by the setup_ground_elevation function"
             )
-            self.logger.warning(
-                "Ground elevation will be set to 0"
-            )
+            self.logger.warning("Ground elevation will be set to 0")
             self.exposure_db["Ground Elevation"] = 0
 
     def update_max_potential_damage(
@@ -1512,9 +1516,9 @@ class ExposureVector(Exposure):
                         f"{str(list(diff_secondary_linking_types))}"
                     )
 
-            self.exposure_db[f"Damage Function: {damage_type.capitalize()}"] = (
-                self.exposure_db[linking_column].map(linking_dict)
-            )
+            self.exposure_db[
+                f"Damage Function: {damage_type.capitalize()}"
+            ] = self.exposure_db[linking_column].map(linking_dict)
 
             self.logger.info(
                 f"The {linking_column} was used to link the exposure data to the "

@@ -77,7 +77,7 @@ class ExposureBuildingsSettings(BaseModel):
     damage_unit: str 
     country: str = None
     bf_conversion: bool = False
-    occupancy_keep_all: bool = True
+    keep_unclassified: bool = True
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str

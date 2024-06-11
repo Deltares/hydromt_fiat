@@ -30,7 +30,7 @@ jrc_damage_values:
       paper_doi: https://dx.doi.org/10.2760/16510
 
 jrc_osm_mapping:
-    path: damage_functions/flooding/JRC_OSM_mapping.xlsx
+    path: damage_functions/flooding/JRC_OSM_mapping.csv
     data_type: DataFrame
     driver: csv
     meta:
