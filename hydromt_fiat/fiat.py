@@ -1148,6 +1148,17 @@ class FiatModel(GridModel):
             folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
             self.tables["social_vulnerability_scores"].to_file(folder)
 
+    def write_geoms(self):
+        """_summary_."""
+        if not self.geoms:
+            return
+
+        if "region" in self.geoms:
+            gdf = self.geoms.pop("region")
+            gdf.to_file(Path(self.root, "exposure", "region.geojson")) 
+
+        GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG")
+        
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
     ) -> None:
