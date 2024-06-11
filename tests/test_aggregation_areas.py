@@ -31,10 +31,11 @@ _cases = {
                 "aggregation_area_fn": [
                     EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
                     EXAMPLEDIR / "aggregation_zones" / "land_use.gpkg",
+                    EXAMPLEDIR / "aggregation_zones" / "Horse_Carriage_Tour_Zones.geojson",
                     EXAMPLEDIR / "aggregation_zones" / "accomodation_type.gpkg",
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE","ACCOM"],
-                "label_names": ["Zoning_map", "Land_use_map","Accomodation_Zone"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName", "ACCOM"],
+                "label_names": ["Zoning_map", "Land_use_map","Horse_track", "Accomodation_Zone"],
             }
         },
     },

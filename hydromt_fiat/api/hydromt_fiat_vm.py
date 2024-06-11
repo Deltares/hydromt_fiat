@@ -1,5 +1,6 @@
 from typing import Any, Union, List
 import geopandas as gpd
+import logging
 
 import tomli_w
 from hydromt import DataCatalog
@@ -12,8 +13,8 @@ from hydromt_fiat.api.model_vm import ModelViewModel
 from hydromt_fiat.api.vulnerability_vm import VulnerabilityViewModel
 from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
 
+logger = logging.getLogger(__name__)
 
 class HydroMtViewModel:
     data_catalog: DataCatalog
@@ -30,7 +31,6 @@ class HydroMtViewModel:
         HydroMtViewModel.database = LocalDatabase.create_database(database_path)
         HydroMtViewModel.data_catalog = DataCatalog(catalog_path)
 
-        logger = setuplog("hydromt_fiat", log_level=10)
         # NOTE: with w+ hydromt_fiat allows to create a model in a folder that
         # already contains data, with w this is not allowed (I would say the
         # latter is preferred, but w is handy for testing)
@@ -222,6 +222,7 @@ class HydroMtViewModel:
         aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
         attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
         label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
+        new_composite_area = config_yaml.model_extra["setup_additional_attributes"].new_composite_area
         # Check if additional attributes already exist
         add_attrs_existing = [attr["name"] for attr in self.fiat_model.spatial_joins["additional_attributes"]]
         for i, label_name in enumerate(label_names):
@@ -229,8 +230,7 @@ class HydroMtViewModel:
                 aggregation_area_fn.pop(i)
                 attribute_names.pop(i)
                 label_names.pop(i)
-
-        self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names)
+        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names,new_composite_area) 
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source

@@ -334,10 +334,7 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            if self.region.boundary is not None:
-               polygon = Polygon(self.region.boundary.values[0])
-            else: 
-                polygon = self.region.iloc[0].values[0]
+            polygon = self.region.geometry.values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -494,10 +491,7 @@ class ExposureVector(Exposure):
         occupancy_attribute = "landuse"
 
         # Get the land use from OSM
-        if self.region.boundary is not None:
-            polygon = Polygon(self.region.boundary.values[0])
-        else:
-            polygon = self.region.iloc[0][0]
+        polygon = self.region.geometry.values[0]
         occupancy_map = get_landuse_from_osm(polygon)
 
         if occupancy_map.empty:
@@ -785,6 +779,7 @@ class ExposureVector(Exposure):
                 ["Primary Object Type", "geometry"]
             ]
             gdf = get_area(gdf)
+            gdf = gdf.dropna(subset="Primary Object Type")
 
             # Set the damage values to the exposure data
             for damage_type in damage_types:
@@ -838,8 +833,11 @@ class ExposureVector(Exposure):
                 self.logger.warning("The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'")
 
         else:
-            print(
-                "Ground elevation is not recognized by the setup_ground_elevation function\n Ground elevation will be set to 0"
+            self.logger.warning(
+                "Ground elevation is not recognized by the setup_ground_elevation function"
+            )
+            self.logger.warning(
+                "Ground elevation will be set to 0"
             )
             self.exposure_db["Ground Elevation"] = 0
 
@@ -1125,6 +1123,8 @@ class ExposureVector(Exposure):
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
+        new_composite_area : bool
+            Define whether new composite area to select correct aggregation zones functionality.
         """
         self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -1276,12 +1276,21 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, _ = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms, _  = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
+                new_composite_area = True
             )
+            # Update the exposure_geoms incl aggregation
+            self.set_geom_names("new_development_area_aggregated")
+            self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            # Remove initial composite areas
+            idx = self.geom_names.index("new_development_area")
+            self.geom_names.pop(idx)
+            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
@@ -1547,16 +1556,17 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
-            df["geometry"] = self.exposure_geoms[0]["geometry"]
-            gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
-        elif len(self.exposure_geoms) > 1:
-            gdf_list = []
-            for i in range(len(self.exposure_geoms)):
-                gdf_list.append(
-                    self.exposure_geoms[i].merge(df, on="Object ID", how="left")
-                )
-            gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
+            gdf = self.exposure_geoms[0].merge(
+                df, on="Object ID", how="left",
+            )
+            return gdf
+        
+        gdf_list = []
+        for i in range(len(self.exposure_geoms)):
+            gdf_list.append(
+                self.exposure_geoms[i].merge(df, on="Object ID", how="left")
+            )
+        gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
         return gdf
 
     def check_required_columns(self):

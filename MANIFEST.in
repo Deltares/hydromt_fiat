@@ -1,2 +1,3 @@
 graft hydromt_fiat/data/*
-prune tests/*
+prune *.egg-info
+recursive-exclude tests *
