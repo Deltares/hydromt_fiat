@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
-    
+
     footprints = ox.features.features_from_polygon(
         polygon, tags
     )  # then we query the data
@@ -36,10 +36,8 @@ def get_roads_from_osm(
     if isinstance(road_types, str):
         road_types = [road_types]
 
-    tag = {
-        "highway": road_types
-    }  # this is the tag we use to find the correct OSM data
-    
+    tag = {"highway": road_types}  # this is the tag we use to find the correct OSM data
+
     # Make sure that polygon is valid
     if not polygon.is_valid:
         polygon = polygon.buffer(0)
@@ -48,9 +46,11 @@ def get_roads_from_osm(
             polygon, tags=tag
         )  # then we query the data
     except:
-        logging.warning("Could not download road data from OSM for the given region and road types.")
+        logging.warning(
+            "Could not download road data from OSM for the given region and road types."
+        )
         return None
-        
+
     if roads.empty:
         return None
 
