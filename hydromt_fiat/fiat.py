@@ -1172,18 +1172,7 @@ class FiatModel(GridModel):
             
     def write_spatial_joins(self) -> None:
         spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
-        spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
-
-    def write_geoms(self):
-        """_summary_."""
-        if not self.geoms:
-            return
-
-        if "region" in self.geoms:
-            gdf = self.geoms.pop("region")
-            gdf.to_file(Path(self.root, "exposure", "region.geojson")) 
-        
-        GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG") 
+        spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml")) 
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
