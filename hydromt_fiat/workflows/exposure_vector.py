@@ -882,7 +882,9 @@ class ExposureVector(Exposure):
             self.logger.warning(
                 "Ground elevation is not recognized by the setup_ground_elevation function"
             )
-            self.logger.warning("Ground elevation will be set to 0")
+            self.logger.warning(
+                "Ground elevation will be set to 0"
+            )
             self.exposure_db["Ground Elevation"] = 0
 
     def update_max_potential_damage(
