@@ -1136,9 +1136,10 @@ class FiatModel(GridModel):
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
-        self.write_geoms()
         if self._tables:
             self.write_tables()
+        if self.geoms:
+            self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
         if self.spatial_joins["aggregation_areas"] or self.spatial_joins["additional_attributes"]:
             self.write_spatial_joins()
         if self.building_footprint_fn:
@@ -1147,17 +1148,6 @@ class FiatModel(GridModel):
         if "social_vulnerability_scores" in self.tables:   
             folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
             self.tables["social_vulnerability_scores"].to_file(folder)
-
-    def write_geoms(self):
-        """_summary_."""
-        if not self.geoms:
-            return
-
-        if "region" in self.geoms:
-            gdf = self.geoms.pop("region")
-            gdf.to_file(Path(self.root, "exposure", "region.geojson")) 
-
-        GridModel.write_geoms(self, fn="exposure/{name}.gpkg", driver="GPKG")
         
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
