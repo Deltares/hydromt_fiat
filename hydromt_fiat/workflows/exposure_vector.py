@@ -80,8 +80,6 @@ class ExposureVector(Exposure):
         unit: str = "meters",
         damage_unit="$",
         country: str = None,
-        damage_unit="$",
-        country: str = None,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -308,7 +306,6 @@ class ExposureVector(Exposure):
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float, List[float], List[int], None] = 10,
-        max_dist: Union[int, float, List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         ground_elevation_unit: str = None,
         bf_conversion: bool = False,
@@ -524,7 +521,7 @@ class ExposureVector(Exposure):
                     )
                 else:
                     self.logger.warning(
-                        f"{nr_without_primary_object_type} objects do not have a Primary Object "
+                        f"{nr_without_primary_object} objects do not have a Primary Object "
                         "Type and will be removed from the exposure data."
                     )
                 gdf = gdf.loc[gdf["Primary Object Type"] != ""]
