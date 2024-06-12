@@ -534,7 +534,7 @@ class FiatModel(GridModel):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
-                    da_map_fn, geom=self.region,
+                    da_map_fn,
                 )  # removed geom=self.region because it is not always there
             elif isinstance(da_map_fn, xr.DataArray):
                 # if xarray is provided directly assign that
