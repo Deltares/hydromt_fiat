@@ -56,7 +56,7 @@ where = ["."]
 include = ["hydromt_fiat*"]
 
 [tool.setuptools.package-data]
-"hydromt_fiat_data" = ["hydromt_fiat/data/**"]
+"hydromt_fiat" = ["data/**"]
 
 [project.optional-dependencies]
 test = [
