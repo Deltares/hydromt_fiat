@@ -534,8 +534,8 @@ class FiatModel(GridModel):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
-                    da_map_fn,
-                )  # removed geom=self.region because it is not always there
+                da_map_fn
+            )  # removed geom=self.region because it is not always there
             elif isinstance(da_map_fn, xr.DataArray):
                 # if xarray is provided directly assign that
                 da = da_map_fn
@@ -585,7 +585,6 @@ class FiatModel(GridModel):
         check_map_uniqueness(map_name_lst)
 
         # in case of risk analysis, create a single netcdf with multibans per rp
-        list_maps = list(self.maps.keys())
         if risk_output:
             da, sorted_rp, sorted_names = create_risk_dataset(
                 params, rp_list, map_name_lst, self.maps
@@ -594,7 +593,7 @@ class FiatModel(GridModel):
             self.set_grid(da)
 
             self.grid.attrs = {
-               "rp": sorted_rp,
+                "rp": sorted_rp,
                 "type": params[
                     "map_type_lst"
                 ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
@@ -606,13 +605,10 @@ class FiatModel(GridModel):
             if "grid_mapping" in self.grid.encoding:
                 del  self.grid.encoding["grid_mapping"]
 
+            list_maps = list(self.maps.keys())
+
             for item in list_maps[:]:
                 self.maps.pop(item)
-        
-        else:
-            for item in list_maps:
-                da = self.maps.pop(item)
-                self.set_grid(da, item)
 
         # set configuration .toml file
         self.set_config(
@@ -621,13 +617,21 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.file",
-            Path("hazard", "hazard_map.nc").as_posix()            
+            [
+                str(Path("hazard") / (hazard_map + ".nc"))
+                for hazard_map in self.maps.keys()
+            ][0]
             if not risk_output
-            else Path("hazard", "risk_map.nc").as_posix(),
+            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
         )
         self.set_config(
             "hazard.crs",
-            "EPSG:" + str((self.crs.to_epsg())),
+            [
+                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
+                for hazard_map in self.maps.keys()
+            ][0]
+            if not risk_output
+            else ["EPSG:" + str((self.crs.to_epsg()))][0],
         )
 
         self.set_config(
@@ -637,7 +641,7 @@ class FiatModel(GridModel):
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            list(self.grid.data_vars)[0]
+            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
             if not risk_output
             else sorted_names,
         )
