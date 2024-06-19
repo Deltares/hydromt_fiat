@@ -14,7 +14,7 @@ from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
 
-from hydromt_fiat.data_types import Units
+from hydromt_fiat.api.data_types import Units
 from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
