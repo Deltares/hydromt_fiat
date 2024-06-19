@@ -25,7 +25,7 @@ on:
     branches:
       - main
   release:
-    types: [created, published]
+    types: [published]
   workflow_dispatch:
 
 
