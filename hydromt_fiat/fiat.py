@@ -1153,7 +1153,7 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
-        if "social_vulnerability_scores" in self.tables:   
+        if "social_vulnerability_scores" in self._tables:   
             folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
             self.tables["social_vulnerability_scores"].to_file(folder)
         
@@ -1187,7 +1187,7 @@ class FiatModel(GridModel):
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode()
+        self._assert_write_mode
 
         for name in self._tables.keys():
             # Vulnerability
