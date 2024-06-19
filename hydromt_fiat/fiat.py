@@ -13,6 +13,7 @@ import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
+import Units
 
 from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
@@ -221,7 +222,7 @@ class FiatModel(GridModel):
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
             self.vf_ids_and_linking_df["continent"] = continent.lower()
-            unit = "meters"
+            unit = Units.meters.value
 
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
@@ -1154,7 +1155,7 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
-        if "social_vulnerability_scores" in self.tables:   
+        if "social_vulnerability_scores" in self._tables:   
             folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
             self.tables["social_vulnerability_scores"].to_file(folder)
         
@@ -1188,7 +1189,7 @@ class FiatModel(GridModel):
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode()
+        self._assert_write_mode
 
         for name in self._tables.keys():
             # Vulnerability
