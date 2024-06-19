@@ -221,6 +221,7 @@ class FiatModel(GridModel):
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
             self.vf_ids_and_linking_df["continent"] = continent.lower()
+            unit = "meters"
 
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
