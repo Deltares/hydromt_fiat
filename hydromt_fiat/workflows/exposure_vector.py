@@ -539,7 +539,7 @@ class ExposureVector(Exposure):
                     gdf = gdf[gdf["Primary Object Type"] != ""]
 
             # Remove Object ID duplicates
-            gdf.drop_duplicates(inplace = True)
+            gdf.drop_duplicates(inplace = True, subset = "Object ID")
             gdf.reset_index(drop=True, inplace = True)
 
             # Update the exposure geoms
