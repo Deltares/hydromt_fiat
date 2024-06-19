@@ -13,7 +13,7 @@ import pandas as pd
 from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
-import Units
+from .data_types import Units
 
 from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
