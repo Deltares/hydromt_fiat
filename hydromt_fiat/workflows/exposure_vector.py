@@ -494,6 +494,7 @@ class ExposureVector(Exposure):
             ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
             gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
+            gdf_amenity.loc[gdf_amenity["Secondary Object Type"] == "yes", "Secondary Object Type"] = "residential"
             gdf = gdf_amenity
 
             # Remove the objects that do not have a Primary Object Type, that were not
@@ -538,8 +539,8 @@ class ExposureVector(Exposure):
                     gdf = gdf[gdf["Primary Object Type"] != ""]
 
             # Remove Object ID duplicates
-            gdf = gdf.drop_duplicates()
-            gdf = gdf.reset_index(drop=True)
+            gdf.drop_duplicates(inplace = True, subset = "Object ID")
+            gdf.reset_index(drop=True, inplace = True)
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
@@ -612,8 +613,8 @@ class ExposureVector(Exposure):
 
             # Map the landuse/buildings/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
-        jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
-        jrc_osm_mapping = pd.read_csv(jrc_osm_mapping_fn)
+        jrc_osm_mapping = self.data_catalog.get_dataframe("jrc_osm_mapping")
+        
         # landuse
         landuse_to_jrc_mapping = jrc_osm_mapping[["osm_key_landuse", "jrc_key_landuse"]]
         landuse_to_jrc_mapping = dict(
@@ -1194,10 +1195,11 @@ class ExposureVector(Exposure):
             list_centroid.append(centroid)
             list_object_id.append(row["Object ID"])
         data = {"Object ID": list_object_id, "geometry": list_centroid}
-        gpf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
-        gdf = gdf_bf.merge(gpf_centroid, on="Object ID", suffixes=("_gdf1", "_gdf2"))
+        gdf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
+        gdf = gdf_bf.merge(gdf_centroid, on="Object ID", suffixes=("_gdf1", "_gdf2"))
         gdf.drop(columns="geometry_gdf1", inplace=True)
         gdf.rename(columns={"geometry_gdf2": "geometry"}, inplace=True)
+        gdf.drop_duplicates(inplace = True)
         gdf = gpd.GeoDataFrame(gdf, geometry=gdf["geometry"])
 
         # Update geoms
