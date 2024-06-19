@@ -613,8 +613,8 @@ class ExposureVector(Exposure):
 
             # Map the landuse/buildings/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
-        jrc_osm_mapping_fn = self.data_catalog.get_source("jrc_osm_mapping").path
-        jrc_osm_mapping = pd.read_csv(jrc_osm_mapping_fn)
+        jrc_osm_mapping = self.data_catalog.get_dataframe("jrc_osm_mapping")
+        
         # landuse
         landuse_to_jrc_mapping = jrc_osm_mapping[["osm_key_landuse", "jrc_key_landuse"]]
         landuse_to_jrc_mapping = dict(
