@@ -81,7 +81,6 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                damage_unit= "$",
                 country = "United States"
             )
             
@@ -115,7 +114,6 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                damage_unit= "€",
                 country = country
             )
             self.exposure.setup_buildings_from_multiple_sources(
