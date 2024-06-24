@@ -103,7 +103,8 @@ class ExposureVector(Exposure):
         self.exposure_geoms = list()  # A list of GeoDataFrames
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
-
+        self.damage_unit = damage_unit
+        
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
             gdf = gpd.GeoDataFrame(pd.concat(self.exposure_geoms, ignore_index=True))
