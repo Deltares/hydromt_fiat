@@ -14,6 +14,7 @@ from hydromt.models.model_grid import GridModel
 from shapely.geometry import box
 import shutil
 
+from hydromt_fiat.api.data_types import Units
 from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
@@ -221,6 +222,7 @@ class FiatModel(GridModel):
                 continent is not None
             ), "Please specify the continent when using the JRC vulnerability curves."
             self.vf_ids_and_linking_df["continent"] = continent.lower()
+            unit = Units.meters.value
 
         # Process the vulnerability data
         self.vulnerability = Vulnerability(
@@ -293,7 +295,7 @@ class FiatModel(GridModel):
     def setup_exposure_buildings(
         self,
         asset_locations: Union[str, Path],
-        occupancy_type: Union[str, Path],
+        occupancy_type: Union[str, Path], 
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
@@ -304,7 +306,8 @@ class FiatModel(GridModel):
         damage_unit: str = "$", 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
-        bf_conversion: bool = False    
+        bf_conversion: bool = False,    
+        keep_unclassified: bool = True
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -341,6 +344,8 @@ class FiatModel(GridModel):
             only required when using the JRC vulnerability curves.
         bf_conversion: bool, optional
             If building footprints shall be converted into point data.
+        keep_unclassified: bool, optional
+            Whether building footprints without classification are removed or reclassified as "residential"
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -370,7 +375,8 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
-                bf_conversion = bf_conversion
+                bf_conversion = bf_conversion, 
+                keep_unclassified =keep_unclassified
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -378,6 +384,7 @@ class FiatModel(GridModel):
                 occupancy_source=occupancy_type,
                 occupancy_attr=occupancy_attr,
                 type_add=occupancy_object_type,
+                keep_unclassified = keep_unclassified
             )
 
         # Link the damage functions to assets
@@ -929,8 +936,9 @@ class FiatModel(GridModel):
         old_values= Union[List[str], str],
         new_values= Union[List[str], str],
         damage_types = Union[List[str], str],
-        remove_object_type = bool
-
+        remove_object_type = bool,
+        keep_unclassified: bool = True
+        
     ):
         """_summary_
         Parameters
@@ -952,9 +960,11 @@ class FiatModel(GridModel):
         remove_object_type: bool
             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
+        keep_unclassified: bool, optional
+            Whether building footprints without classification are removed or reclassified as "residential"
         """
 
-        self.exposure.setup_occupancy_type(source, attribute, type_add)
+        self.exposure.setup_occupancy_type(source, attribute, type_add, keep_unclassified)
 
         # Drop Object Type that has not been updated. 
 
@@ -1145,7 +1155,7 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
-        if "social_vulnerability_scores" in self.tables:   
+        if "social_vulnerability_scores" in self._tables:   
             folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
             self.tables["social_vulnerability_scores"].to_file(folder)
         
@@ -1179,7 +1189,7 @@ class FiatModel(GridModel):
         if len(self._tables) == 0:
             self.logger.debug("No table data found, skip writing.")
             return
-        self._assert_write_mode()
+        self._assert_write_mode
 
         for name in self._tables.keys():
             # Vulnerability
