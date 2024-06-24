@@ -79,6 +79,7 @@ class ExposureVector(Exposure):
         crs: str = None,
         unit: str = "meters",
         country: str = None,
+        damage_unit= "$"
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -92,6 +93,8 @@ class ExposureVector(Exposure):
             The region of interest, by default None
         crs : str, optional
             The CRS of the Exposure data, by default None
+        damage_unit : str, optional
+            The unit/currency of the (potential) damages, by default USD$
         """
         super().__init__(
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
