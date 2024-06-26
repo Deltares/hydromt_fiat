@@ -970,6 +970,12 @@ class ExposureVector(Exposure):
                 self.exposure_db["Ground Elevation"] = self.exposure_db[
                     "Ground Elevation"
                 ].apply(lambda x: x / 3.28084)
+            elif (unit == "feet" or unit == "ft") and (
+                self.unit == "feet" or self.unit == "ft"
+                ) or (unit == "meters" or unit == "m") and (
+                self.unit == "meters" or self.unit == "m"
+                ):
+                 pass
             else:
                 self.logger.warning(
                     "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
