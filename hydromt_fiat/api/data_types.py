@@ -13,6 +13,8 @@ class Units(str, Enum):
     meters = "meters"
     feet = "feet"
 
+class Conversion(float, Enum):
+    feet_meters = 3.28084
 
 class Category(str, Enum):
     exposure = "exposure"
