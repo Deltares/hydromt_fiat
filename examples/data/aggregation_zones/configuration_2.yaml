@@ -1,4 +1,4 @@
-setup_aggregation_areas:
+setup_additional_attributes:
   aggregation_area_fn:
     - "data/aggregation_zones/aggregation_zones/base_zones.gpkg"
     - "data/aggregation_zones/aggregation_zones/land_use.gpkg"

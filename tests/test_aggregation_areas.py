@@ -17,7 +17,7 @@ _cases = {
     "aggregation_test_1": {
         "new_root": EXAMPLEDIR / "fiat_model_aggregation1",
         "configuration": {
-            "setup_aggregation_areas": {
+            "setup_additional_attributes": {
                 "aggregation_area_fn": EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
                 "attribute_names": "ZONE_BASE",
                 "label_names": "Zoning_map",
@@ -27,7 +27,7 @@ _cases = {
     "aggregation_test_2": {
         "new_root": EXAMPLEDIR / "fiat_model_aggregation2",
         "configuration": {
-            "setup_aggregation_areas": {
+            "setup_additional_attributes": {
                 "aggregation_area_fn": [
                     EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
                     EXAMPLEDIR / "aggregation_zones" / "land_use.gpkg",
@@ -74,7 +74,7 @@ def test_aggregation_areas(case: ParameterSet | Sequence[object] | object):
     assert Path(fm.root).joinpath("additional_attributes").exists()
 
     # Check if the files are copied to the right folder
-    aggregation_area_fn = _cases[case]["configuration"]["setup_aggregation_areas"]["aggregation_area_fn"]
+    aggregation_area_fn = _cases[case]["configuration"]["setup_additional_attributes"]["aggregation_area_fn"]
     if isinstance(aggregation_area_fn, Path):
         aggregation_area_fn = [aggregation_area_fn]
 
