@@ -964,7 +964,7 @@ class ExposureVector(Exposure):
                 ):
                     self.exposure_db["Ground Elevation"] = self.exposure_db[
                         "Ground Elevation"
-                    ].apply(lambda x: x * Conversion.metersto_feet.value)
+                    ].apply(lambda x: x * Conversion.meters_to_feet.value)
 
                 elif (unit == Units.feet.value) and (
                     self.unit == Units.meters.value
