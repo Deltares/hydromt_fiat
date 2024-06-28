@@ -5,6 +5,7 @@ from hydromt import DataCatalog
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
+from hydromt_fiat.api.data_types import Currency
 import logging
 import geopandas as gpd
 
@@ -163,7 +164,7 @@ class ExposureViewModel:
                 unit=Units.feet.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "$",
+                damage_unit = Currency.dollar.value,
                 country = "United States"
             )
         elif source == "file" and fiat_key_maps is not None:
@@ -194,7 +195,7 @@ class ExposureViewModel:
                 unit=Units.meters.value,  # TODO: make flexible
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = "€",
+                damage_unit = Currency.euro.value,
                 country = country,
                 bf_conversion = bf_conversion
             )

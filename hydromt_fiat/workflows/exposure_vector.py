@@ -14,7 +14,7 @@ from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
-from hydromt_fiat.api.data_types import Units, Conversion
+from hydromt_fiat.api.data_types import Units, Conversion, Currency
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
@@ -80,7 +80,7 @@ class ExposureVector(Exposure):
         crs: str = None,
         unit: str = "meters",
         country: str = None,
-        damage_unit= "$"
+        damage_unit= Currency.dollar.value
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
