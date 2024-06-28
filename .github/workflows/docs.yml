@@ -54,13 +54,13 @@
               pixi run --locked -e docs html
               echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
-          - name: Upload to GitHub Pages
-            if: ${{ github.event_name != 'pull_request' && !github.event.act }} && $branch_name == 'main'
-            uses: peaceiris/actions-gh-pages@v3.9.3
-            with:
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-              publish_dir: ./docs/_build/html
-              exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
-              destination_dir: ./${{ env.DOC_VERSION }}
-              keep_files: false
-              full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
+          # - name: Upload to GitHub Pages
+          #   if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+          #   uses: peaceiris/actions-gh-pages@v3.9.3
+          #   with:
+          #     github_token: ${{ secrets.GITHUB_TOKEN }}
+          #     publish_dir: ./docs/_build/html
+          #     exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
+          #     destination_dir: ./${{ env.DOC_VERSION }}
+          #     keep_files: false
+          #     full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
