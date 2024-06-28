@@ -39,6 +39,7 @@ from hydromt_fiat.workflows.building_footprints import join_exposure_building_fo
 from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.utils import get_us_county_numbers
 from hydromt_fiat.workflows.utils import rename_geoid_short
+from hydromt_fiat.api.data_types import Currency
 
 __all__ = ["FiatModel"]
 
@@ -303,7 +304,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"], 
-        damage_unit: str = "$", 
+        damage_unit: str = Currency.dollar.value, 
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         bf_conversion: bool = False,    

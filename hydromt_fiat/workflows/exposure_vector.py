@@ -14,6 +14,7 @@ from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
+from hydromt_fiat.api.data_types import Units, Conversion, Currency
 from hydromt_fiat.data_apis.open_street_maps import (
     get_assets_from_osm,
     get_landuse_from_osm,
@@ -79,7 +80,7 @@ class ExposureVector(Exposure):
         crs: str = None,
         unit: str = "meters",
         country: str = None,
-        damage_unit= "$"
+        damage_unit= Currency.dollar.value
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -957,28 +958,23 @@ class ExposureVector(Exposure):
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
             # Unit conversion
-            if (unit == "meters" or unit == "m") and (
-                self.unit == "feet" or self.unit == "ft"
-            ):
-                self.exposure_db["Ground Elevation"] = self.exposure_db[
-                    "Ground Elevation"
-                ].apply(lambda x: x * 3.28084)
-
-            elif (unit == "feet" or unit == "ft") and (
-                self.unit == "meters" or self.unit == "m"
-            ):
-                self.exposure_db["Ground Elevation"] = self.exposure_db[
-                    "Ground Elevation"
-                ].apply(lambda x: x / 3.28084)
-            elif (unit == "feet" or unit == "ft") and (
-                self.unit == "feet" or self.unit == "ft"
-                ) or (unit == "meters" or unit == "m") and (
-                self.unit == "meters" or self.unit == "m"
+            if unit != self.unit:
+                if (unit == Units.meters.value) and (
+                    self.unit == Units.feet.value
                 ):
-                 pass
-            else:
-                self.logger.warning(
-                    "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
+                    self.exposure_db["Ground Elevation"] = self.exposure_db[
+                        "Ground Elevation"
+                    ].apply(lambda x: x * Conversion.meters_to_feet.value)
+
+                elif (unit == Units.feet.value) and (
+                    self.unit == Units.meters.value
+                ):
+                    self.exposure_db["Ground Elevation"] = self.exposure_db[
+                        "Ground Elevation"
+                    ].apply(lambda x: x * Conversion.feet_to_meters.value)
+                else:
+                    self.logger.warning(
+                        "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
                 )
 
         else:
