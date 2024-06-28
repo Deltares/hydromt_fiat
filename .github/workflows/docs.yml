@@ -44,7 +44,7 @@
           - name: Generate dummy docs
             if: ${{ github.event_name == 'pull_request' }}
             run: |
-              pixi run --locked -e docs sphinx-build ./docs ./docs/_build -b dummy -W
+              pixi run --locked -e docs docs ./docs ./docs/_build -b dummy -W
 
           - name: Generate docs
             if: ${{ github.event_name != 'pull_request' && !github.event.act }}
