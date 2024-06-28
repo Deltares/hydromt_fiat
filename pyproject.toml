@@ -85,7 +85,6 @@ dev = [
     "hydromt_fiat[all, docs, examples, test]"
 ]
 docs = [
-    "myst_parser",
     "nbsphinx",
 	"pydata-sphinx-theme",
     "sphinx",
