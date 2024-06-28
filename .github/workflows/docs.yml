@@ -3,7 +3,7 @@
     on:
       workflow_dispatch:
       push:
-        branches: [main]
+        branches: [v1]
         paths:
           - tests/*
           - src/hydromt_fiat/*
@@ -12,7 +12,7 @@
           - pyproject.toml
           - .github/workflows/docs.yml
       pull_request:
-        branches: [main]
+        branches: [v1]
         paths:
           - tests/*
           - src/hydromt_fiat/*
