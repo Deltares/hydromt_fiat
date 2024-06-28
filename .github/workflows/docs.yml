@@ -28,6 +28,8 @@
             shell: bash -e -l {0}
         timeout-minutes: 30
         runs-on: ubuntu-latest
+        env:
+          branch_name: ${{ github.head_ref || github.ref_name }}
         steps:
           - name: checkout code
             uses: actions/checkout@v3
@@ -53,7 +55,7 @@
               echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
           - name: Upload to GitHub Pages
-            if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+            if: ${{ github.event_name != 'pull_request' && !github.event.act }} && $branch_name == 'main'
             uses: peaceiris/actions-gh-pages@v3.9.3
             with:
               github_token: ${{ secrets.GITHUB_TOKEN }}
