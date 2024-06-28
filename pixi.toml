@@ -52,7 +52,7 @@ clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
 ## Dependencies
 [dependencies]
 dask = "*"
-geopandas = ">=1.0.0"
+geopandas = "*"
 hydromt = ">=1.0.0a"
 numpy = "*"
 requests = "*"
@@ -79,10 +79,11 @@ ruff = "*"
 pip = ">=23.1.2"
 
 [feature.docs.dependencies]
-myst_parser = "*"
 nbsphinx = "*"
 pydata-sphinx-theme = "*"
 sphinx = "*"
+
+[feature.docs.pypi-dependencies]
 sphinx_autosummary_accessors = "*"
 sphinx_design = "*"
 
