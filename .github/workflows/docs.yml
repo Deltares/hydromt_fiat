@@ -1,0 +1,64 @@
+---
+    name: Build Documentation
+    on:
+      workflow_dispatch:
+      push:
+        branches: [main]
+        paths:
+          - tests/*
+          - src/hydromt_fiat/*
+          - docs/*
+          - examples/*
+          - pyproject.toml
+          - .github/workflows/docs.yml
+      pull_request:
+        branches: [main]
+        paths:
+          - tests/*
+          - src/hydromt_fiat/*
+          - docs/*
+          - examples/*
+          - pyproject.toml
+          - .github/workflows/docs.yml
+
+    jobs:
+      test-docs:
+        defaults:
+          run:
+            shell: bash -e -l {0}
+        timeout-minutes: 30
+        runs-on: ubuntu-latest
+        steps:
+          - name: checkout code
+            uses: actions/checkout@v3
+          - uses: prefix-dev/setup-pixi@v0.6.0
+            with:
+              pixi-version: "v0.24.2"
+              environments: docs
+          - name: Prepare pixi
+            run: |
+              pixi run --locked -e docs install-hydromt-fiat
+
+          # if we're not publishing we don't have to write them, so we might as well
+          # save ourself a bunch of IO time
+          - name: Generate dummy docs
+            if: ${{ github.event_name == 'pull_request' }}
+            run: |
+              pixi run --locked -e docs sphinx-build ./docs ./docs/_build -b dummy -W
+
+          - name: Generate docs
+            if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+            run: |
+              pixi run --locked -e docs html
+              echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
+
+          - name: Upload to GitHub Pages
+            if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+            uses: peaceiris/actions-gh-pages@v3.9.3
+            with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              publish_dir: ./docs/_build/html
+              exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
+              destination_dir: ./${{ env.DOC_VERSION }}
+              keep_files: false
+              full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
