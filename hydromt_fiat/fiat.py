@@ -767,10 +767,10 @@ class FiatModel(GridModel):
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
             # Define spatial join info
-            file = "SVI/svi.gpkg"
+            file = "SVI/svi"
             self.set_geoms(gdf, file)
             attrs = {"name": "SVI", 
-                    "file": f"exposure/{file}",
+                    "file": f"exposure/{file}.gpkg",
                     "field_name": "composite_svi_z"}
             if not self.spatial_joins["additional_attributes"]:
                 self.spatial_joins["additional_attributes"] = []
