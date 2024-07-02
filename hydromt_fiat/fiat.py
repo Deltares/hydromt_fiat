@@ -733,7 +733,7 @@ class FiatModel(GridModel):
             svi.merge_svi_data_shp()
             gdf = rename_geoid_short(svi.svi_data_shp)
             # store the relevant tables coming out of the social vulnerability module
-            self.set_tables(df=gdf, name="social_vulnerability_scores")
+            self.set_tables(df=gdf.drop(columns="geometry"), name="social_vulnerability_scores")
             # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
@@ -766,7 +766,17 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]], on = "Object ID",how='left')
-
+            # Define spatial join info
+            file = "SVI/svi.gpkg"
+            self.set_geoms(gdf, file)
+            attrs = {"name": "SVI", 
+                    "file": f"exposure/{file}",
+                    "field_name": "composite_svi_z"}
+            if not self.spatial_joins["additional_attributes"]:
+                self.spatial_joins["additional_attributes"] = []
+            self.spatial_joins["additional_attributes"].append(attrs) 
+            
+            
     def setup_equity_data(
         self,
         census_key: str,
@@ -1160,9 +1170,6 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
-        if "social_vulnerability_scores" in self._tables:   
-            folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
-            self.tables["social_vulnerability_scores"].to_file(folder)
         
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
