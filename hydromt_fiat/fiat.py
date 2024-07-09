@@ -86,6 +86,13 @@ class FiatModel(GridModel):
 
         self.building_footprint_fn = ""  # Path to the building footprints dataset
 
+    def __del__(self):
+        """Close the model and remove the logger file handler."""
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.close()
+                self.logger.removeHandler(handler)
+                
     def setup_global_settings(
         self,
         crs: str = None,
