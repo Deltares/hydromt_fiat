@@ -105,10 +105,10 @@ class HydroMtViewModel:
         if self.exposure_vm.exposure_roads_model:
             config_yaml.setup_exposure_roads = self.exposure_vm.exposure_roads_model
 
-        if self.vulnerability_vm.vulnerability_roads_model:
-            config_yaml.setup_road_vulnerability = (
-                self.vulnerability_vm.vulnerability_roads_model
-            )
+        #if self.vulnerability_vm.vulnerability_roads_model:
+        #    config_yaml.setup_road_vulnerability = (
+        #        self.vulnerability_vm.vulnerability_roads_model
+        #    )
 
         if self.svi_vm.svi_model:
             config_yaml.setup_social_vulnerability_index = self.svi_vm.svi_model
