@@ -83,6 +83,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
+                unit = Units.feet.value,
                 country = "United States"
             )
             
@@ -116,6 +117,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
+                unit = Units.meters.value,
                 country = country
             )
             self.exposure.setup_buildings_from_multiple_sources(

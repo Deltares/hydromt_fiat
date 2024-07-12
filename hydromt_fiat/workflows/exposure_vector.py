@@ -79,7 +79,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = "meters",
+        unit: str = Units.feet.value,
         country: str = None,
         damage_unit= Currency.dollar.value
     ) -> None:
@@ -279,6 +279,7 @@ class ExposureVector(Exposure):
 
         # Convert OSM road from meters to feet (if model unit is feet)
         road_length = get_road_lengths(roads)
+        road_length = road_length.apply(lambda x: f"{x:.2f}")
         if self.unit == Units.feet.value:
             road_length = road_length * Conversion.meters_to_feet.value
         
