@@ -105,18 +105,18 @@ class ExposureSetupDamages(BaseModel):
     max_dist: Optional[Union[float, int, List[float], List[int]]] = None
     damage_types: Optional[Union[str, List[str]]] = None
 
-class RoadVulnerabilitySettings(BaseModel):
-    threshold_value: float
-    min_hazard_value: float
-    max_hazard_value: float
-    step_hazard_value: float
-    vertical_unit: Units
+#class RoadVulnerabilitySettings(BaseModel):
+    #threshold_value: float
+    #min_hazard_value: float
+    #max_hazard_value: float
+    #step_hazard_value: float
+    #vertical_unit: Units
 
 
 class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
-    road_damage: int
+    road_damage: Union[int, float]
     unit: Units
 
 

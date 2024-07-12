@@ -410,7 +410,7 @@ class FiatModel(GridModel):
     def setup_exposure_roads(
         self,
         roads_fn: Union[str, Path],
-        road_damage: Union[str, Path, int],
+        road_damage: Union[str, Path, int, float],
         road_types: Union[str, List[str], bool] = True,
         unit: str = "meters",
     ):

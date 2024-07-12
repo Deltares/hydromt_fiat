@@ -5,6 +5,7 @@ from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
+import math
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -239,7 +240,7 @@ class ExposureVector(Exposure):
     def setup_roads(
         self,
         source: Union[str, Path],
-        road_damage: Union[str, Path, int],
+        road_damage: Union[str, Path, int, float],
         road_types: Union[str, List[str], bool] = True,
     ):
         self.logger.info("Setting up roads...")
@@ -285,6 +286,9 @@ class ExposureVector(Exposure):
         elif isinstance(road_damage, int):
             roads["Segment Length [m]"] = get_road_lengths(roads)
             roads["Max Potential Damage: Structure"] = road_damage
+        elif isinstance(road_damage, float):
+            roads["Segment Length [m]"] = get_road_lengths(roads)
+            roads["Max Potential Damage: Structure"] = math.nan
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")

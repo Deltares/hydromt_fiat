@@ -8,6 +8,7 @@ from hydromt_fiat.interface.database import IDatabase
 from hydromt_fiat.api.data_types import Currency
 import logging
 import geopandas as gpd
+import math
 
 from .data_types import (
     Category,
@@ -286,7 +287,7 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage=1,
+            road_damage= math.nan,
             unit=Units.feet.value,
         )
 
@@ -316,7 +317,7 @@ class ExposureViewModel:
 
         self.exposure.setup_roads(
             source="OSM",
-            road_damage=1,
+            road_damage=math.nan,
             road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[
@@ -327,7 +328,7 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage=1,
+            road_damage=math.nan,
             unit=Units.feet.value,
         )
 
