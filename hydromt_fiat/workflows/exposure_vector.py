@@ -277,17 +277,22 @@ class ExposureVector(Exposure):
         # Clip road to model boundaries
         roads = roads.clip(self.region)
 
+        # Convert OSM road from meters to feet (if model unit is feet)
+        road_length = get_road_lengths(roads)
+        if self.unit == Units.feet.value:
+            road_length = road_length * Conversion.meters_to_feet.value
+        
+        # Add the max potential damage and the length of the segments to the roads
         if isinstance(road_damage, str):
-            # Add the max potential damage and the length of the segments to the roads
             road_damage = self.data_catalog.get_dataframe(road_damage)
-            roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = (
+            roads[["Max Potential Damage: Structure", "Segment Length"]] = (
                 get_max_potential_damage_roads(roads, road_damage)
             )
         elif isinstance(road_damage, int):
-            roads["Segment Length [m]"] = get_road_lengths(roads)
+            roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
         elif isinstance(road_damage, float):
-            roads["Segment Length [m]"] = get_road_lengths(roads)
+            roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = math.nan
 
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
