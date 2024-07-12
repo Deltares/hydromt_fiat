@@ -279,9 +279,9 @@ class ExposureVector(Exposure):
 
         # Convert OSM road from meters to feet (if model unit is feet)
         road_length = get_road_lengths(roads)
-        road_length = road_length.apply(lambda x: f"{x:.2f}")
-        if self.unit == Units.feet.value:
+        if self.unit == Units.feet.value and str(source).upper() == "OSM":
             road_length = road_length * Conversion.meters_to_feet.value
+        road_length = road_length.apply(lambda x: f"{x:.2f}")
         
         # Add the max potential damage and the length of the segments to the roads
         if isinstance(road_damage, str):
