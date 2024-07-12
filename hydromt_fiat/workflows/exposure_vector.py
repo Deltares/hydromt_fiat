@@ -267,11 +267,11 @@ class ExposureVector(Exposure):
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
-        roads["Primary Object Type"] = "roads"
-        roads["Damage Function: Structure"] = "roads"
+        roads["Primary Object Type"] = "road"
+        roads["Damage Function: Structure"] = "road"
 
         self.logger.info(
-            "The damage function 'roads' is selected for all of the structure damage to the roads."
+            "The damage function 'road' is selected for all of the structure damage to the roads."
         )
         # Clip road to model boundaries
         roads = roads.clip(self.region)
