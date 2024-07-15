@@ -935,7 +935,8 @@ class FiatModel(GridModel):
             new_composite_area,
             keep_all=False
         )
-
+        file_names = []
+        
         if file_names:
             for area_gdf, file_name in zip(areas_gdf, file_names):
                 self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
