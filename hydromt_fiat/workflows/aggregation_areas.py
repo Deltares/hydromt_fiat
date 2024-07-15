@@ -34,9 +34,7 @@ def spatial_joins(
         or as a GeoDataFrame.
     attribute_names : List[str]
         A list of attribute names to be joined from the aggregation areas.
-        A list of attribute names to be joined from the aggregation areas.
     label_names : List[str]
-        A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
         A list of label names to be assigned to the joined attributes in the exposure GeoDataFrame.
     new_composite_area : bool
         If a new composite area is added split it according to aggregation
@@ -70,14 +68,13 @@ def spatial_joins(
         exposure_gdf["ca_ID"] = range(0, len(exposure_gdf), 1)
         exposure_gdf_copy = exposure_gdf.copy()
 
-    filtered_areas = []
-
     for area, attribute_name, label_name in zip(
         aggregation_area_fn, attribute_names, label_names
     ):
         if isinstance(area, str) or isinstance(area, Path):
             area_gdf = gpd.read_file(area)
         else:
+            area_gdf = area
             area_gdf = area
 
         ## check the projection of both gdf and if not match, reproject
@@ -106,6 +103,7 @@ def spatial_joins(
             filtered_areas.append(area_gdf.iloc[inds].reset_index(drop=True))
         else:
             filtered_areas.append(area_gdf)
+        
         ##remove the index_right column
         if "index_right" in exposure_gdf.columns:
             del exposure_gdf["index_right"]
@@ -115,7 +113,8 @@ def spatial_joins(
             exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
         )
         exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
-                # Check if new gdf was already created in previous loop
+
+        # Check if new gdf was already created in previous loop
         try:
             new_exposure_aggregation
         except NameError:

@@ -834,9 +834,11 @@ class FiatModel(GridModel):
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
-            label_names="Census Blockgroup", new_composite_area=False
+            label_names="Census Blockgroup",
+            new_composite_area=False,
             file_names="block_groups"
         )
+        
         # Update spatial join metadata for equity data connection
         ind = [i for i, name in enumerate([aggr["name"] for aggr in self.spatial_joins["aggregation_areas"]])][0]
         attrs = {"census_data": "exposure/equity/equity_data.csv", #TODO check how and where this is defined
@@ -853,6 +855,7 @@ class FiatModel(GridModel):
         label_names: Union[List[str], str],
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
+        
     ):
         """_summary_
 
@@ -877,20 +880,20 @@ class FiatModel(GridModel):
             label_names = [label_names]
             if file_names:
                 file_names = [file_names]
-                
+
         # Perform spatial join for each aggregation area provided
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        # Then perform spatial joins
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
             # Make sure that column name for aggregation areas includes the Aggregation Label part
             ["Aggregation Label: " + name for name in label_names],
+            new_composite_area,
             keep_all=False
         )
-        
+
         if file_names:
             for area_gdf, file_name in zip(areas_gdf, file_names):
                 self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
@@ -903,7 +906,6 @@ class FiatModel(GridModel):
                      "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
                      "field_name": attribute_name}
             self.spatial_joins["aggregation_areas"].append(attrs) 
-        
 
     def setup_additional_attributes(
         self,
@@ -912,6 +914,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
     ):
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if not isinstance(aggregation_area_fn, list):
@@ -923,7 +926,7 @@ class FiatModel(GridModel):
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         # Then perform spatial joins
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
@@ -1214,7 +1217,10 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
-        
+        if "social_vulnerability_scores" in self._tables:   
+            folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
+            self.tables["social_vulnerability_scores"].to_file(folder)
+
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
     ) -> None:
