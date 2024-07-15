@@ -89,7 +89,7 @@ class FiatModel(GridModel):
     def __del__(self):
         """Close the model and remove the logger file handler."""
         for handler in self.logger.handlers:
-            if isinstance(handler, logging.FileHandler):
+            if isinstance(handler, logging.FileHandler) and 'hydromt.log' in handler.baseFilename:
                 handler.close()
                 self.logger.removeHandler(handler)
                 
