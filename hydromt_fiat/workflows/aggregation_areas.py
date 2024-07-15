@@ -61,7 +61,6 @@ def spatial_joins(
     """
 
     filtered_areas = []
-    exposure_gdf_copy = exposure_gdf.copy()
 
     # Create column to assign new composite area ID and create copy of new composite area gdf
     if new_composite_area:
@@ -223,7 +222,11 @@ def split_composite_area(
         idx_multiploygon = exposure_gdf[exposure_gdf["geometry"].area < 1e-10].index
         if not idx_multiploygon.empty:
             exposure_gdf.drop(idx_multiploygon, inplace=True)
-        exposure_gdf.drop(["level_0", "level_1"], axis=1, inplace=True)
+        if "level_0" in exposure_gdf.columns or "level_1" in exposure_gdf.columns:
+            if "level_0" in exposure_gdf.columns:
+                exposure_gdf.drop(["level_0"], axis=1, inplace=True)
+            if "level_1" in exposure_gdf.columns:
+                exposure_gdf.drop(["level_1"], axis=1, inplace=True)
 
            # create new Object IDs       
         exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
