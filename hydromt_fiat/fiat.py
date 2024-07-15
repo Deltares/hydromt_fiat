@@ -926,49 +926,6 @@ class FiatModel(GridModel):
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         # Then perform spatial joins
-        self.exposure.exposure_db, _areas_gdf = join_exposure_aggregation_areas(
-            exposure_gdf,
-            aggregation_area_fn,
-            attribute_names,
-            # Make sure that column name for aggregation areas includes the Aggregation Label part
-            ["Aggregation Label: " + name for name in label_names],
-            new_composite_area,
-            keep_all=False
-        )
-        file_names = []
-        
-        if file_names:
-            for area_gdf, file_name in zip(areas_gdf, file_names):
-                self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
-
-        # Save metadata on spatial joins
-        if not self.spatial_joins["aggregation_areas"]:
-            self.spatial_joins["aggregation_areas"] = []
-        for label_name, file_name, attribute_name in zip(label_names, file_names, attribute_names):
-            attrs = {"name": label_name, 
-                     "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
-                     "field_name": attribute_name}
-            self.spatial_joins["aggregation_areas"].append(attrs) 
-
-    def setup_additional_attributes(
-        self,
-        aggregation_area_fn: Union[
-            List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
-        ],
-        attribute_names: Union[List[str], str],
-        label_names: Union[List[str], str],
-        new_composite_area: bool = False,
-    ):
-        # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
-        if not isinstance(aggregation_area_fn, list):
-            aggregation_area_fn = [aggregation_area_fn]
-            attribute_names = [attribute_names]
-            label_names = [label_names]
-                
-        # Perform spatial join for each aggregation area provided
-        # First get all exposure geometries
-        exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        # Then perform spatial joins
         self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
