@@ -288,7 +288,7 @@ class ExposureVector(Exposure):
             roads[["Max Potential Damage: Structure", "Segment Length", "Extraction Method"]] = (
                 get_max_potential_damage_roads(roads, road_damage)
             )            
-        elif isinstance(road_damage, (int, float)):
+        elif isinstance(road_damage, (int, float)) or road_damage is None:
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
         
