@@ -268,7 +268,7 @@ class ExposureVector(Exposure):
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
         roads["Primary Object Type"] = "road"
-        roads["Extraction Method"] = "centroid"
+        roads["Extraction Method"] = "area"
     
         self.logger.info(
             "The damage function 'road' is selected for all of the structure damage to the roads."
@@ -292,6 +292,16 @@ class ExposureVector(Exposure):
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
         
+        ## Here put line to area
+        # Convert to a projection in feet to define correct buffer distance
+        crs = roads.crs
+        new_roads = roads.to_crs(epsg=2163)  
+        polygon_roads  = new_roads.buffer(1.5)
+        # This is a default value of 3 m road width. This could be changed or multiplied by the number of lanes.
+        polygon_roads = polygon_roads.to_crs(crs) 
+        roads["geometry"] = polygon_roads
+
+        # Set exposure_geoms
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
