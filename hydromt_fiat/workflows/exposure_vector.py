@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
-import math
+from geopy.extra.rate_limiter import RateLimiter 
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -288,17 +287,11 @@ class ExposureVector(Exposure):
             road_damage = self.data_catalog.get_dataframe(road_damage)
             roads[["Max Potential Damage: Structure", "Segment Length", "Extraction Method"]] = (
                 get_max_potential_damage_roads(roads, road_damage)
-            )
-            roads["Extraction Method"] = "centroid"
-        elif isinstance(road_damage, int):
+            )            
+        elif isinstance(road_damage, (int, float)):
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
-            roads["Extraction Method"] = "centroid"
-        elif isinstance(road_damage, float):
-            roads["Segment Length"] = road_length
-            roads["Max Potential Damage: Structure"] = math.nan
-            roads["Extraction Method"] = "centroid"
-
+        roads["Extraction Method"] = "centroid"
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
