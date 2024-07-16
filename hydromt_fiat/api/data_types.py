@@ -106,7 +106,7 @@ class ExposureSetupDamages(BaseModel):
     damage_types: Optional[Union[str, List[str]]] = None
 
 class RoadVulnerabilitySettings(BaseModel):
-    threshold_value: float
+    threshold_value: Union[float, None]
     min_hazard_value: float
     max_hazard_value: float
     step_hazard_value: float

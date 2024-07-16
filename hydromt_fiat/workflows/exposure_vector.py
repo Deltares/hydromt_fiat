@@ -268,8 +268,8 @@ class ExposureVector(Exposure):
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
         roads["Primary Object Type"] = "road"
-        roads["Damage Function: Structure"] = "road"
-
+        roads["Extraction Method"] = "centroid"
+    
         self.logger.info(
             "The damage function 'road' is selected for all of the structure damage to the roads."
         )
@@ -291,7 +291,7 @@ class ExposureVector(Exposure):
         elif isinstance(road_damage, (int, float)):
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
-        roads["Extraction Method"] = "centroid"
+        
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
