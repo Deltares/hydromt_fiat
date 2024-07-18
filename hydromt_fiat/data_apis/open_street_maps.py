@@ -3,6 +3,11 @@ import logging
 from shapely.geometry import Polygon
 import geopandas as gpd
 from typing import Union, List
+from shapely.geometry import LineString, Point
+from shapely.ops import split
+import math
+import pandas as pd
+from collections import Counter #need to be added to environment
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +74,67 @@ def get_roads_from_osm(
         roads = roads.loc[:, ["highway", "name", "geometry"]]
         logger.info("No attribute 'lanes' found in the OSM roads.")
 
+    # Segmentation
+    # Project to work with meters
+    #crs = roads.crs
+    #new_roads = roads.to_crs(epsg=2163)
+    
+    road_dict = {}
+    # Get the segments
+    count =0
+
+    # Make dict of number of appearances of road
+    duplicate_roads = {}
+    road_names = [roads['name']]
+    lis = road_names[0].to_list()
+    for x in set(lis):
+         a = x,lis.count(x)
+         duplicate_roads[a[0]] = a[1]
+
+    # Create segments
+    for index, row in roads.iterrows():
+        points= segments_points(row, 0.002)
+        segments = create_segments(points)
+        if duplicate_roads[row['name']] > 1:
+            road_dict[f"{row['name']}_{count}"] = segments
+        else:
+            road_dict[f"{row['name']}"] = segments
+        count +=1
+    gdf_list = []
+    for road_name, segments in road_dict.items():
+        for segment in segments:
+            gdf_list.append({'road_name': road_name, 'geometry': segment})
+    
+    # Create the GeoDataFrame
+    gdf = gpd.GeoDataFrame(gdf_list, crs="EPSG:4326")
+    gdf.to_file(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\test_output\segments.gpkg")
+    #segmented = segmented_roads.to_crs(crs) 
+
     return roads
 
+## This method will then lose curves and other details same with line.simplify(tolerance=0.01) 
+## Another option would be to select all the same road names and make ONE feature out of it and then seperate it. define the seperation points (after x meters) 
+## and then make a new row from it but keep internal vertices/points but divide them into the different roads
+## Maybe also check if when same road name per feature that these features geometries are all in the same area/sequential
+def segments_points(roads, segment_length):
+    start = roads["geometry"].coords[0]
+    end = roads["geometry"].coords[-1]
+    line =  LineString([start, end])
+    num_segments = int(line.length // segment_length)
+    points = [line.interpolate(i * segment_length) for i in range(num_segments + 1)]
+    if points[-1] != line.interpolate(line.length):
+        points.append(line.interpolate(line.length))
+    
+    return points
+def create_segments(points):
+    """
+    Create LineString segments from a list of points.
+    """
+    segments = []
+    for i in range(len(points) - 1):
+        segment = LineString([points[i], points[i + 1]])
+        segments.append(segment)
+    return segments
 
 def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
