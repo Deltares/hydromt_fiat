@@ -269,6 +269,7 @@ class ExposureVector(Exposure):
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
         roads["Primary Object Type"] = "road"
         roads["Extraction Method"] = "centroid"
+        roads["Ground Floor Height"] = 0
     
         self.logger.info(
             "The damage function 'road' is selected for all of the structure damage to the roads."
