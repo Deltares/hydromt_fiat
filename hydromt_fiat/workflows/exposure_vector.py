@@ -105,6 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
+        self.building_footprints = gpd.GeoDataFrame
         
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -327,6 +328,7 @@ class ExposureVector(Exposure):
         self.setup_max_potential_damage(
             max_potential_damage, damage_types, country=country
         )
+        self.building_footprints = self.exposure_geoms[0]
         if (
             any(
                 isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
