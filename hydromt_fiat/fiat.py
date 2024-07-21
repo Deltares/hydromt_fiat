@@ -84,7 +84,8 @@ class FiatModel(GridModel):
         self.vf_ids_and_linking_df = pd.DataFrame()
         self.spatial_joins = dict(aggregation_areas=None, additional_attributes=None) # Dictionary containing all the spatial join metadata
 
-        self.building_footprint_fn = ""  # Path to the building footprints dataset
+        self.building_footprint_fn = "" # Path to the building footprints dataset
+        self.building_footprint = None # building footprints dataset
 
     def __del__(self):
         """Close the model and remove the logger file handler."""
@@ -394,6 +395,9 @@ class FiatModel(GridModel):
                 type_add=occupancy_object_type,
                 keep_unclassified = keep_unclassified
             )
+
+        # Set building footprints
+        self.building_footprint = self.exposure.building_footprints
 
         # Link the damage functions to assets
         try:
@@ -998,7 +1002,7 @@ class FiatModel(GridModel):
         linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
         self.vf_ids_and_linking_df = linking_table_new
         self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
-                
+
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
@@ -1177,6 +1181,8 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
+        if not self.building_footprint.empty:
+            self.write_building_footprints()
         
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
@@ -1203,6 +1209,12 @@ class FiatModel(GridModel):
     def write_spatial_joins(self) -> None:
         spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
         spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
+
+    def write_building_footprints(self) -> None:
+        folder = Path(self.root).joinpath("exposure", "building_footprints")
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        self.building_footprint.to_file(Path(folder).joinpath("building_footprints.gpkg"))
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
