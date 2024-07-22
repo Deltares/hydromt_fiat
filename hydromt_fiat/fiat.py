@@ -396,9 +396,6 @@ class FiatModel(GridModel):
                 keep_unclassified = keep_unclassified
             )
 
-        # Set building footprints
-        self.building_footprint = self.exposure.building_footprints
-
         # Link the damage functions to assets
         try:
             assert not self.vf_ids_and_linking_df.empty
@@ -410,6 +407,17 @@ class FiatModel(GridModel):
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
+
+        # Set building footprints
+        if bf_conversion:
+            self.bf_spatial_joins()
+            attrs = {"name": "Building Footprints", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
+            }
+            if not self.spatial_joins["additional_attributes"]:
+                self.spatial_joins["additional_attributes"] = []
+            self.spatial_joins["additional_attributes"].append(attrs) 
+
+
         self.exposure.check_required_columns()
 
         # Update the other config settings
@@ -443,6 +451,13 @@ class FiatModel(GridModel):
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
+    def bf_spatial_joins(self):
+            self.building_footprint = self.exposure.building_footprints
+            self.building_footprint["BF_FID"] = ['BF_ID: ' + str(i) for i in range(1, len(self.building_footprint) + 1)]
+            BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(self.building_footprint[["Object ID", "BF_FID"]], on='Object ID')
+            del BF_exposure_gdf["geometry"]
+            del self.building_footprint["Object ID"]
+            self.exposure.exposure_db = BF_exposure_gdf
 
     def update_ground_floor_height(
         self,

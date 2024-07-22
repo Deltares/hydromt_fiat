@@ -328,13 +328,13 @@ class ExposureVector(Exposure):
         self.setup_max_potential_damage(
             max_potential_damage, damage_types, country=country
         )
-        self.building_footprints = self.exposure_geoms[0]
         if (
             any(
                 isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
             )
             and bf_conversion
         ):
+            self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
