@@ -23,7 +23,5 @@ def get_us_county_numbers(county_names: list, states_counties_table: pd.DataFram
 
 def rename_geoid_short(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # Create string from GEO_ID short 
-    for index, row in gdf.iterrows():
-        BG_string = f"BG: {row['GEOID_short']}"
-        gdf.at[index, 'GEOID_short'] = BG_string
+    gdf['GEOID_short'] = 'BG: ' + gdf['GEOID_short']
     return gdf

@@ -187,9 +187,7 @@ class EquityData:
         self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
         
         # Create string from GEO_ID short 
-        for index, row,in self.block_groups.iterrows():
-            BG_string = f"BG: {row['GEOID_short']}"
-            self.block_groups.at[index, 'GEOID_short'] = BG_string
+        self.block_groups['GEOID_short'] = 'BG: ' + self.block_groups['GEOID_short']
 
         # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
         # Delete the shapefile, that is not used anymore
