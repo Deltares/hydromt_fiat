@@ -85,7 +85,7 @@ class FiatModel(GridModel):
         self.spatial_joins = dict(aggregation_areas=None, additional_attributes=None) # Dictionary containing all the spatial join metadata
 
         self.building_footprint_fn = "" # Path to the building footprints dataset
-        self.building_footprint = None # building footprints dataset
+        self.building_footprint = gpd.GeoDataFrame() # building footprints dataset
 
     def __del__(self):
         """Close the model and remove the logger file handler."""
