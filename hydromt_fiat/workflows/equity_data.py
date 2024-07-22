@@ -170,7 +170,8 @@ class EquityData:
                 shp = gpd.read_file(shapefiles[0])
                 self.logger.info("The shapefile was downloaded")
             else:
-                self.logger.warning("No county shapefile found in the directory.")
+                self.logger.warning(f"No county shapefile found in {folder}.")
+                continue
             
             # Dissolve shapefile based on block groups
             code = "20"
