@@ -84,7 +84,8 @@ class FiatModel(GridModel):
         self.vf_ids_and_linking_df = pd.DataFrame()
         self.spatial_joins = dict(aggregation_areas=None, additional_attributes=None) # Dictionary containing all the spatial join metadata
 
-        self.building_footprint_fn = ""  # Path to the building footprints dataset
+        self.building_footprint_fn = "" # Path to the building footprints dataset
+        self.building_footprint = gpd.GeoDataFrame() # building footprints dataset
 
     def __del__(self):
         """Close the model and remove the logger file handler."""
@@ -406,6 +407,17 @@ class FiatModel(GridModel):
         self.exposure.link_exposure_vulnerability(
             self.vf_ids_and_linking_df, damage_types
         )
+
+        # Set building footprints
+        if bf_conversion:
+            self.bf_spatial_joins()
+            attrs = {"name": "Building Footprints", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
+            }
+            if not self.spatial_joins["additional_attributes"]:
+                self.spatial_joins["additional_attributes"] = []
+            self.spatial_joins["additional_attributes"].append(attrs) 
+
+
         self.exposure.check_required_columns()
 
         # Update the other config settings
@@ -439,6 +451,13 @@ class FiatModel(GridModel):
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
+    def bf_spatial_joins(self):
+            self.building_footprint = self.exposure.building_footprints
+            self.building_footprint["BF_FID"] = ['BF_ID: ' + str(i) for i in range(1, len(self.building_footprint) + 1)]
+            BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(self.building_footprint[["Object ID", "BF_FID"]], on='Object ID')
+            del BF_exposure_gdf["geometry"]
+            del self.building_footprint["Object ID"]
+            self.exposure.exposure_db = BF_exposure_gdf
 
     def update_ground_floor_height(
         self,
@@ -998,7 +1017,7 @@ class FiatModel(GridModel):
         linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
         self.vf_ids_and_linking_df = linking_table_new
         self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
-                
+
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
@@ -1177,6 +1196,8 @@ class FiatModel(GridModel):
         if self.building_footprint_fn:
             folder = Path(self.root).joinpath("exposure", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
+        if not self.building_footprint.empty:
+            self.write_building_footprints()
         
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
@@ -1203,6 +1224,12 @@ class FiatModel(GridModel):
     def write_spatial_joins(self) -> None:
         spatial_joins_conf = SpatialJoins.load_dict(self.spatial_joins)
         spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
+
+    def write_building_footprints(self) -> None:
+        folder = Path(self.root).joinpath("exposure", "building_footprints")
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        self.building_footprint.to_file(Path(folder).joinpath("building_footprints.gpkg"))
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:

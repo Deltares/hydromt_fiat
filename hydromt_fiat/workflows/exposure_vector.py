@@ -105,6 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
+        self.building_footprints = gpd.GeoDataFrame
         
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -333,6 +334,7 @@ class ExposureVector(Exposure):
             )
             and bf_conversion
         ):
+            self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
