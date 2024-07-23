@@ -185,7 +185,7 @@ class EquityData:
             block_groups_list.append(block_groups_shp)
 
         #TODO Save final file as geopackage
-        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
+        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list)).reset_index(drop=True)
         
         # Create string from GEO_ID short 
         for index, row,in self.block_groups.iterrows():
