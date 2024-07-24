@@ -411,7 +411,7 @@ class FiatModel(GridModel):
         # Set building footprints
         if bf_conversion:
             self.bf_spatial_joins()
-            attrs = {"name": "Building Footprints", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
+            attrs = {"name": "BF_FID", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
             }
             if not self.spatial_joins["additional_attributes"]:
                 self.spatial_joins["additional_attributes"] = []
