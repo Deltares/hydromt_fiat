@@ -411,7 +411,7 @@ class FiatModel(GridModel):
         # Set building footprints
         if bf_conversion:
             self.bf_spatial_joins()
-            attrs = {"name": "Building Footprints", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
+            attrs = {"name": "BF_FID", "file": "exposure/building_footprints/building_footprints.gpkg", "field_name": "BF_FID", #TODO check how and where this is defined
             }
             if not self.spatial_joins["additional_attributes"]:
                 self.spatial_joins["additional_attributes"] = []
@@ -453,7 +453,7 @@ class FiatModel(GridModel):
         # Combine the exposure database with pre-existing exposure data if available
     def bf_spatial_joins(self):
             self.building_footprint = self.exposure.building_footprints
-            self.building_footprint["BF_FID"] = ['BF_ID: ' + str(i) for i in range(1, len(self.building_footprint) + 1)]
+            self.building_footprint["BF_FID"] = [i for i in range(1, len(self.building_footprint) + 1)]
             BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(self.building_footprint[["Object ID", "BF_FID"]], on='Object ID')
             del BF_exposure_gdf["geometry"]
             del self.building_footprint["Object ID"]
