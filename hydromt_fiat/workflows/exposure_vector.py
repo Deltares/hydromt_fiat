@@ -1019,15 +1019,11 @@ class ExposureVector(Exposure):
             for c in updated_max_potential_damages.columns
             if "Max Potential Damage:" in c
         ]
-        updated_max_potential_damages.sort_values("Object ID", inplace=True)
-        self.exposure_db.sort_values("Object ID", inplace=True)
+        updated_max_potential_damages.set_index("Object ID", inplace=True)
+        self.exposure_db.set_index("Object ID", inplace=True, drop=False)
 
-        self.exposure_db.loc[
-            self.exposure_db["Object ID"].isin(
-                updated_max_potential_damages["Object ID"]
-            ),
-            damage_cols,
-        ] = updated_max_potential_damages[damage_cols]
+        self.exposure_db[damage_cols] = updated_max_potential_damages[damage_cols]
+        self.exposure_db.reset_index(drop=True, inplace=True)
 
     def raise_ground_floor_height(
         self,
@@ -1102,15 +1098,20 @@ class ExposureVector(Exposure):
             if len(self.exposure_geoms) == 0:
                 self.set_exposure_geoms_from_xy()
 
-            self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
-                self.exposure_db.iloc[idx, :],
+            # TODO the way that indexing and geom indexing is working now is error prone!!!!
+            
+            new_values = self.set_height_relative_to_reference(
+                self.exposure_db.loc[idx, :],
                 self.exposure_geoms[0].iloc[idx, :],
                 height_reference,
                 path_ref,
                 attr_ref,
                 raise_by,
                 self.crs,
-            )
+            ).set_index("Object ID")
+            self.exposure_db.set_index("Object ID", inplace=True)
+            self.exposure_db.loc[objectids, "Ground Floor Height"] = new_values.loc[objectids, "Ground Floor Height"]
+            self.exposure_db.reset_index(drop=False, inplace=True)
             self.logger.info(
                 "set_height_relative_to_reference can for now only be used for the "
                 "original exposure data."
