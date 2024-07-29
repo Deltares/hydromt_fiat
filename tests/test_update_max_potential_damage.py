@@ -65,6 +65,12 @@ def test_update_max_potential_damage(case):
     updated_max_pot_damage["Object Name"] = updated_max_pot_damage[
         "Object Name"
     ].astype(int)
+
+    # Add Object ID to df
+    updated_max_pot_damage["Object ID"] =  updated_max_pot_damage["Object Name"]
+    cols = ['Object ID'] + [col for col in updated_max_pot_damage if col != 'Object ID']
+    updated_max_pot_damage = updated_max_pot_damage[cols]
+
     pd.testing.assert_frame_equal(
         updated_max_pot_damage,
         exposure_modified,
