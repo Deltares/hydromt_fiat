@@ -861,8 +861,10 @@ class FiatModel(GridModel):
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
             label_names="Census Blockgroup",
+            new_composite_area=False,
             file_names="block_groups"
         )
+        
         # Update spatial join metadata for equity data connection
         ind = [i for i, name in enumerate([aggr["name"] for aggr in self.spatial_joins["aggregation_areas"]])][0]
         attrs = {"census_data": "exposure/equity/equity_data.csv", #TODO check how and where this is defined
@@ -877,7 +879,9 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
+        
     ):
         """_summary_
 
@@ -889,6 +893,8 @@ class FiatModel(GridModel):
             Name of the attribute(s) to join.
         label_names : Union[List[str], str]
             The name that the new attribute will get in the exposure data.
+        new_composite_area: bool
+            Check whether exposure is a new composite area 
         file_names : Union[List[str], str]
             The name of the spatial file(s) if saved in aggregation_areas/ 
             folder in the root directory (Default is None).
@@ -900,20 +906,20 @@ class FiatModel(GridModel):
             label_names = [label_names]
             if file_names:
                 file_names = [file_names]
-                
+
         # Perform spatial join for each aggregation area provided
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-        # Then perform spatial joins
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
             # Make sure that column name for aggregation areas includes the Aggregation Label part
             ["Aggregation Label: " + name for name in label_names],
+            new_composite_area,
             keep_all=False
         )
-        
+
         if file_names:
             for area_gdf, file_name in zip(areas_gdf, file_names):
                 self.set_geoms(area_gdf, f"aggregation_areas/{file_name}")
@@ -926,7 +932,6 @@ class FiatModel(GridModel):
                      "file": f"exposure/aggregation_areas/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
                      "field_name": attribute_name}
             self.spatial_joins["aggregation_areas"].append(attrs) 
-        
 
     def setup_additional_attributes(
         self,
@@ -935,6 +940,7 @@ class FiatModel(GridModel):
         ],
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
+        new_composite_area: bool = False,
     ):
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if not isinstance(aggregation_area_fn, list):
@@ -946,11 +952,12 @@ class FiatModel(GridModel):
         # First get all exposure geometries
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         # Then perform spatial joins
-        self.exposure.exposure_db, areas_gdf = join_exposure_aggregation_areas(
+        self.exposure.exposure_db, _, areas_gdf = join_exposure_aggregation_areas(
             exposure_gdf,
             aggregation_area_fn,
             attribute_names,
             label_names,
+            new_composite_area,
             keep_all=False
         )
         
@@ -967,7 +974,7 @@ class FiatModel(GridModel):
             attrs = {"name": label_name, 
                      "file": f"exposure/additional_attributes/{file_name}.gpkg", #TODO Should we define this location somewhere globally?
                      "field_name": attribute_name}
-            self.spatial_joins["additional_attributes"].append(attrs) 
+            self.spatial_joins["additional_attributes"].append(attrs)
 
     def setup_classification(
         self,
@@ -977,11 +984,11 @@ class FiatModel(GridModel):
         old_values= Union[List[str], str],
         new_values= Union[List[str], str],
         damage_types = Union[List[str], str],
-        remove_object_type = bool,
-        keep_unclassified: bool = True
+        remove_object_type = bool
         
     ):
         """_summary_
+
         Parameters
         ----------
         source : Union[List[str], List[Path], str, Path]
@@ -1001,14 +1008,12 @@ class FiatModel(GridModel):
         remove_object_type: bool
             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). 
-        keep_unclassified: bool, optional
-            Whether building footprints without classification are removed or reclassified as "residential"
         """
 
-        self.exposure.setup_occupancy_type(source, attribute, type_add, keep_unclassified)
+        self.exposure.setup_occupancy_type(source, attribute, type_add)
 
         # Drop Object Type that has not been updated. 
-
+        
         if remove_object_type:
             if type_add == "Primary Object Type":
                 self.exposure.exposure_db.drop("Secondary Object Type", axis =1 , inplace = True)
@@ -1017,7 +1022,7 @@ class FiatModel(GridModel):
         linking_table_new = self.exposure.update_user_linking_table(old_values,new_values, self.vf_ids_and_linking_df)
         self.vf_ids_and_linking_df = linking_table_new
         self.exposure.link_exposure_vulnerability(linking_table_new, ["structure", "content"])
-
+            
     def setup_building_footprint(
         self,
         building_footprint_fn: Union[str, Path],
@@ -1198,7 +1203,7 @@ class FiatModel(GridModel):
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
-        
+
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
     ) -> None:

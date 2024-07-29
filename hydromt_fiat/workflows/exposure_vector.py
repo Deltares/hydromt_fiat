@@ -1282,6 +1282,8 @@ class ExposureVector(Exposure):
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
+        new_composite_area : bool
+            Define whether new composite area to select correct aggregation zones functionality.
         """
         self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -1433,12 +1435,21 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, _ = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms, _  = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
+                new_composite_area = True
             )
+            # Update the exposure_geoms incl aggregation
+            self.set_geom_names("new_development_area_aggregated")
+            self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            # Remove initial composite areas
+            idx = self.geom_names.index("new_development_area")
+            self.geom_names.pop(idx)
+            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
