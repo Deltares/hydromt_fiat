@@ -1203,9 +1203,6 @@ class FiatModel(GridModel):
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
-        if "social_vulnerability_scores" in self._tables:   
-            folder = Path(self.root).joinpath("exposure", "SVI", "svi.gpkg")
-            self.tables["social_vulnerability_scores"].to_file(folder)
 
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
