@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
+from geopy.extra.rate_limiter import RateLimiter 
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -78,7 +78,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = "meters",
+        unit: str = Units.feet.value,
         country: str = None,
         damage_unit= Currency.dollar.value
     ) -> None:
@@ -105,6 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
+        self.building_footprints = gpd.GeoDataFrame
         
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -239,7 +240,7 @@ class ExposureVector(Exposure):
     def setup_roads(
         self,
         source: Union[str, Path],
-        road_damage: Union[str, Path, int],
+        road_damage: Union[str, Path, int, float],
         road_types: Union[str, List[str], bool] = True,
     ):
         self.logger.info("Setting up roads...")
@@ -267,25 +268,32 @@ class ExposureVector(Exposure):
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
-        roads["Primary Object Type"] = "roads"
-        roads["Damage Function: Structure"] = "roads"
-
+        roads["Primary Object Type"] = "road"
+        roads["Extraction Method"] = "centroid"
+        roads["Ground Floor Height"] = 0
+    
         self.logger.info(
-            "The damage function 'roads' is selected for all of the structure damage to the roads."
+            "The damage function 'road' is selected for all of the structure damage to the roads."
         )
         # Clip road to model boundaries
         roads = roads.clip(self.region)
 
-        if isinstance(road_damage, str):
-            # Add the max potential damage and the length of the segments to the roads
-            road_damage = self.data_catalog.get_dataframe(road_damage)
-            roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = (
-                get_max_potential_damage_roads(roads, road_damage)
-            )
-        elif isinstance(road_damage, int):
-            roads["Segment Length [m]"] = get_road_lengths(roads)
-            roads["Max Potential Damage: Structure"] = road_damage
+        # Convert OSM road from meters to feet (if model unit is feet)
+        road_length = get_road_lengths(roads)
+        if self.unit == Units.feet.value and str(source).upper() == "OSM":
+            road_length = road_length * Conversion.meters_to_feet.value
+        road_length = road_length.apply(lambda x: f"{x:.2f}")
 
+        # Add the max potential damage and the length of the segments to the roads
+        if isinstance(road_damage, str):
+            road_damage = self.data_catalog.get_dataframe(road_damage)
+            roads[["Max Potential Damage: Structure", "Segment Length", "Extraction Method"]] = (
+                get_max_potential_damage_roads(roads, road_damage)
+            )            
+        elif isinstance(road_damage, (int, float)) or road_damage is None:
+            roads["Segment Length"] = road_length
+            roads["Max Potential Damage: Structure"] = road_damage
+        
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
@@ -326,6 +334,7 @@ class ExposureVector(Exposure):
             )
             and bf_conversion
         ):
+            self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )

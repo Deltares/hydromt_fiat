@@ -311,13 +311,18 @@ def locate_from_exposure(buildings):
     geolocator = Nominatim(user_agent="hydromt-fiat")
     
     # Filter buildings to reduce size
-    if len(buildings.geometry) > 100000:
+    num_buildings = len(buildings.geometry)
+    if num_buildings > 100000:
         buildings_filtered = buildings.geometry[::10000] 
-    elif len(buildings.geometry) > 10000:
+    elif num_buildings > 10000:
         buildings_filtered = buildings.geometry[::1000] 
-    elif len(buildings.geometry) > 1000:
-        buildings_filtered = buildings.geometry[::100] 
-
+    elif num_buildings > 1000:
+        buildings_filtered = buildings.geometry[::100]
+    elif num_buildings > 100:
+        buildings_filtered = buildings.geometry[::10]
+    else:
+        buildings_filtered = buildings.geometry
+    
     # Find all counties that exposure overlays
     search= []
     for coords in buildings_filtered:
