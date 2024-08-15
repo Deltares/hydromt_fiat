@@ -2,6 +2,7 @@ from typing import Dict, Optional, Union, List
 import os
 from pathlib import Path
 from hydromt import DataCatalog
+import pandas as pd
 
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
@@ -158,8 +159,11 @@ class ExposureViewModel:
         )
             self.set_asset_locations_source(source, country = country, ground_floor_height = ground_floor_height, max_potential_damage = max_potential_damage)
             
-            # Load geoms and dataframe
-            exposure_geoms = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "buildings.gpkg")
+            # Load geoms (roads and buildings) and dataframe
+            exposure_geoms_buildings = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "buildings.gpkg")
+            if app.active_model.domain.fiat_model.root / "exposure"/ "roads.gpkg":
+                exposure_geoms_roads = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "roads.gpkg")
+                exposure_geoms = pd.concat([exposure_geoms_buildings, exposure_geoms_roads], ignore_index=True)
             exposure_geoms["Object ID"] = exposure_geoms["Object ID"].astype(str)
             
             exposure_db = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "exposure.csv")
