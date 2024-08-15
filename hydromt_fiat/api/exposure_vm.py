@@ -231,15 +231,21 @@ class ExposureViewModel:
             )
         elif source == "User Model":
             # download OSM data
+            if max_potential_damage == "NSI":
+                unit =  Units.feet.value
+                damage_unit = Currency.dollar.value
+            else:
+                unit = Units.meters.value
+                damage_unit = Currency.euro.value
             self.exposure_buildings_model = ExposureBuildingsSettings(
                 asset_locations=source,
                 occupancy_type=source,
                 max_potential_damage= max_potential_damage,
                 ground_floor_height=ground_floor_height,
-                unit=Units.meters.value,  #TODO set unit deoening on model
+                unit= unit,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
-                damage_unit = Currency.euro.value, #TODO set unit deoening on model
+                damage_unit = damage_unit,
                 country = country,
             )
 
