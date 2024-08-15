@@ -249,7 +249,6 @@ class ExposureViewModel:
                 country = country,
             )
 
-
     def update_occupancy_types(self, source, attribute, type_add, keep_unclassified = True):
         if self.exposure:
             self.exposure.setup_occupancy_type(source, attribute, type_add, keep_unclassified)
