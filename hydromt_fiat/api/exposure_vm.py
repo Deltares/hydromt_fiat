@@ -1,11 +1,13 @@
 from typing import Dict, Optional, Union, List
-
+import os
+from pathlib import Path
 from hydromt import DataCatalog
 
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
 from hydromt_fiat.api.data_types import Currency
+from delftdashboard.app import app
 import logging
 import geopandas as gpd
 
@@ -156,11 +158,11 @@ class ExposureViewModel:
         )
             self.set_asset_locations_source(source, country = country, ground_floor_height = ground_floor_height, max_potential_damage = max_potential_damage)
             
-            # Load geoms and dataframe 
-            exposure_geoms = gpd.read_file(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\test_output\exposure\buildings.gpkg") #TODO Update to relative path 
+            # Load geoms and dataframe
+            exposure_geoms = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "buildings.gpkg")
             exposure_geoms["Object ID"] = exposure_geoms["Object ID"].astype(str)
             
-            exposure_db = gpd.read_file(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\test_output\exposure\exposure.csv") #TODO Update to relative path
+            exposure_db = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "exposure.csv")
             
             # Set exposure_db and exposure_geoms
             self.exposure.exposure_db = exposure_db
