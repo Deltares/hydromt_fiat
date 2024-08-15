@@ -144,7 +144,35 @@ class ExposureViewModel:
                 primary_object_types,
                 secondary_object_types,
             )
-        
+        elif source == "User Model":
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+            self.exposure = ExposureVector(
+            data_catalog=self.data_catalog,
+            logger=self.logger,
+            region=region,
+            crs=crs,
+            unit = Units.feet.value, #TODO set unit deoening on model
+            country = country 
+        )
+            self.set_asset_locations_source(source, country = country, ground_floor_height = ground_floor_height, max_potential_damage = max_potential_damage)
+            
+            # Load geoms and dataframe 
+            exposure_geoms = gpd.read_file(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\test_output\exposure\buildings.gpkg") #TODO Update to relative path 
+            exposure_geoms["Object ID"] = exposure_geoms["Object ID"].astype(str)
+            
+            exposure_db = gpd.read_file(r"C:\Users\rautenba\OneDrive - Stichting Deltares\Documents\Projects\test_output\exposure\exposure.csv") #TODO Update to relative path
+            
+            # Set exposure_db and exposure_geoms
+            self.exposure.exposure_db = exposure_db
+            self.exposure.set_exposure_geoms(
+            gpd.GeoDataFrame(exposure_geoms, crs=crs)
+            )
+            self.exposure.set_geom_names("buildings")
+
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                
+            return gdf
+
     def set_asset_locations_source(
         self,
         source: str,
@@ -200,6 +228,19 @@ class ExposureViewModel:
                 damage_unit = Currency.euro.value,
                 country = country,
                 bf_conversion = bf_conversion
+            )
+        elif source == "User Model":
+            # download OSM data
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage= max_potential_damage,
+                ground_floor_height=ground_floor_height,
+                unit=Units.meters.value,  #TODO set unit deoening on model
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+                damage_unit = Currency.euro.value, #TODO set unit deoening on model
+                country = country,
             )
 
 
