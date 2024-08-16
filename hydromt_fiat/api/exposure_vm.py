@@ -159,21 +159,10 @@ class ExposureViewModel:
         )
             self.set_asset_locations_source(source, country = country, ground_floor_height = ground_floor_height, max_potential_damage = max_potential_damage)
             
-            # Load geoms (roads and buildings) and dataframe
-            exposure_geoms_buildings = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "buildings.gpkg")
-            if app.active_model.domain.fiat_model.root / "exposure"/ "roads.gpkg":
-                exposure_geoms_roads = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "roads.gpkg")
-                exposure_geoms = pd.concat([exposure_geoms_buildings, exposure_geoms_roads], ignore_index=True)
-            exposure_geoms["Object ID"] = exposure_geoms["Object ID"].astype(str)
-            
-            exposure_db = gpd.read_file(Path(os.path.abspath("")) / app.active_model.domain.fiat_model.root / "exposure"/ "exposure.csv")
-            
             # Set exposure_db and exposure_geoms
-            self.exposure.exposure_db = exposure_db
-            self.exposure.set_exposure_geoms(
-            gpd.GeoDataFrame(exposure_geoms, crs=crs)
-            )
-            self.exposure.set_geom_names("buildings")
+            self.exposure.exposure_db = app.active_model.domain.fiat_model.exposure.exposure_db
+            self.exposure.exposure_geoms = app.active_model.domain.fiat_model.exposure.exposure_geoms
+            self.exposure.set_geom_names(app.active_model.domain.fiat_model.exposure.geom_names)
 
             gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
                 
