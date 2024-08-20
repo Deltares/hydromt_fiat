@@ -507,7 +507,7 @@ class ExposureVector(Exposure):
 
             gdf_amenity.loc[gdf_amenity["Secondary Object Type"] == "yes", "Secondary Object Type"] = "residential"
             gdf = gdf_amenity
-            #Check what gdf woudl be.
+
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
@@ -1889,9 +1889,6 @@ class ExposureVector(Exposure):
         for item, new_item in zip(old_value, new_value):
             desired_rows = linking_table_new[linking_table_new["Exposure Link"] == item]
             desired_rows.reset_index(drop=True, inplace=True)
-            #linking_table_new = linking_table_new.append(
-            #    desired_rows, ignore_index=True
-            #)
             linking_table_new = pd.concat([linking_table_new, desired_rows], ignore_index=True) # New line
             duplicates_table = linking_table_new.duplicated(keep="first")
             idx_duplicates = duplicates_table[duplicates_table].index
