@@ -566,8 +566,6 @@ class ExposureVector(Exposure):
             gdf.drop_duplicates(inplace = True, subset = "Object ID")
             gdf.reset_index(drop=True, inplace = True)
 
-            # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
             del gdf["geometry"]
         else:
             self.logger.warning(
