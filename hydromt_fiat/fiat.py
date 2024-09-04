@@ -1078,19 +1078,8 @@ class FiatModel(GridModel):
 
     def update_geoms(self):
         # Update the exposure data geoms
-        if self.exposure and "exposure" in self._tables:
-            for i, geom_and_name in enumerate(
-                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
-            ):
-                geom = geom_and_name[0]
-                name = geom_and_name[1]
-
-                self.set_geoms(geom=geom, name=name)
-                self.set_config(
-                    f"exposure.geom.file{str(i+1)}",
-                    f"exposure/{name}.gpkg",
-                )
-
+        # This now doesnt do a whole lot and should be 
+        # handled somewhere else properly
         if not self.region.empty:
             self.set_geoms(self.region, "region")
 
@@ -1174,7 +1163,7 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-        fns = glob.glob(Path(self.root, "exposure", "*.geojson").as_posix())
+        fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
@@ -1186,14 +1175,12 @@ class FiatModel(GridModel):
         self.update_all()
         self.logger.info(f"Writing model data to {self.root}")
 
-        if self.config:  # try to read default if not yet set
-            self.write_config()
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
-        if self.geoms:
-            self.write_geoms(fn="exposure/{name}.gpkg", driver="GPKG")
+        # Use a custom write_geoms to handle the exposure geoms as an exception
+        self.write_geoms()
         if self._tables:
             self.write_tables()
         if self.spatial_joins["aggregation_areas"] or self.spatial_joins["additional_attributes"]:
@@ -1203,6 +1190,8 @@ class FiatModel(GridModel):
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
+        if self.config:  # try to read default if not yet set
+            self.write_config()
 
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
@@ -1235,6 +1224,28 @@ class FiatModel(GridModel):
         if not os.path.exists(folder):
             os.makedirs(folder)
         self.building_footprint.to_file(Path(folder).joinpath("building_footprints.gpkg"))
+
+    def write_geoms(self):
+        """_summary_."""
+        if self.exposure and "exposure" in self._tables:
+            fn = "exposure/{name}.gpkg"
+            for i, (geom, name) in enumerate(
+                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+            ):
+                _fn = os.path.join(self.root, fn.format(name=name))
+                if not os.path.isdir(os.path.dirname(_fn)):
+                    os.makedirs(os.path.dirname(_fn))
+
+                # This whole ordeal is terrible, 
+                # but it needs a refactor that is too much to fix this properly 
+                self.set_config(
+                    f"exposure.geom.file{str(i+1)}",
+                    fn.format(name=name),
+                )
+                geom.to_file(_fn)
+
+        if self.geoms:
+            GridModel.write_geoms(self)
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
