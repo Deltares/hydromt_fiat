@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
+from geopy.extra.rate_limiter import RateLimiter 
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -78,7 +78,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = "meters",
+        unit: str = Units.feet.value,
         country: str = None,
         damage_unit= Currency.dollar.value
     ) -> None:
@@ -105,6 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
+        self.building_footprints = gpd.GeoDataFrame
         
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -239,7 +240,7 @@ class ExposureVector(Exposure):
     def setup_roads(
         self,
         source: Union[str, Path],
-        road_damage: Union[str, Path, int],
+        road_damage: Union[str, Path, int, float],
         road_types: Union[str, List[str], bool] = True,
     ):
         self.logger.info("Setting up roads...")
@@ -267,25 +268,32 @@ class ExposureVector(Exposure):
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
-        roads["Primary Object Type"] = "roads"
-        roads["Damage Function: Structure"] = "roads"
-
+        roads["Primary Object Type"] = "road"
+        roads["Extraction Method"] = "centroid"
+        roads["Ground Floor Height"] = 0
+    
         self.logger.info(
-            "The damage function 'roads' is selected for all of the structure damage to the roads."
+            "The damage function 'road' is selected for all of the structure damage to the roads."
         )
         # Clip road to model boundaries
         roads = roads.clip(self.region)
 
-        if isinstance(road_damage, str):
-            # Add the max potential damage and the length of the segments to the roads
-            road_damage = self.data_catalog.get_dataframe(road_damage)
-            roads[["Max Potential Damage: Structure", "Segment Length [m]"]] = (
-                get_max_potential_damage_roads(roads, road_damage)
-            )
-        elif isinstance(road_damage, int):
-            roads["Segment Length [m]"] = get_road_lengths(roads)
-            roads["Max Potential Damage: Structure"] = road_damage
+        # Convert OSM road from meters to feet (if model unit is feet)
+        road_length = get_road_lengths(roads)
+        if self.unit == Units.feet.value and str(source).upper() == "OSM":
+            road_length = road_length * Conversion.meters_to_feet.value
+        road_length = road_length.apply(lambda x: f"{x:.2f}")
 
+        # Add the max potential damage and the length of the segments to the roads
+        if isinstance(road_damage, str):
+            road_damage = self.data_catalog.get_dataframe(road_damage)
+            roads[["Max Potential Damage: Structure", "Segment Length", "Extraction Method"]] = (
+                get_max_potential_damage_roads(roads, road_damage)
+            )            
+        elif isinstance(road_damage, (int, float)) or road_damage is None:
+            roads["Segment Length"] = road_length
+            roads["Max Potential Damage: Structure"] = road_damage
+        
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
@@ -326,6 +334,7 @@ class ExposureVector(Exposure):
             )
             and bf_conversion
         ):
+            self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
@@ -1010,15 +1019,11 @@ class ExposureVector(Exposure):
             for c in updated_max_potential_damages.columns
             if "Max Potential Damage:" in c
         ]
-        updated_max_potential_damages.sort_values("Object ID", inplace=True)
-        self.exposure_db.sort_values("Object ID", inplace=True)
+        updated_max_potential_damages.set_index("Object ID", inplace=True)
+        self.exposure_db.set_index("Object ID", inplace=True, drop=False)
 
-        self.exposure_db.loc[
-            self.exposure_db["Object ID"].isin(
-                updated_max_potential_damages["Object ID"]
-            ),
-            damage_cols,
-        ] = updated_max_potential_damages[damage_cols]
+        self.exposure_db[damage_cols] = updated_max_potential_damages[damage_cols]
+        self.exposure_db.reset_index(drop=True, inplace=True)
 
     def raise_ground_floor_height(
         self,
@@ -1093,15 +1098,20 @@ class ExposureVector(Exposure):
             if len(self.exposure_geoms) == 0:
                 self.set_exposure_geoms_from_xy()
 
-            self.exposure_db.iloc[idx, :] = self.set_height_relative_to_reference(
-                self.exposure_db.iloc[idx, :],
+            # TODO the way that indexing and geom indexing is working now is error prone!!!!
+            
+            new_values = self.set_height_relative_to_reference(
+                self.exposure_db.loc[idx, :],
                 self.exposure_geoms[0].iloc[idx, :],
                 height_reference,
                 path_ref,
                 attr_ref,
                 raise_by,
                 self.crs,
-            )
+            ).set_index("Object ID")
+            self.exposure_db.set_index("Object ID", inplace=True)
+            self.exposure_db.loc[objectids, "Ground Floor Height"] = new_values.loc[objectids, "Ground Floor Height"]
+            self.exposure_db.reset_index(drop=False, inplace=True)
             self.logger.info(
                 "set_height_relative_to_reference can for now only be used for the "
                 "original exposure data."
@@ -1273,6 +1283,8 @@ class ExposureVector(Exposure):
             Height if the `elevation_reference` is set 'geom', by default None
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default None
+        new_composite_area : bool
+            Define whether new composite area to select correct aggregation zones functionality.
         """
         self.logger.info(
             f"Adding a new exposure object with a value of {percent_growth}% "
@@ -1424,12 +1436,21 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, _ = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms, _  = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
+                new_composite_area = True
             )
+            # Update the exposure_geoms incl aggregation
+            self.set_geom_names("new_development_area_aggregated")
+            self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            # Remove initial composite areas
+            idx = self.geom_names.index("new_development_area")
+            self.geom_names.pop(idx)
+            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(

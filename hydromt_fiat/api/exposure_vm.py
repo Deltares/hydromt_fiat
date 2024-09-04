@@ -82,6 +82,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
+                unit = Units.feet.value,
                 country = "United States"
             )
             
@@ -115,6 +116,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
+                unit = Units.meters.value,
                 country = country
             )
             self.exposure.setup_buildings_from_multiple_sources(
@@ -286,7 +288,7 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage=1,
+            road_damage= None,
             unit=Units.feet.value,
         )
 
@@ -316,7 +318,7 @@ class ExposureViewModel:
 
         self.exposure.setup_roads(
             source="OSM",
-            road_damage=1,
+            road_damage=None,
             road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[
@@ -327,17 +329,18 @@ class ExposureViewModel:
         self.exposure_roads_model = ExposureRoadsSettings(
             roads_fn="OSM",
             road_types=road_types,
-            road_damage=1,
+            road_damage= None,
             unit=Units.feet.value,
         )
 
         return gdf
 
-    def set_aggregation_areas_config(self, files, attribute_names, label_names):
+    def set_aggregation_areas_config(self, files, attribute_names, label_names,new_composite_area= False):
         self.aggregation_areas_model = AggregationAreaSettings(
             aggregation_area_fn=files,
             attribute_names=attribute_names,
-            label_names=label_names,)
+            label_names=label_names,
+            new_composite_area = new_composite_area,)
     
     def set_classification_config(self, source, attribute, type_add, old_values, new_values, damage_types, remove_object_type): 
         self.classification_model = ClassificationSettings(

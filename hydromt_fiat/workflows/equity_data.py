@@ -170,7 +170,8 @@ class EquityData:
                 shp = gpd.read_file(shapefiles[0])
                 self.logger.info("The shapefile was downloaded")
             else:
-                self.logger.warning("No county shapefile found in the directory.")
+                self.logger.warning(f"No county shapefile found in {folder}.")
+                continue
             
             # Dissolve shapefile based on block groups
             code = "20"
@@ -184,7 +185,7 @@ class EquityData:
             block_groups_list.append(block_groups_shp)
 
         #TODO Save final file as geopackage
-        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list))
+        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list)).reset_index(drop=True)
         
         # Create string from GEO_ID short 
         for index, row,in self.block_groups.iterrows():

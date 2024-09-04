@@ -192,13 +192,13 @@ class HydroMtViewModel:
         ):
             # Buildings and roads are set up
             full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
-            buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "roads"]
+            buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "road"]
             if "SVI" in full_gdf.columns and "SVI_key_domain" in full_gdf.columns:
                 roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
-                full_gdf["Primary Object Type"] == "roads"]
+                full_gdf["Primary Object Type"] == "road"]
             else:
                 roads_gdf = full_gdf.loc[
-                full_gdf["Primary Object Type"] == "roads"]
+                full_gdf["Primary Object Type"] == "road"]
             
             return buildings_gdf, roads_gdf
         elif (
@@ -222,6 +222,7 @@ class HydroMtViewModel:
         aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
         attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
         label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
+        new_composite_area = config_yaml.model_extra["setup_additional_attributes"].new_composite_area
         # Check if additional attributes already exist
         add_attrs_existing = [attr["name"] for attr in self.fiat_model.spatial_joins["additional_attributes"]]
         for i, label_name in enumerate(label_names):
@@ -229,8 +230,7 @@ class HydroMtViewModel:
                 aggregation_area_fn.pop(i)
                 attribute_names.pop(i)
                 label_names.pop(i)
-
-        self.fiat_model.setup_additional_attributes(aggregation_area_fn, attribute_names, label_names)
+        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names,new_composite_area) 
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source

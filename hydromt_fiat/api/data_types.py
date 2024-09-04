@@ -106,7 +106,7 @@ class ExposureSetupDamages(BaseModel):
     damage_types: Optional[Union[str, List[str]]] = None
 
 class RoadVulnerabilitySettings(BaseModel):
-    threshold_value: float
+    threshold_value: Union[float, None]
     min_hazard_value: float
     max_hazard_value: float
     step_hazard_value: float
@@ -116,7 +116,7 @@ class RoadVulnerabilitySettings(BaseModel):
 class ExposureRoadsSettings(BaseModel):
     roads_fn: str
     road_types: Union[List[str], bool]
-    road_damage: int
+    road_damage: Union[int, float, None]
     unit: Units
 
 
@@ -124,6 +124,7 @@ class AggregationAreaSettings(BaseModel):
     aggregation_area_fn: Union[List[str], str]
     attribute_names: Union[List[str], str]
     label_names: Union[List[str], str]
+    new_composite_area: bool
 
 class ClassificationSettings(BaseModel):
     source: Union[List[str], str]

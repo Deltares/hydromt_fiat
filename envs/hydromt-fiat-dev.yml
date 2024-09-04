@@ -9,6 +9,7 @@ dependencies:
     - census
     - us
     - xarray-spatial
+    - pycountry-convert
   - click
   - black
   - gdal>=3.1
@@ -29,5 +30,4 @@ dependencies:
   - tomli-w
   - tomli
   - ipykernel # examples
-  - pycountry-convert
   - tqdm
