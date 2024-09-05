@@ -598,10 +598,7 @@ class ExposureVector(Exposure):
         # contains the land use type.
         occupancy_attributes = ["landuse", "building", "amenity"]
         # Get the land use from OSM
-        if self.region.boundary is not None:
-            polygon = Polygon(self.region.boundary.values[0])
-        else:
-            polygon = self.region.iloc[0][0]
+        polygon = self.region.geometry[0] 
         occupancy_landuse = get_landuse_from_osm(polygon)
         occupancy_buildings = get_buildings_from_osm(polygon)
         occupancy_amenity = get_amenity_from_osm(polygon)
