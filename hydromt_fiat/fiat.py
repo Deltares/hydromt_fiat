@@ -11,6 +11,7 @@ import geopandas as gpd
 import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
+from pyproj.crs import CRS
 from shapely.geometry import box
 import shutil
 
@@ -316,7 +317,8 @@ class FiatModel(GridModel):
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         bf_conversion: bool = False,    
-        keep_unclassified: bool = True
+        keep_unclassified: bool = True,
+        dst_crs: Union[str, None] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -355,6 +357,9 @@ class FiatModel(GridModel):
             If building footprints shall be converted into point data.
         keep_unclassified: bool, optional
             Whether building footprints without classification are removed or reclassified as "residential"
+        dst_crs : Union[str, None], optional
+            The destination crs of the exposure geometries. if not provided, 
+            it is taken from the region attribute of `FiatModel`. By default None
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -417,8 +422,26 @@ class FiatModel(GridModel):
                 self.spatial_joins["additional_attributes"] = []
             self.spatial_joins["additional_attributes"].append(attrs) 
 
-
+        # Check for the required columns
         self.exposure.check_required_columns()
+
+        # Possibly reproject according to destination crs
+        src_crs = CRS.from_user_input(self.exposure.crs)
+        crs = None
+        if dst_crs is not None:
+            crs = CRS.from_user_input(dst_crs)
+        elif dst_crs is None and self.region is not None:
+            crs = self.region.crs
+
+        while True:
+            if crs is None:
+                break
+            if crs.to_authority() == src_crs.to_authority():
+                break
+            for item in self.exposure.exposure_geoms:
+                item.to_crs(crs, inplace=True)
+            self.exposure.crs = ":".join(crs.to_authority())
+            break
 
         # Update the other config settings
         self.set_config("exposure.csv.file", "exposure/exposure.csv")
@@ -1244,7 +1267,7 @@ class FiatModel(GridModel):
                 )
                 # At the very last clip based on the region
                 idx = gpd.sjoin(
-                    self.region,
+                    self.region.to_crs(geom.crs),
                     geom,
                     predicate="contains_properly",
                     how="inner"

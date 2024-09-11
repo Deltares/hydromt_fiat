@@ -172,7 +172,10 @@ class ExposureVector(Exposure):
         elif str(source).upper() == "OSM":
             # The OSM data is selected, so get the assets from  OSM
             self.logger.info("Downloading assets from Open Street Map.")
-            source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
+            source_data = self.data_catalog.get_geodataframe(
+                source, 
+                geom=self.region.to_crs(4326),
+            )
         else:
             source_data = self.data_catalog.get_geodataframe(source, geom=self.region)
 
@@ -244,8 +247,10 @@ class ExposureVector(Exposure):
         road_types: Union[str, List[str], bool] = True,
     ):
         self.logger.info("Setting up roads...")
+        region = self.region.copy()
         if str(source).upper() == "OSM":
-            polygon = self.region["geometry"].values[
+            region = region.to_crs(4326)
+            polygon = region["geometry"].values[
                 0
             ]  # TODO check if this works each time
             roads = get_roads_from_osm(polygon, road_types)
@@ -264,7 +269,7 @@ class ExposureVector(Exposure):
             # Add an Object ID
             roads["Object ID"] = range(1, len(roads.index) + 1)
         else:
-            roads = self.data_catalog.get_geodataframe(source, geom=self.region)
+            roads = self.data_catalog.get_geodataframe(source, geom=region)
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
@@ -276,7 +281,7 @@ class ExposureVector(Exposure):
             "The damage function 'road' is selected for all of the structure damage to the roads."
         )
         # Clip road to model boundaries
-        roads = roads.clip(self.region)
+        roads = roads.clip(region)
 
         # Convert OSM road from meters to feet (if model unit is feet)
         road_length = get_road_lengths(roads)
@@ -356,7 +361,7 @@ class ExposureVector(Exposure):
         """
         self.logger.info("Setting up asset locations...")
         if str(asset_locations).upper() == "OSM":
-            polygon = self.region.geometry.values[0]
+            polygon = self.region.to_crs(4326).geometry.values[0]
             assets = get_assets_from_osm(polygon)
 
             if assets.empty:
@@ -598,7 +603,7 @@ class ExposureVector(Exposure):
         # contains the land use type.
         occupancy_attributes = ["landuse", "building", "amenity"]
         # Get the land use from OSM
-        polygon = self.region.geometry[0] 
+        polygon = self.region.to_crs(4326).geometry[0] 
         occupancy_landuse = get_landuse_from_osm(polygon)
         occupancy_buildings = get_buildings_from_osm(polygon)
         occupancy_amenity = get_amenity_from_osm(polygon)
