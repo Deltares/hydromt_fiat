@@ -1,11 +1,14 @@
 from typing import Dict, Optional, Union, List
-
+import os
+from pathlib import Path
 from hydromt import DataCatalog
+import pandas as pd
 
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.api.utils import make_catalog_entry
 from hydromt_fiat.interface.database import IDatabase
 from hydromt_fiat.api.data_types import Currency
+from delftdashboard.app import app
 import logging
 import geopandas as gpd
 
@@ -144,7 +147,27 @@ class ExposureViewModel:
                 primary_object_types,
                 secondary_object_types,
             )
-        
+        elif source == "User Model":
+            region = self.data_catalog.get_geodataframe("area_of_interest")
+            self.exposure = ExposureVector(
+            data_catalog=self.data_catalog,
+            logger=self.logger,
+            region=region,
+            crs=crs,
+            unit = Units.feet.value, #TODO set unit deoening on model
+            country = country 
+        )
+            self.set_asset_locations_source(source, country = country, ground_floor_height = ground_floor_height, max_potential_damage = max_potential_damage)
+            
+            # Set exposure_db and exposure_geoms
+            self.exposure.exposure_db = app.active_model.domain.fiat_model.exposure.exposure_db
+            self.exposure.exposure_geoms = app.active_model.domain.fiat_model.exposure.exposure_geoms
+            self.exposure.set_geom_names(app.active_model.domain.fiat_model.exposure.geom_names)
+
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                
+            return gdf
+
     def set_asset_locations_source(
         self,
         source: str,
@@ -201,7 +224,25 @@ class ExposureViewModel:
                 country = country,
                 bf_conversion = bf_conversion
             )
-
+        elif source == "User Model":
+            # download OSM data
+            if max_potential_damage == "NSI":
+                unit =  Units.feet.value
+                damage_unit = Currency.dollar.value
+            else:
+                unit = Units.meters.value
+                damage_unit = Currency.euro.value
+            self.exposure_buildings_model = ExposureBuildingsSettings(
+                asset_locations=source,
+                occupancy_type=source,
+                max_potential_damage= max_potential_damage,
+                ground_floor_height=ground_floor_height,
+                unit= unit,
+                extraction_method=ExtractionMethod.centroid.value,
+                damage_types=["structure", "content"],
+                damage_unit = damage_unit,
+                country = country,
+            )
 
     def update_occupancy_types(self, source, attribute, type_add, keep_unclassified = True):
         if self.exposure:

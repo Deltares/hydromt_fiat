@@ -343,7 +343,7 @@ class ExposureVector(Exposure):
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
-
+        
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
 
@@ -444,6 +444,7 @@ class ExposureVector(Exposure):
             )
             occupancy_landuse.rename(columns={occupancy_attr: type_add}, inplace=True)
             occupancy_types = [type_add]
+            occupancy_building = occupancy_landuse
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_landuse.crs != self.crs:
@@ -458,7 +459,7 @@ class ExposureVector(Exposure):
         to_keep = ["geometry"] + occupancy_types
 
         # Spatially join the exposure data with the occupancy buildings
-        if len(self.exposure_geoms) == 1:
+        if len(self.exposure_geoms) == 1 and str(occupancy_source).upper() == "OSM":
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
@@ -557,41 +558,49 @@ class ExposureVector(Exposure):
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
+        elif len(self.exposure_geoms) == 1 and str(occupancy_source).upper() != "OSM":
+            gdf = sjoin_largest_area(
+            self.exposure_geoms[0], occupancy_landuse[to_keep]
+            )
+            # Remove Object ID duplicates
+            gdf.drop_duplicates(inplace = True, subset = "Object ID")
+            gdf.reset_index(drop=True, inplace = True)
 
-            # Update the exposure database
-            if type_add in self.exposure_db:
-                if "Primary Object Type" in gdf.columns:
-                    gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Primary Object Type", "pot"
-                    ) 
-                    # Replace Secondary Object Type with new classification to assign correct damage curves
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Secondary Object Type", "pot"
-                    )
-                elif "Secondary Object Type" in gdf.columns:
-                    gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Secondary Object Type", "pot"
-                    )
-
-            else:
-                self.exposure_db = gdf.copy()
+            del gdf["geometry"]
         else:
             self.logger.warning(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
             NotImplemented
+                # Update the exposure database
+        if type_add in self.exposure_db:
+            if "Primary Object Type" in gdf.columns:
+                gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="Object ID", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "Primary Object Type", "pot"
+                ) 
+                # Replace Secondary Object Type with new classification to assign correct damage curves
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="Object ID", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "Secondary Object Type", "pot"
+                )
+            elif "Secondary Object Type" in gdf.columns:
+                gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="Object ID", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "Secondary Object Type", "pot"
+                )
+
+        else:
+            self.exposure_db = gdf.copy()
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -1880,9 +1889,7 @@ class ExposureVector(Exposure):
         for item, new_item in zip(old_value, new_value):
             desired_rows = linking_table_new[linking_table_new["Exposure Link"] == item]
             desired_rows.reset_index(drop=True, inplace=True)
-            linking_table_new = linking_table_new.append(
-                desired_rows, ignore_index=True
-            )
+            linking_table_new = pd.concat([linking_table_new, desired_rows], ignore_index=True) # New line
             duplicates_table = linking_table_new.duplicated(keep="first")
             idx_duplicates = duplicates_table[duplicates_table].index
             for idx in idx_duplicates:
