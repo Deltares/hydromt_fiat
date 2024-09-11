@@ -428,10 +428,11 @@ class FiatModel(GridModel):
         # Possibly reproject according to destination crs
         src_crs = CRS.from_user_input(self.exposure.crs)
         crs = None
-        if dst_crs is not None:
+        try:
             crs = CRS.from_user_input(dst_crs)
-        elif dst_crs is None and self.region is not None:
-            crs = self.region.crs
+        except BaseException:
+            if self.region is not None:
+                crs = self.region.crs
 
         while True:
             if crs is None:
