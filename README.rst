@@ -35,6 +35,8 @@ Installation
 
 HydroMT-FIAT is available from pypi and will be added to conda-forge (in progress).
 
+
+Please do not use this installation as it is currently under development. Instead do the developer installment, as explained below. 
 To install hydromt_fiat for usage, do:
 
 .. code-block:: console
