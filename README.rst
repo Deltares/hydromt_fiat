@@ -33,15 +33,51 @@ for the Delft-FIAT_ model.
 Installation
 ------------
 
-HydroMT-FIAT is available from pypi and will be added to conda-forge (in progress).
 
+.. HydroMT-FIAT is available from pypi and will be added to conda-forge (in progress).
 
-Please do not use this installation as it is currently under development. Instead do the developer installment, as explained below. 
-To install hydromt_fiat for usage, do:
+.. To install hydromt_fiat for usage, do:
 
-.. code-block:: console
+.. .. code-block:: console
 
-  pip install hydromt_fiat
+..   pip install hydromt_fiat 
+
+## For Use
+Hydromt-FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
+
+### New environment
+To create a new environment follow the steps below.
+
+- Create a new environment:
+
+```bash
+conda create -n hydromt_fiat python=3.11.*
+```
+- Activate the environment:
+
+```bash
+conda activate hydromt_fiat`
+```
+
+- Install conda-forge gdal.
+
+```bash
+conda install -c conda-forge gdal
+```
+
+- Install Hydromt-FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
+
+```bash
+pip install git+https://github.com/Deltares/hydromt_fiat.git
+```
+
+### Existing environment
+If you want to install FIAT into an existing environment, simply activate the desired environment and run:
+
+```bash
+pip install git+https://github.com/Deltares/hydromt_fiat.git
+```
+
 
 For developing on HydroMT-FIAT, do:
 
