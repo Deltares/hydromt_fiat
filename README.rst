@@ -42,10 +42,10 @@ Installation
 
 ..   pip install hydromt_fiat 
 
-## For Use
+For Use HydroMT-FIAT, do:
 Hydromt-FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
 
-### New environment
+New environment
 To create a new environment follow the steps below.
 
 - Create a new environment:
@@ -72,7 +72,7 @@ To create a new environment follow the steps below.
     
     pip install git+https://github.com/Deltares/hydromt_fiat.git
 
-### Existing environment
+Existing environment
 If you want to install FIAT into an existing environment, simply activate the desired environment and run:
 
 .. code-block:: console
