@@ -431,6 +431,7 @@
 <span class="kn">import</span> <span class="nn">hydromt</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">hydromt.models.model_grid</span> <span class="kn">import</span> <span class="n">GridModel</span>
+<span class="kn">from</span> <span class="nn">pyproj.crs</span> <span class="kn">import</span> <span class="n">CRS</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 
@@ -755,7 +756,8 @@
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ground_elevation_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">bf_conversion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>    
-        <span class="n">keep_unclassified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">keep_unclassified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dst_crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup building exposure (vector) data for Delft-FIAT.</span>
 
@@ -794,6 +796,9 @@
 <span class="sd">            If building footprints shall be converted into point data.</span>
 <span class="sd">        keep_unclassified: bool, optional</span>
 <span class="sd">            Whether building footprints without classification are removed or reclassified as &quot;residential&quot;</span>
+<span class="sd">        dst_crs : Union[str, None], optional</span>
+<span class="sd">            The destination crs of the exposure geometries. if not provided, </span>
+<span class="sd">            it is taken from the region attribute of `FiatModel`. By default None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># In case the unit is passed as a pydantic value get the string</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
@@ -856,8 +861,27 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> 
 
-
+        <span class="c1"># Check for the required columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">check_required_columns</span><span class="p">()</span>
+
+        <span class="c1"># Possibly reproject according to destination crs</span>
+        <span class="n">src_crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">crs</span> <span class="o">=</span> <span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">dst_crs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">crs</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">()</span> <span class="o">==</span> <span class="n">src_crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">():</span>
+                <span class="k">break</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">:</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">())</span>
+            <span class="k">break</span>
 
         <span class="c1"># Update the other config settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.csv.file&quot;</span><span class="p">,</span> <span class="s2">&quot;exposure/exposure.csv&quot;</span><span class="p">)</span>
@@ -1699,6 +1723,14 @@
                     <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
                 <span class="p">)</span>
+                <span class="c1"># At the very last clip based on the region</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span>
+                    <span class="n">geom</span><span class="p">,</span>
+                    <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;contains_properly&quot;</span><span class="p">,</span>
+                    <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">index_right</span>
+                <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
