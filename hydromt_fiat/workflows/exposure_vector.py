@@ -767,8 +767,8 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("roads").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
@@ -871,8 +871,8 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("roads").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
