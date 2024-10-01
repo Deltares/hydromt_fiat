@@ -454,12 +454,12 @@ class ExposureVector(Exposure):
                     occupancy, geom=self.region
                 )
                 occupancy_landuses.rename(columns={new_attr: type}, inplace=True)
-                if len(occupancy_source) == 1:
-                    occupancy_landuse = occupancy_landuses
-                    occupancy_types = [type_add]
-                else:
-                    occupancy_landuse.append(occupancy_landuses)
-                    occupancy_types.append(type)
+                #if len(occupancy_source) == 1:
+                #    occupancy_landuse = occupancy_landuses
+                #    occupancy_types = [type_add]
+                #else:
+                occupancy_landuse.append(occupancy_landuses)
+                occupancy_types.append(type)
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if isinstance(occupancy_landuse, list):
