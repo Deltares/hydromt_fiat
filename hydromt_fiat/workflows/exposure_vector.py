@@ -454,10 +454,10 @@ class ExposureVector(Exposure):
                     occupancy, geom=self.region
                 )
                 occupancy_landuses.rename(columns={new_attr: type}, inplace=True)
-                #if len(occupancy_source) == 1:
+                # if len(occupancy_source) == 1:
                 #    occupancy_landuse = occupancy_landuses
                 #    occupancy_types = [type_add]
-                #else:
+                # else:
                 occupancy_landuse.append(occupancy_landuses)
                 occupancy_types.append(type)
 
@@ -586,9 +586,7 @@ class ExposureVector(Exposure):
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
-        elif (
-            len(self.exposure_geoms) == 1 and occupancy_source[0].upper() != "OSM"
-        ):
+        elif len(self.exposure_geoms) == 1 and occupancy_source[0].upper() != "OSM":
             if "Primary Object Type" in occupancy_landuse[0].columns:
                 gdf = sjoin_largest_area(
                     self.exposure_geoms[0],
@@ -616,11 +614,13 @@ class ExposureVector(Exposure):
                 # Remove Object ID duplicates
                 gdf_2.drop_duplicates(inplace=True, subset="Object ID")
                 gdf_2.reset_index(drop=True, inplace=True)
-                gdf = gpd.pd.merge(gdf, gdf_2, on='Object ID', how='outer') #not right method
+                gdf = gpd.pd.merge(
+                    gdf, gdf_2, on="Object ID", how="outer"
+                )  # not right method
                 gdf.drop_duplicates(inplace=True, subset="Object ID")
                 gdf.reset_index(drop=True, inplace=True)
-                del gdf['geometry_y']
-                gdf.rename(columns={'geometry_x': 'geometry'}, inplace=True)
+                del gdf["geometry_y"]
+                gdf.rename(columns={"geometry_x": "geometry"}, inplace=True)
             del gdf["geometry"]
         else:
             self.logger.warning(
