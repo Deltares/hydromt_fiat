@@ -616,9 +616,11 @@ class ExposureVector(Exposure):
                 # Remove Object ID duplicates
                 gdf_2.drop_duplicates(inplace=True, subset="Object ID")
                 gdf_2.reset_index(drop=True, inplace=True)
-                gdf = pd.concat([gdf, gdf_2])
+                gdf = gpd.pd.merge(gdf, gdf_2, on='Object ID', how='outer') #not right method
                 gdf.drop_duplicates(inplace=True, subset="Object ID")
                 gdf.reset_index(drop=True, inplace=True)
+                del gdf['geometry_y']
+                gdf.rename(columns={'geometry_x': 'geometry'}, inplace=True)
             del gdf["geometry"]
         else:
             self.logger.warning(
