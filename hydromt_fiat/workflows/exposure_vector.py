@@ -435,9 +435,9 @@ class ExposureVector(Exposure):
             Whether to re-classify Primary/Secondary Object Types as "residential" or remove rows if no Object Type
         """
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
-        if isinstance(occupancy_source, str):
+        if isinstance(occupancy_source, str) and str(occupancy_source).upper() != "OSM":
             occupancy_source = [occupancy_source]
-        if str(occupancy_source[0]).upper() == "OSM":
+        if str(occupancy_source).upper() == "OSM":
             occupancy_type = self.setup_occupancy_type_from_osm()
             occupancy_landuse = occupancy_type[0]
             occupancy_building = occupancy_type[1]
@@ -587,7 +587,7 @@ class ExposureVector(Exposure):
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
         elif (
-            len(self.exposure_geoms) == 1 and str(occupancy_source)[0].upper() != "OSM"
+            len(self.exposure_geoms) == 1 and occupancy_source[0].upper() != "OSM"
         ):
             if "Primary Object Type" in occupancy_landuse[0].columns:
                 gdf = sjoin_largest_area(
