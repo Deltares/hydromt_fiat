@@ -75,19 +75,3 @@ fiat = "hydromt_fiat.fiat:FiatModel"
 [tool.black]
 line-length = 88
 target-version = ['py38']
-
-
-[tool.pixi.project]
-channels = ["conda-forge"]
-platforms = ["win-64"]
-
-[tool.pixi.pypi-dependencies]
-hydromt_fiat = { path = ".", editable = true }
-
-[tool.pixi.environments]
-default = { solve-group = "default" }
-doc = { features = ["doc"], solve-group = "default" }
-test = { features = ["test"], solve-group = "default" }
-dev = { features = ["dev"], solve-group = "default" }
-
-[tool.pixi.tasks]
