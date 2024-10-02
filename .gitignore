@@ -144,4 +144,9 @@ examples/data/setup_new_composite_area/test_setup_new_composite_area_datum/
 examples/data/setup_new_composite_area/test_setup_new_composite_area_elevation/
 examples/data/setup_new_composite_area/test_setup_new_composite_area_geom/
 examples/data/update_max_potential_damage/test_update_max_potential_damage_points/
-examples/data/update_max_potential_damage/test_update_max_potential_damage_polygons/
+examples/data/update_max_potential_damage/test_update_max_potential_damage_polygons/# pixi environments
+.pixi
+*.egg-info
+# pixi environments
+.pixi
+*.egg-info

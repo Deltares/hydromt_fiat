@@ -4,46 +4,53 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hydromt_fiat"
-# TODO description = "Hydrological model for flood impact assessment and adaptation planning"
+description = "HydroMT plugin for Hydrological model for flood impact assessment and adaptation planning"
 authors = [
-    {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
-	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
-	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
-	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
-	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
-    {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
-]
-requires-python = ">=3.8"
-dependencies = [
-    "hydromt<1.0",
-    "geopandas",
-    "geopy",
-    "numpy",
-    "openpyxl",
-    "pandas",
-    "pyogrio",
-    "tomli-w",
-    "tomli",
-    "xarray",
-    "pydantic",
-    "osmnx",
-    "census",
-    "us",
-    "xarray-spatial",
-    "tqdm",
-    "pycountry-convert"
+  { name = "Dirk Eilander", email = "dirk.eilander@deltares.nl" },
+  { name = "Frederique de Groen", email = "frederique.degroen@deltares.nl" },
+  { name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl" },
+  { name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl" },
+  { name = "Lieke Meijer", email = "lieke.meijer@deltares.nl" },
+  { name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl" },
+  { name = "Sam Vente", email = "sam.vente@deltares.nl" },
 ]
 readme = "README.rst"
 classifiers = [
-    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Information Analysis",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
+  # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
 ]
 dynamic = ["version"]
+
+requires-python = ">=3.10.*"
+dependencies = [
+  "census",
+  "geopandas",
+  "geopy",
+  "hydromt<1.0",
+  "numpy",
+  "openpyxl",
+  "osmnx",
+  "pandas",
+  "pycountry-convert",
+  "pydantic",
+  "pyogrio",
+  "tomli",
+  "tomli-w",
+  "tqdm",
+  "us",
+  "xarray",
+  "xarray-spatial",
+]
+
+[project.optional-dependencies]
+test = ["pytest-cov", "pytest>=2.7.3", "responses", "testpath"]
+doc = ["black", "sphinx", "sphinx_rtd_theme"]
+
 
 [tool.setuptools]
 zip-safe = false
@@ -58,19 +65,6 @@ include = ["hydromt_fiat*"]
 [tool.setuptools.package-data]
 "hydromt_fiat" = ["data/**"]
 
-[project.optional-dependencies]
-test = [
-	"testpath",
-	"responses",
-	"pytest>=2.7.3",
-	"pytest-cov",
-]
-doc = [
-	"sphinx",
-	"sphinx_rtd_theme",
-	"black",
-]
-
 [project.urls]
 Documentation = "https://deltares.github.io/hydromt_fiat/"
 Source = "https://github.com/Deltares/hydromt_fiat"
@@ -82,3 +76,18 @@ fiat = "hydromt_fiat.fiat:FiatModel"
 line-length = 88
 target-version = ['py38']
 
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.pypi-dependencies]
+hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.environments]
+default = { solve-group = "default" }
+doc = { features = ["doc"], solve-group = "default" }
+test = { features = ["test"], solve-group = "default" }
+dev = { features = ["dev"], solve-group = "default" }
+
+[tool.pixi.tasks]
