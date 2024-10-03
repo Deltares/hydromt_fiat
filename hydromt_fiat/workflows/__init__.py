@@ -2,9 +2,7 @@ from .exposure_raster import ExposureRaster
 from .exposure_vector import ExposureVector
 from .hazard import (
     create_lists,
-    check_list,
     check_lists_size,
-    check_dir_exist,
     check_map_uniqueness,
     read_maps,
     check_maps_metadata,
@@ -15,8 +13,6 @@ from .hazard import (
 __all__ = [
     "ExposureRaster",
     "ExposureVector",
-    "check_dir_exist",
-    "check_list",
     "check_lists_size",
     "check_map_uniqueness",
     "check_maps_metadata",
