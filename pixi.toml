@@ -1,0 +1,103 @@
+[project]
+name = "hydromt_fiat"
+description = "HydroMT plugin for Hydrological model for flood impact assessment and adaptation planning"
+authors = [
+  "Dirk Eilander<dirk.eilander@deltares.nl>",
+  "Frederique de Groen<frederique.degroen@deltares.nl>",
+  "Mario Fuentes Monjaraz<mario.fuentesmonjaraz@deltares.nl>",
+  "Luis Rodriguez Galvez<luis.rodriguez@deltares.nl>",
+  "Lieke Meijer<lieke.meijer@deltares.nl>",
+  "Sarah Rautenbach<sarah.rautenbach@deltares.nl>",
+  "Sam Vente<sam.vente@deltares.nl>",
+]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tasks]
+doctest = { cmd = [
+	"sphinx-build",
+	"-M",
+	"doctest",
+	"docs",
+	"docs/_build",
+	"-W",
+] }
+docs-build = { cmd = [
+	"sphinx-build",
+	"-M",
+	"html",
+	"docs",
+	"docs/_build",
+	"-W",
+], depends_on = [
+	"doctest",
+] }
+docs = { depends_on = ["docs-build"] } # alias
+doc = { depends_on = ["docs-build"] } # alias
+serve = { cmd = ["python", "-m", "http.server", "-d", "docs/_build/html"] }
+
+
+test = { cmd = ["pytest"] }
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
+test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"] }
+test-cov = { cmd = [
+	"pytest",
+	"--verbose",
+	"--cov=hydromt",
+	"--cov-report",
+	"xml",
+] }
+
+
+
+[environments]
+default = {features = ["dev", "docs"]}
+dev = {features = ["dev"]}
+docs = {features = ["docs"]}
+
+[dependencies]
+census = "*"
+gdal = ">=3.1"
+geopandas = "*"
+geopy = "*"
+hydromt = "<1.0.0"
+hydromt_sfincs = "*"
+ipykernel = "*"
+numpy = "*"
+openpyxl = "*"
+osmnx = "*"
+pandas = "*"
+pydantic = "*"
+pyogrio = "*"
+python = "3.10.*"
+rasterio = "*"
+requests = "*"
+rioxarray = "*"
+tomli = "*"
+tomli-w = "*"
+universal_pathlib = "*"
+us = "*"
+xarray = "*"
+xarray-spatial = "*"
+
+[pypi-dependencies]
+pycountry-convert = "*"
+
+[feature.dev.dependencies]
+pytest = "*"
+ruff = "*"
+tqdm = "*"
+
+[feature.docs.dependencies]
+jupyterlab = "*"
+matplotlib-base = "*"
+mercantile = "*"
+notebook = "*"
+packaging = "*"
+pydata-sphinx-theme = "*"
+sphinx = "*"
+nbsphinx = "*"
+
+[feature.docs.pypi-dependencies]
+sphinx_design = "*"
+sphinx_autosummary_accessors = "*"
