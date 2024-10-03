@@ -535,7 +535,9 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s read the configuration file holding the required information for the FIAT model</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;configuration.yaml&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;configuration.yaml&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
@@ -583,13 +585,15 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set up Fiat Model</span>
-<span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>  <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span>  <span class="s2">&quot;FIAT model&quot;</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;FIAT model&quot;</span>
 
 <span class="c1"># Set up the logger</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">setuplog</span><span class="p">(</span><span class="s2">&quot;hydromt_fiat&quot;</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="c1"># Set up datacatalog</span>
-<span class="n">data_catalog_yml</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;hydromt_fiat_catalog_USA.yml&quot;</span>
+<span class="n">data_catalog_yml</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;hydromt_fiat_catalog_USA.yml&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -617,10 +621,14 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Build the FIAT model</span>
-<span class="n">fiat_model</span> <span class="o">=</span> <span class="n">FiatModel</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">data_libs</span><span class="o">=</span><span class="p">[</span><span class="n">data_catalog_yml</span><span class="p">],</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+<span class="n">fiat_model</span> <span class="o">=</span> <span class="n">FiatModel</span><span class="p">(</span>
+    <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">data_libs</span><span class="o">=</span><span class="p">[</span><span class="n">data_catalog_yml</span><span class="p">],</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span>
+<span class="p">)</span>
 
 <span class="n">region</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="o">.</span><span class="n">from_features</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="mi">4326</span><span class="p">)</span>
-<span class="n">opt</span> <span class="o">=</span> <span class="n">configread</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>  <span class="o">/</span>  <span class="s2">&quot;configuration.yaml&quot;</span><span class="p">)</span>
+<span class="n">opt</span> <span class="o">=</span> <span class="n">configread</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span> <span class="s2">&quot;configuration.yaml&quot;</span>
+<span class="p">)</span>
 <span class="n">fiat_model</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;geom&quot;</span><span class="p">:</span> <span class="n">region</span><span class="p">},</span> <span class="n">opt</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">fiat_model</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
 </pre></div>
@@ -876,16 +884,32 @@ INFO:hydromt_fiat:Writing model vulnerability_curves table file to vulnerability
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load exposure.csv into dataframe</span>
-<span class="n">df_exposure</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>  <span class="o">/</span>  <span class="s2">&quot;FIAT model&quot;</span> <span class="o">/</span> <span class="s2">&quot;exposure&quot;</span> <span class="o">/</span> <span class="s2">&quot;exposure.csv&quot;</span><span class="p">)</span>
+<span class="n">df_exposure</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;FIAT model&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;exposure&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;exposure.csv&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Load exposure geopackage into GeoDataFrame</span>
-<span class="n">gdf_exposure</span> <span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span> <span class="o">/</span>  <span class="s2">&quot;FIAT model&quot;</span>  <span class="o">/</span>  <span class="s2">&quot;exposure&quot;</span> <span class="o">/</span>  <span class="s2">&quot;roads.gpkg&quot;</span><span class="p">)</span>
+<span class="n">gdf_exposure</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;FIAT model&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;exposure&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;roads.gpkg&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Merge dataframe with GeoDataFrame</span>
-<span class="n">merged_gdf</span> <span class="o">=</span> <span class="n">gdf_exposure</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_exposure</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;Object ID&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;Object ID&#39;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">)</span>
+<span class="n">merged_gdf</span> <span class="o">=</span> <span class="n">gdf_exposure</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">df_exposure</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Display the road network</span>
-<span class="n">road_network</span> <span class="o">=</span> <span class="n">merged_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">column</span> <span class="o">=</span> <span class="s1">&#39;Max Potential Damage: Structure&#39;</span><span class="p">)</span>
+<span class="n">road_network</span> <span class="o">=</span> <span class="n">merged_gdf</span><span class="o">.</span><span class="n">explore</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s2">&quot;Max Potential Damage: Structure&quot;</span><span class="p">)</span>
 <span class="n">road_network</span>
 </pre></div>
 </div>
@@ -1260,7 +1284,14 @@ INFO:hydromt_fiat:Writing model vulnerability_curves table file to vulnerability
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Display vulnerability.csv</span>
-<span class="n">df_vulnerability</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>  <span class="o">/</span>  <span class="s2">&quot;FIAT model&quot;</span> <span class="o">/</span> <span class="s2">&quot;vulnerability&quot;</span> <span class="o">/</span> <span class="s2">&quot;vulnerability_curves.csv&quot;</span><span class="p">)</span>
+<span class="n">df_vulnerability</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>
+    <span class="o">/</span> <span class="s2">&quot;data&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;road_network&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;FIAT model&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;vulnerability&quot;</span>
+    <span class="o">/</span> <span class="s2">&quot;vulnerability_curves.csv&quot;</span>
+<span class="p">)</span>
 <span class="n">df_vulnerability</span>
 </pre></div>
 </div>
@@ -1364,12 +1395,12 @@ INFO:hydromt_fiat:Writing model vulnerability_curves table file to vulnerability
 <span class="n">water_depths</span> <span class="o">=</span> <span class="n">fiat_model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">hazard_values</span>
 
 <span class="c1"># Plot damage curves for some occupancy types</span>
-<span class="n">line_styles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">]</span>
+<span class="n">line_styles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;:&quot;</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">function_name</span><span class="p">,</span> <span class="n">ls</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fiat_model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">functions</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">line_styles</span><span class="p">):</span>
     <span class="n">dmg</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">fiat_model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">functions</span><span class="p">[</span><span class="n">function_name</span><span class="p">]]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">water_depths</span><span class="p">,</span> <span class="n">dmg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">function_name</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="n">ls</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;depth (m)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;damage fraction (-)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;depth (m)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;damage fraction (-)&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.04</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>

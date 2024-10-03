@@ -507,19 +507,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">aggregation_areas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">additional_attributes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># Dictionary containing all the spatial join metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">aggregation_areas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">additional_attributes</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">)</span>  <span class="c1"># Dictionary containing all the spatial join metadata</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint_fn</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="c1"># Path to the building footprints dataset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">()</span> <span class="c1"># building footprints dataset</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint_fn</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># Path to the building footprints dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">()</span>  <span class="c1"># building footprints dataset</span></div>
 
 
     <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the model and remove the logger file handler.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;hydromt.log&#39;</span> <span class="ow">in</span> <span class="n">handler</span><span class="o">.</span><span class="n">baseFilename</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="s2">&quot;hydromt.log&quot;</span> <span class="ow">in</span> <span class="n">handler</span><span class="o">.</span><span class="n">baseFilename</span>
+            <span class="p">):</span>
                 <span class="n">handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
-                
+
 <div class="viewcode-block" id="FiatModel.setup_global_settings">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.setup_global_settings.html#hydromt_fiat.fiat.FiatModel.setup_global_settings">[docs]</a>
     <span class="k">def</span> <span class="nf">setup_global_settings</span><span class="p">(</span>
@@ -538,7 +543,7 @@
 <span class="sd">            The CRS of the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">crs</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.crs&quot;</span><span class="p">,</span>  <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="n">crs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.crs&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;EPSG:</span><span class="si">{</span><span class="n">crs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">gdal_cache</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;global.gdal_cache&quot;</span><span class="p">,</span> <span class="n">gdal_cache</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">keep_temp_files</span><span class="p">:</span>
@@ -687,9 +692,7 @@
         <span class="p">)</span>
 
         <span class="c1"># Update config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-            <span class="s2">&quot;vulnerability.file&quot;</span><span class="p">,</span> <span class="s2">&quot;vulnerability/vulnerability_curves.csv&quot;</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability.file&quot;</span><span class="p">,</span> <span class="s2">&quot;vulnerability/vulnerability_curves.csv&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;vulnerability.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">step_size</span><span class="p">:</span>
@@ -744,18 +747,18 @@
     <span class="k">def</span> <span class="nf">setup_exposure_buildings</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">asset_locations</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-        <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> 
+        <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">max_potential_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">ground_floor_height</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">occupancy_attr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">occupancy_object_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extraction_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;centroid&quot;</span><span class="p">,</span>
-        <span class="n">damage_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span> 
-        <span class="n">damage_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Currency</span><span class="o">.</span><span class="n">dollar</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> 
+        <span class="n">damage_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
+        <span class="n">damage_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Currency</span><span class="o">.</span><span class="n">dollar</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">ground_elevation_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">bf_conversion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>    
+        <span class="n">bf_conversion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">keep_unclassified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">dst_crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -797,13 +800,19 @@
 <span class="sd">        keep_unclassified: bool, optional</span>
 <span class="sd">            Whether building footprints without classification are removed or reclassified as &quot;residential&quot;</span>
 <span class="sd">        dst_crs : Union[str, None], optional</span>
-<span class="sd">            The destination crs of the exposure geometries. if not provided, </span>
+<span class="sd">            The destination crs of the exposure geometries. if not provided,</span>
 <span class="sd">            it is taken from the region attribute of `FiatModel`. By default None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># In case the unit is passed as a pydantic value get the string</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
             <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span> <span class="n">damage_unit</span><span class="o">=</span> <span class="n">damage_unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+            <span class="n">damage_unit</span><span class="o">=</span><span class="n">damage_unit</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">asset_locations</span> <span class="o">==</span> <span class="n">max_potential_damage</span><span class="p">:</span>
             <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
@@ -828,8 +837,8 @@
                 <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
                 <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
                 <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span>
-                <span class="n">bf_conversion</span> <span class="o">=</span> <span class="n">bf_conversion</span><span class="p">,</span> 
-                <span class="n">keep_unclassified</span> <span class="o">=</span><span class="n">keep_unclassified</span>
+                <span class="n">bf_conversion</span><span class="o">=</span><span class="n">bf_conversion</span><span class="p">,</span>
+                <span class="n">keep_unclassified</span><span class="o">=</span><span class="n">keep_unclassified</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">asset_locations</span> <span class="o">!=</span> <span class="n">occupancy_type</span><span class="p">)</span> <span class="ow">and</span> <span class="n">occupancy_object_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -837,7 +846,7 @@
                 <span class="n">occupancy_source</span><span class="o">=</span><span class="n">occupancy_type</span><span class="p">,</span>
                 <span class="n">occupancy_attr</span><span class="o">=</span><span class="n">occupancy_attr</span><span class="p">,</span>
                 <span class="n">type_add</span><span class="o">=</span><span class="n">occupancy_object_type</span><span class="p">,</span>
-                <span class="n">keep_unclassified</span> <span class="o">=</span> <span class="n">keep_unclassified</span>
+                <span class="n">keep_unclassified</span><span class="o">=</span><span class="n">keep_unclassified</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="c1"># Link the damage functions to assets</span>
@@ -855,11 +864,14 @@
         <span class="c1"># Set building footprints</span>
         <span class="k">if</span> <span class="n">bf_conversion</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bf_spatial_joins</span><span class="p">()</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure/building_footprints/building_footprints.gpkg&quot;</span><span class="p">,</span> <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span> <span class="c1">#TODO check how and where this is defined</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure/building_footprints/building_footprints.gpkg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span>  <span class="c1"># TODO check how and where this is defined</span>
             <span class="p">}</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
         <span class="c1"># Check for the required columns</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">check_required_columns</span><span class="p">()</span>
@@ -908,20 +920,28 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_roads</span><span class="p">(</span><span class="n">roads_fn</span><span class="p">,</span> <span class="n">road_damage</span><span class="p">,</span> <span class="n">road_types</span><span class="p">)</span>
 
         <span class="c1"># Link to vulnerability curves</span>
 
         <span class="c1"># Combine the exposure database with pre-existing exposure data if available</span>
+
     <span class="k">def</span> <span class="nf">bf_spatial_joins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">building_footprints</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;BF_FID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
-            <span class="n">BF_exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Object ID&#39;</span><span class="p">)</span>
-            <span class="k">del</span> <span class="n">BF_exposure_gdf</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
-            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">BF_exposure_gdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">building_footprints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;BF_FID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">BF_exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span>
+        <span class="p">)</span>
+        <span class="k">del</span> <span class="n">BF_exposure_gdf</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">BF_exposure_gdf</span>
 
     <span class="k">def</span> <span class="nf">update_ground_floor_height</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -931,7 +951,9 @@
         <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">gfh_method</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span>
+                <span class="n">source</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">gfh_method</span><span class="p">,</span> <span class="n">max_dist</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_max_potential_damage</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -955,9 +977,7 @@
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_ground_elevation</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
-        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
@@ -1034,15 +1054,17 @@
                 <span class="c1"># if path is provided read and load it as xarray</span>
                 <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da_type</span> <span class="o">=</span> <span class="n">read_maps</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">da_map_fn</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
                 <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
-                <span class="n">da_map_fn</span>
-            <span class="p">)</span>  <span class="c1"># removed geom=self.region because it is not always there</span>
+                    <span class="n">da_map_fn</span>
+                <span class="p">)</span>  <span class="c1"># removed geom=self.region because it is not always there</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">da_map_fn</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
                 <span class="c1"># if xarray is provided directly assign that</span>
                 <span class="n">da</span> <span class="o">=</span> <span class="n">da_map_fn</span>
-                <span class="n">da_name</span> <span class="o">=</span> <span class="s1">&#39;hazard_map&#39;</span>
+                <span class="n">da_name</span> <span class="o">=</span> <span class="s2">&quot;hazard_map&quot;</span>
                 <span class="n">da_type</span> <span class="o">=</span> <span class="n">map_type</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The hazard map provided should be a path like object or an DataArray&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The hazard map provided should be a path like object or an DataArray&quot;</span>
+                <span class="p">)</span>
             <span class="c1"># Convert to units of the exposure data if required</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>  <span class="c1"># change to be sure that the unit information is available from the exposure dataset</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">):</span>
@@ -1067,16 +1089,18 @@
             <span class="n">rp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da_rp</span><span class="p">)</span>
             <span class="n">map_name_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da_name</span><span class="p">)</span>
 
-            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span>
-                <span class="s2">&quot;return_period&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">da_rp</span><span class="p">),</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">da_type</span><span class="p">,</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
-                <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
-            <span class="p">})</span>
-            
+            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="s2">&quot;return_period&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">da_rp</span><span class="p">),</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">da_type</span><span class="p">,</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
+                    <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+
             <span class="c1"># Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf</span>
             <span class="k">if</span> <span class="s2">&quot;grid_mapping&quot;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
-                <span class="k">del</span>  <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
 
             <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
 
@@ -1100,10 +1124,10 @@
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">sorted_names</span><span class="p">,</span>
                 <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;risk&quot;</span><span class="p">,</span>
             <span class="p">}</span>
-            
+
             <span class="c1"># Ensure that grid_mapping is deleted if it exists to avoid errors when making the gdal compliant netcdf</span>
             <span class="k">if</span> <span class="s2">&quot;grid_mapping&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
-                <span class="k">del</span>  <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">]</span>
 
             <span class="n">list_maps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maps</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 
@@ -1191,7 +1215,9 @@
             <span class="c1"># First find the state(s) and county/counties where the exposure data is</span>
             <span class="c1"># located in</span>
             <span class="n">us_states_counties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="s2">&quot;us_states_counties&quot;</span><span class="p">)</span>
-            <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_exposure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+            <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_exposure</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
             <span class="n">states_dict</span> <span class="o">=</span> <span class="n">list_of_states</span><span class="p">()</span>
             <span class="n">state_abbreviation</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
@@ -1228,7 +1254,9 @@
             <span class="n">svi</span><span class="o">.</span><span class="n">merge_svi_data_shp</span><span class="p">()</span>
             <span class="n">gdf</span> <span class="o">=</span> <span class="n">rename_geoid_short</span><span class="p">(</span><span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">)</span>
             <span class="c1"># store the relevant tables coming out of the social vulnerability module</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">gdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span>
+                <span class="n">df</span><span class="o">=</span><span class="n">gdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s2">&quot;geometry&quot;</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;social_vulnerability_scores&quot;</span>
+            <span class="p">)</span>
             <span class="c1"># TODO: Think about adding an indicator for missing data to the svi.svi_data_shp</span>
 
             <span class="c1"># Link the SVI score to the exposure data</span>
@@ -1260,19 +1288,24 @@
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">)</span>
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;composite_svi_z&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">svi_exp_joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">svi_exp_joined</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI&quot;</span><span class="p">]],</span> <span class="n">on</span> <span class="o">=</span> <span class="s2">&quot;Object ID&quot;</span><span class="p">,</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                <span class="n">svi_exp_joined</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI&quot;</span><span class="p">]],</span>
+                <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span>
+                <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="c1"># Define spatial join info</span>
             <span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;SVI/svi&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">,</span> 
-                    <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;composite_svi_z&quot;</span><span class="p">}</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;composite_svi_z&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> </div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span></div>
 
-            
-            
+
     <span class="k">def</span> <span class="nf">setup_equity_data</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">census_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1294,7 +1327,9 @@
         <span class="c1"># First find the state(s) and county/counties where the exposure data is</span>
         <span class="c1"># located in</span>
         <span class="n">us_states_counties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="s2">&quot;us_states_counties&quot;</span><span class="p">)</span>
-        <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_exposure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span>
+        <span class="n">counties</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">locate_from_exposure</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
         <span class="n">states_dict</span> <span class="o">=</span> <span class="n">list_of_states</span><span class="p">()</span>
         <span class="n">state_abbreviation</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
@@ -1320,7 +1355,7 @@
         <span class="n">equity</span><span class="o">.</span><span class="n">merge_equity_data_shp</span><span class="p">()</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
         <span class="n">gdf</span> <span class="o">=</span> <span class="n">rename_geoid_short</span><span class="p">(</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span> <span class="n">gdf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tables</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">gdf</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equity_data&quot;</span><span class="p">)</span>
 
         <span class="c1"># Save the census block aggregation area data</span>
         <span class="n">block_groups</span> <span class="o">=</span> <span class="n">equity</span><span class="o">.</span><span class="n">get_block_groups</span><span class="p">()</span>
@@ -1332,14 +1367,21 @@
             <span class="n">attribute_names</span><span class="o">=</span><span class="s2">&quot;GEOID_short&quot;</span><span class="p">,</span>
             <span class="n">label_names</span><span class="o">=</span><span class="s2">&quot;Census Blockgroup&quot;</span><span class="p">,</span>
             <span class="n">new_composite_area</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">file_names</span><span class="o">=</span><span class="s2">&quot;block_groups&quot;</span>
+            <span class="n">file_names</span><span class="o">=</span><span class="s2">&quot;block_groups&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        
+
         <span class="c1"># Update spatial join metadata for equity data connection</span>
-        <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">aggr</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">aggr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]])][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;census_data&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure/equity/equity_data.csv&quot;</span><span class="p">,</span> <span class="c1">#TODO check how and where this is defined</span>
-                 <span class="s2">&quot;percapitaincome_label&quot;</span><span class="p">:</span> <span class="s2">&quot;PerCapitaIncomeBG&quot;</span><span class="p">,</span>
-                 <span class="s2">&quot;totalpopulation_label&quot;</span><span class="p">:</span> <span class="s2">&quot;TotalPopulationBG&quot;</span><span class="p">,}</span>
+        <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">i</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">aggr</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">aggr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]]</span>
+            <span class="p">)</span>
+        <span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;census_data&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure/equity/equity_data.csv&quot;</span><span class="p">,</span>  <span class="c1"># TODO check how and where this is defined</span>
+            <span class="s2">&quot;percapitaincome_label&quot;</span><span class="p">:</span> <span class="s2">&quot;PerCapitaIncomeBG&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;totalpopulation_label&quot;</span><span class="p">:</span> <span class="s2">&quot;TotalPopulationBG&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">][</span><span class="n">ind</span><span class="p">][</span><span class="s2">&quot;equity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span>
 
     <span class="k">def</span> <span class="nf">setup_aggregation_areas</span><span class="p">(</span>
@@ -1351,7 +1393,6 @@
         <span class="n">label_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">new_composite_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">file_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
 
@@ -1364,9 +1405,9 @@
 <span class="sd">        label_names : Union[List[str], str]</span>
 <span class="sd">            The name that the new attribute will get in the exposure data.</span>
 <span class="sd">        new_composite_area: bool</span>
-<span class="sd">            Check whether exposure is a new composite area </span>
+<span class="sd">            Check whether exposure is a new composite area</span>
 <span class="sd">        file_names : Union[List[str], str]</span>
-<span class="sd">            The name of the spatial file(s) if saved in aggregation_areas/ </span>
+<span class="sd">            The name of the spatial file(s) if saved in aggregation_areas/</span>
 <span class="sd">            folder in the root directory (Default is None).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists</span>
@@ -1387,7 +1428,7 @@
             <span class="c1"># Make sure that column name for aggregation areas includes the Aggregation Label part</span>
             <span class="p">[</span><span class="s2">&quot;Aggregation Label: &quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">label_names</span><span class="p">],</span>
             <span class="n">new_composite_area</span><span class="p">,</span>
-            <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span>
+            <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">file_names</span><span class="p">:</span>
@@ -1397,11 +1438,15 @@
         <span class="c1"># Save metadata on spatial joins</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">label_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">label_names</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">attribute_names</span><span class="p">):</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span> 
-                     <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/aggregation_areas/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span> <span class="c1">#TODO Should we define this location somewhere globally?</span>
-                     <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span> 
+        <span class="k">for</span> <span class="n">label_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">label_names</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">attribute_names</span>
+        <span class="p">):</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/aggregation_areas/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
+                <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_additional_attributes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1417,7 +1462,7 @@
             <span class="n">aggregation_area_fn</span> <span class="o">=</span> <span class="p">[</span><span class="n">aggregation_area_fn</span><span class="p">]</span>
             <span class="n">attribute_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">attribute_names</span><span class="p">]</span>
             <span class="n">label_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">label_names</span><span class="p">]</span>
-                
+
         <span class="c1"># Perform spatial join for each aggregation area provided</span>
         <span class="c1"># First get all exposure geometries</span>
         <span class="n">exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
@@ -1428,9 +1473,9 @@
             <span class="n">attribute_names</span><span class="p">,</span>
             <span class="n">label_names</span><span class="p">,</span>
             <span class="n">new_composite_area</span><span class="p">,</span>
-            <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span>
+            <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
-        
+
         <span class="n">file_names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">area_gdf</span><span class="p">,</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">areas_gdf</span><span class="p">,</span> <span class="n">aggregation_area_fn</span><span class="p">):</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
@@ -1440,59 +1485,70 @@
         <span class="c1"># Save metadata on spatial joins</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">label_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">label_names</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">attribute_names</span><span class="p">):</span>
-            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span> 
-                     <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/additional_attributes/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span> <span class="c1">#TODO Should we define this location somewhere globally?</span>
-                     <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">label_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">attribute_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="n">label_names</span><span class="p">,</span> <span class="n">file_names</span><span class="p">,</span> <span class="n">attribute_names</span>
+        <span class="p">):</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/additional_attributes/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
+                <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">,</span>
+            <span class="p">}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_classification</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]],</span>
-        <span class="n">attribute</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">type_add</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">old_values</span><span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">new_values</span><span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">damage_types</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">remove_object_type</span> <span class="o">=</span> <span class="nb">bool</span>
-        
+        <span class="n">source</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]],</span>
+        <span class="n">attribute</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">type_add</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">old_values</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">new_values</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">damage_types</span><span class="o">=</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">remove_object_type</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        source : Union[List[str], List[Path], str, Path]</span>
-<span class="sd">            Path(s) to the user classification file.</span>
-<span class="sd">        attribute : Union[List[str], str]</span>
-<span class="sd">            Name of the column of the user data </span>
-<span class="sd">       type_add : Union[List[str], str]</span>
-<span class="sd">            Name of the attribute the user wants to update. Primary or Secondary</span>
-<span class="sd">        old_values : Union[List[str], List[Path], str, Path]</span>
-<span class="sd">            Name of the default (NSI) exposure classification</span>
-<span class="sd">        new_values : Union[List[str], str]</span>
-<span class="sd">            Name of the user exposure classification.</span>
-<span class="sd">        exposure_linking_table : Union[List[str], str]</span>
-<span class="sd">            Path(s) to the new exposure linking table(s).</span>
-<span class="sd">        damage_types : Union[List[str], str]</span>
-<span class="sd">            &quot;structure&quot;or/and &quot;content&quot;</span>
-<span class="sd">        remove_object_type: bool</span>
-<span class="sd">            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.</span>
-<span class="sd">            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2). </span>
+<span class="sd">         Parameters</span>
+<span class="sd">         ----------</span>
+<span class="sd">         source : Union[List[str], List[Path], str, Path]</span>
+<span class="sd">             Path(s) to the user classification file.</span>
+<span class="sd">         attribute : Union[List[str], str]</span>
+<span class="sd">             Name of the column of the user data</span>
+<span class="sd">        type_add : Union[List[str], str]</span>
+<span class="sd">             Name of the attribute the user wants to update. Primary or Secondary</span>
+<span class="sd">         old_values : Union[List[str], List[Path], str, Path]</span>
+<span class="sd">             Name of the default (NSI) exposure classification</span>
+<span class="sd">         new_values : Union[List[str], str]</span>
+<span class="sd">             Name of the user exposure classification.</span>
+<span class="sd">         exposure_linking_table : Union[List[str], str]</span>
+<span class="sd">             Path(s) to the new exposure linking table(s).</span>
+<span class="sd">         damage_types : Union[List[str], str]</span>
+<span class="sd">             &quot;structure&quot;or/and &quot;content&quot;</span>
+<span class="sd">         remove_object_type: bool</span>
+<span class="sd">             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.</span>
+<span class="sd">             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_occupancy_type</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">type_add</span><span class="p">)</span>
 
-        <span class="c1"># Drop Object Type that has not been updated. </span>
-        
+        <span class="c1"># Drop Object Type that has not been updated.</span>
+
         <span class="k">if</span> <span class="n">remove_object_type</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">type_add</span> <span class="o">==</span> <span class="s2">&quot;Primary Object Type&quot;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Secondary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span><span class="mi">1</span> <span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+                    <span class="s2">&quot;Secondary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;Primary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span><span class="mi">1</span> <span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> 
-        <span class="n">linking_table_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">update_user_linking_table</span><span class="p">(</span><span class="n">old_values</span><span class="p">,</span><span class="n">new_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+                    <span class="s2">&quot;Primary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+        <span class="n">linking_table_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">update_user_linking_table</span><span class="p">(</span>
+            <span class="n">old_values</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span> <span class="o">=</span> <span class="n">linking_table_new</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">link_exposure_vulnerability</span><span class="p">(</span><span class="n">linking_table_new</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">])</span>
-            
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">link_exposure_vulnerability</span><span class="p">(</span>
+            <span class="n">linking_table_new</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">setup_building_footprint</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">building_footprint_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
@@ -1548,7 +1604,7 @@
 
     <span class="k">def</span> <span class="nf">update_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Update the exposure data geoms</span>
-        <span class="c1"># This now doesnt do a whole lot and should be </span>
+        <span class="c1"># This now doesnt do a whole lot and should be</span>
         <span class="c1"># handled somewhere else properly</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
@@ -1570,9 +1626,9 @@
         <span class="c1"># Read spatial joins configurations</span>
         <span class="n">sj_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;spatial_joins.toml&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sj_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="n">sj</span> <span class="o">=</span> <span class="n">SpatialJoins</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">sj_path</span> <span class="p">)</span>
+            <span class="n">sj</span> <span class="o">=</span> <span class="n">SpatialJoins</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">sj_path</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sj</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
-        
+
         <span class="c1"># TODO: determine if it is required to read the hazard files</span>
         <span class="c1"># hazard_maps = self.config[&quot;hazard&quot;][&quot;grid_file&quot;]</span>
         <span class="c1"># self.read_grid(fn=&quot;hazard/{name}.nc&quot;)</span>
@@ -1613,7 +1669,7 @@
                 <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">),</span>
                 <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
                 <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">),</span>
-                <span class="n">damage_unit</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">),</span>
+                <span class="n">damage_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">),</span>
                 <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>  <span class="c1"># TODO: See if this works also when no data catalog is provided</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">)</span>
@@ -1645,7 +1701,7 @@
             <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
-        
+
 <div class="viewcode-block" id="FiatModel.write">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write">[docs]</a>
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1661,7 +1717,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_tables</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_spatial_joins</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint_fn</span><span class="p">:</span>
             <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
@@ -1693,7 +1752,7 @@
                 <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Path</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
-            
+
     <span class="k">def</span> <span class="nf">write_spatial_joins</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">spatial_joins_conf</span> <span class="o">=</span> <span class="n">SpatialJoins</span><span class="o">.</span><span class="n">load_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">)</span>
         <span class="n">spatial_joins_conf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;spatial_joins.toml&quot;</span><span class="p">))</span>
@@ -1702,7 +1761,9 @@
         <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;building_footprints.gpkg&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;building_footprints.gpkg&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="FiatModel.write_geoms">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms">[docs]</a>
@@ -1717,8 +1778,8 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">)):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">))</span>
 
-                <span class="c1"># This whole ordeal is terrible, </span>
-                <span class="c1"># but it needs a refactor that is too much to fix this properly </span>
+                <span class="c1"># This whole ordeal is terrible,</span>
+                <span class="c1"># but it needs a refactor that is too much to fix this properly</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
@@ -1728,7 +1789,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span>
                     <span class="n">geom</span><span class="p">,</span>
                     <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;contains_properly&quot;</span><span class="p">,</span>
-                    <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+                    <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">index_right</span>
                 <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
