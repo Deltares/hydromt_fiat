@@ -28,13 +28,13 @@ class SviViewModel:
 
     def set_svi_settings(self, census_key, year_data):
         self.svi_model = SocialVulnerabilityIndexSettings(
-            census_key = census_key,
-            codebook_fn = "social_vulnerability",
-            year_data = year_data,
+            census_key=census_key,
+            codebook_fn="social_vulnerability",
+            year_data=year_data,
         )
-    
+
     def set_equity_settings(self, census_key, year_data):
         self.equity_model = EquityDataSettings(
-            census_key = census_key,
-            year_data = year_data,
+            census_key=census_key,
+            year_data=year_data,
         )

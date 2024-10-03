@@ -253,7 +253,7 @@ def ground_elevation_from_dem(
     # Read in the DEM
     dem = rasterio.open(ground_elevation)
     # gdf = self.get_full_gdf(exposure_db)
-    
+
     # TODO if exposure.geoms is not POINTS: either take average value of pixels or create a centroid
 
     gdf = exposure_geoms.to_crs(dem.crs.data)
@@ -298,45 +298,52 @@ def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):
     except GeocoderTimedOut:
         if attempt <= max_attempts:
             time.sleep(1)
-            return do_geocode(geolocator, xycoords, attempt=attempt+1)
+            return do_geocode(geolocator, xycoords, attempt=attempt + 1)
         raise
     except GeocoderUnavailable:
         if attempt <= max_attempts:
             time.sleep(1)
-            return do_geocode(geolocator, xycoords, attempt=attempt+1)
+            return do_geocode(geolocator, xycoords, attempt=attempt + 1)
         raise
 
-    
+
 def locate_from_exposure(buildings):
     geolocator = Nominatim(user_agent="hydromt-fiat")
-    
+
     # Filter buildings to reduce size
     num_buildings = len(buildings.geometry)
     if num_buildings > 100000:
-        buildings_filtered = buildings.geometry[::10000] 
+        buildings_filtered = buildings.geometry[::10000]
     elif num_buildings > 10000:
-        buildings_filtered = buildings.geometry[::1000] 
+        buildings_filtered = buildings.geometry[::1000]
     elif num_buildings > 1000:
         buildings_filtered = buildings.geometry[::100]
     elif num_buildings > 100:
         buildings_filtered = buildings.geometry[::10]
     else:
         buildings_filtered = buildings.geometry
-    
+
     # Find all counties that exposure overlays
-    search= []
+    search = []
     for coords in buildings_filtered:
-        coordinates =  tuple(reversed(coords.coords[0]))
+        coordinates = tuple(reversed(coords.coords[0]))
         search.append(coordinates)
 
     # Find the county and state of the exposure points
     locations = [do_geocode(geolocator, s) for s in search]
     locations_list = [location[0].split(", ") for location in locations]
-    locations_list_no_numbers = [[y for y in x if not y.isnumeric()] for x in locations_list]
+    locations_list_no_numbers = [
+        [y for y in x if not y.isnumeric()] for x in locations_list
+    ]
 
     # TODO: Read from the CSV the counties and check whether the name of the county is in the outcome
     # of the geolocator
-    counties =[y for x in locations_list for y in x if ("county" in y.lower()) or ("parish" in y.lower())]
+    counties = [
+        y
+        for x in locations_list
+        for y in x
+        if ("county" in y.lower()) or ("parish" in y.lower())
+    ]
     states = [x[-2] for x in locations_list_no_numbers]
 
     counties_states_combo = set(list(zip(counties, states)))

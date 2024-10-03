@@ -102,7 +102,7 @@ def spatial_joins(
             filtered_areas.append(area_gdf.iloc[inds].reset_index(drop=True))
         else:
             filtered_areas.append(area_gdf)
-        
+
         ##remove the index_right column
         if "index_right" in exposure_gdf.columns:
             del exposure_gdf["index_right"]
@@ -154,12 +154,14 @@ def spatial_joins(
 
         # Create new Object IDs
         init_Object_ID = exposure_gdf_copy.loc[0, "Object Name"]
-        init_Object_ID = int(init_Object_ID.split(": ",1)[1])
+        init_Object_ID = int(init_Object_ID.split(": ", 1)[1])
         exposure_gdf.loc[0:, "Object ID"] = np.arange(
-            init_Object_ID, init_Object_ID  + int(len(exposure_gdf)), 1
+            init_Object_ID, init_Object_ID + int(len(exposure_gdf)), 1
         ).tolist()
         # Create new Object Names
-        exposure_gdf["Object Name"] = exposure_gdf["Object ID"].apply(lambda x: f"New development area: {int(x)}")
+        exposure_gdf["Object Name"] = exposure_gdf["Object ID"].apply(
+            lambda x: f"New development area: {int(x)}"
+        )
 
         # Split max potential damages into new composite areas
         exposure_max_potential_damage_struct = list(
@@ -228,10 +230,12 @@ def split_composite_area(
             if "level_1" in exposure_gdf.columns:
                 exposure_gdf.drop(["level_1"], axis=1, inplace=True)
 
-           # create new Object IDs       
+        # create new Object IDs
         exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
-        init_Object_ID = exposure_gdf.loc[0,"Object ID"]
-        exposure_gdf.loc[0:, "Object ID"] = np.arange(init_Object_ID + 1 , init_Object_ID + 1 + int(len(exposure_gdf)), 1).tolist()
+        init_Object_ID = exposure_gdf.loc[0, "Object ID"]
+        exposure_gdf.loc[0:, "Object ID"] = np.arange(
+            init_Object_ID + 1, init_Object_ID + 1 + int(len(exposure_gdf)), 1
+        ).tolist()
 
     # Create an empty GeoDataFrame and append the exposure data
     if new_exposure_aggregation is None:
@@ -247,7 +251,7 @@ def split_composite_area(
     # Remove the index_right column
     if "index_right" in exposure_gdf.columns:
         del exposure_gdf["index_right"]
-    
+
     return new_exposure_aggregation, exposure_gdf
 
 
@@ -314,12 +318,12 @@ def split_max_damages_new_composite_area(
                 * exposure_max_potential_damage_cont
             )
 
-        filtered_exposure_gdf_struct[
-            "Max Potential Damage: Structure"
-        ] = filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
-        filtered_exposure_gdf_cont[
-            "Max Potential Damage: Content"
-        ] = filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
+        filtered_exposure_gdf_struct["Max Potential Damage: Structure"] = (
+            filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
+        )
+        filtered_exposure_gdf_cont["Max Potential Damage: Content"] = (
+            filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
+        )
         filtered_exposure_gdf_struct.drop(
             columns=["rel_max_pot_damages_struct", "rel_area"], inplace=True
         )
@@ -379,13 +383,19 @@ def join_exposure_aggregation_areas(
     new_composite_area : bool
         Check whether aggregation is done for a new composite area.
     """
-    
-    exposure_gdf, areas_gdf = spatial_joins(exposure_gdf, aggregation_area_fn, attribute_names, label_names, keep_all, new_composite_area)
-    
+
+    exposure_gdf, areas_gdf = spatial_joins(
+        exposure_gdf,
+        aggregation_area_fn,
+        attribute_names,
+        label_names,
+        keep_all,
+        new_composite_area,
+    )
+
     # Remove the geometry column from the exposure_gdf to return a dataframe
     exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
 
     del exposure_gdf["geometry"]
 
-    
-    return exposure_gdf, exposure_geoms , areas_gdf
+    return exposure_gdf, exposure_geoms, areas_gdf

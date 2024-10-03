@@ -6,4 +6,3 @@ Hazard Module
 =======================
 
 Coming soon..
-

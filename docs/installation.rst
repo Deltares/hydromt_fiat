@@ -16,32 +16,32 @@ To create a new environment follow the steps below.
 1. Create a new environment:
 
 .. code-block:: console
-    
+
     conda create -n hydromt_fiat python=3.11.*
 
 2. Activate the environment:
 
 .. code-block:: console
-    
+
     conda activate hydromt_fiat
 
 3. Install conda-forge gdal.
 
 .. code-block:: console
-    
+
     conda install -c conda-forge gdal
 
 4. Install Hydromt-FIAT from Github. After creating the new environment, you need to install all dependencies from the Deltares Github repository. You can use **pip install** to do so:
 
 .. code-block:: console
-    
+
     pip install git+https://github.com/Deltares/hydromt_fiat.git
 
 Existing environment
 If you want to install FIAT into an existing environment, simply activate the desired environment and run:
 
 .. code-block:: console
-    
+
     pip install git+https://github.com/Deltares/hydromt_fiat.git
 
 

@@ -57,13 +57,20 @@ class EquityData:
         states_done = []
         for state in state_abbreviation:
             if state not in states_done:
-                self.logger.info(f"The states for which census data will be downloaded is: {list_of_states(inverted=False)[state]}")
+                self.logger.info(
+                    f"The states for which census data will be downloaded is: {list_of_states(inverted=False)[state]}"
+                )
                 state_obj = getattr(states, state)
                 self.state_fips.append(state_obj.fips)
                 states_done.append(state)
 
     def variables_to_download(self):
-        self.download_variables = ['B01003_001E', 'B19301_001E', 'NAME', 'GEO_ID']  # TODO: later make this a user input?
+        self.download_variables = [
+            "B01003_001E",
+            "B19301_001E",
+            "NAME",
+            "GEO_ID",
+        ]  # TODO: later make this a user input?
 
     def download_census_data(self, year_data):
         """download the census data
@@ -77,7 +84,7 @@ class EquityData:
                 county_fips="*",
                 tract="*",
                 blockgroup="*",
-                year=year_data
+                year=year_data,
             )
             dfs.append(pd.DataFrame(download_census_codes))
 
@@ -96,15 +103,18 @@ class EquityData:
         to_name : str
             The name to replace with
         """
-        name_dict = {'B01003_001E': "TotalPopulationBG", 'B19301_001E': "PerCapitaIncomeBG"}  # TODO: Later make this a user input?
+        name_dict = {
+            "B01003_001E": "TotalPopulationBG",
+            "B19301_001E": "PerCapitaIncomeBG",
+        }  # TODO: Later make this a user input?
         self.pd_census_data = self.pd_census_data.rename(columns=name_dict)
 
     def match_geo_ID(self):
         """Matches GEO_IDs for the block groups"""
         self.pd_domain_scores_geo = self.pd_census_data.copy()
-        self.pd_domain_scores_geo[
-            "GEO_ID"
-        ] = None  # Create a new column 'GEO_ID' with initial values set to None
+        self.pd_domain_scores_geo["GEO_ID"] = (
+            None  # Create a new column 'GEO_ID' with initial values set to None
+        )
 
         for index, value in enumerate(self.pd_domain_scores_geo["NAME"]):
             if value in self.pd_census_data["NAME"].values:
@@ -114,13 +124,14 @@ class EquityData:
                 geo_id = matching_row["GEO_ID"].values[
                     0
                 ]  # Assuming there's only one matching row, extract the GEO_ID value
-                self.pd_domain_scores_geo.at[
-                    index, "GEO_ID"
-                ] = geo_id  # Assign the GEO_ID value to the corresponding row in self.pd_domain_scores_geo
+                self.pd_domain_scores_geo.at[index, "GEO_ID"] = (
+                    geo_id  # Assign the GEO_ID value to the corresponding row in self.pd_domain_scores_geo
+                )
                 self.pd_domain_scores_geo["GEOID_short"] = (
                     self.pd_domain_scores_geo["GEO_ID"].str.split("US").str[1]
                 )
-    def download_and_unzip(self, url, extract_to='.'):
+
+    def download_and_unzip(self, url, extract_to="."):
         """function to download the shapefile data from census tiger website
 
         Parameters
@@ -149,8 +160,10 @@ class EquityData:
             A list of county codes in which your area of interest lies
         """
         block_groups_list = []
-        for sf, county in zip_longest(self.state_fips, counties, fillvalue=self.state_fips[0]):
-            # Download shapefile of blocks 
+        for sf, county in zip_longest(
+            self.state_fips, counties, fillvalue=self.state_fips[0]
+        ):
+            # Download shapefile of blocks
             if year_data == 2022:
                 url = f"https://www2.census.gov/geo/tiger/TIGER_RD18/LAYER/FACES/tl_rd22_{sf}{county}_faces.zip"
             elif year_data == 2021:
@@ -158,12 +171,18 @@ class EquityData:
             elif year_data == 2020:
                 url = f"https://www2.census.gov/geo/tiger/TIGER2020PL/LAYER/FACES/tl_2020_{sf}{county}_faces.zip"
             else:
-                self.logger.warning(f"Year {year_data} not available from 'https://www2.census.gov/geo/tiger'")
+                self.logger.warning(
+                    f"Year {year_data} not available from 'https://www2.census.gov/geo/tiger'"
+                )
                 return
-            
-            # Save shapefiles 
-            folder = Path(self.save_folder) / "shapefiles" / (sf + county) / str(year_data)
-            self.logger.info(f"Downloading the county {str(sf + county)} shapefile for {str(year_data)}")
+
+            # Save shapefiles
+            folder = (
+                Path(self.save_folder) / "shapefiles" / (sf + county) / str(year_data)
+            )
+            self.logger.info(
+                f"Downloading the county {str(sf + county)} shapefile for {str(year_data)}"
+            )
             self.download_and_unzip(url, folder)
             shapefiles = list(Path(folder).glob("*.shp"))
             if shapefiles:
@@ -172,7 +191,7 @@ class EquityData:
             else:
                 self.logger.warning(f"No county shapefile found in {folder}.")
                 continue
-            
+
             # Dissolve shapefile based on block groups
             code = "20"
             attrs = ["STATEFP", "COUNTYFP", "TRACTCE", "BLKGRPCE"]
@@ -180,17 +199,30 @@ class EquityData:
 
             block_groups_shp = shp.dissolve(by=attrs, as_index=False)
             block_groups_shp = block_groups_shp[attrs + ["geometry"]]
-            block_groups_shp["GEO_ID"] = "1500000US" + block_groups_shp['STATEFP' + code].astype(str) + block_groups_shp['COUNTYFP' + code].astype(str) + block_groups_shp['TRACTCE' + code].astype(str) + block_groups_shp['BLKGRPCE' + code].astype(str)
-            block_groups_shp["GEOID_short"] = block_groups_shp["GEO_ID"].str.split("US").str[1]
+            block_groups_shp["GEO_ID"] = (
+                "1500000US"
+                + block_groups_shp["STATEFP" + code].astype(str)
+                + block_groups_shp["COUNTYFP" + code].astype(str)
+                + block_groups_shp["TRACTCE" + code].astype(str)
+                + block_groups_shp["BLKGRPCE" + code].astype(str)
+            )
+            block_groups_shp["GEOID_short"] = (
+                block_groups_shp["GEO_ID"].str.split("US").str[1]
+            )
             block_groups_list.append(block_groups_shp)
 
-        #TODO Save final file as geopackage
-        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list)).reset_index(drop=True)
-        
-        # Create string from GEO_ID short 
-        for index, row,in self.block_groups.iterrows():
+        # TODO Save final file as geopackage
+        self.block_groups = gpd.GeoDataFrame(pd.concat(block_groups_list)).reset_index(
+            drop=True
+        )
+
+        # Create string from GEO_ID short
+        for (
+            index,
+            row,
+        ) in self.block_groups.iterrows():
             BG_string = f"BG: {row['GEOID_short']}"
-            self.block_groups.at[index, 'GEOID_short'] = BG_string
+            self.block_groups.at[index, "GEOID_short"] = BG_string
 
         # NOTE: the shapefile downloaded from the census tiger website is deleted here!!
         # Delete the shapefile, that is not used anymore
@@ -202,11 +234,15 @@ class EquityData:
 
     def merge_equity_data_shp(self):
         """Merges the geometry data with the equity_data downloaded"""
-        self.equity_data_shp = self.pd_domain_scores_geo.merge(self.block_groups[["GEO_ID", "geometry"]], on="GEO_ID", how="left")
+        self.equity_data_shp = self.pd_domain_scores_geo.merge(
+            self.block_groups[["GEO_ID", "geometry"]], on="GEO_ID", how="left"
+        )
         self.equity_data_shp = gpd.GeoDataFrame(self.equity_data_shp)
 
         # Delete the rows that do not have a geometry column
-        self.equity_data_shp = self.equity_data_shp.loc[self.equity_data_shp["geometry"].notnull()]
+        self.equity_data_shp = self.equity_data_shp.loc[
+            self.equity_data_shp["geometry"].notnull()
+        ]
 
         self.equity_data_shp = self.equity_data_shp.to_crs(epsg=4326)
         self.logger.info(
@@ -215,7 +251,9 @@ class EquityData:
 
     def get_block_groups(self):
         return self.block_groups[["GEOID_short", "geometry"]]
-    
+
     def clean(self):
         """Removes unnecessary columns"""
-        self.equity_data_shp = self.equity_data_shp[["GEOID_short", "TotalPopulationBG", "PerCapitaIncomeBG"]]
+        self.equity_data_shp = self.equity_data_shp[
+            ["GEOID_short", "TotalPopulationBG", "PerCapitaIncomeBG"]
+        ]

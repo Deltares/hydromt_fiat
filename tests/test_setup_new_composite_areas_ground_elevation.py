@@ -19,7 +19,9 @@ _cases = {
     "setup_new_composite_area_datum": {
         "dir": "test_read",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_datum",
-        "composite_areas": DATADIR / "new_composite_areas" / "new_development_area_test.gpkg",
+        "composite_areas": DATADIR
+        / "new_composite_areas"
+        / "new_development_area_test.gpkg",
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
@@ -31,9 +33,11 @@ _cases = {
     "setup_new_composite_area_geom": {
         "dir": "test_read",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_geom",
-        "composite_areas": DATADIR / "new_composite_areas" / "new_development_area_test.gpkg",
+        "composite_areas": DATADIR
+        / "new_composite_areas"
+        / "new_development_area_test.gpkg",
         "type": "geom",
-        "path_ref": DATADIR / "new_composite_areas" /  "reference_groundHeight_test.shp",
+        "path_ref": DATADIR / "new_composite_areas" / "reference_groundHeight_test.shp",
         "attr_ref": "bfe",
         "ground_elevation_file": None,
         "aggregation_area_fn": None,
@@ -43,17 +47,21 @@ _cases = {
     "setup_new_composite_area_elevation": {
         "dir": "test_read",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_elevation",
-        "composite_areas": DATADIR / "new_composite_areas" / "new_development_area_test.gpkg",
+        "composite_areas": DATADIR
+        / "new_composite_areas"
+        / "new_development_area_test.gpkg",
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": DATADIRDEM 
-        / "charleston_14m.tif",
-        "aggregation_area_fn": EXAMPLEDIR.joinpath("test_read", "exposure", "aggregation_areas", "block_groups.gpkg"),
+        "ground_elevation_file": DATADIRDEM / "charleston_14m.tif",
+        "aggregation_area_fn": EXAMPLEDIR.joinpath(
+            "test_read", "exposure", "aggregation_areas", "block_groups.gpkg"
+        ),
         "attribute_names": "GEOID_short",
         "label_names": "Aggregation Label: Census Block",
     },
 }
+
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_setup_new_composite_areas_ground_elevation(case):
@@ -96,4 +104,6 @@ def test_setup_new_composite_areas_ground_elevation(case):
     exposure_modified = fm.exposure.exposure_db
 
     # check if the new development area was added
-    assert len(exposure_modified) > len(exposure_original), 'The composite areas were not added'
+    assert len(exposure_modified) > len(
+        exposure_original
+    ), "The composite areas were not added"

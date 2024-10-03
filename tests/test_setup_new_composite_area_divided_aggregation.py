@@ -20,21 +20,25 @@ _cases = {
     "setup_new_composite_area_elevation_aggregation": {
         "dir": "test_read",
         "new_root": EXAMPLEDIR / "test_setup_new_composite_area_elevation_aggregation",
-        "composite_areas": DATADIR / "new_composite_areas" / "new_development_area_aggregation_test.gpkg",
+        "composite_areas": DATADIR
+        / "new_composite_areas"
+        / "new_development_area_aggregation_test.gpkg",
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": EXAMPLEDIR / "test_setup_new_composite_area_elevation_aggregation"
+        "ground_elevation_file": EXAMPLEDIR
+        / "test_setup_new_composite_area_elevation_aggregation"
         / "charleston_14m.tif",
         "aggregation_area_fn": [
-                        AGGRDIR / "aggregation_zones" / "council.gpkg" ,
-                        AGGRDIR / "aggregation_zones" / "base_zones.gpkg" , 
-                        AGGRDIR / "aggregation_zones"/ "land_use.gpkg" 
-                        ],
+            AGGRDIR / "aggregation_zones" / "council.gpkg",
+            AGGRDIR / "aggregation_zones" / "base_zones.gpkg",
+            AGGRDIR / "aggregation_zones" / "land_use.gpkg",
+        ],
         "attribute_names": ["LONGNAME", "ZONE_BASE", "LAND_USE"],
         "label_names": ["Council", "Zoning_map", "Land_use_map"],
     },
 }
+
 
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_setup_new_composite_areas_ground_elevation_aggregation(case):
@@ -77,10 +81,18 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
     exposure_modified = fm.exposure.exposure_db
 
     # check if the new development area was added
-    assert len(exposure_modified) > len(exposure_original), 'The composite areas were not added'
+    assert len(exposure_modified) > len(
+        exposure_original
+    ), "The composite areas were not added"
     assert not exposure_modified.duplicated("Object ID").values.all()
 
     # Check if max potentail damages are divided correctly
-    exposure_new_composite =  exposure_modified[exposure_modified["Primary Object Type"] == "New development area"]
-    assert round(sum([38142538.34, 13528445.7])) == round(sum(exposure_new_composite["Max Potential Damage: Content"].values))
-    assert round(sum([61681912.36, 21877421.83])) == round(sum(exposure_new_composite["Max Potential Damage: Structure"].values))
+    exposure_new_composite = exposure_modified[
+        exposure_modified["Primary Object Type"] == "New development area"
+    ]
+    assert round(sum([38142538.34, 13528445.7])) == round(
+        sum(exposure_new_composite["Max Potential Damage: Content"].values)
+    )
+    assert round(sum([61681912.36, 21877421.83])) == round(
+        sum(exposure_new_composite["Max Potential Damage: Structure"].values)
+    )

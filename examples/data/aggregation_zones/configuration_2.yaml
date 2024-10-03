@@ -3,7 +3,7 @@ setup_additional_attributes:
     - "data/aggregation_zones/aggregation_zones/base_zones.gpkg"
     - "data/aggregation_zones/aggregation_zones/land_use.gpkg"
     - "data/aggregation_zones/aggregation_zones/accomodation_type.gpkg"
-  attribute_names: 
+  attribute_names:
     - ZONE_BASE
     - LAND_USE
     - ACCOM

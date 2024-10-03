@@ -13,13 +13,16 @@ class Units(str, Enum):
     meters = "meters"
     feet = "feet"
 
+
 class Conversion(float, Enum):
     meters_to_feet = 3.28084
     feet_to_meters = 0.3048
 
+
 class Currency(str, Enum):
     dollar = "$"
     euro = "€"
+
 
 class Category(str, Enum):
     exposure = "exposure"
@@ -69,7 +72,7 @@ class VulnerabilitySettings(BaseModel):
     unit: Units
     functions_mean: Union[str, list]
     functions_max: Optional[Union[str, list]] = None
-    step_size: Optional[float] = None #TODO should this have a default value?
+    step_size: Optional[float] = None  # TODO should this have a default value?
     continent: Optional[str] = None
 
 
@@ -80,11 +83,12 @@ class ExposureBuildingsSettings(BaseModel):
     ground_floor_height: Union[str, float]
     unit: Units
     extraction_method: ExtractionMethod
-    damage_types : Optional[List[str]] = None
-    damage_unit: str 
+    damage_types: Optional[List[str]] = None
+    damage_unit: str
     country: str = None
     bf_conversion: bool = False
     keep_unclassified: bool = True
+
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str
@@ -97,13 +101,14 @@ class ExposureSetupGroundElevation(BaseModel):
     source: Union[int, float, None, str]
     unit: Union[str, Units]
 
-    
+
 class ExposureSetupDamages(BaseModel):
     source: Union[str, List[str]]
     attribute_name: Optional[Union[str, List[str]]] = None
     method_damages: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int, List[float], List[int]]] = None
     damage_types: Optional[Union[str, List[str]]] = None
+
 
 class RoadVulnerabilitySettings(BaseModel):
     threshold_value: Union[float, None]
@@ -126,6 +131,7 @@ class AggregationAreaSettings(BaseModel):
     label_names: Union[List[str], str]
     new_composite_area: bool
 
+
 class ClassificationSettings(BaseModel):
     source: Union[List[str], str]
     attribute: Union[List[str], str]
@@ -133,14 +139,15 @@ class ClassificationSettings(BaseModel):
     old_values: Union[List[str], str]
     new_values: Union[List[str], str]
     damage_types: Union[List[str], str]
-    remove_object_type : bool
+    remove_object_type: bool
+
 
 class SocialVulnerabilityIndexSettings(BaseModel):
     census_key: str
     codebook_fn: str
     year_data: int
 
-                
+
 class EquityDataSettings(BaseModel):
     census_key: str
     year_data: int

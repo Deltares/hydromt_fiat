@@ -18,7 +18,9 @@ _cases = {
         "new_root": EXAMPLEDIR / "fiat_model_aggregation1",
         "configuration": {
             "setup_additional_attributes": {
-                "aggregation_area_fn": EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
+                "aggregation_area_fn": EXAMPLEDIR
+                / "aggregation_zones"
+                / "base_zones.gpkg",
                 "attribute_names": "ZONE_BASE",
                 "label_names": "Zoning_map",
             }
@@ -31,16 +33,22 @@ _cases = {
                 "aggregation_area_fn": [
                     EXAMPLEDIR / "aggregation_zones" / "base_zones.gpkg",
                     EXAMPLEDIR / "aggregation_zones" / "land_use.gpkg",
-                    EXAMPLEDIR / "aggregation_zones" / "Horse_Carriage_Tour_Zones.geojson",
+                    EXAMPLEDIR
+                    / "aggregation_zones"
+                    / "Horse_Carriage_Tour_Zones.geojson",
                     EXAMPLEDIR / "aggregation_zones" / "accomodation_type.gpkg",
                 ],
-                "attribute_names": ["ZONE_BASE", "LAND_USE","ZoneName", "ACCOM"],
-                "label_names": ["Zoning_map", "Land_use_map","Horse_track", "Accomodation_Zone"],
+                "attribute_names": ["ZONE_BASE", "LAND_USE", "ZoneName", "ACCOM"],
+                "label_names": [
+                    "Zoning_map",
+                    "Land_use_map",
+                    "Horse_track",
+                    "Accomodation_Zone",
+                ],
             }
         },
     },
 }
-
 
 
 # Set up Fiat Model
@@ -75,7 +83,9 @@ def test_aggregation_areas(case: ParameterSet | Sequence[object] | object):
     assert Path(fm.root).joinpath("additional_attributes").exists()
 
     # Check if the files are copied to the right folder
-    aggregation_area_fn = _cases[case]["configuration"]["setup_additional_attributes"]["aggregation_area_fn"]
+    aggregation_area_fn = _cases[case]["configuration"]["setup_additional_attributes"][
+        "aggregation_area_fn"
+    ]
     if isinstance(aggregation_area_fn, Path):
         aggregation_area_fn = [aggregation_area_fn]
 

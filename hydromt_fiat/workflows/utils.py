@@ -16,14 +16,21 @@ def detect_delimiter(csvFile):
     return ","
 
 
-def get_us_county_numbers(county_names: list, states_counties_table: pd.DataFrame) -> list:
-    county_numbers = list(states_counties_table.loc[states_counties_table["COUNTYNAME"].isin(county_names), "COUNTYFP"].values)
+def get_us_county_numbers(
+    county_names: list, states_counties_table: pd.DataFrame
+) -> list:
+    county_numbers = list(
+        states_counties_table.loc[
+            states_counties_table["COUNTYNAME"].isin(county_names), "COUNTYFP"
+        ].values
+    )
     county_numbers = [str(cn).zfill(3) for cn in county_numbers]
     return county_numbers
 
+
 def rename_geoid_short(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    # Create string from GEO_ID short 
+    # Create string from GEO_ID short
     for index, row in gdf.iterrows():
         BG_string = f"BG: {row['GEOID_short']}"
-        gdf.at[index, 'GEOID_short'] = BG_string
+        gdf.at[index, "GEOID_short"] = BG_string
     return gdf

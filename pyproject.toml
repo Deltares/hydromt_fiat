@@ -68,7 +68,7 @@ test = [
 doc = [
 	"sphinx",
 	"sphinx_rtd_theme",
-	"black",
+	"ruff==0.6.8",
 ]
 
 [project.urls]
@@ -81,4 +81,3 @@ fiat = "hydromt_fiat.fiat:FiatModel"
 [tool.black]
 line-length = 88
 target-version = ['py38']
-

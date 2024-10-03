@@ -1,4 +1,4 @@
-from hydromt_fiat.validation import *
+from hydromt_fiat.validation import get_param, check_uniqueness
 from pathlib import Path
 from ast import literal_eval
 import os
@@ -72,7 +72,7 @@ def create_lists(
         params_lst = [param] if not isinstance(param, list) else param
         params[name + "_lst"] = params_lst
         return
-    
+
     check_list(map_fn, name="map_fn")
     check_list(map_type, name="map_type")
 
@@ -167,6 +167,7 @@ def check_lists_size(
         ):
             error_message("var")
 
+
 def read_maps(
     params: dict,
     da_map_fn: str,
@@ -208,22 +209,13 @@ def read_maps(
     # check existance of path
     if os.path.exists(da_map_fn):
         da_map_fn = Path(da_map_fn)
-        da_name   = da_map_fn.stem
+        da_name = da_map_fn.stem
         da_suffix = da_map_fn.suffix
     else:
-        raise ValueError(
-            f"The map {da_map_fn} could not be found."
-        )
+        raise ValueError(f"The map {da_map_fn} could not be found.")
 
     # retrieve data type
-    da_type = get_param(
-        map_type_lst, 
-        map_fn_lst, 
-        "hazard", 
-        da_name, 
-        idx, 
-        "map type"
-        )
+    da_type = get_param(map_type_lst, map_fn_lst, "hazard", da_name, idx, "map type")
 
     # get chuck area for the map
     kwargs.update(chunks=chunks if chunks == "auto" else params["chunks_lst"][idx])
@@ -302,12 +294,7 @@ def check_maps_metadata(
     # Set nodata and mask the nodata value.
     if nodata is not None:
         da_nodata = get_param(
-            params["nodata_lst"], 
-            map_fn_lst, 
-            "hazard", 
-            da_name, 
-            idx, 
-            "nodata"
+            params["nodata_lst"], map_fn_lst, "hazard", da_name, idx, "nodata"
         )
         da.raster.set_nodata(nodata=da_nodata)
     elif nodata is None and da.raster.nodata is None:
@@ -402,7 +389,7 @@ def check_maps_rp(
             raise ValueError(
                 "The hazard map must contain a return period in order to conduct a risk calculation."
             )
-        
+
     return da_rp
 
 
@@ -419,14 +406,13 @@ def check_map_uniqueness(
     check_uniqueness(map_name_lst)
 
 
-
 def create_risk_dataset(
-        params: dict,
-        rp_list: list, 
-        map_name_lst: list,
-        maps,
+    params: dict,
+    rp_list: list,
+    map_name_lst: list,
+    maps,
 ):
- # order return periods and maps
+    # order return periods and maps
     dict_rp_name = {}
     for rp, name in zip(rp_list, map_name_lst):
         dict_rp_name[rp] = name
@@ -435,7 +421,7 @@ def create_risk_dataset(
 
     sorted_maps = []
     sorted_names = []
-    
+
     for key, value in dict_rp_name.items():
         sorted_maps.append(maps[value])
         sorted_names.append(value)

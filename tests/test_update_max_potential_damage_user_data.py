@@ -35,6 +35,7 @@ _cases = {
     },
 }
 
+
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_update_max_potential_damage(case):
     # Read model in examples folder.
@@ -53,10 +54,10 @@ def test_update_max_potential_damage(case):
 
     fm.exposure.setup_max_potential_damage(
         max_potential_damage=_cases[case]["max_potential_damage_file"],
-        damage_types=_cases[case]["damage_types"],    
+        damage_types=_cases[case]["damage_types"],
         attribute_name=_cases[case]["attribute"],
         method_damages=_cases[case]["method_damages"],
-        max_dist=_cases[case]["max_dist"]
+        max_dist=_cases[case]["max_dist"],
     )
 
     # Remove the new root folder if it already exists
@@ -69,5 +70,6 @@ def test_update_max_potential_damage(case):
 
     # Check if the new maximun potential damage is different from the original one
     unique_mp_new = fm.exposure.exposure_db[target_column].unique()
-    assert not np.array_equal(unique_mp_original, unique_mp_new), "The maximun potential damage is the same"
-
+    assert not np.array_equal(
+        unique_mp_original, unique_mp_new
+    ), "The maximun potential damage is the same"
