@@ -8,7 +8,7 @@ from hydromt_fiat.interface.spatial_joins import ISpatialJoins, SpatialJoinsMode
 
 class SpatialJoins(ISpatialJoins):
     attrs: SpatialJoinsModel
-    
+
     @staticmethod
     def load_file(filepath: Union[str, os.PathLike]):
         """create SpatialJoins from toml file"""

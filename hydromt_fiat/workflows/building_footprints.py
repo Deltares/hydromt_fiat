@@ -1,8 +1,6 @@
 import geopandas as gpd
 from typing import Union
 from pathlib import Path
-import math 
-from hydromt import gis_utils
 
 
 def process_value(value):
@@ -12,6 +10,7 @@ def process_value(value):
         return ", ".join(value)
     else:
         return value
+
 
 def join_exposure_building_footprints(
     exposure_gdf: gpd.GeoDataFrame,
@@ -42,10 +41,14 @@ def join_exposure_building_footprints(
     bf_gdf = gpd.read_file(building_footprint_fn)
 
     # Check if the attribute is in the building footprint file
-    assert attribute_name in bf_gdf.columns, f"Attribute {attribute_name} not found in {building_footprint_fn}"
+    assert (
+        attribute_name in bf_gdf.columns
+    ), f"Attribute {attribute_name} not found in {building_footprint_fn}"
 
     # Check for unique identifier attribute
-    assert bf_gdf[attribute_name].is_unique, "Building footprint ID returns duplicates. Building footprint ID (attribute_name) should be unique."
+    assert bf_gdf[
+        attribute_name
+    ].is_unique, "Building footprint ID returns duplicates. Building footprint ID (attribute_name) should be unique."
 
     # Change the column type to be an integer
     bf_gdf[attribute_name] = bf_gdf[attribute_name].astype("int")
@@ -63,15 +66,13 @@ def join_exposure_building_footprints(
     )
 
     # Aggregate the data if duplicates exist
-    aggregated = (
-        joined_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
-    )
-    exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID", how = 'left')
+    aggregated = joined_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
+    exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID", how="left")
 
-    # Create a string from the list of values in the duplicated aggregation area 
+    # Create a string from the list of values in the duplicated aggregation area
     # column
     exposure_gdf[attribute_name] = exposure_gdf[attribute_name].apply(process_value)
-        
+
     # Rename the 'aggregation_attribute' column to 'new_column_name'
     exposure_gdf.rename(columns={attribute_name: column_name}, inplace=True)
 

@@ -1,5 +1,4 @@
-from typing import Any, Union, List
-import geopandas as gpd
+from typing import Union, List
 import logging
 
 import tomli_w
@@ -15,6 +14,7 @@ from hydromt_fiat.api.svi_vm import SviViewModel
 from hydromt_fiat.fiat import FiatModel
 
 logger = logging.getLogger(__name__)
+
 
 class HydroMtViewModel:
     data_catalog: DataCatalog
@@ -81,11 +81,9 @@ class HydroMtViewModel:
             config_yaml.setup_additional_attributes = (
                 self.exposure_vm.aggregation_areas_model
             )
-        
+
         if self.exposure_vm.classification_model:
-            config_yaml.setup_classification = (
-                self.exposure_vm.classification_model
-            )
+            config_yaml.setup_classification = self.exposure_vm.classification_model
 
         if self.exposure_vm.exposure_damages_model:
             config_yaml.update_max_potential_damage = (
@@ -96,7 +94,7 @@ class HydroMtViewModel:
             config_yaml.update_ground_floor_height = (
                 self.exposure_vm.exposure_ground_floor_height_model
             )
-        
+
         if self.exposure_vm.exposure_ground_elevation_model:
             config_yaml.update_ground_elevation = (
                 self.exposure_vm.exposure_ground_elevation_model
@@ -150,8 +148,7 @@ class HydroMtViewModel:
         return buildings_gdf, roads_gdf
 
     def update_model(self, parameter):
-
-        #Update config yaml
+        # Update config yaml
         self.save_data_catalog()
         config_yaml = self.build_config_yaml()
 
@@ -161,11 +158,11 @@ class HydroMtViewModel:
         for item in parameter:
             if "Finished Floor Height" in item:
                 self.new_ground_floor_height(config_yaml)
-            elif "Additional Attributes" in item :
+            elif "Additional Attributes" in item:
                 self.new_additional_attributes(config_yaml)
-            elif"Ground Elevation" in item:
+            elif "Ground Elevation" in item:
                 self.new_ground_elevation(config_yaml)
-            elif "Max Potential Damages" in item :
+            elif "Max Potential Damages" in item:
                 self.new_max_potential_damages(config_yaml)
 
         # Write model
@@ -173,12 +170,12 @@ class HydroMtViewModel:
 
         buildings_gdf, roads_gdf = self.update_exposure_db(config_yaml)
         return buildings_gdf, roads_gdf
-        
+
     # Update exposure dataframe
     def update_exposure_db(self, config_yaml):
         exposure_db = self.fiat_model.exposure.exposure_db
 
-        # create function out of it and use "Primary/Secondary" as input 
+        # create function out of it and use "Primary/Secondary" as input
         if (
             "setup_exposure_buildings" in config_yaml.dict()
             and "setup_exposure_roads" not in config_yaml.dict()
@@ -195,11 +192,11 @@ class HydroMtViewModel:
             buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "road"]
             if "SVI" in full_gdf.columns and "SVI_key_domain" in full_gdf.columns:
                 roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
-                full_gdf["Primary Object Type"] == "road"]
+                    full_gdf["Primary Object Type"] == "road"
+                ]
             else:
-                roads_gdf = full_gdf.loc[
-                full_gdf["Primary Object Type"] == "road"]
-            
+                roads_gdf = full_gdf.loc[full_gdf["Primary Object Type"] == "road"]
+
             return buildings_gdf, roads_gdf
         elif (
             "setup_exposure_buildings" not in config_yaml.dict()
@@ -213,24 +210,41 @@ class HydroMtViewModel:
 
     def new_ground_floor_height(self, config_yaml):
         source = config_yaml.model_extra["update_ground_floor_height"].source
-        attribute_name = config_yaml.model_extra["update_ground_floor_height"].attribute_name
+        attribute_name = config_yaml.model_extra[
+            "update_ground_floor_height"
+        ].attribute_name
         gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
         max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
-        self.fiat_model.exposure.setup_ground_floor_height(source, attribute_name, gfh_method, max_dist)
-    
+        self.fiat_model.exposure.setup_ground_floor_height(
+            source, attribute_name, gfh_method, max_dist
+        )
+
     def new_additional_attributes(self, config_yaml):
-        aggregation_area_fn = config_yaml.model_extra["setup_additional_attributes"].aggregation_area_fn
-        attribute_names = config_yaml.model_extra["setup_additional_attributes"].attribute_names
+        aggregation_area_fn = config_yaml.model_extra[
+            "setup_additional_attributes"
+        ].aggregation_area_fn
+        attribute_names = config_yaml.model_extra[
+            "setup_additional_attributes"
+        ].attribute_names
         label_names = config_yaml.model_extra["setup_additional_attributes"].label_names
-        new_composite_area = config_yaml.model_extra["setup_additional_attributes"].new_composite_area
+        new_composite_area = config_yaml.model_extra[
+            "setup_additional_attributes"
+        ].new_composite_area
         # Check if additional attributes already exist
-        add_attrs_existing = [attr["name"] for attr in self.fiat_model.spatial_joins["additional_attributes"]]
+        add_attrs_existing = [
+            attr["name"]
+            for attr in self.fiat_model.spatial_joins["additional_attributes"]
+        ]
         for i, label_name in enumerate(label_names):
-            if label_name in add_attrs_existing: # if it exists exclude it from the list
+            if (
+                label_name in add_attrs_existing
+            ):  # if it exists exclude it from the list
                 aggregation_area_fn.pop(i)
                 attribute_names.pop(i)
                 label_names.pop(i)
-        self.fiat_model.setup_aggregation_areas(aggregation_area_fn, attribute_names, label_names,new_composite_area) 
+        self.fiat_model.setup_aggregation_areas(
+            aggregation_area_fn, attribute_names, label_names, new_composite_area
+        )
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
@@ -239,8 +253,20 @@ class HydroMtViewModel:
 
     def new_max_potential_damages(self, config_yaml):
         source = config_yaml.model_extra["update_max_potential_damage"].source
-        attribute_name = config_yaml.model_extra["update_max_potential_damage"].attribute_name
-        method_damages = config_yaml.model_extra["update_max_potential_damage"].method_damages
+        attribute_name = config_yaml.model_extra[
+            "update_max_potential_damage"
+        ].attribute_name
+        method_damages = config_yaml.model_extra[
+            "update_max_potential_damage"
+        ].method_damages
         max_dist = config_yaml.model_extra["update_max_potential_damage"].max_dist
-        damage_types = config_yaml.model_extra["update_max_potential_damage"].damage_types
-        self.fiat_model.update_max_potential_damage(source, damage_types, attribute_name = attribute_name,method_damages = method_damages , max_dist = max_dist )
+        damage_types = config_yaml.model_extra[
+            "update_max_potential_damage"
+        ].damage_types
+        self.fiat_model.update_max_potential_damage(
+            source,
+            damage_types,
+            attribute_name=attribute_name,
+            method_damages=method_damages,
+            max_dist=max_dist,
+        )

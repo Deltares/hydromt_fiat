@@ -63,7 +63,7 @@ default_road_max_potential_damages:
     unit: ft
     category: exposure
     source: Bouwer, Laurens & Haasnoot, Marjolijn & Wagenaar, Dennis & Roscoe, Kathryn. (2018). Assessment of alternative flood mitigation strategies for the C-7 Basin in Miami, Florida.
-     
+
 hazus_iwr_occupancy_classes:
   path: vulnerability_linking/hazus_iwr_occupancy_classes.csv
   data_type: DataFrame

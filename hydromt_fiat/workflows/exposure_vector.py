@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Union
 from shapely.geometry import Polygon
 from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter 
+from geopy.extra.rate_limiter import RateLimiter
 
 import pycountry_convert as pc
 import geopandas as gpd
@@ -80,7 +80,7 @@ class ExposureVector(Exposure):
         crs: str = None,
         unit: str = Units.feet.value,
         country: str = None,
-        damage_unit= Currency.dollar.value
+        damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -106,7 +106,7 @@ class ExposureVector(Exposure):
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
         self.building_footprints = gpd.GeoDataFrame
-        
+
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
             gdf = gpd.GeoDataFrame(pd.concat(self.exposure_geoms, ignore_index=True))
@@ -173,7 +173,7 @@ class ExposureVector(Exposure):
             # The OSM data is selected, so get the assets from  OSM
             self.logger.info("Downloading assets from Open Street Map.")
             source_data = self.data_catalog.get_geodataframe(
-                source, 
+                source,
                 geom=self.region.to_crs(4326),
             )
         else:
@@ -250,9 +250,7 @@ class ExposureVector(Exposure):
         region = self.region.copy()
         if str(source).upper() == "OSM":
             region = region.to_crs(4326)
-            polygon = region["geometry"].values[
-                0
-            ]  # TODO check if this works each time
+            polygon = region["geometry"].values[0]  # TODO check if this works each time
             roads = get_roads_from_osm(polygon, road_types)
 
             if roads.empty:
@@ -276,7 +274,7 @@ class ExposureVector(Exposure):
         roads["Primary Object Type"] = "road"
         roads["Extraction Method"] = "centroid"
         roads["Ground Floor Height"] = 0
-    
+
         self.logger.info(
             "The damage function 'road' is selected for all of the structure damage to the roads."
         )
@@ -292,13 +290,17 @@ class ExposureVector(Exposure):
         # Add the max potential damage and the length of the segments to the roads
         if isinstance(road_damage, str):
             road_damage = self.data_catalog.get_dataframe(road_damage)
-            roads[["Max Potential Damage: Structure", "Segment Length", "Extraction Method"]] = (
-                get_max_potential_damage_roads(roads, road_damage)
-            )            
+            roads[
+                [
+                    "Max Potential Damage: Structure",
+                    "Segment Length",
+                    "Extraction Method",
+                ]
+            ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, (int, float)) or road_damage is None:
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
-        
+
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
@@ -509,7 +511,9 @@ class ExposureVector(Exposure):
             ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
             gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
-            gdf_amenity.loc[gdf_amenity["Secondary Object Type"] == "yes", "Secondary Object Type"] = "residential"
+            gdf_amenity.loc[
+                gdf_amenity["Secondary Object Type"] == "yes", "Secondary Object Type"
+            ] = "residential"
             gdf = gdf_amenity
 
             # Remove the objects that do not have a Primary Object Type, that were not
@@ -554,8 +558,8 @@ class ExposureVector(Exposure):
                     gdf = gdf[gdf["Primary Object Type"] != ""]
 
             # Remove Object ID duplicates
-            gdf.drop_duplicates(inplace = True, subset = "Object ID")
-            gdf.reset_index(drop=True, inplace = True)
+            gdf.drop_duplicates(inplace=True, subset="Object ID")
+            gdf.reset_index(drop=True, inplace=True)
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
@@ -572,7 +576,7 @@ class ExposureVector(Exposure):
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Primary Object Type", "pot"
-                    ) 
+                    )
                     # Replace Secondary Object Type with new classification to assign correct damage curves
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="Object ID", how="left"
@@ -603,7 +607,7 @@ class ExposureVector(Exposure):
         # contains the land use type.
         occupancy_attributes = ["landuse", "building", "amenity"]
         # Get the land use from OSM
-        polygon = self.region.to_crs(4326).geometry[0] 
+        polygon = self.region.to_crs(4326).geometry[0]
         occupancy_landuse = get_landuse_from_osm(polygon)
         occupancy_buildings = get_buildings_from_osm(polygon)
         occupancy_amenity = get_amenity_from_osm(polygon)
@@ -626,7 +630,7 @@ class ExposureVector(Exposure):
             # Map the landuse/buildings/amenity types to types used in the JRC global vulnerability curves
         # and the JRC global damage values
         jrc_osm_mapping = self.data_catalog.get_dataframe("jrc_osm_mapping")
-        
+
         # landuse
         landuse_to_jrc_mapping = jrc_osm_mapping[["osm_key_landuse", "jrc_key_landuse"]]
         landuse_to_jrc_mapping = dict(
@@ -970,23 +974,19 @@ class ExposureVector(Exposure):
             )
             # Unit conversion
             if unit != self.unit:
-                if (unit == Units.meters.value) and (
-                    self.unit == Units.feet.value
-                ):
+                if (unit == Units.meters.value) and (self.unit == Units.feet.value):
                     self.exposure_db["Ground Elevation"] = self.exposure_db[
                         "Ground Elevation"
                     ].apply(lambda x: x * Conversion.meters_to_feet.value)
 
-                elif (unit == Units.feet.value) and (
-                    self.unit == Units.meters.value
-                ):
+                elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
                     self.exposure_db["Ground Elevation"] = self.exposure_db[
                         "Ground Elevation"
                     ].apply(lambda x: x * Conversion.feet_to_meters.value)
                 else:
                     self.logger.warning(
                         "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
-                )
+                    )
 
         else:
             self.logger.warning(
@@ -1101,7 +1101,7 @@ class ExposureVector(Exposure):
                 self.set_exposure_geoms_from_xy()
 
             # TODO the way that indexing and geom indexing is working now is error prone!!!!
-            
+
             new_values = self.set_height_relative_to_reference(
                 self.exposure_db.loc[idx, :],
                 self.exposure_geoms[0].iloc[idx, :],
@@ -1112,7 +1112,9 @@ class ExposureVector(Exposure):
                 self.crs,
             ).set_index("Object ID")
             self.exposure_db.set_index("Object ID", inplace=True)
-            self.exposure_db.loc[objectids, "Ground Floor Height"] = new_values.loc[objectids, "Ground Floor Height"]
+            self.exposure_db.loc[objectids, "Ground Floor Height"] = new_values.loc[
+                objectids, "Ground Floor Height"
+            ]
             self.exposure_db.reset_index(drop=False, inplace=True)
             self.logger.info(
                 "set_height_relative_to_reference can for now only be used for the "
@@ -1213,7 +1215,7 @@ class ExposureVector(Exposure):
         gdf = gdf_bf.merge(gdf_centroid, on="Object ID", suffixes=("_gdf1", "_gdf2"))
         gdf.drop(columns="geometry_gdf1", inplace=True)
         gdf.rename(columns={"geometry_gdf2": "geometry"}, inplace=True)
-        gdf.drop_duplicates(inplace = True)
+        gdf.drop_duplicates(inplace=True)
         gdf = gpd.GeoDataFrame(gdf, geometry=gdf["geometry"])
 
         # Update geoms
@@ -1438,17 +1440,17 @@ class ExposureVector(Exposure):
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
-            new_objects, aggregated_objects_geoms, _  = join_exposure_aggregation_areas(
+            new_objects, aggregated_objects_geoms, _ = join_exposure_aggregation_areas(
                 _new_exposure_geoms.merge(new_objects, on="Object ID"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
-                new_composite_area = True
+                new_composite_area=True,
             )
             # Update the exposure_geoms incl aggregation
             self.set_geom_names("new_development_area_aggregated")
             self.set_exposure_geoms(aggregated_objects_geoms)
-            
+
             # Remove initial composite areas
             idx = self.geom_names.index("new_development_area")
             self.geom_names.pop(idx)
@@ -1476,9 +1478,7 @@ class ExposureVector(Exposure):
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
             ]
-            assert (
-                not linking_per_damage_type.empty
-            ), f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
+            assert not linking_per_damage_type.empty, f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
 
             # Create a dictionary that links the exposure data to the vulnerability data
             linking_dict = dict(

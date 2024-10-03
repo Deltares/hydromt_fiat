@@ -24,4 +24,3 @@ dependencies:
   - pip:
     - us
     - census
-

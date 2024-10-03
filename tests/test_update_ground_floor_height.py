@@ -14,8 +14,7 @@ _cases = {
         "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_floor_height_points",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
-        "ground_floor_height_file": EXAMPLEDIR
-        / "fake_elevation_certificates.gpkg",
+        "ground_floor_height_file": EXAMPLEDIR / "fake_elevation_certificates.gpkg",
         "attribute": "FFE",
         "method": "nearest",
         "max_dist": 50,
@@ -24,8 +23,7 @@ _cases = {
         "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_floor_height_polygons",
         "data_catalog": DATADIR / "hydromt_fiat_catalog_USA.yml",
-        "ground_floor_height_file": EXAMPLEDIR
-        / "fake_update_ground_floor_height.gpkg",
+        "ground_floor_height_file": EXAMPLEDIR / "fake_update_ground_floor_height.gpkg",
         "attribute": "groundfloorheight",
         "method": "intersection",
         "max_dist": None,
@@ -51,7 +49,7 @@ def test_update_ground_floor_height(case):
         _cases[case]["ground_floor_height_file"],
         _cases[case]["attribute"],
         _cases[case]["method"],
-        _cases[case]["max_dist"]
+        _cases[case]["max_dist"],
     )
 
     # Remove the new root folder if it already exists
@@ -64,7 +62,9 @@ def test_update_ground_floor_height(case):
 
     # Check if the new ground floor height is different from the original one
     unique_gfh_new = fm.exposure.exposure_db["Ground Floor Height"].unique()
-    assert any(unique_gfh_original != unique_gfh_new), "The Ground Floor Height is the same"
+    assert any(
+        unique_gfh_original != unique_gfh_new
+    ), "The Ground Floor Height is the same"
 
     # # Check if the Ground Floor Heigh attribute is set correctly
     # ground_floor_height = gpd.read_file(_cases[case]["ground_floor_height_file"])

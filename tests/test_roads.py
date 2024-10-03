@@ -80,9 +80,16 @@ def test_setup_roads(case):
 
     # Read the resulting exposure data and check if the required columns exist
     exposure = pd.read_csv(root.joinpath("exposure", "exposure.csv"))
-    required_columns = ['Secondary Object Type', 'Object Name', 'lanes', 'Object ID', 
-                        'Primary Object Type', 'Damage Function: Structure',
-                        'Max Potential Damage: Structure', 'Segment Length [m]']
+    required_columns = [
+        "Secondary Object Type",
+        "Object Name",
+        "lanes",
+        "Object ID",
+        "Primary Object Type",
+        "Damage Function: Structure",
+        "Max Potential Damage: Structure",
+        "Segment Length [m]",
+    ]
     assert set(required_columns) == set(exposure.columns)
 
     # Check if the vulnerability data exists
@@ -95,5 +102,26 @@ def test_setup_roads(case):
     assert root.joinpath("output").exists()
 
     # Check if the output gives the correct solution
-    assert fm.vulnerability.functions  == {'roads': [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
-    assert fm.vulnerability.hazard_values == [0.0, 0.49, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    assert fm.vulnerability.functions == {
+        "roads": [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    }
+    assert fm.vulnerability.hazard_values == [
+        0.0,
+        0.49,
+        0.5,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+    ]

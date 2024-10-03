@@ -9,4 +9,3 @@ setup_exposure_roads:
   road_types: ["motorway", "primary", "secondary", "tertiary"]
   road_damage: default_road_max_potential_damages
   unit: meter
-  

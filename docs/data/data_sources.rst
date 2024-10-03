@@ -4,7 +4,7 @@
 ======================
 Data Sources
 ======================
-With the HydroMT-FIAT package you can easily access exposure and vulnerability data from different sources. 
+With the HydroMT-FIAT package you can easily access exposure and vulnerability data from different sources.
 The following data sources are currently supported:
 
 

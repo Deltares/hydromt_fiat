@@ -45,7 +45,7 @@ def get_roads_from_osm(
         roads = ox.features.features_from_polygon(
             polygon, tags=tag
         )  # then we query the data
-    except:
+    except (ValueError, TypeError):
         logging.warning(
             "Could not download road data from OSM for the given region and road types."
         )
