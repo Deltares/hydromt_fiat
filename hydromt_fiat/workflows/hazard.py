@@ -122,7 +122,7 @@ def check_lists_size(
     # Checks the hazard input parameter types.
 
     # Checks map type list
-    if not len(params["map_type_lst"]) == 1 and not len(params["map_type_lst"]) == len(
+    if len(params["map_type_lst"]) != 1 and not len(params["map_type_lst"]) == len(
         params["map_fn_lst"]
     ):
         error_message("map_type")
@@ -147,18 +147,20 @@ def check_lists_size(
             error_message("crs")
 
     # Checks the no data list
-    if nodata is not None:
-        if not len(params["nodata_lst"]) == 1 and not len(params["nodata_lst"]) == len(
-            params["map_fn_lst"]
-        ):
-            error_message("nodata")
+    if (
+        nodata is not None
+        and len(params["nodata_lst"]) != 1
+        and len(params["nodata_lst"]) != len(params["map_fn_lst"])
+    ):
+        error_message("nodata")
 
     # Checks the var list
-    if var is not None:
-        if not len(params["var_lst"]) == 1 and not len(params["var_lst"]) == len(
-            params["map_fn_lst"]
-        ):
-            error_message("var")
+    if (
+        var is not None
+        and len(params["var_lst"]) != 1
+        and len(params["var_lst"]) != len(params["map_fn_lst"])
+    ):
+        error_message("var")
 
 
 def read_maps(

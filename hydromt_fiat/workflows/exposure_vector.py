@@ -31,7 +31,7 @@ from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
-    get_area,
+    calc_geometry_area,
     sjoin_largest_area,
     get_crs_str_from_gdf,
     join_spatial_data,
@@ -925,7 +925,7 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)[
                 ["Primary Object Type", "geometry"]
             ]
-            gdf = get_area(gdf)
+            gdf = calc_geometry_area(gdf)
             gdf = gdf.dropna(subset="Primary Object Type")
 
             # Set the damage values to the exposure data

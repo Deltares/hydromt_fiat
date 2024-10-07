@@ -12,6 +12,7 @@ import hydromt
 import pandas as pd
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
+from pyproj.exceptions import CRSError, ProjError
 from shapely.geometry import box
 import shutil
 
@@ -439,22 +440,15 @@ class FiatModel(GridModel):
 
         # Possibly reproject according to destination crs
         src_crs = CRS.from_user_input(self.exposure.crs)
-        crs = None
         try:
             crs = CRS.from_user_input(dst_crs)
-        except BaseException:
-            if self.region is not None:
-                crs = self.region.crs
+        except (CRSError, ProjError, TypeError):
+            crs = self.region.crs
 
-        while True:
-            if crs is None:
-                break
-            if crs.to_authority() == src_crs.to_authority():
-                break
+        if crs is not None and crs.to_authority() != src_crs.to_authority():
             for item in self.exposure.exposure_geoms:
                 item.to_crs(crs, inplace=True)
             self.exposure.crs = ":".join(crs.to_authority())
-            break
 
         # Update the other config settings
         self.set_config("exposure.csv.file", "exposure/exposure.csv")
@@ -496,12 +490,12 @@ class FiatModel(GridModel):
         self.building_footprint["BF_FID"] = [
             i for i in range(1, len(self.building_footprint) + 1)
         ]
-        BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(
+        bf_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(
             self.building_footprint[["Object ID", "BF_FID"]], on="Object ID"
         )
-        del BF_exposure_gdf["geometry"]
+        del bf_exposure_gdf["geometry"]
         del self.building_footprint["Object ID"]
-        self.exposure.exposure_db = BF_exposure_gdf
+        self.exposure.exposure_db = bf_exposure_gdf
 
     def update_ground_floor_height(
         self,
