@@ -1306,13 +1306,14 @@ class FiatModel(GridModel):
                     fn.format(name=name),
                 )
                 # At the very last clip based on the region
-                idx = gpd.sjoin(
-                    self.region.to_crs(geom.crs),
-                    geom,
-                    predicate="contains_properly",
-                    how="inner",
-                ).index_right
-                geom = geom.loc[idx]
+                if not self.region.empty:
+                    idx = gpd.sjoin(
+                        self.region.to_crs(geom.crs),
+                        geom,
+                        predicate="contains_properly",
+                        how="inner",
+                    ).index_right
+                    geom = geom.loc[idx]
                 geom.to_file(_fn)
 
         if self.geoms:
