@@ -4,20 +4,16 @@ from ast import literal_eval
 import os
 import xarray as xr
 
-# from hydromt_sfincs import SfincsModel
-
-# from hydromt_sfincs import SfincsModel
-from typing import Union
-from typing import Tuple
+from typing import Union, Optional, Tuple
 
 
 def create_lists(
     map_fn: Union[str, Path, list[str], list[Path]],
     map_type: Union[str, list[str]],
-    rp: Union[int, list[int], None] = None,
-    crs: Union[int, str, list[int], list[str], None] = None,
-    nodata: Union[int, list[int], None] = None,
-    var: Union[str, list[str], None] = None,
+    rp: Optional[Union[int, list[int]]] = None,
+    crs: Optional[Union[int, str, list[int], list[str]]] = None,
+    nodata: Optional[Union[int, list[int]]] = None,
+    var: Optional[Union[str, list[str]]] = None,
     chunks: Union[int, str, list[int]] = "auto",
 ) -> dict:
     """Make list out of the parameters provided in the setup hazard maps.
@@ -31,21 +27,21 @@ def create_lists(
     map_type : Union[str, list[str]]
         The data type of each map speficied in map_fn. In case a single
         map type applies for all the elements a single string can be provided.
-    rp : Union[int, list[int], None], optional.
+    rp : Union[int, list[int]], optional.
         The return period (rp) type of each map speficied in map_fn in case a
         risk output is required. If the rp is not provided and risk
         output is required the workflow will try to retrieve the rp from the
         files's name, by default None.
-    crs : Union[int, str, list[int], list[str], None], optional
+    crs : Union[int, str, list[int], list[str]], optional
         The projection (crs) required in EPSG code of each of the maps provided. In
         case a single crs applies for all the elements a single value can be
         provided as code or string (e.g. "EPSG:4326"). If not provided, then the crs
         will be taken from orginal maps metadata, by default None.
-    nodata : Union[int, list[int], None], optional
+    nodata : Union[int, list[int]], optional
         The no data values in the rasters arrays. In case a single no data applies
         for all the elements a single value can be provided as integer, by default
         None.
-    var : Union[str, list[str], None], optional
+    var : Union[str, list[str]], optional
         The name of the variable to be selected in case a netCDF file is provided
         as input, by default None.
     chunks : Union[int, str, list[int]], optional
@@ -58,15 +54,15 @@ def create_lists(
     dict
         Dictionary with the parameters and list of parameters used in setup_hazard.
     """
-    params = dict()
-
-    params["map_fn"] = map_fn
-    params["map_type"] = map_type
-    params["chunks"] = chunks
-    params["rp"] = rp
-    params["crs"] = crs
-    params["nodata"] = nodata
-    params["var"] = var
+    params = {
+        "map_fn": map_fn,
+        "map_type": map_type,
+        "chunks": chunks,
+        "rp": rp,
+        "crs": crs,
+        "nodata": nodata,
+        "var": var,
+    }
 
     def check_list(param, name):
         params_lst = [param] if not isinstance(param, list) else param
@@ -115,9 +111,6 @@ def check_lists_size(
     crs = params["crs"]
     nodata = params["nodata"]
     var = params["var"]
-
-    # for key, value in params.items():
-    #     globals()[key] = value
 
     def error_message(variable_list):
         raise IndexError(

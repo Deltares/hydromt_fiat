@@ -150,3 +150,4 @@ examples/data/update_max_potential_damage/test_update_max_potential_damage_polyg
 # pixi environments
 .pixi
 *.egg-info
+.ruff_cache

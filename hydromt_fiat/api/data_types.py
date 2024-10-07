@@ -85,7 +85,7 @@ class ExposureBuildingsSettings(BaseModel):
     extraction_method: ExtractionMethod
     damage_types: Optional[List[str]] = None
     damage_unit: str
-    country: str = None
+    country: Optional[str] = None
     bf_conversion: bool = False
     keep_unclassified: bool = True
 

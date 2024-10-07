@@ -74,12 +74,12 @@ class ExposureVector(Exposure):
 
     def __init__(
         self,
-        data_catalog: DataCatalog = None,
-        logger: logging.Logger = None,
-        region: gpd.GeoDataFrame = None,
-        crs: str = None,
-        unit: str = Units.feet.value,
-        country: str = None,
+        data_catalog: Optional[DataCatalog] = None,
+        logger: Optional[logging.Logger] = None,
+        region: Optional[gpd.GeoDataFrame] = None,
+        crs: Optional[str] = None,
+        unit: Optional[str] = Units.feet.value,
+        country: Optional[str] = None,
         damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
@@ -323,7 +323,7 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float, List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
-        ground_elevation_unit: str = None,
+        ground_elevation_unit: Optional[str] = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
     ):
@@ -801,8 +801,8 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        max_potential_damage: Union[
-            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        max_potential_damage: Optional[
+            Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]
         ] = None,
         damage_types: Union[List[str], str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
@@ -1032,7 +1032,7 @@ class ExposureVector(Exposure):
         raise_by: Union[int, float],
         objectids: List[int],
         height_reference: str = "",
-        path_ref: str = None,
+        path_ref: Optional[str] = None,
         attr_ref: str = "STATIC_BFE",
     ):
         """Raises the ground floor height of selected objects to a certain level.
@@ -1251,12 +1251,12 @@ class ExposureVector(Exposure):
         damage_types: List[str],
         vulnerability: Vulnerability,
         elevation_reference: str,
-        path_ref: str = None,
-        attr_ref: str = None,
+        path_ref: Optional[str] = None,
+        attr_ref: Optional[str] = None,
         ground_elevation: Union[None, str, Path] = None,
-        aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
-        attribute_names: Union[List[str], str] = None,
-        label_names: Union[List[str], str] = None,
+        aggregation_area_fn: Optional[Union[List[str], List[Path], str, Path]] = None,
+        attribute_names: Optional[Union[List[str], str]] = None,
+        label_names: Optional[Union[List[str], str]] = None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.

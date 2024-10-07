@@ -102,11 +102,11 @@ class FiatModel(GridModel):
 
     def setup_global_settings(
         self,
-        crs: str = None,
-        gdal_cache: int = None,
-        keep_temp_files: bool = None,
-        thread: int = None,
-        chunk: List[int] = None,
+        crs: Optional[str] = None,
+        gdal_cache: Optional[int] = None,
+        keep_temp_files: Optional[bool] = None,
+        thread: Optional[int] = None,
+        chunk: Optional[List[int]] = None,
     ) -> None:
         """Setup Delft-FIAT global settings.
 
@@ -193,8 +193,8 @@ class FiatModel(GridModel):
         vulnerability_fn: Union[str, Path],
         vulnerability_identifiers_and_linking_fn: Union[str, Path],
         unit: str,
-        functions_mean: Union[str, List[str], None] = "default",
-        functions_max: Union[str, List[str], None] = None,
+        functions_mean: Optional[Union[str, List[str]]] = "default",
+        functions_max: Optional[Union[str, List[str]]] = None,
         step_size: Optional[float] = None,
         continent: Optional[str] = None,
     ) -> None:
@@ -210,11 +210,11 @@ class FiatModel(GridModel):
             exposure categories.
         unit : str
             The unit of the vulnerability functions.
-        functions_mean : Union[str, List[str], None], optional
+        functions_mean : Union[str, List[str]], optional
             The name(s) of the vulnerability functions that should use the mean hazard
             value when using the area extraction method, by default "default" (this
             means that all vulnerability functions are using mean).
-        functions_max : Union[str, List[str], None], optional
+        functions_max : Union[str, List[str]], optional
             The name(s) of the vulnerability functions that should use the maximum
             hazard value when using the area extraction method, by default None (this
             means that all vulnerability functions are using mean).
@@ -310,18 +310,18 @@ class FiatModel(GridModel):
         asset_locations: Union[str, Path],
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
-        ground_floor_height: Union[int, float, str, Path, None],
+        ground_floor_height: Union[int, float, str, Path],
         unit: str,
-        occupancy_attr: Union[str, None] = None,
+        occupancy_attr: Optional[str] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
         damage_unit: str = Currency.dollar.value,
-        country: Union[str, None] = None,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,
+        country: Optional[Union[str]] = None,
+        ground_elevation_file: Optional[Union[int, float, str, Path]] = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
-        dst_crs: Union[str, None] = None,
+        dst_crs: Optional[Union[str]] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -428,7 +428,7 @@ class FiatModel(GridModel):
             attrs = {
                 "name": "BF_FID",
                 "file": "exposure/building_footprints/building_footprints.gpkg",
-                "field_name": "BF_FID",  # TODO check how and where this is defined
+                "field_name": "BF_FID",
             }
             if not self.spatial_joins["additional_attributes"]:
                 self.spatial_joins["additional_attributes"] = []
@@ -517,10 +517,10 @@ class FiatModel(GridModel):
 
     def update_max_potential_damage(
         self,
-        source: Union[
-            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        source: Optional[
+            Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]
         ] = None,
-        damage_types: Union[List[str], str, None] = None,
+        damage_types: Optional[Union[List[str], str, None]] = None,
         country: Union[str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
@@ -742,7 +742,7 @@ class FiatModel(GridModel):
         self,
         census_key: str,
         codebook_fn: Union[str, Path],
-        year_data: int = None,
+        year_data: Optional[int] = None,
         save_all: bool = False,
     ):
         """Setup the social vulnerability index for the vector exposure data for
@@ -863,7 +863,7 @@ class FiatModel(GridModel):
     def setup_equity_data(
         self,
         census_key: str,
-        year_data: int = None,
+        year_data: Optional[int] = None,
     ):
         """Setup the download procedure for equity data similarly to the SVI setup
 
@@ -946,7 +946,7 @@ class FiatModel(GridModel):
         attribute_names: Union[List[str], str],
         label_names: Union[List[str], str],
         new_composite_area: bool = False,
-        file_names: Union[List[str], str] = None,
+        file_names: Optional[Union[List[str], str]] = None,
     ):
         """_summary_
 
