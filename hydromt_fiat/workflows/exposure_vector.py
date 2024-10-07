@@ -230,7 +230,6 @@ class ExposureVector(Exposure):
         self.set_geom_names("buildings")
 
         # Set the ground floor height if not yet set
-        # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
         if ground_elevation_file is not None:
             self.setup_ground_elevation(
                 ground_elevation_file,
@@ -250,7 +249,7 @@ class ExposureVector(Exposure):
         region = self.region.copy()
         if str(source).upper() == "OSM":
             region = region.to_crs(4326)
-            polygon = region["geometry"].values[0]  # TODO check if this works each time
+            polygon = region["geometry"].values[0]
             roads = get_roads_from_osm(polygon, road_types)
 
             if roads.empty:
@@ -596,11 +595,10 @@ class ExposureVector(Exposure):
             else:
                 self.exposure_db = gdf.copy()
         else:
-            self.logger.warning(
+            raise NotImplementedError(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
-            NotImplemented
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -680,9 +678,6 @@ class ExposureVector(Exposure):
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
-
-    def setup_aggregation_labels(self):
-        NotImplemented
 
     @staticmethod
     def intersection_method(

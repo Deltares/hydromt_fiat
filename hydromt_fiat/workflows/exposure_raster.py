@@ -9,7 +9,6 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 
-### TO BE UPDATED ###
 class ExposureRaster(Exposure):
     def setup_buildings_value(
         self,
@@ -48,8 +47,6 @@ class ExposureRaster(Exposure):
         if bld_fn and pop_fn:
             kwargs.update(chunks=chunks)
 
-            # TODO: Make sure that the kwargs of layers in the .ylm can be overwritten!
-
             # Clip the building footprint map from the global dataset and store as a xarray.DataArray.
             da_bld = self.data_catalog.get_rasterdataset(
                 bld_fn,
@@ -65,8 +62,6 @@ class ExposureRaster(Exposure):
                 buffer=4,
                 **kwargs,
             ).rename("pop")
-
-            # TODO: Make sure that the create_population_per_building_map is memory proof!
 
             # Create the population, buildings and population per building count maps and store as a xarray.DataSet.
             ds_count = create_population_per_building_map(
@@ -204,46 +199,7 @@ class ExposureRaster(Exposure):
                 scale_factor,
             )
 
-        def get_country_tag(self, country):
-            """Return the country tag for a country name input."""
-            # Get the country tag from the country name.
-            if country or "country" in self.config:
-                if not country:
-                    country = self.config["country"]
-
-                # Read the global exposure configuration.
-                df_config = pd.read_excel(
-                    Path(self._DATADIR).joinpath("global_configuration.xlsx"),
-                    sheet_name="Buildings",
-                )
-
-                # Extract the country tag.
-                if len(country) > 3:
-                    tag = (
-                        df_config.loc[
-                            df_config["Country_Name"] == country, "Alpha-3"
-                        ].values[0]
-                        if country in df_config["Country_Name"].tolist()
-                        else None
-                    )
-                else:
-                    tag = country
-
-                # If the country tag is not valid, get the country tag from nearest country.
-                if tag not in df_config["Alpha-3"].tolist():
-                    tag = self.get_nearest_country()
-                    self.logger.debug(
-                        "The country tag (related to the country name) is not valid."
-                        "The country tag of the nearest country is used instead."
-                    )
-
-            # Set the country tag.
-            self.set_config("country", tag)
-            return tag
-
     def get_gdp_correction_factor(self):
-        """ """
-
         # Read the global SSP data.
         df_pop = pd.read_excel(
             Path(self._DATADIR).joinpath("growth_scenarios", "global_pop.xlsx"),
@@ -301,21 +257,7 @@ class ExposureRaster(Exposure):
 
         return correction_factor
 
-    def get_nearest_country(self):
-        """Return the country tag of the nearest country."""
-
-        # Read the global exposure configuration.
-        pd.read_excel(
-            Path(self._DATADIR).joinpath("global_configuration.xlsx"),
-            sheet_name="Buildings",
-        )
-
-        # TODO: Lookup country from shapefile!
-        pass
-
     def get_population_correction_factor(self, ref_year):
-        """ """
-
         # Read the global SSP data.
         df_pop = pd.read_excel(
             Path(self._DATADIR).joinpath("growth_scenarios", "global_pop.xlsx"),

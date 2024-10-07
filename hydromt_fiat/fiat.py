@@ -536,12 +536,6 @@ class FiatModel(GridModel):
         if self.exposure:
             self.exposure.setup_ground_elevation(source, unit)
 
-    def setup_exposure_raster(self):
-        """Setup raster exposure data for Delft-FIAT.
-        This function will be implemented at a later stage.
-        """
-        NotImplemented
-
     def setup_hazard(
         self,
         map_fn: Union[str, Path, list[str], list[Path]],
@@ -670,9 +664,7 @@ class FiatModel(GridModel):
 
             self.grid.attrs = {
                 "rp": sorted_rp,
-                "type": params[
-                    "map_type_lst"
-                ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
+                "type": params["map_type_lst"],
                 "name": sorted_names,
                 "analysis": "risk",
             }
@@ -806,7 +798,6 @@ class FiatModel(GridModel):
             self.set_tables(
                 df=gdf.drop(columns="geometry"), name="social_vulnerability_scores"
             )
-            # TODO: Think about adding an indicator for missing data to the svi.svi_data_shp
 
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
@@ -1157,9 +1148,6 @@ class FiatModel(GridModel):
         if not self.region.empty:
             self.set_geoms(self.region, "region")
 
-    def update_maps(self):
-        NotImplemented
-
     # I/O
     def read(self):
         """Method to read the complete model schematization and configuration from
@@ -1174,10 +1162,6 @@ class FiatModel(GridModel):
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
             self.spatial_joins = dict(sj.attrs)
-
-        # TODO: determine if it is required to read the hazard files
-        # hazard_maps = self.config["hazard"]["grid_file"]
-        # self.read_grid(fn="hazard/{name}.nc")
 
         # Read the tables exposure and vulnerability
         self.read_tables()
@@ -1215,7 +1199,7 @@ class FiatModel(GridModel):
                 logger=self.logger,
                 unit=self.get_config("exposure.geom.unit"),
                 damage_unit=self.get_config("exposure.damage_unit"),
-                data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
+                data_catalog=self.data_catalog,
             )
             self.exposure.read_table(exposure_fn)
         else:

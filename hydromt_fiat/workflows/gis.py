@@ -1,6 +1,6 @@
 import geopandas as gpd
 from hydromt.gis_utils import utm_crs, nearest_merge
-from typing import List, Union
+from typing import Union
 import logging
 import rasterio
 from rasterio.features import rasterize
@@ -96,26 +96,6 @@ def check_geometry_type(gdf: gpd.GeoDataFrame) -> str:
 def get_crs_str_from_gdf(gdf_crs: gpd.GeoDataFrame.crs) -> str:
     source_data_authority = gdf_crs.to_authority()
     return source_data_authority[0] + ":" + source_data_authority[1]
-
-
-def clean_up_gdf(gdf: gpd.GeoDataFrame, columns: List[str]) -> gpd.GeoDataFrame:
-    """Clean up a GeoDataFrame by removing unnecessary columns.
-
-    Parameters
-    ----------
-    gdf : gpd.GeoDataFrame
-        The GeoDataFrame to clean up.
-
-    Returns
-    -------
-    gpd.GeoDataFrame
-        The cleaned up GeoDataFrame.
-    """
-    # Remove unnecessary columns
-    for col in columns:
-        del gdf[col]
-
-    return gdf
 
 
 def join_nearest_points(
