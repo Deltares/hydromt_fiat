@@ -39,7 +39,7 @@ jrc_osm_mapping:
       source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688, https://taginfo.openstreetmap.org/keys/building#values, https://dashboard.ohsome.org/
 
 asset_location:
-    path: C:/Users/rautenba/OneDrive - Stichting Deltares/Documents/Projects/UP_2030_Rio_de_janeiro/pre-processed_data/building_footprints_pre_processed_SR.gpkg
+    path: C:/Users/rautenba/OneDrive - Stichting Deltares/Documents/Projects/11209169_UP_2030_Rio_de_janeiro/notebooks/pre-processed_data/assets/assets_pre_processed.gpkg
     data_type: GeoDataFrame
     crs: EPSG:31983
     driver: vector
@@ -48,7 +48,7 @@ asset_location:
       description: Rio de janeiro assets
 
 occupancy:
-    path: C:/Users/rautenba/OneDrive - Stichting Deltares/Documents/Projects/UP_2030_Rio_de_janeiro/pre-processed_data/occupancy_object_types_mapped_SR.gpkg
+    path: C:/Users/rautenba/OneDrive - Stichting Deltares/Documents/Projects/11209169_UP_2030_Rio_de_janeiro/notebooks/pre-processed_data/occupancy/occupancy_pre_processed_translated_occupaction_jrc.gpkg
     data_type: GeoDataFrame
     crs: EPSG:31983
     driver: vector
