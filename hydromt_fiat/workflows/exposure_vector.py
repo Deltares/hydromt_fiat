@@ -376,7 +376,7 @@ class ExposureVector(Exposure):
             assets.rename(columns={"osmid": "Object ID"}, inplace=True)
         else:
             assets = self.data_catalog.get_geodataframe(
-                asset_locations, #geom=self.region
+                asset_locations, geom=self.region
             )
 
         # Set the CRS of the exposure data
