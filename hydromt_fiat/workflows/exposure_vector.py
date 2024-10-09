@@ -448,7 +448,7 @@ class ExposureVector(Exposure):
             occupancy_types = ["Primary Object Type", "Secondary Object Type"]
         else:
             occupancy_building = self.data_catalog.get_geodataframe(
-                occupancy_source, #geom=self.region
+                occupancy_source, geom=self.region
             )
             if occupancy_attr is not None:
                 occupancy_building.rename(columns={occupancy_attr: type_add}, inplace=True)
