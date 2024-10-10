@@ -39,11 +39,11 @@ def preprocess_jrc_damage_values(
     # category
     damage_values = {}
 
-    # Rename the column names to shorter names
+    # Rename the column names to shorter names  ## THIS IS ALL JRC >> can generalize this !! IF JRC do that and otherwise not or provide dict
     rename_dict = {
-        "Construction Cost Residential (2010 €)": "residential",
-        "Construction Cost Commercial (2010 €)": "commercial",
-        "Construction Cost Industrial (2010 €)": "industrial",
+        "Construction Cost Residential (2010 €)": "Residential",
+        "Construction Cost Commercial (2010 €)": "Commercial / Service",
+        "Construction Cost Industrial (2010 €)": "Industrial",
     }
     jrc_base_damage_values.rename(columns=rename_dict, inplace=True)
 
@@ -55,17 +55,17 @@ def preprocess_jrc_damage_values(
 
     # We adjust the max damage values for the different building types with the given
     # or default values
-    for building_type in ["residential", "commercial", "industrial"]:
+    for building_type in ["Residential", "Commercial / Service", "Industrial"]:
         # Get the adjustment values for the building type
         building_type_short = building_type[:3]
         cc_vs_dv = max_damage_adjustment_values[
-            f"construction_cost_vs_depreciated_value_{building_type_short}"
+            f"construction_cost_vs_depreciated_value_{building_type_short.lower()}"
         ]
         mdci = max_damage_adjustment_values[
-            f"max_damage_content_inventory_{building_type_short}"
+            f"max_damage_content_inventory_{building_type_short.lower()}"
         ]
-        up = max_damage_adjustment_values[f"undamageable_part_{building_type_short}"]
-        mu = max_damage_adjustment_values[f"material_used_{building_type_short}"]
+        up = max_damage_adjustment_values[f"undamageable_part_{building_type_short.lower()}"]
+        mu = max_damage_adjustment_values[f"material_used_{building_type_short.lower()}"]
 
         # Get the JRC base value for the building type
         jrc_base_value = jrc_base_damage_values[building_type].values[0]

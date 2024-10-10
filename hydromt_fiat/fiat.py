@@ -245,12 +245,12 @@ class FiatModel(GridModel):
             self.logger,
         )
 
-        # Depending on what the input is, another function is ran to generate the
+        # Depending on what the input is, another function is ran to generate the #TODO: I think this is the function I need for setting up the vulnerability
         # vulnerability curves file for Delft-FIAT.
         self.vulnerability.get_vulnerability_functions_from_one_file(
             df_source=df_vulnerability,
             df_identifiers_linking=self.vf_ids_and_linking_df,
-            continent=continent,
+            #continent=continent,
         )
 
         # Set the area extraction method for the vulnerability curves
@@ -283,6 +283,11 @@ class FiatModel(GridModel):
                 self.logger,
             )
         self.vulnerability.from_csv(csv_fn)
+        
+        # Update config
+        self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
+        self.set_config("vulnerability.unit", unit)
+    
 
     def setup_road_vulnerability(
         self,

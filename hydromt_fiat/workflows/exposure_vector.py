@@ -851,22 +851,22 @@ class ExposureVector(Exposure):
                 )
 
         elif isinstance(max_potential_damage, list):
-            # Multiple files are used to assign the ground floor height to the assets
+            # Multiple files are used to assign the max. potential damage to the assets
             count = 0
             for i in max_potential_damage:
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
-                # assign the ground floor height to the assets
-                gfh = self.data_catalog.get_geodataframe(i)
+                # assign the max. potential damage to the assets
+                mpd = self.data_catalog.get_geodataframe(i)
 
-                # If method is "intersection" remove columns from gfh exept for attribute name and geometry
+                # If method is "intersection" remove columns from mpd exept for attribute name and geometry
                 if method_damages[count] == "intersection":
                     columns_to_drop = [
                         col
-                        for col in gfh.columns
+                        for col in mpd.columns
                         if col != attribute_name[count] and col != "geometry"
                     ]
-                    gfh = gfh.drop(columns=columns_to_drop)
+                    mpd = mpd.drop(columns=columns_to_drop)
 
                 # Get exposure data
                 gdf = self.get_full_gdf(self.exposure_db)
@@ -876,7 +876,7 @@ class ExposureVector(Exposure):
                     gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
-                        gfh,
+                        mpd,
                         attribute_name[count],
                         method_damages[count],
                         max_dist[count],
@@ -886,7 +886,7 @@ class ExposureVector(Exposure):
                 else:
                     gdf = join_spatial_data(
                         gdf,
-                        gfh,
+                        mpd,
                         attribute_name[count],
                         method_damages[count],
                         max_dist[count],
@@ -955,11 +955,11 @@ class ExposureVector(Exposure):
         ):
             # When the max_potential_damage is a string but not jrc_damage_values
             # or hazus_max_potential_damages. Here, a single file is used to
-            # assign the ground floor height to the assets
-            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            # assign the maximum potential damage to the assets
+            mpd = self.data_catalog.get_geodataframe(max_potential_damage)
             gdf = self.get_full_gdf(self.exposure_db)
             gdf = join_spatial_data(
-                gdf, gfh, attribute_name, method_damages, max_dist, self.logger
+                gdf, mpd, attribute_name, method_damages, max_dist, self.logger
             )
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
