@@ -103,7 +103,7 @@ class ExposureViewModel:
                 primary_object_types,
                 secondary_object_types,
             )
-        elif source == "OSM":
+        elif source == "OSM" or source != "NSI":
             self.set_asset_locations_source(
                 source,
                 ground_floor_height,
@@ -124,10 +124,18 @@ class ExposureViewModel:
                 unit=Units.meters.value,
                 country=country,
             )
+
+            # Set max potential damage
+            if source == "OSM":
+                max_potential_damage = "jrc_damage_values",
+            else:
+                max_potential_damage = max_potential_damage
+            
+            # Set up exposure buildings
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations=source,
                 occupancy_source=source,
-                max_potential_damage="jrc_damage_values",
+                max_potential_damage= max_potential_damage,
                 ground_floor_height=ground_floor_height,
                 extraction_method="centroid",
                 damage_types=["structure", "content"],
