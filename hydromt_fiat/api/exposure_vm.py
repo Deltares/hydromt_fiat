@@ -311,7 +311,7 @@ class ExposureViewModel:
         ],
     ):
         self.exposure_roads_model = ExposureRoadsSettings(
-            roads_fn= 'OSM',
+            roads_fn= "OSM",
             road_types=road_types,
             road_damage=None,
             unit=Units.feet.value,
