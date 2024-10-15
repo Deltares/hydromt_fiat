@@ -232,7 +232,7 @@ class HydroMtViewModel:
         ].new_composite_area
         # Check if additional attributes already exist
         add_attrs_existing = [
-            attr["name"]
+            attr.name
             for attr in self.fiat_model.spatial_joins["additional_attributes"]
         ]
         for i, label_name in enumerate(label_names):
@@ -242,7 +242,7 @@ class HydroMtViewModel:
                 aggregation_area_fn.pop(i)
                 attribute_names.pop(i)
                 label_names.pop(i)
-        self.fiat_model.setup_aggregation_areas(
+        self.fiat_model.setup_additional_attributes(
             aggregation_area_fn, attribute_names, label_names, new_composite_area
         )
 
