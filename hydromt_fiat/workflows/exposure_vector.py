@@ -764,8 +764,8 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("roads").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
@@ -848,60 +848,58 @@ class ExposureVector(Exposure):
 
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground floor height to the assets
-            count = 0
-            for i in max_potential_damage:
+            for max_damages,attribute, method, max_dis,damage_type in zip(max_potential_damage,attribute_name,method_damages,max_dist,damage_types):
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
                 # assign the ground floor height to the assets
-                gfh = self.data_catalog.get_geodataframe(i)
+                mpd = self.data_catalog.get_geodataframe(max_damages)
 
                 # If method is "intersection" remove columns from gfh exept for attribute name and geometry
-                if method_damages[count] == "intersection":
+                if method == "intersection":
                     columns_to_drop = [
                         col
-                        for col in gfh.columns
-                        if col != attribute_name[count] and col != "geometry"
+                        for col in mpd.columns
+                        if col != attribute and col != "geometry"
                     ]
-                    gfh = gfh.drop(columns=columns_to_drop)
+                    mpd = mpd.drop(columns=columns_to_drop)
 
                 # Get exposure data
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("roads").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("roads")]
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
-                        gfh,
-                        attribute_name[count],
-                        method_damages[count],
-                        max_dist[count],
+                        mpd,
+                        attribute,
+                        method,
+                        max_dis,
                         self.logger,
                     )
                     gdf = pd.concat([gdf, gdf_roads])
                 else:
                     gdf = join_spatial_data(
                         gdf,
-                        gfh,
-                        attribute_name[count],
-                        method_damages[count],
-                        max_dist[count],
+                        mpd,
+                        attribute,
+                        method,
+                        max_dis,
                         self.logger,
                     )
 
                 # If method is "intersection" rename *"_left" to original exposure_db name
-                if method_damages[count] == "intersection":
+                if method == "intersection":
                     self.intersection_method(gdf)
 
                 # Update exposure_db with updated dataframe
                 self.exposure_db = self._set_values_from_other_column(
                     gdf,
-                    f"Max Potential Damage: {damage_types[count].capitalize()}",
-                    attribute_name[count],
+                    f"Max Potential Damage: {damage_type.capitalize()}",
+                    attribute,
                 )
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
-                count += 1
 
         elif max_potential_damage in [
             "jrc_damage_values",
@@ -952,11 +950,22 @@ class ExposureVector(Exposure):
             # When the max_potential_damage is a string but not jrc_damage_values
             # or hazus_max_potential_damages. Here, a single file is used to
             # assign the ground floor height to the assets
-            gfh = self.data_catalog.get_geodataframe(max_potential_damage)
+            mpd = self.data_catalog.get_geodataframe(max_potential_damage)
             gdf = self.get_full_gdf(self.exposure_db)
-            gdf = join_spatial_data(
-                gdf, gfh, attribute_name, method_damages, max_dist, self.logger
-            )
+
+
+            # If roads in model filter out for spatial joint
+            if gdf["Primary Object Type"].str.contains("road").any():
+                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                # Spatial joint exposure and updated damages
+                gdf = join_spatial_data(
+                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), mpd, attribute_name, method_damages, max_dist, self.logger
+                )
+                gdf = pd.concat([gdf, gdf_roads])
+            else:
+                gdf = join_spatial_data(
+                    gdf, mpd, attribute_name, method_damages, max_dist, self.logger
+                )
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
                 f"Max Potential Damage: {damage_types[0].capitalize()}",
