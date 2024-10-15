@@ -43,7 +43,7 @@ for the Delft-FIAT_ model.
 ..   pip install hydromt_fiat
 
 Installation as a User
-------------
+----------------------
 
 For Use HydroMT-FIAT, do:
 Hydromt-FIAT can be installled in an existing environment or the user can create a new environment. We recommened to create a new environment to avoid issues with other dependencies and packages.
@@ -84,7 +84,7 @@ If you want to install FIAT into an existing environment, simply activate the de
 
 
 Installation as a Developer
-------------
+---------------------------
 For developing on HydroMT-FIAT, do:
 
 .. code-block:: console
