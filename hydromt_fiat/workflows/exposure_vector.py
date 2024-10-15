@@ -1330,6 +1330,8 @@ class ExposureVector(Exposure):
         # Add the new development area as an object to the Exposure Modification file.
         new_area = gpd.read_file(geom_file, engine="pyogrio")
         # check_crs(new_area, geom_file)  #TODO implement again
+        if "height" not in new_area.columns:
+            new_area["height"] = ground_floor_height
         new_objects = []
 
         # Calculate the total area to use for adding the damages relative to area
@@ -1354,13 +1356,6 @@ class ExposureVector(Exposure):
             new_id = max_id + 1
 
             perc_damages = new_geom.area / total_area
-            # Alert the user that the ground elevation is set to 0.
-            # TODO: Take ground elevation from DEM?
-            # For water level calculation this will not take into account the
-            # non-flooded cells separately, just averaged over the whole area.
-            self.logger.warning(
-                "The ground elevation is set to 0 if no DEM is supplied."
-            )
 
             # Idea: Reduction factor for the part of the area is not build-up?
 
@@ -1402,15 +1397,28 @@ class ExposureVector(Exposure):
             data=new_geoms_ids, columns=["geometry", "Object ID"], crs=self.crs
         )
 
+        # If the user supplied ground elevation data, assign that to the new
+        # composite areas
+        if ground_elevation is not None:
+            new_objects["Ground Elevation"] = ground_elevation_from_dem(
+                ground_elevation=ground_elevation,
+                exposure_db=new_objects,
+                exposure_geoms=_new_exposure_geoms,
+            )
+        
         if elevation_reference == "datum":
-            new_objects["Ground Floor Height"] = ground_floor_height
+            # Ensure that the new objects have a first floor height that elevates them above the requirement
+            new_objects["Ground Floor Height"] = new_objects.apply(
+                lambda row: max(row["Ground Floor Height"], new_area.loc[row.name, "height"] - row["Ground Elevation"]),
+                axis=1
+            )
             self.logger.info(
-                f"The elevation of the new development area is {ground_floor_height} ft"
+                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
                 " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
             self.logger.info(
-                f"The elevation of the new development area is {ground_floor_height} ft"
+                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
@@ -1420,22 +1428,13 @@ class ExposureVector(Exposure):
                 elevation_reference,
                 path_ref,
                 attr_ref,
-                ground_floor_height,
+                new_area["height"],
                 self.crs,
             )
 
         # Update the exposure_geoms
         self.set_geom_names("new_development_area")
         self.set_exposure_geoms(_new_exposure_geoms)
-
-        # If the user supplied ground elevation data, assign that to the new
-        # composite areas
-        if ground_elevation is not None:
-            new_objects["Ground Elevation"] = ground_elevation_from_dem(
-                ground_elevation=ground_elevation,
-                exposure_db=new_objects,
-                exposure_geoms=_new_exposure_geoms,
-            )
 
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
