@@ -1330,8 +1330,19 @@ class ExposureVector(Exposure):
         # Add the new development area as an object to the Exposure Modification file.
         new_area = gpd.read_file(geom_file, engine="pyogrio")
         # check_crs(new_area, geom_file)  #TODO implement again
+        
+        # Check if the column "height" is in the provided spatial file, which indicates the individual heights above the reference
+        # If not the provided value will be used uniformly
         if "height" not in new_area.columns:
             new_area["height"] = ground_floor_height
+            self.logger.info(f"Using uniform value of {ground_floor_height} 
+                             to specify the elevation above {elevation_reference} of FFE of new composite area(s).")
+        else:
+            self.logger.info(f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} 
+                             for FFE of new composite area(s).")
+
+        new_area["Object ID"] = None # add object id column to area file
+        
         new_objects = []
 
         # Calculate the total area to use for adding the damages relative to area
@@ -1354,7 +1365,7 @@ class ExposureVector(Exposure):
         for i in range(len(new_area.index)):
             new_geom = new_area.geometry.iloc[i]
             new_id = max_id + 1
-
+            new_area["Object ID"].iloc[i] = new_id # assign Object ID to polygons
             perc_damages = new_geom.area / total_area
 
             # Idea: Reduction factor for the part of the area is not build-up?
@@ -1428,7 +1439,7 @@ class ExposureVector(Exposure):
                 elevation_reference,
                 path_ref,
                 attr_ref,
-                new_area["height"],
+                new_area.set_index("Object ID")["height"],
                 self.crs,
             )
 
@@ -1752,7 +1763,7 @@ class ExposureVector(Exposure):
         height_reference: str,
         path_ref: str,
         attr_ref: str,
-        raise_by: Union[int, float],
+        raise_by: Union[int, float, pd.Series],
         out_crs: str,
     ) -> gpd.GeoDataFrame:
         """Sets the height of exposure_to_modify to the level of the reference file.
@@ -1769,7 +1780,7 @@ class ExposureVector(Exposure):
             _description_
         attr_ref : str
             _description_
-        raise_by : Union[int, float]
+        raise_by : Union[int, float, pd.Series]
             _description_
         out_crs : _type_
             _description_
