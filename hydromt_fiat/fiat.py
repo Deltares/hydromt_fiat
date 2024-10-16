@@ -1039,6 +1039,12 @@ class FiatModel(GridModel):
         # Save metadata on spatial joins
         if not self.spatial_joins["additional_attributes"]:
             self.spatial_joins["additional_attributes"] = []
+    
+        add_attrs_existing = [
+            attr["name"]
+            for attr in self.spatial_joins["additional_attributes"]
+        ]
+
         for label_name, file_name, attribute_name in zip(
             label_names, file_names, attribute_names
         ):
@@ -1047,7 +1053,12 @@ class FiatModel(GridModel):
                 "file": f"exposure/additional_attributes/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
-            self.spatial_joins["additional_attributes"].append(attrs)
+
+            if label_name not in add_attrs_existing:
+                self.spatial_joins["additional_attributes"].append(attrs)
+         
+            
+
 
     def setup_classification(
         self,
@@ -1179,7 +1190,12 @@ class FiatModel(GridModel):
         sj_path = Path(self.root).joinpath("spatial_joins.toml")
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
-            self.spatial_joins = dict(sj.attrs)
+            if sj.attrs.aggregation_areas is not None:
+                self.spatial_joins["aggregation_areas"] = [dict(entry) for entry in sj.attrs.aggregation_areas]
+            if sj.attrs.additional_attributes is not None:
+                self.spatial_joins["additional_attributes"] = [dict(entry) for entry in sj.attrs.additional_attributes]
+            
+            
 
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
