@@ -1335,11 +1335,11 @@ class ExposureVector(Exposure):
         # If not the provided value will be used uniformly
         if "height" not in new_area.columns:
             new_area["height"] = ground_floor_height
-            self.logger.info(f"Using uniform value of {ground_floor_height} 
-                             to specify the elevation above {elevation_reference} of FFE of new composite area(s).")
+            self.logger.info(f"Using uniform value of {ground_floor_height}" 
+                             f"to specify the elevation above {elevation_reference} of FFE of new composite area(s).")
         else:
-            self.logger.info(f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} 
-                             for FFE of new composite area(s).")
+            self.logger.info(f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} "
+                             "for FFE of new composite area(s).")
 
         new_area["Object ID"] = None # add object id column to area file
         
