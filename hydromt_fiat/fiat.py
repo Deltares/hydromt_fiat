@@ -1040,10 +1040,11 @@ class FiatModel(GridModel):
         if not self.spatial_joins["additional_attributes"]:
             self.spatial_joins["additional_attributes"] = []
     
+        # Check if additional attributes already exist
         add_attrs_existing = [
             attr["name"]
             for attr in self.spatial_joins["additional_attributes"]
-        ]
+            ] if self.spatial_joins["additional_attributes"] is not None else []
 
         for label_name, file_name, attribute_name in zip(
             label_names, file_names, attribute_names
@@ -1053,7 +1054,7 @@ class FiatModel(GridModel):
                 "file": f"exposure/additional_attributes/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
-
+            # If not exist, add to spatial joins
             if label_name not in add_attrs_existing:
                 self.spatial_joins["additional_attributes"].append(attrs)
          

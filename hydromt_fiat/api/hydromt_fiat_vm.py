@@ -231,10 +231,9 @@ class HydroMtViewModel:
             "setup_additional_attributes"
         ].new_composite_area
         # Check if additional attributes already exist
-        add_attrs_existing = [
-            attr["name"]
-            for attr in self.fiat_model.spatial_joins["additional_attributes"]
-        ]
+        add_attrs_existing = [ attr["name"]
+            for attr in self.fiat_model.spatial_joins["additional_attributes"] 
+            ] if self.fiat_model.spatial_joins["additional_attributes"] is not None else []
         indices_to_remove = []
         for i, label_name in enumerate(label_names):
             if (
