@@ -322,6 +322,7 @@ class FiatModel(GridModel):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
+        damage_translation_fn: Union[Path, str] = None
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -400,6 +401,7 @@ class FiatModel(GridModel):
                 ground_elevation_file=ground_elevation_file,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
+                damage_translation_fn = damage_translation_fn
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:

@@ -1,4 +1,6 @@
 import pandas as pd
+from pathlib import Path
+from typing import Union
 
 default_jrc_max_damage_adjustment_values = {
     "construction_cost_vs_depreciated_value_res": 0.6,
@@ -120,5 +122,43 @@ def preprocess_hazus_damage_values(hazus_table: pd.DataFrame) -> dict:
             hazus_table["occupancy"], hazus_table["structure"], hazus_table["content"]
         )
     }
+
+    return damage_values
+
+def preprocess_damage_values(
+    base_damage_values: pd.DataFrame,
+    damage_translation_fn: Union[Path, str],
+) -> dict:
+    """Preprocess the JRC damage values data.
+
+    Parameters
+    ----------
+    base_damage_values : pd.DataFrame
+        The JRC damage values data.
+    damage_translation_fn : Union[Path, str]
+        The path to a file that relates the max. potential damage values to the damage curves
+
+    Returns
+    -------
+    pd.DataFrame
+        The preprocessed JRC damage values data.
+    """
+    # Create an empty dictionary that will be used to store the damage values per
+    # category
+    damage_values = {}
+
+    # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve
+    # Rename the column names to shorter names
+    translation_file = pd.read_csv(damage_translation_fn)
+
+    rename_dict = translation_file.to_dict()
+
+    base_damage_values.rename(columns=rename_dict, inplace=True)
+
+    # Filter the data on the country
+    #base_damage_values["Country"] = base_damage_values["Country"].str.lower()
+    #base_damage_values = base_damage_values.loc[
+    #    base_damage_values["Country"] == country.lower()
+    #]
 
     return damage_values
