@@ -26,6 +26,7 @@ from hydromt_fiat.data_apis.open_street_maps import (
 from hydromt_fiat.workflows.damage_values import (
     preprocess_jrc_damage_values,
     preprocess_hazus_damage_values,
+    preprocess_damage_values
 )
 from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
@@ -326,6 +327,7 @@ class ExposureVector(Exposure):
         ground_elevation_unit: str = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
+        damage_translation_fn: Union[Path, str] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
         self.setup_asset_locations(asset_locations)
@@ -333,7 +335,7 @@ class ExposureVector(Exposure):
             occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
         )
         self.setup_max_potential_damage(
-            max_potential_damage, damage_types, country=country
+            max_potential_damage, damage_types, country=country, damage_translation_fn = damage_translation_fn
         )
         if (
             any(
@@ -818,6 +820,7 @@ class ExposureVector(Exposure):
         method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
         country: Union[str, None] = None,
+        damage_translation_fn: Union[str, Path] = None,
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -955,31 +958,62 @@ class ExposureVector(Exposure):
                     )
         elif isinstance(max_potential_damage, str) or isinstance(
             max_potential_damage, Path
-        ):
-            # When the max_potential_damage is a string but not jrc_damage_values
-            # or hazus_max_potential_damages. Here, a single file is used to
-            # assign the ground floor height to the assets
-            mpd = self.data_catalog.get_geodataframe(max_potential_damage)
-            gdf = self.get_full_gdf(self.exposure_db)
+        ):  
+            # Using a csv file with a translation table to assign damages to damage curves
+            if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(".xlsx"):
+                damage_source = self.data_catalog.get_dataframe(max_potential_damage)
+                damage_values = preprocess_damage_values(damage_source, damage_translation_fn)
 
+                # Calculate the area of each object
+                gdf = self.get_full_gdf(self.exposure_db)[
+                    ["Primary Object Type", "geometry"]
+                ]
+                gdf = get_area(gdf)
+                gdf = gdf.dropna(subset="Primary Object Type")
 
-            # If roads in model filter out for spatial joint
-            if gdf["Primary Object Type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
-                # Spatial joint exposure and updated damages
-                gdf = join_spatial_data(
-                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), mpd, attribute_name, method_damages, max_dist, self.logger
-                )
-                gdf = pd.concat([gdf, gdf_roads])
+                # Set the damage values to the exposure data
+                for damage_type in damage_types:
+                    # Calculate the maximum potential damage for each object and per damage type
+                    try:
+                        self.exposure_db[
+                            f"Max Potential Damage: {damage_type.capitalize()}"
+                        ] = [
+                            damage_values[building_type][damage_type.lower()]
+                            * square_meters
+                            for building_type, square_meters in zip(
+                                gdf["Primary Object Type"], gdf["area"]
+                            )
+                        ]
+                    except KeyError as e:
+                        self.logger.warning(
+                            f"Not found in the {max_potential_damage} damage "
+                            f"value data: {e}"
+                        )
             else:
-                gdf = join_spatial_data(
-                    gdf, mpd, attribute_name, method_damages, max_dist, self.logger
+                # When the max_potential_damage is a string but not jrc_damage_values
+                # or hazus_max_potential_damages. Here, a single file is used to
+                # assign the mpd to the assets
+                mpd = self.data_catalog.get_geodataframe(max_potential_damage)
+                gdf = self.get_full_gdf(self.exposure_db)
+
+
+                # If roads in model filter out for spatial joint
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                    # Spatial joint exposure and updated damages
+                    gdf = join_spatial_data(
+                        gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), mpd, attribute_name, method_damages, max_dist, self.logger
+                    )
+                    gdf = pd.concat([gdf, gdf_roads])
+                else:
+                    gdf = join_spatial_data(
+                        gdf, mpd, attribute_name, method_damages, max_dist, self.logger
+                    )
+                self.exposure_db = self._set_values_from_other_column(
+                    gdf,
+                    f"Max Potential Damage: {damage_types[0].capitalize()}",
+                    attribute_name,
                 )
-            self.exposure_db = self._set_values_from_other_column(
-                gdf,
-                f"Max Potential Damage: {damage_types[0].capitalize()}",
-                attribute_name,
-            )
 
     def setup_ground_elevation(
         self, ground_elevation: Union[int, float, None, str, Path], unit: str
