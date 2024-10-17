@@ -939,23 +939,8 @@ class ExposureVector(Exposure):
             gdf = gdf.dropna(subset="Primary Object Type")
 
             # Set the damage values to the exposure data
-            for damage_type in damage_types:
-                # Calculate the maximum potential damage for each object and per damage type
-                try:
-                    self.exposure_db[
-                        f"Max Potential Damage: {damage_type.capitalize()}"
-                    ] = [
-                        damage_values[building_type][damage_type.lower()]
-                        * square_meters
-                        for building_type, square_meters in zip(
-                            gdf["Primary Object Type"], gdf["area"]
-                        )
-                    ]
-                except KeyError as e:
-                    self.logger.warning(
-                        f"Not found in the {max_potential_damage} damage "
-                        f"value data: {e}"
-                    )
+            self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
+
         elif isinstance(max_potential_damage, str) or isinstance(
             max_potential_damage, Path
         ):  
@@ -972,23 +957,7 @@ class ExposureVector(Exposure):
                 gdf = gdf.dropna(subset="Primary Object Type")
 
                 # Set the damage values to the exposure data
-                for damage_type in damage_types:
-                    # Calculate the maximum potential damage for each object and per damage type
-                    try:
-                        self.exposure_db[
-                            f"Max Potential Damage: {damage_type.capitalize()}"
-                        ] = [
-                            damage_values[building_type][damage_type.lower()]
-                            * square_meters
-                            for building_type, square_meters in zip(
-                                gdf["Primary Object Type"], gdf["area"]
-                            )
-                        ]
-                    except KeyError as e:
-                        self.logger.warning(
-                            f"Not found in the {max_potential_damage} damage "
-                            f"value data: {e}"
-                        )
+                self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
@@ -1014,7 +983,7 @@ class ExposureVector(Exposure):
                     f"Max Potential Damage: {damage_types[0].capitalize()}",
                     attribute_name,
                 )
-
+    
     def setup_ground_elevation(
         self, ground_elevation: Union[int, float, None, str, Path], unit: str
     ) -> None:
@@ -1636,6 +1605,24 @@ class ExposureVector(Exposure):
         """
         return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
 
+    def set_max_potential_damage_columns(self, damage_types, damage_values,gdf, max_potential_damage) -> None:
+        for damage_type in damage_types:
+                    # Calculate the maximum potential damage for each object and per damage type
+                    try:
+                        self.exposure_db[
+                            f"Max Potential Damage: {damage_type.capitalize()}"
+                        ] = [
+                            damage_values[building_type][damage_type.lower()]
+                            * square_meters
+                            for building_type, square_meters in zip(
+                                gdf["Primary Object Type"], gdf["area"]
+                            )
+                        ]
+                    except KeyError as e:
+                        self.logger.warning(
+                            f"Not found in the {max_potential_damage} damage "
+                            f"value data: {e}"
+                        )
     def get_damage_function_columns(self) -> List[str]:
         """Returns the damage function columns in <exposure_db>
 
