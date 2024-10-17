@@ -213,7 +213,7 @@ def join_spatial_data(
         if (left_gdf_type == "Polygon") and (right_gdf_type == "Polygon"):
             gdf = sjoin_largest_area(left_gdf, right_gdf)
         elif (left_gdf_type == "Point") and (right_gdf_type == "Polygon"):
-            gdf = intersect_points_polygons(left_gdf, right_gdf, attribute_name)
+            gdf = intersect_points_polygons(left_gdf, right_gdf)
         else:
             raise NotImplementedError(
                 f"Join method {method} is not implemented for joining data of geometry "
