@@ -820,7 +820,7 @@ class ExposureVector(Exposure):
         method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
         country: Union[str, None] = None,
-        translation_fn: Union[str, Path] = None,
+        damage_translation_fn: Union[str, Path] = None,
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -962,7 +962,7 @@ class ExposureVector(Exposure):
             # Using a csv file with a translation table to assign damages to damage curves
             if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(".xlsx"):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-                damage_values = preprocess_damage_values(max_potential_damage, translation_fn)
+                damage_values = preprocess_damage_values(max_potential_damage, damage_translation_fn)
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
