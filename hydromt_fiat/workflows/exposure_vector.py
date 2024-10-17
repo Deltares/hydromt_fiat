@@ -964,7 +964,7 @@ class ExposureVector(Exposure):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
                 damage_values = preprocess_damage_values(damage_source, damage_translation_fn)
 
-                           # Calculate the area of each object
+                # Calculate the area of each object
                 gdf = self.get_full_gdf(self.exposure_db)[
                     ["Primary Object Type", "geometry"]
                 ]
