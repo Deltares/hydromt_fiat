@@ -31,7 +31,7 @@ from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
-    get_area,
+    calc_geometry_area,
     sjoin_largest_area,
     get_crs_str_from_gdf,
     join_spatial_data,
@@ -74,12 +74,12 @@ class ExposureVector(Exposure):
 
     def __init__(
         self,
-        data_catalog: DataCatalog = None,
-        logger: logging.Logger = None,
-        region: gpd.GeoDataFrame = None,
-        crs: str = None,
-        unit: str = Units.feet.value,
-        country: str = None,
+        data_catalog: Optional[DataCatalog] = None,
+        logger: Optional[logging.Logger] = None,
+        region: Optional[gpd.GeoDataFrame] = None,
+        crs: Optional[str] = None,
+        unit: Optional[str] = Units.feet.value,
+        country: Optional[str] = None,
         damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
@@ -230,7 +230,6 @@ class ExposureVector(Exposure):
         self.set_geom_names("buildings")
 
         # Set the ground floor height if not yet set
-        # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
         if ground_elevation_file is not None:
             self.setup_ground_elevation(
                 ground_elevation_file,
@@ -250,7 +249,7 @@ class ExposureVector(Exposure):
         region = self.region.copy()
         if str(source).upper() == "OSM":
             region = region.to_crs(4326)
-            polygon = region["geometry"].values[0]  # TODO check if this works each time
+            polygon = region["geometry"].values[0]
             roads = get_roads_from_osm(polygon, road_types)
 
             if roads.empty:
@@ -323,7 +322,7 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float, List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
-        ground_elevation_unit: str = None,
+        ground_elevation_unit: Optional[str] = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
     ):
@@ -596,11 +595,10 @@ class ExposureVector(Exposure):
             else:
                 self.exposure_db = gdf.copy()
         else:
-            self.logger.warning(
+            raise NotImplementedError(
                 "NotImplemented the spatial join of the exposure data with the "
                 "occupancy map the for multiple exposure geoms"
             )
-            NotImplemented
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -680,9 +678,6 @@ class ExposureVector(Exposure):
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["Extraction Method"] = extraction_method
-
-    def setup_aggregation_labels(self):
-        NotImplemented
 
     @staticmethod
     def intersection_method(
@@ -801,8 +796,8 @@ class ExposureVector(Exposure):
 
     def setup_max_potential_damage(
         self,
-        max_potential_damage: Union[
-            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        max_potential_damage: Optional[
+            Union[int, float, str, Path, List[str], List[Path], pd.DataFrame]
         ] = None,
         damage_types: Union[List[str], str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
@@ -925,7 +920,7 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)[
                 ["Primary Object Type", "geometry"]
             ]
-            gdf = get_area(gdf)
+            gdf = calc_geometry_area(gdf)
             gdf = gdf.dropna(subset="Primary Object Type")
 
             # Set the damage values to the exposure data
@@ -1032,7 +1027,7 @@ class ExposureVector(Exposure):
         raise_by: Union[int, float],
         objectids: List[int],
         height_reference: str = "",
-        path_ref: str = None,
+        path_ref: Optional[str] = None,
         attr_ref: str = "STATIC_BFE",
     ):
         """Raises the ground floor height of selected objects to a certain level.
@@ -1251,12 +1246,12 @@ class ExposureVector(Exposure):
         damage_types: List[str],
         vulnerability: Vulnerability,
         elevation_reference: str,
-        path_ref: str = None,
-        attr_ref: str = None,
+        path_ref: Optional[str] = None,
+        attr_ref: Optional[str] = None,
         ground_elevation: Union[None, str, Path] = None,
-        aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
-        attribute_names: Union[List[str], str] = None,
-        label_names: Union[List[str], str] = None,
+        aggregation_area_fn: Optional[Union[List[str], List[Path], str, Path]] = None,
+        attribute_names: Optional[Union[List[str], str]] = None,
+        label_names: Optional[Union[List[str], str]] = None,
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.

@@ -1,6 +1,6 @@
 import geopandas as gpd
 from hydromt.gis_utils import utm_crs, nearest_merge
-from typing import List, Union
+from typing import Union
 import logging
 import rasterio
 from rasterio.features import rasterize
@@ -13,8 +13,10 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 
+from typing import Optional
 
-def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+
+def calc_geometry_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     """Adds an area column to a GeoDataFrame.
 
     Parameters
@@ -63,9 +65,9 @@ def sjoin_largest_area(
     """
     gdf = gpd.overlay(left_gdf, right_gdf, how="intersection")
     gdf["area"] = gdf.geometry.area
-    gdf.sort_values(by="area", inplace=True)
-    gdf.drop_duplicates(subset=id_col, keep="last", inplace=True)
-    gdf.drop(columns=["area"], inplace=True)
+    gdf = gdf.sort_values(by="area")
+    gdf = gdf.drop_duplicates(subset=id_col, keep="last")
+    gdf = gdf.drop(columns=["area"])
     return gdf
 
 
@@ -94,26 +96,6 @@ def check_geometry_type(gdf: gpd.GeoDataFrame) -> str:
 def get_crs_str_from_gdf(gdf_crs: gpd.GeoDataFrame.crs) -> str:
     source_data_authority = gdf_crs.to_authority()
     return source_data_authority[0] + ":" + source_data_authority[1]
-
-
-def clean_up_gdf(gdf: gpd.GeoDataFrame, columns: List[str]) -> gpd.GeoDataFrame:
-    """Clean up a GeoDataFrame by removing unnecessary columns.
-
-    Parameters
-    ----------
-    gdf : gpd.GeoDataFrame
-        The GeoDataFrame to clean up.
-
-    Returns
-    -------
-    gpd.GeoDataFrame
-        The cleaned up GeoDataFrame.
-    """
-    # Remove unnecessary columns
-    for col in columns:
-        del gdf[col]
-
-    return gdf
 
 
 def join_nearest_points(
@@ -146,16 +128,16 @@ def join_nearest_points(
     )
 
     # Clean up the geodataframe (remove unnecessary columns)
-    gdf_merged = clean_up_gdf(gdf_merged, ["distance_right", "index_right"])
+    gdf_merged = gdf_merged.drop(["distance_right", "index_right"], axis=1)
 
     return gdf_merged
 
 
-def intersect_points_polygons(left_gdf, right_gdf, attribute_name) -> gpd.GeoDataFrame:
+def intersect_points_polygons(left_gdf, right_gdf) -> gpd.GeoDataFrame:
     gdf_merged = gpd.sjoin(left_gdf, right_gdf, how="left", predicate="intersects")
 
     # Clean up the geodataframe (remove unnecessary columns)
-    gdf_merged = clean_up_gdf(gdf_merged, ["index_right"])
+    gdf_merged = gdf_merged.drop("index_right", axis=1)
 
     return gdf_merged
 
@@ -166,7 +148,7 @@ def join_spatial_data(
     attribute_name: str,
     method: str,
     max_dist: float = 10,
-    logger: logging.Logger = None,
+    logger: Optional[logging.Logger] = None,
 ) -> gpd.GeoDataFrame:
     """Join two GeoDataFrames based on their spatial relationship.
 
@@ -231,7 +213,7 @@ def join_spatial_data(
         if (left_gdf_type == "Polygon") and (right_gdf_type == "Polygon"):
             gdf = sjoin_largest_area(left_gdf, right_gdf)
         elif (left_gdf_type == "Point") and (right_gdf_type == "Polygon"):
-            gdf = intersect_points_polygons(left_gdf, right_gdf, attribute_name)
+            gdf = intersect_points_polygons(left_gdf, right_gdf)
         else:
             raise NotImplementedError(
                 f"Join method {method} is not implemented for joining data of geometry "

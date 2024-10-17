@@ -41,7 +41,7 @@ class ExposureViewModel:
         self.database: IDatabase = database
         self.data_catalog: DataCatalog = data_catalog
         self.logger: logging.Logger = logger
-        self.exposure: ExposureVector = None
+        self.exposure: Optional[ExposureVector] = None
 
     def create_interest_area(self, **kwargs: str):
         fpath = kwargs.get("fpath")
@@ -62,11 +62,11 @@ class ExposureViewModel:
         self,
         source: str,
         ground_floor_height: str,
-        country: str = None,
-        max_potential_damage: str = None,
+        country: Optional[str] = None,
+        max_potential_damage: Optional[str] = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
-        crs: Union[str, int] = None,
-        ground_elevation_unit: str = None,
+        crs: Optional[Union[str, int]] = None,
+        ground_elevation_unit: Optional[str] = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
     ):
@@ -154,10 +154,10 @@ class ExposureViewModel:
         self,
         source: str,
         ground_floor_height: str,
-        max_potential_damage: str = None,
+        max_potential_damage: Optional[str] = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
-        crs: Union[str, int] = None,
-        country: str = None,
+        crs: Optional[Union[str, int]] = None,
+        country: Optional[str] = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
     ) -> None:
