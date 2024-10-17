@@ -136,7 +136,7 @@ def preprocess_damage_values(
     base_damage_values : pd.DataFrame
         The JRC damage values data.
     damage_translation_fn : Union[Path, str]
-        The path to a file that relates the max. potential damage values to the damage curves
+        The path to a file that relates the max. potential damage values with the exposure primary object type. 
 
     Returns
     -------
@@ -146,19 +146,25 @@ def preprocess_damage_values(
     # Create an empty dictionary that will be used to store the damage values per
     # category
     damage_values = {}
+    
 
     # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve
     # Rename the column names to shorter names
-    translation_file = pd.read_csv(damage_translation_fn)
+    translation_df = pd.read_csv(damage_translation_fn, header = None, encoding='utf-8', index_col = None)
 
-    rename_dict = translation_file.to_dict()
+    rename_dict = dict(zip(translation_df.iloc[0:,0],translation_df.iloc[0:,1]))
 
+    # Rename damage values with primary object type
     base_damage_values.rename(columns=rename_dict, inplace=True)
+    
 
-    # Filter the data on the country
-    #base_damage_values["Country"] = base_damage_values["Country"].str.lower()
-    #base_damage_values = base_damage_values.loc[
-    #    base_damage_values["Country"] == country.lower()
-    #]
+    # Get building types and their values
+    for building_type in translation_df.iloc[0:,1]:
+        base_damage_value = base_damage_values[building_type].values[0]
+        damage_values[building_type] = {
+                "structure":  base_damage_value,
+                "content": base_damage_value,
+                "total": base_damage_value, 
+        } 
 
     return damage_values

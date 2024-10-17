@@ -962,7 +962,33 @@ class ExposureVector(Exposure):
             # Using a csv file with a translation table to assign damages to damage curves
             if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(".xlsx"):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-                damage_values = preprocess_damage_values(max_potential_damage, damage_translation_fn)
+                damage_values = preprocess_damage_values(damage_source, damage_translation_fn)
+
+                           # Calculate the area of each object
+                gdf = self.get_full_gdf(self.exposure_db)[
+                    ["Primary Object Type", "geometry"]
+                ]
+                gdf = get_area(gdf)
+                gdf = gdf.dropna(subset="Primary Object Type")
+
+                # Set the damage values to the exposure data
+                for damage_type in damage_types:
+                    # Calculate the maximum potential damage for each object and per damage type
+                    try:
+                        self.exposure_db[
+                            f"Max Potential Damage: {damage_type.capitalize()}"
+                        ] = [
+                            damage_values[building_type][damage_type.lower()]
+                            * square_meters
+                            for building_type, square_meters in zip(
+                                gdf["Primary Object Type"], gdf["area"]
+                            )
+                        ]
+                    except KeyError as e:
+                        self.logger.warning(
+                            f"Not found in the {max_potential_damage} damage "
+                            f"value data: {e}"
+                        )
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
