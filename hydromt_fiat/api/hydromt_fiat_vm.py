@@ -231,18 +231,22 @@ class HydroMtViewModel:
             "setup_additional_attributes"
         ].new_composite_area
         # Check if additional attributes already exist
-        add_attrs_existing = [
-            attr["name"]
-            for attr in self.fiat_model.spatial_joins["additional_attributes"]
-        ]
+        add_attrs_existing = [ attr["name"]
+            for attr in self.fiat_model.spatial_joins["additional_attributes"] 
+            ] if self.fiat_model.spatial_joins["additional_attributes"] is not None else []
+        indices_to_remove = []
         for i, label_name in enumerate(label_names):
             if (
                 label_name in add_attrs_existing
             ):  # if it exists exclude it from the list
-                aggregation_area_fn.pop(i)
-                attribute_names.pop(i)
-                label_names.pop(i)
-        self.fiat_model.setup_aggregation_areas(
+                indices_to_remove.append(i)
+                
+        for i in sorted(indices_to_remove, reverse=True):
+            aggregation_area_fn.pop(i)
+            attribute_names.pop(i)
+            label_names.pop(i)
+
+        self.fiat_model.setup_additional_attributes(
             aggregation_area_fn, attribute_names, label_names, new_composite_area
         )
 

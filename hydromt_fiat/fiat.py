@@ -322,6 +322,7 @@ class FiatModel(GridModel):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
+        damage_translation_fn: Union[Path, str] = None
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -363,6 +364,8 @@ class FiatModel(GridModel):
         dst_crs : Union[str, None], optional
             The destination crs of the exposure geometries. if not provided,
             it is taken from the region attribute of `FiatModel`. By default None
+        damage_translation_fn: Union[Path, str], optional
+            The path to the translation function that can be used to relate user damage curves with user damages.
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -400,6 +403,7 @@ class FiatModel(GridModel):
                 ground_elevation_file=ground_elevation_file,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
+                damage_translation_fn = damage_translation_fn
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -1039,6 +1043,13 @@ class FiatModel(GridModel):
         # Save metadata on spatial joins
         if not self.spatial_joins["additional_attributes"]:
             self.spatial_joins["additional_attributes"] = []
+    
+        # Check if additional attributes already exist
+        add_attrs_existing = [
+            attr["name"]
+            for attr in self.spatial_joins["additional_attributes"]
+            ] if self.spatial_joins["additional_attributes"] is not None else []
+
         for label_name, file_name, attribute_name in zip(
             label_names, file_names, attribute_names
         ):
@@ -1047,7 +1058,12 @@ class FiatModel(GridModel):
                 "file": f"exposure/additional_attributes/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
-            self.spatial_joins["additional_attributes"].append(attrs)
+            # If not exist, add to spatial joins
+            if label_name not in add_attrs_existing:
+                self.spatial_joins["additional_attributes"].append(attrs)
+         
+            
+
 
     def setup_classification(
         self,
@@ -1179,7 +1195,12 @@ class FiatModel(GridModel):
         sj_path = Path(self.root).joinpath("spatial_joins.toml")
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
-            self.spatial_joins = dict(sj.attrs)
+            if sj.attrs.aggregation_areas is not None:
+                self.spatial_joins["aggregation_areas"] = [dict(entry) for entry in sj.attrs.aggregation_areas]
+            if sj.attrs.additional_attributes is not None:
+                self.spatial_joins["additional_attributes"] = [dict(entry) for entry in sj.attrs.additional_attributes]
+            
+            
 
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
