@@ -1048,7 +1048,7 @@ class ExposureVector(Exposure):
         """
 
         # TODO: Add support for other methods
-        
+
         if isinstance(impacted_population_fn, str) or isinstance(
             impacted_population_fn, Path):
             # When the max_potential_damage is a string but not jrc_damage_values
@@ -1063,7 +1063,7 @@ class ExposureVector(Exposure):
                 gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                 # Spatial joint exposure and updated damages
                 gdf = join_spatial_data(
-                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), pop_impacted, attribute_name, method_damages, max_dist, self.logger
+                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
                 )
                 gdf = pd.concat([gdf, gdf_roads])
             else:
