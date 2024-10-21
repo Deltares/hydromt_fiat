@@ -1017,7 +1017,65 @@ class ExposureVector(Exposure):
             )
             self.logger.warning("Ground elevation will be set to 0")
             self.exposure_db["Ground Elevation"] = 0
+    
+    def setup_impacted_population(
+        self,
+        impacted_population_fn: Union[
+            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        ] = None,
+        attribute_name: Union[str, List[str], None] = None,
+        method_impacted_pop: Union[str, List[str], None] = "intersection",
+        max_dist: float = 10,
+    ) -> None:
+        """Sets up the impacted population data for the exposure model.
 
+        Parameters
+        ----------
+        impacted_population_fn : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
+            The source of the impacted population data. It can be a path to a file, a list of paths,
+            a DataFrame, or a direct value.
+        attribute_name : Union[str, List[str], None], optional
+            The attribute name(s) to be used for identifying impacted population data, by default None.
+        method_impacted_pop : Union[str, List[str], None], optional
+            The method to be used for processing impacted population data, by default "intersection".
+        max_dist : float, optional
+            The maximum allowable distance for spatial joins, by default 10.
+
+        Notes
+        -----
+        This function updates the exposure database with impacted population data by performing spatial
+        joins and setting the values from the specified attribute.
+        """
+
+        # TODO: Add support for other methods
+        
+        if isinstance(impacted_population_fn, str) or isinstance(
+            impacted_population_fn, Path):
+            # When the max_potential_damage is a string but not jrc_damage_values
+            # or hazus_max_potential_damages. Here, a single file is used to
+            # assign the mpd to the assets
+            pop_impacted = self.data_catalog.get_geodataframe(impacted_population_fn)
+            gdf = self.get_full_gdf(self.exposure_db)
+
+
+            # If roads in model filter out for spatial joint
+            if gdf["Primary Object Type"].str.contains("road").any():
+                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                # Spatial joint exposure and updated damages
+                gdf = join_spatial_data(
+                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), pop_impacted, attribute_name, method_damages, max_dist, self.logger
+                )
+                gdf = pd.concat([gdf, gdf_roads])
+            else:
+                gdf = join_spatial_data(
+                    gdf, pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
+                )
+            self.exposure_db = self._set_values_from_other_column(
+                gdf,
+                "Fn_affected_people",
+                attribute_name,
+            )
+        
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
     ) -> None:

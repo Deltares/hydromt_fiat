@@ -494,6 +494,25 @@ class FiatModel(GridModel):
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
+    def setup_exposure_population(
+        self,
+        impacted_population_fn: Union[
+            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        ] = None,
+        attribute_name: Union[str, List[str], None] = None,
+        method_impacted_pop: Union[str, List[str], None] = "intersection",
+        max_dist: float = 10,
+        unit: str = "meters",
+    ) -> None:
+        if not self.exposure:
+            self.exposure = ExposureVector(
+                self.data_catalog,
+                self.logger,
+                self.region,
+                unit=unit,
+            )
+        self.exposure.setup_impacted_population(impacted_population_fn, attribute_name, method_impacted_pop,max_dist)
+        
 
     def bf_spatial_joins(self):
         self.building_footprint = self.exposure.building_footprints
