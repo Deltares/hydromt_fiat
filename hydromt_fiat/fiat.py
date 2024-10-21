@@ -364,6 +364,8 @@ class FiatModel(GridModel):
         dst_crs : Union[str, None], optional
             The destination crs of the exposure geometries. if not provided,
             it is taken from the region attribute of `FiatModel`. By default None
+        damage_translation_fn: Union[Path, str], optional
+            The path to the translation function that can be used to relate user damage curves with user damages.
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):

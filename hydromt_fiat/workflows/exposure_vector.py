@@ -838,6 +838,8 @@ class ExposureVector(Exposure):
             _description_, by default "nearest"
         max_dist : float, optional
             _description_, by default 10
+        damage_translation_fn: Union[Path, str], optional
+            The path to the translation function that can be used to relate user damage curves with user damages.
         """
         if damage_types is None:
             damage_types = ["total"]
@@ -1606,6 +1608,22 @@ class ExposureVector(Exposure):
         return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
 
     def set_max_potential_damage_columns(self, damage_types, damage_values,gdf, max_potential_damage) -> None:
+        """Calculate and set the maximum potential damage columns based on the provided damage types and values.
+
+        Parameters
+        ----------
+        damage_types : list
+            List of damage types for which the maximum potential damage should be calculated.
+        damage_values : dict
+            Dictionary containing the damage values for each building type and damage type.
+        gdf : GeoDataFrame
+            GeoDataFrame containing the primary object type and area information.
+        max_potential_damage : str
+            The maximum potential damage value.
+        Returns
+        -------
+        None
+        """
         for damage_type in damage_types:
                     # Calculate the maximum potential damage for each object and per damage type
                     try:
