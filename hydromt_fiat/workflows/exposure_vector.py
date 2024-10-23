@@ -312,7 +312,7 @@ class ExposureVector(Exposure):
 
     def setup_buildings_from_multiple_sources(
         self,
-        asset_locations: Union[str, Path, gpd.GeoDataFrame],
+        asset_locations: str,
         occupancy_source: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
@@ -334,7 +334,7 @@ class ExposureVector(Exposure):
 
         Parameters
         ----------
-        asset_locations : str, Path, GeoDataFrame
+        asset_locations : str
             The name of the vector dataset in the HydroMT Data Catalog or path to the
             vector dataset to be used to set up the asset locations. This can be
             either a point or polygon dataset.
@@ -415,7 +415,7 @@ class ExposureVector(Exposure):
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
 
-    def setup_asset_locations(self, asset_locations: Union[str, gpd.GeoDataFrame]) -> None:
+    def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
 
         Parameters
@@ -443,8 +443,6 @@ class ExposureVector(Exposure):
                 assets = self.data_catalog.get_geodataframe(
                     asset_locations, geom=self.region
                 )
-        elif isinstance(asset_locations, gpd.GeoDataFrame):
-            assets = asset_locations
 
         # Set the CRS of the exposure data
         self.crs = get_crs_str_from_gdf(assets.crs)
@@ -458,6 +456,9 @@ class ExposureVector(Exposure):
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
+        if len(assets.columns) > 2:
+            assets = assets[['Object ID', 'geometry']]
+
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
 
