@@ -394,7 +394,7 @@ class FiatModel(GridModel):
 
             # Enables user to provide only one file for asset_locations and occupancy type
             if asset_locations == occupancy_type and asset_locations != "OSM":
-                asset_locations =self.get_geodataframe(
+                asset_locations =self.data_catalog.get_geodataframe(
                     asset_locations, geom=self.region
                 )
                 asset_locations = asset_locations['geometry']
