@@ -12,6 +12,8 @@ from pathlib import Path
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
+from shapely.geometry import Polygon, MultiPolygon
+from shapely.ops import unary_union
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
@@ -207,6 +209,21 @@ def join_spatial_data(
         )
         right_gdf = right_gdf.to_crs(left_gdf.crs)
 
+    if len(left_gdf.geom_type.unique()) > 1 and ('MultiPolygon' in list(left_gdf.geom_type.unique())):
+        for index, row in left_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                left_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(left_gdf.geom_type.unique()) == 1
+
+    if len(right_gdf.geom_type.unique()) > 1 and ('MultiPolygon' in list(right_gdf.geom_type.unique())):
+        for index, row in right_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                right_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(right_gdf.geom_type.unique()) == 1
+
+    method = "nearest" # remove later
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)
 
