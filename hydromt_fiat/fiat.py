@@ -328,7 +328,7 @@ class FiatModel(GridModel):
 
         Parameters
         ----------
-        asset_locations : Union[str, Path]
+        asset_locations : Union[str, Path, gpd,GeodataFrame]
             The path to the vector data (points or polygons) that can be used for the
             asset locations.
         occupancy_type : Union[str, Path]
@@ -392,11 +392,14 @@ class FiatModel(GridModel):
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
 
+            # Enables user to provide only one file for asset_locations and occupancy type
             if asset_locations == occupancy_type and asset_locations != "OSM":
                 asset_locations =self.get_geodataframe(
                     asset_locations, geom=self.region
                 )
                 asset_locations = asset_locations['geometry']
+            
+            # Setup exposure buildings
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,

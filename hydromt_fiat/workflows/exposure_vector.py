@@ -329,6 +329,66 @@ class ExposureVector(Exposure):
         keep_unclassified: bool = True,
         damage_translation_fn: Union[Path, str] = None,
     ):
+        """
+        Set up the exposure data using multiple sources.
+
+        Parameters
+        ----------
+        asset_locations : str, Path, GeoDataFrame
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the asset locations. This can be
+            either a point or polygon dataset.
+        occupancy_source : str, Path
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the occupancy types.
+        max_potential_damage : str, Path
+            The name of the vector dataset in the HydroMT Data Catalog or path to the
+            vector dataset to be used to set up the maximum potential damage.
+        ground_floor_height : int, float, str, Path, None
+            Either a number (int or float) to give all assets the same ground floor
+            height, a path to the data that can be used to add the ground floor
+            height to the assets or None to use the data from 'asset_locations'.
+        extraction_method : str
+            The extraction method to be used for all of the assets.
+        occupancy_attr : str, None
+            The attribute name to be used to set the occupancy type. If None, the
+            attribute name will be set to 'occupancy_type'.
+        damage_types : List[str], None
+            The list of damage types to be used. If None, the default damage types
+            will be used.
+        country : str, None
+            The country to be used to set the damage function. If None, the default
+            damage function will be used.
+        attribute_name : str, List[str], None
+            The attribute name to be used to set the ground floor height. If None, the
+            attribute name will be set to 'ground_floor_height'.
+        gfh_method : str, List[str], None
+            The method to be used to add the ground floor height to the assets. If
+            None, the default method will be used.
+        max_dist : int, float, List[float], List[int], None
+            The maximum distance to be used when adding the ground floor height to
+            the assets. If None, the default maximum distance will be used.
+        ground_elevation_file : int, float, str, Path, None
+            The path to the ground elevation data. If None, the ground elevation will
+            be set to 0.
+        ground_elevation_unit : str
+            The unit of the ground elevation data. If None, the unit will be set to
+            'm'.
+        bf_conversion : bool
+            A flag to indicate if the building footprints should be converted into
+            centroids. If True, the building footprints will be converted into
+            centroids.
+        keep_unclassified : bool
+            A flag to indicate if the unclassified values should be kept. If True, the
+            unclassified values will be kept.
+        damage_translation_fn : Path, str
+            The path to the file that contains the translation of the damage types to
+            the damage values. If None, the default translation file will be used.
+
+        Returns
+        -------
+        None
+        """
         self.logger.info("Setting up exposure data from multiple sources...")
 
         # If asset location_fn != OSM and equals occupancy type, take the geometry from occupancy type
