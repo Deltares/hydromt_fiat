@@ -312,7 +312,7 @@ class ExposureVector(Exposure):
 
     def setup_buildings_from_multiple_sources(
         self,
-        asset_locations: Union[str, Path],
+        asset_locations: Union[str, Path, gpd.GeoDataFrame],
         occupancy_source: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
@@ -330,6 +330,8 @@ class ExposureVector(Exposure):
         damage_translation_fn: Union[Path, str] = None,
     ):
         self.logger.info("Setting up exposure data from multiple sources...")
+
+        # If asset location_fn != OSM and equals occupancy type, take the geometry from occupancy type
         self.setup_asset_locations(asset_locations)
         self.setup_occupancy_type(
             occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
@@ -353,7 +355,7 @@ class ExposureVector(Exposure):
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
 
-    def setup_asset_locations(self, asset_locations: str) -> None:
+    def setup_asset_locations(self, asset_locations: Union[str, gpd.GeoDataFrame]) -> None:
         """Set up the asset locations (points or polygons).
 
         Parameters
@@ -364,22 +366,25 @@ class ExposureVector(Exposure):
             a point or polygon dataset.
         """
         self.logger.info("Setting up asset locations...")
-        if str(asset_locations).upper() == "OSM":
-            polygon = self.region.to_crs(4326).geometry.values[0]
-            assets = get_assets_from_osm(polygon)
+        if isinstance(asset_locations, str):
+            if str(asset_locations).upper() == "OSM":
+                polygon = self.region.to_crs(4326).geometry.values[0]
+                assets = get_assets_from_osm(polygon)
 
-            if assets.empty:
-                self.logger.warning(
-                    "No assets found in the selected region from source "
-                    f"{asset_locations}."
+                if assets.empty:
+                    self.logger.warning(
+                        "No assets found in the selected region from source "
+                        f"{asset_locations}."
+                    )
+
+                # Rename the osmid column to Object ID
+                assets.rename(columns={"osmid": "Object ID"}, inplace=True)
+            else:
+                assets = self.data_catalog.get_geodataframe(
+                    asset_locations, geom=self.region
                 )
-
-            # Rename the osmid column to Object ID
-            assets.rename(columns={"osmid": "Object ID"}, inplace=True)
-        else:
-            assets = self.data_catalog.get_geodataframe(
-                asset_locations, geom=self.region
-            )
+        elif isinstance(asset_locations, gpd.GeoDataFrame):
+            assets = asset_locations
 
         # Set the CRS of the exposure data
         self.crs = get_crs_str_from_gdf(assets.crs)

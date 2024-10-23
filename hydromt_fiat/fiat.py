@@ -391,6 +391,12 @@ class FiatModel(GridModel):
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
+
+            if asset_locations == occupancy_type and asset_locations != "OSM":
+                asset_locations =self.get_geodataframe(
+                    asset_locations, geom=self.region
+                )
+                asset_locations = asset_locations['geometry']
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,
