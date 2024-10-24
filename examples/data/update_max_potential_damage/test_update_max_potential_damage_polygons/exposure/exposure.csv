@@ -1,4 +1,4 @@
-Object ID,Object Name,Primary Object Type,Secondary Object Type,Max Potential Damage: Structure,Max Potential Damage: Content,Ground Elevation,X Coordinate,Y Coordinate,Aggregation Label: Census Block,Ground Floor Height,Extraction Method,Damage Function: Structure,Damage Function: Content,geometry,groundfloorheight,maxpotential_content
+object_id,object_name,Primary Object Type,Secondary Object Type,max_damage_structure,max_damage_content,ground_elevtn,X Coordinate,Y Coordinate,Aggregation Label: Census Block,ground_flht,extract_method,fn_damage_structure,fn_damage_content,geometry,groundfloorheight,maxpotential_content
 574486973,574486973,RES,RES3A,480189.335,240094.667,7.298348065,-79.93682513,32.77688289,450190000000000.0,1,centroid,RES3A,RES3A,POINT (-79.93682513 32.776882893),,
 573783417,573783417,COM,RES4,10000.0,588807.1,8.381748562,-79.93000008,32.77054524,450190000000000.0,1,centroid,RES4,RES4,POINT (-79.93000008 32.770545239),7.0,10000.0
 573783433,573783433,COM,RES4,10000.0,238108.127,7.374183635,-79.92968382,32.7712713,450190000000000.0,1,centroid,RES4,RES4,POINT (-79.92968382 32.771271301),7.0,10000.0

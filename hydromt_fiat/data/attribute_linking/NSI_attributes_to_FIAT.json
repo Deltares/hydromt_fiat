@@ -1,12 +1,12 @@
 {
-    "Object ID": "fd_id",
-    "Object Name": "fd_id",
+    "object_id": "fd_id",
+    "object_name": "fd_id",
     "Primary Object Type": "st_damcat",
     "Secondary Object Type": "occtype",
-    "Max Potential Damage: Structure": "val_struct",
-    "Max Potential Damage: Content": "val_cont",
-    "Ground Floor Height": "found_ht",
-    "Ground Elevation": "ground_elv",
+    "max_damage_structure": "val_struct",
+    "max_damage_content": "val_cont",
+    "ground_flht": "found_ht",
+    "ground_elevtn": "ground_elv",
     "geometry": "geometry",
     "Aggregation Label: Census Blockgroup": "cbfips"
 }

@@ -156,11 +156,11 @@ class HydroMtViewModel:
         if isinstance(parameter, str):
             parameter = [parameter]
         for item in parameter:
-            if "Finished Floor Height" in item:
+            if "ground_flht" in item:
                 self.new_ground_floor_height(config_yaml)
             elif "Additional Attributes" in item:
                 self.new_additional_attributes(config_yaml)
-            elif "Ground Elevation" in item:
+            elif "ground_elevtn" in item:
                 self.new_ground_elevation(config_yaml)
             elif "Max Potential Damages" in item:
                 self.new_max_potential_damages(config_yaml)

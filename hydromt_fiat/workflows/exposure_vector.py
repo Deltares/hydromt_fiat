@@ -48,29 +48,29 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 
 
 class ExposureVector(Exposure):
-    _REQUIRED_COLUMNS = ["Object ID", "Extraction Method", "Ground Floor Height"]
-    _REQUIRED_VARIABLE_COLUMNS = ["Damage Function: {}", "Max Potential Damage: {}"]
+    _REQUIRED_COLUMNS = ["object_id", "extract_method", "ground_flht"]
+    _REQUIRED_VARIABLE_COLUMNS = ["fn_damage_{}", "max_damage_{}"]
     _OPTIONAL_COLUMNS = [
-        "Object Name",
+        "object_name",
         "Primary Object Type",
         "Secondary Object Type",
-        "Ground Elevation",
+        "ground_elevtn",
     ]
     _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
 
     _CSV_COLUMN_DATATYPES = {
-        "Object ID": int,
-        "Object Name": str,
+        "object_id": int,
+        "object_name": str,
         "Primary Object Type": str,
         "Secondary Object Type": str,
-        "Extraction Method": str,
+        "extract_method": str,
         "Aggregation Label": str,
-        "Damage Function: Structure": str,
-        "Damage Function: Content": str,
+        "fn_damage_structure": str,
+        "fn_damage_content": str,
         "Ground Flood Height": float,
-        "Ground Elevation": float,
-        "Max Potential Damage: Structure": float,
-        "Max Potential Damage: Content": float,
+        "ground_elevtn": float,
+        "max_damage_structure": float,
+        "max_damage_content": float,
     }
 
     def __init__(
@@ -161,7 +161,7 @@ class ExposureVector(Exposure):
             height or a path to the data that can be used to add the ground floor
             height to the assets.
         extraction_method : str
-            The extraction method to be used for all of the assets.
+            The extract_method to be used for all of the assets.
         """
         if str(source).upper() == "NSI":
             # The NSI data is selected, so get the assets from the NSI
@@ -211,26 +211,26 @@ class ExposureVector(Exposure):
                     f"found in {str(source)}, skipping attribute."
                 )
 
-        # Check if the 'Object ID' column is unique
-        if len(self.exposure_db.index) != len(set(self.exposure_db["Object ID"])):
-            self.exposure_db["Object ID"] = range(1, len(self.exposure_db.index) + 1)
+        # Check if the 'object_id' column is unique
+        if len(self.exposure_db.index) != len(set(self.exposure_db["object_id"])):
+            self.exposure_db["object_id"] = range(1, len(self.exposure_db.index) + 1)
 
-        # Set the ground floor height if not yet set
+        # Set the ground_flht if not yet set
         if ground_floor_height != source:
             self.setup_ground_floor_height(ground_floor_height)
 
-        # Set the extraction method
+        # Set the extract_method
         self.setup_extraction_method(extraction_method)
 
         # Set the exposure_geoms
         self.set_exposure_geoms(
-            gpd.GeoDataFrame(self.exposure_db[["Object ID", "geometry"]], crs=self.crs)
+            gpd.GeoDataFrame(self.exposure_db[["object_id", "geometry"]], crs=self.crs)
         )
 
         # Set the name to the geom_names
         self.set_geom_names("buildings")
 
-        # Set the ground floor height if not yet set
+        # Set the ground_flht if not yet set
         # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
         if ground_elevation_file is not None:
             self.setup_ground_elevation(
@@ -261,20 +261,20 @@ class ExposureVector(Exposure):
 
             # Rename the columns to FIAT names
             roads.rename(
-                columns={"highway": "Secondary Object Type", "name": "Object Name"},
+                columns={"highway": "Secondary Object Type", "name": "object_name"},
                 inplace=True,
             )
 
-            # Add an Object ID
-            roads["Object ID"] = range(1, len(roads.index) + 1)
+            # Add an object_id
+            roads["object_id"] = range(1, len(roads.index) + 1)
         else:
             roads = self.data_catalog.get_geodataframe(source, geom=region)
             # add the function to segmentize the roads into certain segments
 
         # Add the Primary Object Type and damage function, which is currently not set up to be flexible
         roads["Primary Object Type"] = "road"
-        roads["Extraction Method"] = "centroid"
-        roads["Ground Floor Height"] = 0
+        roads["extract_method"] = "centroid"
+        roads["ground_flht"] = 0
 
         self.logger.info(
             "The damage function 'road' is selected for all of the structure damage to the roads."
@@ -293,16 +293,16 @@ class ExposureVector(Exposure):
             road_damage = self.data_catalog.get_dataframe(road_damage)
             roads[
                 [
-                    "Max Potential Damage: Structure",
+                    "max_damage_structure",
                     "Segment Length",
-                    "Extraction Method",
+                    "extract_method",
                 ]
             ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, (int, float)) or road_damage is None:
             roads["Segment Length"] = road_length
-            roads["Max Potential Damage: Structure"] = road_damage
+            roads["max_damage_structure"] = road_damage
 
-        self.set_exposure_geoms(roads[["Object ID", "geometry"]])
+        self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")
 
         del roads["geometry"]
@@ -349,7 +349,7 @@ class ExposureVector(Exposure):
             height, a path to the data that can be used to add the ground floor
             height to the assets or None to use the data from 'asset_locations'.
         extraction_method : str
-            The extraction method to be used for all of the assets.
+            The extract_method to be used for all of the assets.
         occupancy_attr : str, None
             The attribute name to be used to set the occupancy type. If None, the
             attribute name will be set to 'occupancy_type'.
@@ -360,19 +360,19 @@ class ExposureVector(Exposure):
             The country to be used to set the damage function. If None, the default
             damage function will be used.
         attribute_name : str, List[str], None
-            The attribute name to be used to set the ground floor height. If None, the
+            The attribute name to be used to set the ground_flht. If None, the
             attribute name will be set to 'ground_floor_height'.
         gfh_method : str, List[str], None
-            The method to be used to add the ground floor height to the assets. If
+            The method to be used to add the ground_flht to the assets. If
             None, the default method will be used.
         max_dist : int, float, List[float], List[int], None
-            The maximum distance to be used when adding the ground floor height to
+            The maximum distance to be used when adding the ground_flht to
             the assets. If None, the default maximum distance will be used.
         ground_elevation_file : int, float, str, Path, None
-            The path to the ground elevation data. If None, the ground elevation will
+            The path to the ground_elevtn data. If None, the ground_elevtn will
             be set to 0.
         ground_elevation_unit : str
-            The unit of the ground elevation data. If None, the unit will be set to
+            The unit of the ground_elevtn data. If None, the unit will be set to
             'm'.
         bf_conversion : bool
             A flag to indicate if the building footprints should be converted into
@@ -437,8 +437,8 @@ class ExposureVector(Exposure):
                         f"{asset_locations}."
                     )
 
-                # Rename the osmid column to Object ID
-                assets.rename(columns={"osmid": "Object ID"}, inplace=True)
+                # Rename the osmid column to object_id
+                assets.rename(columns={"osmid": "object_id"}, inplace=True)
             else:
                 assets = self.data_catalog.get_geodataframe(
                     asset_locations, geom=self.region
@@ -447,17 +447,17 @@ class ExposureVector(Exposure):
         # Set the CRS of the exposure data
         self.crs = get_crs_str_from_gdf(assets.crs)
 
-        # Check if the 'Object ID' column exists and if so, is unique
-        if "Object ID" not in assets.columns:
-            assets["Object ID"] = range(1, len(assets.index) + 1)
+        # Check if the 'object_id' column exists and if so, is unique
+        if "object_id" not in assets.columns:
+            assets["object_id"] = range(1, len(assets.index) + 1)
         else:
-            if len(assets.index) != len(set(assets["Object ID"])):
-                assets["Object ID"] = range(1, len(assets.index) + 1)
+            if len(assets.index) != len(set(assets["object_id"])):
+                assets["object_id"] = range(1, len(assets.index) + 1)
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
         if len(assets.columns) > 2:
-            assets = assets[['Object ID', 'geometry']]
+            assets = assets[['object_id', 'geometry']]
 
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
@@ -634,12 +634,12 @@ class ExposureVector(Exposure):
                     gdf = gdf[gdf["Primary Object Type"].notna()]
                     gdf = gdf[gdf["Primary Object Type"] != ""]
 
-            # Remove Object ID duplicates
-            gdf.drop_duplicates(inplace=True, subset="Object ID")
+            # Remove object_id duplicates
+            gdf.drop_duplicates(inplace=True, subset="object_id")
             gdf.reset_index(drop=True, inplace=True)
 
             # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
+            self.exposure_geoms[0] = gdf[["object_id", "geometry"]]
 
             # Remove the geometry column from the exposure database
             del gdf["geometry"]
@@ -649,14 +649,14 @@ class ExposureVector(Exposure):
                 if "Primary Object Type" in gdf.columns:
                     gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
                     self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
+                        self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Primary Object Type", "pot"
                     )
                     # Replace Secondary Object Type with new classification to assign correct damage curves
                     self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
+                        self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Secondary Object Type", "pot"
@@ -664,7 +664,7 @@ class ExposureVector(Exposure):
                 elif "Secondary Object Type" in gdf.columns:
                     gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
                     self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="Object ID", how="left"
+                        self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
                         self.exposure_db, "Secondary Object Type", "pot"
@@ -756,7 +756,7 @@ class ExposureVector(Exposure):
         return occupancy_types
 
     def setup_extraction_method(self, extraction_method: str) -> None:
-        self.exposure_db["Extraction Method"] = extraction_method
+        self.exposure_db["extract_method"] = extraction_method
 
     def setup_aggregation_labels(self):
         NotImplemented
@@ -790,24 +790,24 @@ class ExposureVector(Exposure):
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
-        """Set the ground floor height of the exposure data. This function overwrites
-        the existing Ground Floor Height column if it already exists.
+        """Set the ground_flht of the exposure data. This function overwrites
+        the existing ground_flht column if it already exists.
 
         Parameters
         ----------
         ground_floor_height : Union[int, float, None, str, Path, List[str], List[Path]]
-            A number to set the Ground Floor Height of all assets to the same value, a
-            path to a file that contains the Ground Floor Height of each asset, or a
-            list of paths to files that contain the Ground Floor Height of each asset,
+            A number to set the ground_flht of all assets to the same value, a
+            path to a file that contains the ground_flht of each asset, or a
+            list of paths to files that contain the ground_flht of each asset,
             in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
         attribute_name : Union[str, List[str]], optional
-            The name of the attribute that contains the Ground Floor Height in the
+            The name of the attribute that contains the ground_flht in the
             file(s) that are submitted. If multiple `ground_floor_height` files are
             submitted, the attribute names are linked to the files in the same order as
             the files are submitted. By default None.
         gfh_method : Union[str, List[str]], optional
-            The method to use to assign the Ground Floor Height to the assets. If
+            The method to use to assign the ground_flht to the assets. If
             multiple `ground_floor_height` files are submitted, the methods are linked
             to the files in the same order as the files are submitted. The method can
             be either 'nearest' (nearest neighbor) or 'intersection'. By default
@@ -820,13 +820,13 @@ class ExposureVector(Exposure):
             if isinstance(ground_floor_height, int) or isinstance(
                 ground_floor_height, float
             ):
-                # If the Ground Floor Height is input as a number, assign all objects with
-                # the same Ground Floor Height.
-                self.exposure_db["Ground Floor Height"] = ground_floor_height
+                # If the ground_flht is input as a number, assign all objects with
+                # the same ground_flht.
+                self.exposure_db["ground_flht"] = ground_floor_height
             elif isinstance(ground_floor_height, str) or isinstance(
                 ground_floor_height, Path
             ):
-                # A single file is used to assign the ground floor height to the assets
+                # A single file is used to assign the ground_flht to the assets
                 gfh = self.data_catalog.get_geodataframe(ground_floor_height)
 
                 # If method is "intersection" remove columns from gfh exept for attribute name and geometry
@@ -863,18 +863,18 @@ class ExposureVector(Exposure):
 
                 # Update exposure_db
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attribute_name
+                    gdf, "ground_flht", attribute_name
                 )
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
 
             elif isinstance(ground_floor_height, list):
-                # Multiple files are used to assign the ground floor height to the assets
+                # Multiple files are used to assign the ground_flht to the assets
                 NotImplemented
         else:
-            # Set the Ground Floor Height to 0 if the user did not specify any
-            # Ground Floor Height.
-            self.exposure_db["Ground Floor Height"] = 0
+            # Set the ground_flht to 0 if the user did not specify any
+            # ground_flht.
+            self.exposure_db["ground_flht"] = 0
 
     def setup_max_potential_damage(
         self,
@@ -922,16 +922,16 @@ class ExposureVector(Exposure):
         ):
             # Set the column(s) to a single value
             for damage_type in damage_types:
-                self.exposure_db[f"Max Potential Damage: {damage_type}"] = (
+                self.exposure_db[f"max_damage_{damage_type}"] = (
                     max_potential_damage
                 )
 
         elif isinstance(max_potential_damage, list):
-            # Multiple files are used to assign the ground floor height to the assets
+            # Multiple files are used to assign the ground_flht to the assets
             for max_damages,attribute, method, max_dis,damage_type in zip(max_potential_damage,attribute_name,method_damages,max_dist,damage_types):
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
-                # assign the ground floor height to the assets
+                # assign the ground_flht to the assets
                 mpd = self.data_catalog.get_geodataframe(max_damages)
 
                 # If method is "intersection" remove columns from gfh exept for attribute name and geometry
@@ -975,7 +975,7 @@ class ExposureVector(Exposure):
                 # Update exposure_db with updated dataframe
                 self.exposure_db = self._set_values_from_other_column(
                     gdf,
-                    f"Max Potential Damage: {damage_type.capitalize()}",
+                    f"max_damage_{damage_type}",
                     attribute,
                 )
                 if "geometry" in self.exposure_db.columns:
@@ -1048,7 +1048,7 @@ class ExposureVector(Exposure):
                     )
                 self.exposure_db = self._set_values_from_other_column(
                     gdf,
-                    f"Max Potential Damage: {damage_types[0].capitalize()}",
+                    f"max_damage_{damage_types[0]}",
                     attribute_name,
                 )
     
@@ -1056,7 +1056,7 @@ class ExposureVector(Exposure):
         self, ground_elevation: Union[int, float, None, str, Path], unit: str
     ) -> None:
         if ground_elevation:
-            self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
+            self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
                 ground_elevation=ground_elevation,
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
@@ -1064,25 +1064,25 @@ class ExposureVector(Exposure):
             # Unit conversion
             if unit != self.unit:
                 if (unit == Units.meters.value) and (self.unit == Units.feet.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
+                    self.exposure_db["ground_elevtn"] = self.exposure_db[
+                        "ground_elevtn"
                     ].apply(lambda x: x * Conversion.meters_to_feet.value)
 
                 elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
+                    self.exposure_db["ground_elevtn"] = self.exposure_db[
+                        "ground_elevtn"
                     ].apply(lambda x: x * Conversion.feet_to_meters.value)
                 else:
                     self.logger.warning(
-                        "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
+                        "The elevation unit is not valid. Please provide the unit of your ground_elevtn in 'meters' or 'feet'"
                     )
 
         else:
             self.logger.warning(
-                "Ground elevation is not recognized by the setup_ground_elevation function"
+                "ground_elevtn is not recognized by the setup_ground_elevation function"
             )
-            self.logger.warning("Ground elevation will be set to 0")
-            self.exposure_db["Ground Elevation"] = 0
+            self.logger.warning("ground_elevtn will be set to 0")
+            self.exposure_db["ground_elevtn"] = 0
     
     def setup_impacted_population(
         self,
@@ -1157,19 +1157,19 @@ class ExposureVector(Exposure):
         self.logger.info(
             f"Updating the maximum potential damage of {len(updated_max_potential_damages.index)} properties."
         )
-        if "Object ID" not in updated_max_potential_damages.columns:
+        if "object_id" not in updated_max_potential_damages.columns:
             self.logger.warning(
-                "Trying to update the maximum potential damages but no 'Object ID' column is found in the updated_max_potential_damages variable."
+                "Trying to update the maximum potential damages but no 'object_id' column is found in the updated_max_potential_damages variable."
             )
             return
 
         damage_cols = [
             c
             for c in updated_max_potential_damages.columns
-            if "Max Potential Damage:" in c
+            if "max_damage_" in c
         ]
-        updated_max_potential_damages.set_index("Object ID", inplace=True)
-        self.exposure_db.set_index("Object ID", inplace=True, drop=False)
+        updated_max_potential_damages.set_index("object_id", inplace=True)
+        self.exposure_db.set_index("object_id", inplace=True, drop=False)
 
         self.exposure_db[damage_cols] = updated_max_potential_damages[damage_cols]
         self.exposure_db.reset_index(drop=True, inplace=True)
@@ -1182,18 +1182,18 @@ class ExposureVector(Exposure):
         path_ref: str = None,
         attr_ref: str = "STATIC_BFE",
     ):
-        """Raises the ground floor height of selected objects to a certain level.
+        """Raises the ground_flht of selected objects to a certain level.
 
         Parameters
         ----------
         raise_by : Union[int, float]
             The level to raise the selected objects by.
         objectids : List[int]
-            A list of Object IDs to select the exposure objects to raise the ground
+            A list of object_ids to select the exposure objects to raise the ground
             floor of.
         height_reference : str, optional
-            Either 'datum' when the Ground Floor Height should be raised relative to the
-            Datum or 'geom' when the Ground Floor Height should be raised relative to
+            Either 'datum' when the ground_flht should be raised relative to the
+            Datum or 'geom' when the ground_flht should be raised relative to
             the attribute `attr_ref` in the geometry file `path_ref`, by default ""
         path_ref : str, optional
             The full path to the geometry file used to calculate the Ground Floor
@@ -1201,46 +1201,46 @@ class ExposureVector(Exposure):
         attr_ref : str, optional
             The attribute in the geometry file `path_ref`, by default "STATIC_BFE"
         """
-        # ground floor height attr already exist, update relative to a reference file or datum
-        # Check if the Ground Floor Height column already exists
-        if "Ground Floor Height" not in self.exposure_db.columns:
+        # ground_flht attr already exist, update relative to a reference file or datum
+        # Check if the ground_flht column already exists
+        if "ground_flht" not in self.exposure_db.columns:
             self.logger.warning(
-                "Trying to update the Ground Floor Height but the attribute does not "
+                "Trying to update the ground_flht but the attribute does not "
                 "yet exist in the exposure data."
             )
             return
 
-        # Get the index of the objects to raise the ground floor height.
-        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(objectids)].index
+        # Get the index of the objects to raise the ground_flht.
+        idx = self.exposure_db.loc[self.exposure_db["object_id"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
         self.logger.info(
-            f"Raising the ground floor height of {len(idx)} properties to {raise_by}."
-        )  # TODO: add the unit of the ground floor height
+            f"Raising the ground_flht of {len(idx)} properties to {raise_by}."
+        )  # TODO: add the unit of the ground_flht
 
         if height_reference.lower() == "datum":
             # Elevate the object with 'raise_to'
             self.logger.info(
-                "Raising the ground floor height of the properties relative to Datum."
+                "Raising the ground_flht of the properties relative to Datum."
             )
             self.exposure_db.loc[
                 (
-                    self.exposure_db["Ground Floor Height"]
-                    + self.exposure_db["Ground Elevation"]
+                    self.exposure_db["ground_flht"]
+                    + self.exposure_db["ground_elevtn"]
                     < raise_by
                 )
                 & self.exposure_db.index.isin(idx),
-                "Ground Floor Height",
+                "ground_flht",
             ] += raise_by - (
-                self.exposure_db["Ground Floor Height"]
-                + self.exposure_db["Ground Elevation"]
+                self.exposure_db["ground_flht"]
+                + self.exposure_db["ground_elevtn"]
             )
 
         elif height_reference.lower() in ["geom", "table"]:
             # Elevate the objects relative to the surface water elevation map that the
             # user submitted.
             self.logger.info(
-                "Raising the ground floor height of the properties relative to "
+                "Raising the ground_flht of the properties relative to "
                 f"{Path(path_ref).name}, with column {attr_ref}."
             )
 
@@ -1257,10 +1257,10 @@ class ExposureVector(Exposure):
                 attr_ref,
                 raise_by,
                 self.crs,
-            ).set_index("Object ID")
-            self.exposure_db.set_index("Object ID", inplace=True)
-            self.exposure_db.loc[objectids, "Ground Floor Height"] = new_values.loc[
-                objectids, "Ground Floor Height"
+            ).set_index("object_id")
+            self.exposure_db.set_index("object_id", inplace=True)
+            self.exposure_db.loc[objectids, "ground_flht"] = new_values.loc[
+                objectids, "ground_flht"
             ]
             self.exposure_db.reset_index(drop=False, inplace=True)
             self.logger.info(
@@ -1270,7 +1270,7 @@ class ExposureVector(Exposure):
 
         else:
             self.logger.warning(
-                "The height reference of the Ground Floor Height is set to "
+                "The height reference of the ground_flht is set to "
                 f"'{height_reference}'. "
                 "This is not one of the allowed height references. Set the height "
                 "reference to 'datum', 'geom' or 'raster' (last option not yet "
@@ -1289,7 +1289,7 @@ class ExposureVector(Exposure):
         Parameters
         ----------
         objectids : List[int]
-            A list of Object IDs to select the exposure objects to truncate the damage
+            A list of object_ids to select the exposure objects to truncate the damage
             functions of.
         floodproof_to : Union[int, float]
             The height to floodproof to, i.e. to truncate the damage functions to.
@@ -1309,7 +1309,7 @@ class ExposureVector(Exposure):
         df_name_suffix = f'_fp_{str(floodproof_to).replace(".", "_")}'
 
         ids = self.get_object_ids(selection_type="list", objectids=objectids)
-        idx = self.exposure_db.loc[self.exposure_db["Object ID"].isin(ids)].index
+        idx = self.exposure_db.loc[self.exposure_db["object_id"].isin(ids)].index
 
         # Find all damage functions that should be modified and truncate with
         # floodproof_to.
@@ -1318,7 +1318,7 @@ class ExposureVector(Exposure):
                 d
                 for d in list(
                     self.exposure_db.iloc[idx, :][
-                        f"Damage Function: {df_type}"
+                        f"fn_damage_{df_type}"
                     ].unique()
                 )
                 if d == d
@@ -1356,10 +1356,10 @@ class ExposureVector(Exposure):
         for index, row in gdf_bf.iterrows():
             centroid = row["geometry"].centroid
             list_centroid.append(centroid)
-            list_object_id.append(row["Object ID"])
-        data = {"Object ID": list_object_id, "geometry": list_centroid}
-        gdf_centroid = gpd.GeoDataFrame(data, columns=["Object ID", "geometry"])
-        gdf = gdf_bf.merge(gdf_centroid, on="Object ID", suffixes=("_gdf1", "_gdf2"))
+            list_object_id.append(row["object_id"])
+        data = {"object_id": list_object_id, "geometry": list_centroid}
+        gdf_centroid = gpd.GeoDataFrame(data, columns=["object_id", "geometry"])
+        gdf = gdf_bf.merge(gdf_centroid, on="object_id", suffixes=("_gdf1", "_gdf2"))
         gdf.drop(columns="geometry_gdf1", inplace=True)
         gdf.rename(columns={"geometry_gdf2": "geometry"}, inplace=True)
         gdf.drop_duplicates(inplace=True)
@@ -1375,7 +1375,7 @@ class ExposureVector(Exposure):
         damages_cols = [
             c
             for c in self.get_max_potential_damage_columns()
-            if c.split("Max Potential Damage: ")[-1] in damage_types
+            if c.split("max_damage_")[-1] in damage_types
         ]
         new_damages = dict()
 
@@ -1384,7 +1384,7 @@ class ExposureVector(Exposure):
         # Potential Structural/Content/Other Damage.
         for c in damages_cols:
             total_damages = sum(self.exposure_db[c].fillna(0))
-            new_damages[c.split("Max Potential Damage: ")[-1]] = (
+            new_damages[c.split("max_damage_")[-1]] = (
                 total_damages * percent_growth
             )
 
@@ -1426,8 +1426,8 @@ class ExposureVector(Exposure):
         vulnerability : Vulnerability
             The Vulnerability object from the FiatModel.
         elevation_reference : str
-            Either 'datum' when the Ground Floor Height should be set relative to the
-            Datum or 'geom' when the Ground Floor Height should be set relative to the
+            Either 'datum' when the ground_flht should be set relative to the
+            Datum or 'geom' when the ground_flht should be set relative to the
             attribute `attr_ref` in the geometry file `path_ref`.
         path_ref : str, optional
             The full path to the geometry file used to calculate the Ground Floor
@@ -1459,14 +1459,14 @@ class ExposureVector(Exposure):
         df_dict = {
             damage_type: [
                 df
-                for df in self.exposure_db["Damage Function: " + damage_type].unique()
+                for df in self.exposure_db["fn_damage_" + damage_type].unique()
                 if df == df
             ]
             for damage_type in damage_types
         }
         df_value_counts_dict = {
             damage_type: self.exposure_db[
-                "Damage Function: " + damage_type
+                "fn_damage_" + damage_type
             ].value_counts()
             for damage_type in damage_types
         }
@@ -1488,7 +1488,7 @@ class ExposureVector(Exposure):
             self.logger.info(f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} "
                              "for FFE of new composite area(s).")
 
-        new_area["Object ID"] = None # add object id column to area file
+        new_area["object_id"] = None # add object_id column to area file
         
         new_objects = []
 
@@ -1497,38 +1497,38 @@ class ExposureVector(Exposure):
             new_area.geometry.area.sum()
         )  # TODO: reproject to a projected CRS if this is a geographic CRS?
 
-        # There should be an attribute 'Object ID' in the new development area shapefile.
+        # There should be an attribute 'object_id' in the new development area shapefile.
         # This ID is used to join the shapefile to the exposure data.
-        join_id_name = "Object ID"
+        join_id_name = "object_id"
         if join_id_name not in new_area.columns:
             self.logger.debug(
-                'The unique ID column in the New Development Area is not named "Object ID", '
-                'therefore, a new unique identifyer named "Object ID" is added.'
+                'The unique ID column in the New Development Area is not named "object_id", '
+                'therefore, a new unique identifyer named "object_id" is added.'
             )
             new_area[join_id_name] = range(len(new_area.index))
 
-        max_id = self.exposure_db["Object ID"].max()
+        max_id = self.exposure_db["object_id"].max()
         new_geoms_ids = []
         for i in range(len(new_area.index)):
             new_geom = new_area.geometry.iloc[i]
             new_id = max_id + 1
-            new_area["Object ID"].iloc[i] = new_id # assign Object ID to polygons
+            new_area["object_id"].iloc[i] = new_id # assign object_id to polygons
             perc_damages = new_geom.area / total_area
 
             # Idea: Reduction factor for the part of the area is not build-up?
 
             dict_new_objects_data = {
-                "Object ID": [new_id],
-                "Object Name": ["New development area: " + str(new_id)],
+                "object_id": [new_id],
+                "object_name": ["New development area: " + str(new_id)],
                 "Primary Object Type": ["New development area"],
                 "Secondary Object Type": ["New development area"],
-                "Extraction Method": ["area"],
-                "Ground Floor Height": [0],
-                "Ground Elevation": [0],
+                "extract_method": ["area"],
+                "ground_flht": [0],
+                "ground_elevtn": [0],
             }
             dict_new_objects_data.update(
                 {
-                    f"Damage Function: {damage_type}": [
+                    f"fn_damage_{damage_type}": [
                         new_damage_functions[damage_type]
                     ]
                     for damage_type in damage_types
@@ -1536,7 +1536,7 @@ class ExposureVector(Exposure):
             )
             dict_new_objects_data.update(
                 {
-                    f"Max Potential Damage: {damage_type}": [
+                    f"max_damage_{damage_type}": [
                         new_object_damages[damage_type] * perc_damages
                     ]
                     for damage_type in damage_types
@@ -1550,15 +1550,15 @@ class ExposureVector(Exposure):
         new_objects = pd.concat(new_objects)
         new_objects.reset_index(inplace=True, drop=True)
 
-        # Create a new GeoDataFrame with the new geometries and the Object ID
+        # Create a new GeoDataFrame with the new geometries and the object_id
         _new_exposure_geoms = gpd.GeoDataFrame(
-            data=new_geoms_ids, columns=["geometry", "Object ID"], crs=self.crs
+            data=new_geoms_ids, columns=["geometry", "object_id"], crs=self.crs
         )
 
-        # If the user supplied ground elevation data, assign that to the new
+        # If the user supplied ground_elevtn data, assign that to the new
         # composite areas
         if ground_elevation is not None:
-            new_objects["Ground Elevation"] = ground_elevation_from_dem(
+            new_objects["ground_elevtn"] = ground_elevation_from_dem(
                 ground_elevation=ground_elevation,
                 exposure_db=new_objects,
                 exposure_geoms=_new_exposure_geoms,
@@ -1566,8 +1566,8 @@ class ExposureVector(Exposure):
         
         if elevation_reference == "datum":
             # Ensure that the new objects have a first floor height that elevates them above the requirement
-            new_objects["Ground Floor Height"] = new_objects.apply(
-                lambda row: max(row["Ground Floor Height"], new_area.loc[row.name, "height"] - row["Ground Elevation"]),
+            new_objects["ground_flht"] = new_objects.apply(
+                lambda row: max(row["ground_flht"], new_area.loc[row.name, "height"] - row["ground_elevtn"]),
                 axis=1
             )
             self.logger.info(
@@ -1586,7 +1586,7 @@ class ExposureVector(Exposure):
                 elevation_reference,
                 path_ref,
                 attr_ref,
-                new_area.set_index("Object ID")["height"],
+                new_area.set_index("object_id")["height"],
                 self.crs,
             )
 
@@ -1598,7 +1598,7 @@ class ExposureVector(Exposure):
         # new composite areas
         if aggregation_area_fn is not None:
             new_objects, aggregated_objects_geoms, _ = join_exposure_aggregation_areas(
-                _new_exposure_geoms.merge(new_objects, on="Object ID"),
+                _new_exposure_geoms.merge(new_objects, on="object_id"),
                 aggregation_area_fn=aggregation_area_fn,
                 attribute_names=attribute_names,
                 label_names=label_names,
@@ -1704,7 +1704,7 @@ class ExposureVector(Exposure):
                         f"{str(list(diff_secondary_linking_types))}"
                     )
 
-            self.exposure_db[f"Damage Function: {damage_type.capitalize()}"] = (
+            self.exposure_db[f"fn_damage_{damage_type.capitalize()}"] = (
                 self.exposure_db[linking_column].map(linking_dict)
             )
 
@@ -1729,7 +1729,7 @@ class ExposureVector(Exposure):
         List[str]
             The maximum potential damage columns in <exposure_db>
         """
-        return [c for c in self.exposure_db.columns if "Max Potential Damage:" in c]
+        return [c for c in self.exposure_db.columns if "max_damage_" in c]
 
     def set_max_potential_damage_columns(self, damage_types, damage_values,gdf, max_potential_damage) -> None:
         """Calculate and set the maximum potential damage columns based on the provided damage types and values.
@@ -1752,7 +1752,7 @@ class ExposureVector(Exposure):
                     # Calculate the maximum potential damage for each object and per damage type
                     try:
                         self.exposure_db[
-                            f"Max Potential Damage: {damage_type.capitalize()}"
+                            f"max_damage_{damage_type}"
                         ] = [
                             damage_values[building_type][damage_type.lower()]
                             * square_meters
@@ -1773,7 +1773,7 @@ class ExposureVector(Exposure):
         List[str]
             The damage function columns in <exposure_db>
         """
-        return [c for c in self.exposure_db.columns if "Damage Function:" in c]
+        return [c for c in self.exposure_db.columns if "fn_damage_" in c]
 
     def select_objects(
         self,
@@ -1862,12 +1862,12 @@ class ExposureVector(Exposure):
                 non_building_names=non_building_names,
             )
             if selection_type == "all":
-                ids = buildings["Object ID"]
+                ids = buildings["object_id"]
             elif selection_type == "aggregation_area":
                 ids = buildings.loc[
                     buildings[f"Aggregation Label: {aggregation}"]
                     == aggregation_area_name,
-                    "Object ID",
+                    "object_id",
                 ]
         elif selection_type == "polygon":
             assert polygon_file is not None
@@ -1879,7 +1879,7 @@ class ExposureVector(Exposure):
             polygon = gpd.read_file(polygon_file, engine="pyogrio").to_crs(
                 buildings.crs
             )
-            ids = gpd.sjoin(buildings, polygon)["Object ID"]
+            ids = gpd.sjoin(buildings, polygon)["object_id"]
         elif selection_type == "list":
             ids = objectids
 
@@ -1892,7 +1892,7 @@ class ExposureVector(Exposure):
         ):
             exposure_geoms = gpd.GeoDataFrame(
                 {
-                    "Object ID": self.exposure_db["Object ID"],
+                    "object_id": self.exposure_db["object_id"],
                     "geometry": gpd.points_from_xy(
                         self.exposure_db["X Coordinate"],
                         self.exposure_db["Y Coordinate"],
@@ -1911,14 +1911,14 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
+            assert set(self.exposure_geoms[0]["object_id"]) == set(df["object_id"])
             df["geometry"] = self.exposure_geoms[0]["geometry"]
             gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
         elif len(self.exposure_geoms) > 1:
             gdf_list = []
             for i in range(len(self.exposure_geoms)):
                 gdf_list.append(
-                    self.exposure_geoms[i].merge(df, on="Object ID", how="left")
+                    self.exposure_geoms[i].merge(df, on="object_id", how="left")
                 )
             gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
         return gdf
@@ -1993,10 +1993,10 @@ class ExposureVector(Exposure):
 
             # Sort and add the elevation to the shp values, append to the exposure dataframe
             # To be able to append the values from the GeoDataFrame to the DataFrame, it
-            # must be sorted on the Object ID.
+            # must be sorted on the object_id.
             identifier = (
-                "Object ID"
-                if "Object ID" in modified_objects_gdf.columns
+                "object_id"
+                if "object_id" in modified_objects_gdf.columns
                 else "object_id"
             )
 
@@ -2012,25 +2012,25 @@ class ExposureVector(Exposure):
         elif height_reference == "table":
             # Add table
             reference_table = pd.read_csv(path_ref)  # Vector
-            # Join the data based on "Object ID"
+            # Join the data based on "object_id"
             modified_objects_gdf = pd.merge(
                 exposure_geoms,
-                reference_table[["Object ID", attr_ref]],
-                on="Object ID",
+                reference_table[["object_id", attr_ref]],
+                on="object_id",
                 how="left",
             )
             modified_objects_gdf = modified_objects_gdf.sort_values(
-                by=["Object ID"]
-            ).set_index("Object ID", drop=False)
+                by=["object_id"]
+            ).set_index("object_id", drop=False)
 
-        exposure_to_modify = exposure_to_modify.sort_values(by=["Object ID"]).set_index(
-            "Object ID", drop=False
+        exposure_to_modify = exposure_to_modify.sort_values(by=["object_id"]).set_index(
+            "object_id", drop=False
         )
 
         # Find indices of properties that are below the required level
         properties_below_level = (
-            exposure_to_modify.loc[:, "Ground Floor Height"]
-            + exposure_to_modify.loc[:, "Ground Elevation"]
+            exposure_to_modify.loc[:, "ground_flht"]
+            + exposure_to_modify.loc[:, "ground_elevtn"]
             < modified_objects_gdf.loc[:, attr_ref] + raise_by
         )
         properties_no_reference_level = modified_objects_gdf[attr_ref].isna()
@@ -2042,17 +2042,17 @@ class ExposureVector(Exposure):
         )
 
         original_df = exposure_to_modify.copy()  # to be used for metrics
-        exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
+        exposure_to_modify.loc[to_change, "ground_flht"] = list(
             modified_objects_gdf.loc[to_change, attr_ref]
             + raise_by
-            - exposure_to_modify.loc[to_change, "Ground Elevation"]
+            - exposure_to_modify.loc[to_change, "ground_elevtn"]
         )
 
         # Get some metrics on changes
         no_builds_to_change = sum(to_change)
         avg_raise = np.average(
-            exposure_to_modify.loc[to_change, "Ground Floor Height"]
-            - original_df.loc[to_change, "Ground Floor Height"]
+            exposure_to_modify.loc[to_change, "ground_flht"]
+            - original_df.loc[to_change, "ground_flht"]
         )
         self.logger.info(
             f"Raised {no_builds_to_change} properties with an average of {avg_raise}."

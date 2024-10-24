@@ -212,11 +212,11 @@ class FiatModel(GridModel):
             The unit of the vulnerability functions.
         functions_mean : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the mean hazard
-            value when using the area extraction method, by default "default" (this
+            value when using the area extract_method, by default "default" (this
             means that all vulnerability functions are using mean).
         functions_max : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the maximum
-            hazard value when using the area extraction method, by default None (this
+            hazard value when using the area extract_method, by default None (this
             means that all vulnerability functions are using mean).
         """
 
@@ -253,7 +253,7 @@ class FiatModel(GridModel):
             continent=continent,
         )
 
-        # Set the area extraction method for the vulnerability curves
+        # Set the area extract_method for the vulnerability curves
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
@@ -521,10 +521,10 @@ class FiatModel(GridModel):
             i for i in range(1, len(self.building_footprint) + 1)
         ]
         BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(
-            self.building_footprint[["Object ID", "BF_FID"]], on="Object ID"
+            self.building_footprint[["object_id", "BF_FID"]], on="object_id"
         )
         del BF_exposure_gdf["geometry"]
-        del self.building_footprint["Object ID"]
+        del self.building_footprint["object_id"]
         self.exposure.exposure_db = BF_exposure_gdf
 
     def update_ground_floor_height(
@@ -840,7 +840,7 @@ class FiatModel(GridModel):
 
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
-            exposure_data.sort_values("Object ID")
+            exposure_data.sort_values("object_id")
 
             if svi.svi_data_shp.crs != exposure_data.crs:
                 svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
@@ -868,8 +868,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(
-                svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]],
-                on="Object ID",
+                svi_exp_joined[["object_id", "SVI_key_domain", "SVI"]],
+                on="object_id",
                 how="left",
             )
             # Define spatial join info
@@ -1378,7 +1378,7 @@ class FiatModel(GridModel):
                     ).index_right
                     geom = geom.loc[idx]
                 geom.to_file(_fn)
-                
+
             # Write exposure_db incl geometries
             fn_exposure = "exposure/exposure_buildings.gpkg"
             gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
