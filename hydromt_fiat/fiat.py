@@ -862,7 +862,7 @@ class FiatModel(GridModel):
                 cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
             # Filter out the roads because they do not have an SVI score
-            filter_roads = exposure_data["Primary Object Type"] != "roads"
+            filter_roads = exposure_data["primary_object_type"] != "roads"
             svi_exp_joined = gpd.sjoin(
                 exposure_data.loc[filter_roads],
                 svi.svi_data_shp[cols_to_save],
@@ -1119,8 +1119,8 @@ class FiatModel(GridModel):
          damage_types : Union[List[str], str]
              "structure"or/and "content"
          remove_object_type: bool
-             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).
+             True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+             E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).
         """
 
         self.exposure.setup_occupancy_type(source, attribute, type_add)
@@ -1128,13 +1128,13 @@ class FiatModel(GridModel):
         # Drop Object Type that has not been updated.
 
         if remove_object_type:
-            if type_add == "Primary Object Type":
+            if type_add == "primary_object_type":
                 self.exposure.exposure_db.drop(
-                    "Secondary Object Type", axis=1, inplace=True
+                    "secondary_object_type", axis=1, inplace=True
                 )
             else:
                 self.exposure.exposure_db.drop(
-                    "Primary Object Type", axis=1, inplace=True
+                    "primary_object_type", axis=1, inplace=True
                 )
         linking_table_new = self.exposure.update_user_linking_table(
             old_values, new_values, self.vf_ids_and_linking_df
@@ -1383,12 +1383,6 @@ class FiatModel(GridModel):
                     ).index_right
                     geom = geom.loc[idx]
                 geom.to_file(_fn)
-
-            # Write exposure_db incl geometries
-            fn_exposure = "exposure/exposure_buildings.gpkg"
-            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-            gdf.to_file(os.path.join(self.root,fn_exposure))
-
         if self.geoms:
             GridModel.write_geoms(self)
 

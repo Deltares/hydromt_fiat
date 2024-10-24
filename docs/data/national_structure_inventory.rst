@@ -18,8 +18,8 @@ corresponding NSI fields (right-hand side)::
 
     "object_id": "fd_id",
     "object_name": "fd_id",
-    "Primary Object Type": "st_damcat",
-    "Secondary Object Type": "occtype",
+    "primary_object_type": "st_damcat",
+    "secondary_object_type": "occtype",
     "max_damage_structure": "val_struct",
     "max_damage_content": "val_cont",
     "ground_elevtn": "ground_el",

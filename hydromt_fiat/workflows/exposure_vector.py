@@ -52,8 +52,8 @@ class ExposureVector(Exposure):
     _REQUIRED_VARIABLE_COLUMNS = ["fn_damage_{}", "max_damage_{}"]
     _OPTIONAL_COLUMNS = [
         "object_name",
-        "Primary Object Type",
-        "Secondary Object Type",
+        "primary_object_type",
+        "secondary_object_type",
         "ground_elevtn",
     ]
     _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
@@ -61,8 +61,8 @@ class ExposureVector(Exposure):
     _CSV_COLUMN_DATATYPES = {
         "object_id": int,
         "object_name": str,
-        "Primary Object Type": str,
-        "Secondary Object Type": str,
+        "primary_object_type": str,
+        "secondary_object_type": str,
         "extract_method": str,
         "Aggregation Label": str,
         "fn_damage_structure": str,
@@ -261,7 +261,7 @@ class ExposureVector(Exposure):
 
             # Rename the columns to FIAT names
             roads.rename(
-                columns={"highway": "Secondary Object Type", "name": "object_name"},
+                columns={"highway": "secondary_object_type", "name": "object_name"},
                 inplace=True,
             )
 
@@ -271,8 +271,8 @@ class ExposureVector(Exposure):
             roads = self.data_catalog.get_geodataframe(source, geom=region)
             # add the function to segmentize the roads into certain segments
 
-        # Add the Primary Object Type and damage function, which is currently not set up to be flexible
-        roads["Primary Object Type"] = "road"
+        # Add the primary_object_type and damage function, which is currently not set up to be flexible
+        roads["primary_object_type"] = "road"
         roads["extract_method"] = "centroid"
         roads["ground_flht"] = 0
 
@@ -490,10 +490,10 @@ class ExposureVector(Exposure):
         self,
         occupancy_source: str,
         occupancy_attr: str,
-        type_add: str = "Primary Object Type",
+        type_add: str = "primary_object_type",
         keep_unclassified: bool = True,
     ) -> None:
-        """Set up the Primary and Secondary Object Type.
+        """Set up the Primary and secondary_object_type.
         Parameters
         ----------
         occupancy_source : str
@@ -501,9 +501,9 @@ class ExposureVector(Exposure):
         occupancy_attr : str
             Other classification to be updated by Primary/Secondary Classification
         type_add : str
-            "Primary Object Type" or "Secondary Object Type"
+            "primary_object_type" or "secondary_object_type"
         keep_unclassified : Bool
-            Whether to re-classify Primary/Secondary Object Types as "residential" or remove rows if no Object Type
+            Whether to re-classify Primary/secondary_object_types as "residential" or remove rows if no Object Type
         """
         self.logger.info(f"Setting up occupancy type from {str(occupancy_source)}...")
         if str(occupancy_source).upper() == "OSM":
@@ -512,7 +512,7 @@ class ExposureVector(Exposure):
             occupancy_building = occupancy_type[1]
             occupancy_amenity = occupancy_type[2]
 
-            occupancy_types = ["Primary Object Type", "Secondary Object Type"]
+            occupancy_types = ["primary_object_type", "secondary_object_type"]
         else:
             occupancy_building = self.data_catalog.get_geodataframe(
                 occupancy_source, geom=self.region
@@ -543,30 +543,30 @@ class ExposureVector(Exposure):
             )
 
             if occupancy_source == 'OSM':
-            # Replace values with landuse if applicable for Primary and Secondary Object Type
+            # Replace values with landuse if applicable for Primary and secondary_object_type
                 occupancy_landuse.rename(
                     columns={
-                        "Primary Object Type": "pot",
-                        "Secondary Object Type": "pot_2",
+                        "primary_object_type": "pot",
+                        "secondary_object_type": "pot_2",
                     },
                     inplace=True,
                 )
                 gdf_landuse = gpd.sjoin(
                     gdf, occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
                 )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "primary_object_type"] = (
                     gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
                 )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = (
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "secondary_object_type"] = (
                     gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
                 )
                 gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
-                # Fill nan values with values amenity for Primary and Secondary Object Type
+                # Fill nan values with values amenity for Primary and secondary_object_type
                 occupancy_amenity.rename(
                     columns={
-                        "Primary Object Type": "pot",
-                        "Secondary Object Type": "pot_2",
+                        "primary_object_type": "pot",
+                        "secondary_object_type": "pot_2",
                     },
                     inplace=True,
                 )
@@ -574,42 +574,42 @@ class ExposureVector(Exposure):
                     occupancy_amenity[["geometry", "pot", "pot_2"]], how="left"
                 )
                 gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Secondary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot_2"]
+                    gdf_amenity["primary_object_type"].isna(), "secondary_object_type"
+                ] = gdf_amenity.loc[gdf_amenity["primary_object_type"].isna(), "pot_2"]
                 gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
+                    gdf_amenity["primary_object_type"].isna(), "primary_object_type"
+                ] = gdf_amenity.loc[gdf_amenity["primary_object_type"].isna(), "pot"]
                 gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
                 # Rename some major catgegories
                 gdf_amenity.loc[
-                    gdf_amenity["Secondary Object Type"] == "yes", "Secondary Object Type"
+                    gdf_amenity["secondary_object_type"] == "yes", "secondary_object_type"
                 ] = "residential"
                 gdf_amenity.loc[
-                    gdf_amenity["Secondary Object Type"] == "house", "Secondary Object Type"
+                    gdf_amenity["secondary_object_type"] == "house", "secondary_object_type"
                 ] = "residential"
                 gdf_amenity.loc[
-                    gdf_amenity["Secondary Object Type"] == "apartments", "Secondary Object Type"
+                    gdf_amenity["secondary_object_type"] == "apartments", "secondary_object_type"
                 ] = "residential"
                 gdf = gdf_amenity
 
-            # Remove the objects that do not have a Primary Object Type, that were not
+            # Remove the objects that do not have a primary_object_type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
-            if "Primary Object Type" in gdf.columns:
+            if "primary_object_type" in gdf.columns:
                 nr_without_primary_object = len(
-                    gdf.loc[gdf["Primary Object Type"].isna()].index
-                ) + len(gdf.loc[gdf["Primary Object Type"] != ""].index)
+                    gdf.loc[gdf["primary_object_type"].isna()].index
+                ) + len(gdf.loc[gdf["primary_object_type"] != ""].index)
                 if keep_unclassified:
                     gdf.loc[
-                        gdf["Primary Object Type"].isna(), "Secondary Object Type"
+                        gdf["primary_object_type"].isna(), "secondary_object_type"
                     ] = "residential"
                     gdf.loc[
-                        gdf["Primary Object Type"].isna(), "Primary Object Type"
+                        gdf["primary_object_type"].isna(), "primary_object_type"
                     ] = "residential"
                     gdf.loc[
-                        gdf["Primary Object Type"] == "", "Secondary Object Type"
+                        gdf["primary_object_type"] == "", "secondary_object_type"
                     ] = "residential"
-                    gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = (
+                    gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = (
                         "residential"
                     )
                     self.logger.warning(
@@ -621,18 +621,18 @@ class ExposureVector(Exposure):
                         f"{nr_without_primary_object} objects do not have a Primary Object "
                         "Type and will be removed from the exposure data."
                     )
-                gdf = gdf.loc[gdf["Primary Object Type"] != ""]
+                gdf = gdf.loc[gdf["primary_object_type"] != ""]
 
                 nr_without_landuse = len(
-                    gdf.loc[gdf["Primary Object Type"].isna()].index
+                    gdf.loc[gdf["primary_object_type"].isna()].index
                 )
                 if nr_without_landuse > 0:
                     self.logger.warning(
                         f"{nr_without_landuse} objects were not overlapping with the "
                         "land use data and will be removed from the exposure data."
                     )
-                    gdf = gdf[gdf["Primary Object Type"].notna()]
-                    gdf = gdf[gdf["Primary Object Type"] != ""]
+                    gdf = gdf[gdf["primary_object_type"].notna()]
+                    gdf = gdf[gdf["primary_object_type"] != ""]
 
             # Remove object_id duplicates
             gdf.drop_duplicates(inplace=True, subset="object_id")
@@ -646,28 +646,28 @@ class ExposureVector(Exposure):
 
             # Update the exposure database
             if type_add in self.exposure_db:
-                if "Primary Object Type" in gdf.columns:
-                    gdf.rename(columns={"Primary Object Type": "pot"}, inplace=True)
+                if "primary_object_type" in gdf.columns:
+                    gdf.rename(columns={"primary_object_type": "pot"}, inplace=True)
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Primary Object Type", "pot"
+                        self.exposure_db, "primary_object_type", "pot"
                     )
-                    # Replace Secondary Object Type with new classification to assign correct damage curves
+                    # Replace secondary_object_type with new classification to assign correct damage curves
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Secondary Object Type", "pot"
+                        self.exposure_db, "secondary_object_type", "pot"
                     )
-                elif "Secondary Object Type" in gdf.columns:
-                    gdf.rename(columns={"Secondary Object Type": "pot"}, inplace=True)
+                elif "secondary_object_type" in gdf.columns:
+                    gdf.rename(columns={"secondary_object_type": "pot"}, inplace=True)
                     self.exposure_db = pd.merge(
                         self.exposure_db, gdf, on="object_id", how="left"
                     )
                     self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "Secondary Object Type", "pot"
+                        self.exposure_db, "secondary_object_type", "pot"
                     )
 
             else:
@@ -741,15 +741,15 @@ class ExposureVector(Exposure):
             amenity_to_jrc_mapping,
         ]
 
-        # Create Primary Object Type column for OSM data
+        # Create primary_object_type column for OSM data
         for occupancy, occupancy_attribute, jrc_mapping in zip(
             occupancy_types, occupancy_attributes, jrc_mapping_type
         ):
-            occupancy["Primary Object Type"] = occupancy[occupancy_attribute].map(
+            occupancy["primary_object_type"] = occupancy[occupancy_attribute].map(
                 jrc_mapping
             )
             occupancy.rename(
-                columns={occupancy_attribute: "Secondary Object Type"}, inplace=True
+                columns={occupancy_attribute: "secondary_object_type"}, inplace=True
             )
         # In next step where spatial joint of exposure and occupancy map do a spatial joint with buildings, where are Nan values.
 
@@ -841,8 +841,8 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("road").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                if gdf["primary_object_type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
@@ -947,8 +947,8 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("road").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                if gdf["primary_object_type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         mpd,
@@ -1001,10 +1001,10 @@ class ExposureVector(Exposure):
 
             # Calculate the area of each object
             gdf = self.get_full_gdf(self.exposure_db)[
-                ["Primary Object Type", "geometry"]
+                ["primary_object_type", "geometry"]
             ]
             gdf = get_area(gdf)
-            gdf = gdf.dropna(subset="Primary Object Type")
+            gdf = gdf.dropna(subset="primary_object_type")
 
             # Set the damage values to the exposure data
             self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
@@ -1019,10 +1019,10 @@ class ExposureVector(Exposure):
 
                 # Calculate the area of each object
                 gdf = self.get_full_gdf(self.exposure_db)[
-                    ["Primary Object Type", "geometry"]
+                    ["primary_object_type", "geometry"]
                 ]
                 gdf = get_area(gdf)
-                gdf = gdf.dropna(subset="Primary Object Type")
+                gdf = gdf.dropna(subset="primary_object_type")
 
                 # Set the damage values to the exposure data
                 self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
@@ -1035,8 +1035,8 @@ class ExposureVector(Exposure):
 
 
                 # If roads in model filter out for spatial joint
-                if gdf["Primary Object Type"].str.contains("road").any():
-                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+                if gdf["primary_object_type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                     # Spatial joint exposure and updated damages
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), mpd, attribute_name, method_damages, max_dist, self.logger
@@ -1125,8 +1125,8 @@ class ExposureVector(Exposure):
 
 
             # If roads in model filter out for spatial joint
-            if gdf["Primary Object Type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
+            if gdf["primary_object_type"].str.contains("road").any():
+                gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                 # Spatial joint exposure and updated damages
                 gdf = join_spatial_data(
                     gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
@@ -1520,8 +1520,8 @@ class ExposureVector(Exposure):
             dict_new_objects_data = {
                 "object_id": [new_id],
                 "object_name": ["New development area: " + str(new_id)],
-                "Primary Object Type": ["New development area"],
-                "Secondary Object Type": ["New development area"],
+                "primary_object_type": ["New development area"],
+                "secondary_object_type": ["New development area"],
                 "extract_method": ["area"],
                 "ground_flht": [0],
                 "ground_elevtn": [0],
@@ -1650,39 +1650,39 @@ class ExposureVector(Exposure):
             unique_types_primary = set()
 
             # Set the variables below to large numbers to ensure when there is no
-            # Primary Object Type or Secondary Object Type column in the exposure data
+            # primary_object_type or secondary_object_type column in the exposure data
             # that the available column is used to link the exposure data to the
             # vulnerability data.
             len_diff_primary_linking_types = 100000
             len_diff_secondary_linking_types = 100000
-            if "Primary Object Type" in self.exposure_db.columns:
+            if "primary_object_type" in self.exposure_db.columns:
                 unique_types_primary = set(self.get_primary_object_type())
                 diff_primary_linking_types = unique_types_primary - unique_linking_types
                 len_diff_primary_linking_types = len(diff_primary_linking_types)
 
             unique_types_secondary = set()
-            if "Secondary Object Type" in self.exposure_db.columns:
+            if "secondary_object_type" in self.exposure_db.columns:
                 unique_types_secondary = set(self.get_secondary_object_type())
                 diff_secondary_linking_types = (
                     unique_types_secondary - unique_linking_types
                 )
                 len_diff_secondary_linking_types = len(diff_secondary_linking_types)
 
-            # Check if the linking column is the Primary Object Type or the Secondary
+            # Check if the linking column is the primary_object_type or the Secondary
             # Object Type
             if (len(unique_types_primary) > 0) and (
                 unique_types_primary.issubset(unique_linking_types)
             ):
-                linking_column = "Primary Object Type"
+                linking_column = "primary_object_type"
             elif (len(unique_types_secondary) > 0) and (
                 unique_types_secondary.issubset(unique_linking_types)
             ):
-                linking_column = "Secondary Object Type"
+                linking_column = "secondary_object_type"
             else:
                 if (
                     len_diff_primary_linking_types < len_diff_secondary_linking_types
                 ) and (len(unique_types_primary) > 0):
-                    linking_column = "Primary Object Type"
+                    linking_column = "primary_object_type"
                     self.logger.warning(
                         "There are "
                         f"{str(len_diff_primary_linking_types)} primary"
@@ -1694,11 +1694,11 @@ class ExposureVector(Exposure):
                 elif (
                     len_diff_secondary_linking_types < len_diff_primary_linking_types
                 ) and (len(unique_types_secondary) > 0):
-                    linking_column = "Secondary Object Type"
+                    linking_column = "secondary_object_type"
                     self.logger.warning(
                         "There are "
                         f"{str(len(diff_secondary_linking_types))} "
-                        "secondary object types that are not in the "
+                        "secondary_object_types that are not in the "
                         "linking table and will not have a damage "
                         f"function assigned for {damage_type} damages: "
                         f"{str(list(diff_secondary_linking_types))}"
@@ -1714,12 +1714,12 @@ class ExposureVector(Exposure):
             )
 
     def get_primary_object_type(self):
-        if "Primary Object Type" in self.exposure_db.columns:
-            return list(self.exposure_db["Primary Object Type"].unique())
+        if "primary_object_type" in self.exposure_db.columns:
+            return list(self.exposure_db["primary_object_type"].unique())
 
     def get_secondary_object_type(self):
-        if "Secondary Object Type" in self.exposure_db.columns:
-            return list(self.exposure_db["Secondary Object Type"].unique())
+        if "secondary_object_type" in self.exposure_db.columns:
+            return list(self.exposure_db["secondary_object_type"].unique())
 
     def get_max_potential_damage_columns(self) -> List[str]:
         """Returns the maximum potential damage columns in <exposure_db>
@@ -1741,7 +1741,7 @@ class ExposureVector(Exposure):
         damage_values : dict
             Dictionary containing the damage values for each building type and damage type.
         gdf : GeoDataFrame
-            GeoDataFrame containing the primary object type and area information.
+            GeoDataFrame containing the primary_object_type and area information.
         max_potential_damage : str
             The maximum potential damage value.
         Returns
@@ -1757,7 +1757,7 @@ class ExposureVector(Exposure):
                             damage_values[building_type][damage_type.lower()]
                             * square_meters
                             for building_type, square_meters in zip(
-                                gdf["Primary Object Type"], gdf["area"]
+                                gdf["primary_object_type"], gdf["area"]
                             )
                         ]
                     except KeyError as e:
@@ -1787,8 +1787,8 @@ class ExposureVector(Exposure):
         Parameters
         ----------
         primary_object_type : Optional[Union[str, List[str]]], optional
-            Only select assets from this/these primary object type(s).
-            Can be any primary object type in a list or 'all', by default None
+            Only select assets from this/these primary_object_type(s).
+            Can be any primary_object_type in a list or 'all', by default None
             (also selecting all)
         non_building_names : Optional[list[str]], optional
             The names of the , by default None
@@ -1807,13 +1807,13 @@ class ExposureVector(Exposure):
 
         if non_building_names:
             objects = objects.loc[
-                ~objects["Primary Object Type"].isin(non_building_names), :
+                ~objects["primary_object_type"].isin(non_building_names), :
             ]
 
         if primary_object_type:
             if str(primary_object_type).lower() != "all":
                 objects = objects.loc[
-                    objects["Primary Object Type"].isin([primary_object_type]), :
+                    objects["primary_object_type"].isin([primary_object_type]), :
                 ]
 
         return objects
