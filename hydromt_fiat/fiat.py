@@ -1378,6 +1378,11 @@ class FiatModel(GridModel):
                     ).index_right
                     geom = geom.loc[idx]
                 geom.to_file(_fn)
+                
+            # Write exposure_db incl geometries
+            fn_exposure = "exposure/exposure_buildings.gpkg"
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+            gdf.to_file(os.path.join(self.root,fn_exposure))
 
         if self.geoms:
             GridModel.write_geoms(self)
