@@ -311,8 +311,8 @@ def ground_elevation_from_dem(
     #        zonal_means.loc[idx] = zonal_means.mean().mean()
 
     # # Add ground_elevtn column and get rid of nans in the appropriate way
-    exposure_db["Ground Elevation"] = zonal_means
-    exposure_db["Ground Elevation"].bfill(inplace=True)
+    exposure_db["ground_elevtn"] = zonal_means
+    exposure_db["ground_elevtn"].bfill(inplace=True)
 
     return exposure_db["ground_elevtn"]
 
