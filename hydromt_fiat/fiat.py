@@ -320,6 +320,7 @@ class FiatModel(GridModel):
         damage_unit: str = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_unit: str = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
@@ -361,6 +362,10 @@ class FiatModel(GridModel):
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
+        ground_elevation_file: Union[int, float, str, Path, None] = None.
+            File path to ground elevation data
+        ground_elevation_unit: str = None,
+            Unit of the ground elevation data
         bf_conversion: bool, optional
             If building footprints shall be converted into point data.
         keep_unclassified: bool, optional
@@ -406,6 +411,7 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+                ground_elevation_unit = ground_elevation_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn = damage_translation_fn,

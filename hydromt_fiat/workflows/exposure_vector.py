@@ -1055,6 +1055,18 @@ class ExposureVector(Exposure):
     def setup_ground_elevation(
         self, ground_elevation: Union[int, float, None, str, Path], unit: str
     ) -> None:
+        """
+        Set the ground elevation of the exposure data.
+
+        Parameters
+        ----------
+        ground_elevation : Union[int, float, None, str, Path]
+            Either a number (int or float) to give all assets the same ground elevation
+            or a path to the data that can be used to add the ground elevation to the assets.
+        unit : str
+            The unit of the ground elevation. This can be either 'meters' or 'feet'.
+        """
+
         if ground_elevation:
             self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
                 ground_elevation=ground_elevation,
