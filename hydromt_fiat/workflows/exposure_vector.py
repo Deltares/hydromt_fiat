@@ -320,7 +320,7 @@ class ExposureVector(Exposure):
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[int, float, List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
@@ -359,7 +359,7 @@ class ExposureVector(Exposure):
         country : str, None
             The country to be used to set the damage function. If None, the default
             damage function will be used.
-        attribute_name : str, List[str], None
+        gfh_attribute_name : str, List[str], None
             The attribute name to be used to set the ground_flht. If None, the
             attribute name will be set to 'ground_floor_height'.
         gfh_method : str, List[str], None
@@ -410,7 +410,7 @@ class ExposureVector(Exposure):
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
         self.setup_ground_floor_height(
-            ground_floor_height, attribute_name, gfh_method, max_dist
+            ground_floor_height, gfh_attribute_name, gfh_method, max_dist
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
@@ -786,7 +786,7 @@ class ExposureVector(Exposure):
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
     ) -> None:
@@ -801,7 +801,7 @@ class ExposureVector(Exposure):
             list of paths to files that contain the ground_flht of each asset,
             in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
-        attribute_name : Union[str, List[str]], optional
+        gfh_attribute_name : Union[str, List[str]], optional
             The name of the attribute that contains the ground_flht in the
             file(s) that are submitted. If multiple `ground_floor_height` files are
             submitted, the attribute names are linked to the files in the same order as
@@ -834,7 +834,7 @@ class ExposureVector(Exposure):
                     columns_to_drop = [
                         col
                         for col in gfh.columns
-                        if col != attribute_name and col != "geometry"
+                        if col != gfh_attribute_name and col != "geometry"
                     ]
                     gfh = gfh.drop(columns=columns_to_drop)
 
@@ -846,7 +846,7 @@ class ExposureVector(Exposure):
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
-                        attribute_name,
+                        gfh_attribute_name,
                         gfh_method,
                         max_dist,
                         self.logger,
@@ -854,7 +854,7 @@ class ExposureVector(Exposure):
                     gdf = pd.concat([gdf, gdf_roads])
                 else:
                     gdf = join_spatial_data(
-                        gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
+                        gdf, gfh, gfh_attribute_name, gfh_method, max_dist, self.logger
                     )
 
                 # If method is "intersection" rename *"_left" to original exposure_db name
@@ -863,7 +863,7 @@ class ExposureVector(Exposure):
 
                 # Update exposure_db
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "ground_flht", attribute_name
+                    gdf, "ground_flht", gfh_attribute_name
                 )
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
@@ -1138,7 +1138,7 @@ class ExposureVector(Exposure):
                 )
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
-                "Fn_affected_people",
+                "fn_affected_people",
                 attribute_name,
             )
         
@@ -1295,7 +1295,7 @@ class ExposureVector(Exposure):
             The height to floodproof to, i.e. to truncate the damage functions to.
         damage_function_types : List[str]
             A list of damage types that should be considered for the new composite area,
-            e.g. ['Structure', 'Content']. The function is case-sensitive.
+            e.g. ['structure', 'content']. The function is case-sensitive.
         vulnerability : Vulnerability
             The Vulnerability object from the FiatModel.
         """
@@ -1422,7 +1422,7 @@ class ExposureVector(Exposure):
             'geom' as defined in the `elevation_reference` variable.
         damage_types : List[str]
             A list of damage types that should be considered for the new composite area,
-            e.g. ['Structure', 'Content']. The function is case-sensitive.
+            e.g. ['structure', 'content']. The function is case-sensitive.
         vulnerability : Vulnerability
             The Vulnerability object from the FiatModel.
         elevation_reference : str
@@ -1621,7 +1621,7 @@ class ExposureVector(Exposure):
     def link_exposure_vulnerability(
         self,
         exposure_linking_table: pd.DataFrame,
-        damage_types: Optional[List[str]] = ["Structure", "Content"],
+        damage_types: Optional[List[str]] = ["structure", "content"],
     ):
         if "Damage function name" not in exposure_linking_table.columns:
             exposure_linking_table["Damage function name"] = [
@@ -1933,7 +1933,7 @@ class ExposureVector(Exposure):
 
         for col in self._REQUIRED_VARIABLE_COLUMNS:
             try:
-                assert col.format("Structure") in self.exposure_db.columns
+                assert col.format("structure") in self.exposure_db.columns
             except AssertionError:
                 print(f"Required variable column {col} not found in exposure data.")
 

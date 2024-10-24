@@ -312,6 +312,7 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
@@ -341,6 +342,9 @@ class FiatModel(GridModel):
             height to the assets.
         unit : str
             The unit of the ground_floor_height
+        gfh_attribute_name : str, List[str], None
+            The attribute name to be used to set the ground_flht. If None, the
+            attribute name will be set to 'ground_floor_height'. 
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -404,7 +408,8 @@ class FiatModel(GridModel):
                 ground_elevation_file=ground_elevation_file,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                damage_translation_fn = damage_translation_fn
+                damage_translation_fn = damage_translation_fn,
+                gfh_attribute_name = gfh_attribute_name,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
