@@ -1148,7 +1148,7 @@ class ExposureVector(Exposure):
                 gdf = join_spatial_data(
                     gdf, pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
                 )
-                
+
             del gdf['geometry']
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
@@ -1718,7 +1718,7 @@ class ExposureVector(Exposure):
                         f"{str(list(diff_secondary_linking_types))}"
                     )
 
-            self.exposure_db[f"fn_damage_{damage_type.capitalize()}"] = (
+            self.exposure_db[f"fn_damage_{damage_type}"] = (
                 self.exposure_db[linking_column].map(linking_dict)
             )
 
