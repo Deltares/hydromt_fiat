@@ -305,14 +305,14 @@ def ground_elevation_from_dem(
     # Fill nan values with neighboring values. If value is an outlier fill with 0 
     #zonal_means = pd.Series(zonal_means)
     #nan_idx = zonal_means[zonal_means.isnull()].index
-    zonal_means.bfill(inplace=True)
     #for idx in nan_idx:
     #    value = zonal_means.loc[idx]
     #    if (value.mean() > zonal_means.quantile(0.75).mean()) or (value.mean() < zonal_means.quantile(0.25).mean()): 
     #        zonal_means.loc[idx] = zonal_means.mean().mean()
 
     # # Add ground_elevtn column and get rid of nans in the appropriate way
-    exposure_db["ground_elevtn"] = zonal_means
+    exposure_db["Ground Elevation"] = zonal_means
+    exposure_db["Ground Elevation"].bfill(inplace=True)
 
     return exposure_db["ground_elevtn"]
 
