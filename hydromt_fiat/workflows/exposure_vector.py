@@ -1148,6 +1148,8 @@ class ExposureVector(Exposure):
                 gdf = join_spatial_data(
                     gdf, pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
                 )
+                
+            del gdf['geometry']
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
                 "fn_affected_people",
