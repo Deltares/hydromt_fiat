@@ -43,7 +43,7 @@ def test_update_ground_floor_height(case):
     fm.read()
 
     original_exposure = copy.deepcopy(fm.exposure.exposure_db)
-    unique_gfh_original = original_exposure["Ground Floor Height"].unique()
+    unique_gfh_original = original_exposure["ground_flht"].unique()
 
     fm.exposure.setup_ground_floor_height(
         _cases[case]["ground_floor_height_file"],
@@ -60,11 +60,11 @@ def test_update_ground_floor_height(case):
     fm.set_root(_cases[case]["new_root"])
     fm.write()
 
-    # Check if the new ground floor height is different from the original one
-    unique_gfh_new = fm.exposure.exposure_db["Ground Floor Height"].unique()
+    # Check if the new ground_flht is different from the original one
+    unique_gfh_new = fm.exposure.exposure_db["ground_flht"].unique()
     assert any(
         unique_gfh_original != unique_gfh_new
-    ), "The Ground Floor Height is the same"
+    ), "The ground_flht is the same"
 
     # # Check if the Ground Floor Heigh attribute is set correctly
     # ground_floor_height = gpd.read_file(_cases[case]["ground_floor_height_file"])

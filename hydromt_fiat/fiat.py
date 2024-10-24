@@ -212,11 +212,11 @@ class FiatModel(GridModel):
             The unit of the vulnerability functions.
         functions_mean : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the mean hazard
-            value when using the area extraction method, by default "default" (this
+            value when using the area extract_method, by default "default" (this
             means that all vulnerability functions are using mean).
         functions_max : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the maximum
-            hazard value when using the area extraction method, by default None (this
+            hazard value when using the area extract_method, by default None (this
             means that all vulnerability functions are using mean).
         """
 
@@ -253,7 +253,7 @@ class FiatModel(GridModel):
             continent=continent,
         )
 
-        # Set the area extraction method for the vulnerability curves
+        # Set the area extract_method for the vulnerability curves
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
@@ -312,6 +312,7 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
@@ -319,6 +320,7 @@ class FiatModel(GridModel):
         damage_unit: str = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation_unit: str = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
@@ -341,6 +343,9 @@ class FiatModel(GridModel):
             height to the assets.
         unit : str
             The unit of the ground_floor_height
+        gfh_attribute_name : str, List[str], None
+            The attribute name to be used to set the ground_flht. If None, the
+            attribute name will be set to 'ground_floor_height'. 
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -357,6 +362,10 @@ class FiatModel(GridModel):
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
+        ground_elevation_file: Union[int, float, str, Path, None] = None.
+            File path to ground elevation data
+        ground_elevation_unit: str = None,
+            Unit of the ground elevation data
         bf_conversion: bool, optional
             If building footprints shall be converted into point data.
         keep_unclassified: bool, optional
@@ -402,9 +411,11 @@ class FiatModel(GridModel):
                 damage_types=damage_types,
                 country=country,
                 ground_elevation_file=ground_elevation_file,
+                ground_elevation_unit = ground_elevation_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                damage_translation_fn = damage_translation_fn
+                damage_translation_fn = damage_translation_fn,
+                gfh_attribute_name = gfh_attribute_name,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -521,10 +532,10 @@ class FiatModel(GridModel):
             i for i in range(1, len(self.building_footprint) + 1)
         ]
         BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(
-            self.building_footprint[["Object ID", "BF_FID"]], on="Object ID"
+            self.building_footprint[["object_id", "BF_FID"]], on="object_id"
         )
         del BF_exposure_gdf["geometry"]
-        del self.building_footprint["Object ID"]
+        del self.building_footprint["object_id"]
         self.exposure.exposure_db = BF_exposure_gdf
 
     def update_ground_floor_height(
@@ -840,7 +851,7 @@ class FiatModel(GridModel):
 
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
-            exposure_data.sort_values("Object ID")
+            exposure_data.sort_values("object_id")
 
             if svi.svi_data_shp.crs != exposure_data.crs:
                 svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
@@ -857,7 +868,7 @@ class FiatModel(GridModel):
                 cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
             # Filter out the roads because they do not have an SVI score
-            filter_roads = exposure_data["Primary Object Type"] != "roads"
+            filter_roads = exposure_data["primary_object_type"] != "roads"
             svi_exp_joined = gpd.sjoin(
                 exposure_data.loc[filter_roads],
                 svi.svi_data_shp[cols_to_save],
@@ -868,8 +879,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(
-                svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]],
-                on="Object ID",
+                svi_exp_joined[["object_id", "SVI_key_domain", "SVI"]],
+                on="object_id",
                 how="left",
             )
             # Define spatial join info
@@ -1114,8 +1125,8 @@ class FiatModel(GridModel):
          damage_types : Union[List[str], str]
              "structure"or/and "content"
          remove_object_type: bool
-             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).
+             True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+             E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).
         """
 
         self.exposure.setup_occupancy_type(source, attribute, type_add)
@@ -1123,13 +1134,13 @@ class FiatModel(GridModel):
         # Drop Object Type that has not been updated.
 
         if remove_object_type:
-            if type_add == "Primary Object Type":
+            if type_add == "primary_object_type":
                 self.exposure.exposure_db.drop(
-                    "Secondary Object Type", axis=1, inplace=True
+                    "secondary_object_type", axis=1, inplace=True
                 )
             else:
                 self.exposure.exposure_db.drop(
-                    "Primary Object Type", axis=1, inplace=True
+                    "primary_object_type", axis=1, inplace=True
                 )
         linking_table_new = self.exposure.update_user_linking_table(
             old_values, new_values, self.vf_ids_and_linking_df
@@ -1378,12 +1389,6 @@ class FiatModel(GridModel):
                     ).index_right
                     geom = geom.loc[idx]
                 geom.to_file(_fn)
-                
-            # Write exposure_db incl geometries
-            fn_exposure = "exposure/exposure_buildings.gpkg"
-            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-            gdf.to_file(os.path.join(self.root,fn_exposure))
-
         if self.geoms:
             GridModel.write_geoms(self)
 

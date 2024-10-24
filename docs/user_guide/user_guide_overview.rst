@@ -39,8 +39,8 @@ See below how the `setup_exposure_buildings` method can be used to build or upda
    occupancy_type = <Key in the Data Catalog, data API key, or path to local data>
    damage_types = <List of damage types, e.g. ["structure", "content"]>
    max_potential_damage = <Key in the Data Catalog, data API key, or path to local data>
-   ground_floor_height = <For now only a number can be entered here for uniform ground floor heights>
-   unit = <The unit of the values in the exposure data inputs, e.g. if the ground floor height in meters, "m">
+   ground_floor_height = <For now only a number can be entered here for uniform Ground Floor Heights>
+   unit = <The unit of the values in the exposure data inputs, e.g. if the Ground Floor Height in meters, "m">
 
 The following method is used to build or update the **exposure** data:
 
@@ -89,9 +89,9 @@ After loading the configuration file (*.yml*) and executing the **FIAT Hydro MT*
 
    Aggregation Label: {label_name}
 
-*Note: It may occur that polygons overlap in the aggregation vector files. In this case the information for the affected Object ID will be merged and both aggregation zones will be assigned to the object.* ::
+*Note: It may occur that polygons overlap in the aggregation vector files. In this case the information for the affected object_id will be merged and both aggregation zones will be assigned to the object.* ::
 
-   Object ID   Zone
+   object_id   Zone
 
    1           Base Zone 1
    2           Land Use 1, Land Use 3    >  two zones (polygons) in the land-use aggregation file overlap and object

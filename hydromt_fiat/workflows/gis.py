@@ -42,7 +42,7 @@ def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
 
 def sjoin_largest_area(
-    left_gdf: gpd.GeoDataFrame, right_gdf: gpd.GeoDataFrame, id_col: str = "Object ID"
+    left_gdf: gpd.GeoDataFrame, right_gdf: gpd.GeoDataFrame, id_col: str = "object_id"
 ) -> gpd.GeoDataFrame:
     """Spatial join of two GeoDataFrames, keeping only the joined data from the largest
     intersection per object.
@@ -55,7 +55,7 @@ def sjoin_largest_area(
         The GeoDataFrame from which the data will be joined to the left GeoDataFrame.
     id_col : str, optional
         The ID column that will be used to drop the duplicates from overlapping
-        geometries, by default "Object ID"
+        geometries, by default "object_id"
 
     Returns
     -------
@@ -302,11 +302,19 @@ def ground_elevation_from_dem(
     zonal_means = np.full(len(shapes), np.nan)
     zonal_means[[zonal_out["zone"].values - 1]] = zonal_out["mean"].values
 
-    # # Add Ground Elevation column and get rid of nans in the appropriate way
-    exposure_db["Ground Elevation"] = zonal_means
-    exposure_db["Ground Elevation"].bfill(inplace=True)
+    # Fill nan values with neighboring values. If value is an outlier fill with 0 
+    #zonal_means = pd.Series(zonal_means)
+    #nan_idx = zonal_means[zonal_means.isnull()].index
+    zonal_means.bfill(inplace=True)
+    #for idx in nan_idx:
+    #    value = zonal_means.loc[idx]
+    #    if (value.mean() > zonal_means.quantile(0.75).mean()) or (value.mean() < zonal_means.quantile(0.25).mean()): 
+    #        zonal_means.loc[idx] = zonal_means.mean().mean()
 
-    return exposure_db["Ground Elevation"]
+    # # Add ground_elevtn column and get rid of nans in the appropriate way
+    exposure_db["ground_elevtn"] = zonal_means
+
+    return exposure_db["ground_elevtn"]
 
 
 def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):

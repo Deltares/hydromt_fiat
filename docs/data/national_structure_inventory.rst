@@ -16,13 +16,13 @@ user can access the data through providing 'NSI' in the configuration file as su
 The following attributes for Delft-FIAT (left-hand side) will be filled with data from the
 corresponding NSI fields (right-hand side)::
 
-    "Object ID": "fd_id",
-    "Object Name": "fd_id",
-    "Primary Object Type": "st_damcat",
-    "Secondary Object Type": "occtype",
-    "Max Potential Damage: Structure": "val_struct",
-    "Max Potential Damage: Content": "val_cont",
-    "Ground Elevation": "ground_el",
+    "object_id": "fd_id",
+    "object_name": "fd_id",
+    "primary_object_type": "st_damcat",
+    "secondary_object_type": "occtype",
+    "max_damage_structure": "val_struct",
+    "max_damage_content": "val_cont",
+    "ground_elevtn": "ground_el",
     "X Coordinate": "x",
     "Y Coordinate": "y",
     "Aggregation Label: Census Block": "cbfips"

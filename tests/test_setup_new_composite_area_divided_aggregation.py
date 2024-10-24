@@ -56,7 +56,7 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
         percent_growth=10,
         geom_file=str(_cases[case]["composite_areas"]),
         ground_floor_height=2,
-        damage_types=["Structure", "Content"],
+        damage_types=["structure", "content"],
         vulnerability=fm.vulnerability,
         elevation_reference=_cases[case]["type"],
         path_ref=_cases[case]["path_ref"],
@@ -84,15 +84,15 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
     assert len(exposure_modified) > len(
         exposure_original
     ), "The composite areas were not added"
-    assert not exposure_modified.duplicated("Object ID").values.all()
+    assert not exposure_modified.duplicated("object_id").values.all()
 
     # Check if max potentail damages are divided correctly
     exposure_new_composite = exposure_modified[
-        exposure_modified["Primary Object Type"] == "New development area"
+        exposure_modified["primary_object_type"] == "New development area"
     ]
     assert round(sum([38142538.34, 13528445.7])) == round(
-        sum(exposure_new_composite["Max Potential Damage: Content"].values)
+        sum(exposure_new_composite["max_damage_content"].values)
     )
     assert round(sum([61681912.36, 21877421.83])) == round(
-        sum(exposure_new_composite["Max Potential Damage: Structure"].values)
+        sum(exposure_new_composite["max_damage_structure"].values)
     )

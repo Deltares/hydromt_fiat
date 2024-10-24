@@ -32,21 +32,21 @@ def test_truncate_damage_function(case):
     objectids_to_modify = [573783433, 573782415, 574268223, 574486724, 573785893]
     print(
         fm.exposure.exposure_db.loc[
-            fm.exposure.exposure_db["Object ID"].isin(objectids_to_modify),
-            "Damage Function: Structure",
+            fm.exposure.exposure_db["object_id"].isin(objectids_to_modify),
+            "fn_damage_structure",
         ].unique()
     )
 
     # store original exposure
     exposure_original = fm.exposure.exposure_db
     exposure_original_selection = exposure_original.loc[
-        exposure_original["Object ID"].isin(objectids_to_modify)
+        exposure_original["object_id"].isin(objectids_to_modify)
     ]
 
     fm.exposure.truncate_damage_function(
         objectids=objectids_to_modify,
         floodproof_to=2.5,
-        damage_function_types=["Structure", "Content"],
+        damage_function_types=["structure", "content"],
         vulnerability=fm.vulnerability,
     )
 
@@ -61,10 +61,10 @@ def test_truncate_damage_function(case):
         _cases[case]["new_root"] / "exposure" / "exposure.csv"
     )
     exposure_modified_selection = exposure_modified.loc[
-        exposure_modified["Object ID"].isin(objectids_to_modify)
+        exposure_modified["object_id"].isin(objectids_to_modify)
     ]
 
     assert all(
-        exposure_modified_selection["Damage Function: Structure"]
-        != exposure_original_selection["Damage Function: Structure"]
+        exposure_modified_selection["fn_damage_structure"]
+        != exposure_original_selection["fn_damage_structure"]
     )

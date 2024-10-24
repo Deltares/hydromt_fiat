@@ -81,13 +81,13 @@ def test_setup_roads(case):
     # Read the resulting exposure data and check if the required columns exist
     exposure = pd.read_csv(root.joinpath("exposure", "exposure.csv"))
     required_columns = [
-        "Secondary Object Type",
-        "Object Name",
+        "secondary_object_type",
+        "object_name",
         "lanes",
-        "Object ID",
-        "Primary Object Type",
-        "Damage Function: Structure",
-        "Max Potential Damage: Structure",
+        "object_id",
+        "primary_object_type",
+        "fn_damage_structure",
+        "max_damage_structure",
         "Segment Length [m]",
     ]
     assert set(required_columns) == set(exposure.columns)
