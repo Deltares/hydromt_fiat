@@ -599,7 +599,7 @@ class ExposureVector(Exposure):
                 nr_without_primary_object = len(
                     gdf.loc[gdf["primary_object_type"].isna()].index
                 ) + len(gdf.loc[gdf["primary_object_type"] != ""].index)
-                if keep_unclassified:
+                if keep_unclassified: # NOTE this now refers to JRC residential. There should be a generalized value
                     gdf.loc[
                         gdf["primary_object_type"].isna(), "secondary_object_type"
                     ] = "residential"
