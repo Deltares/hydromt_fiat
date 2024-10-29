@@ -598,7 +598,7 @@ class ExposureVector(Exposure):
             if "primary_object_type" in gdf.columns:
                 nr_without_primary_object = len(
                     gdf.loc[gdf["primary_object_type"].isna()].index
-                ) + len(gdf.loc[gdf["primary_object_type"] != ""].index)
+                ) + len(gdf.loc[gdf["primary_object_type"] == ""].index)
                 if keep_unclassified: # NOTE this now refers to JRC residential. There should be a generalized value
                     gdf.loc[
                         gdf["primary_object_type"].isna(), "secondary_object_type"
@@ -1074,20 +1074,21 @@ class ExposureVector(Exposure):
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
             # Unit conversion
-            if unit != self.unit:
-                if (unit == Units.meters.value) and (self.unit == Units.feet.value):
-                    self.exposure_db["ground_elevtn"] = self.exposure_db[
-                        "ground_elevtn"
-                    ].apply(lambda x: x * Conversion.meters_to_feet.value)
+            if unit != None:
+                if unit != self.unit:
+                    if (unit == Units.meters.value) and (self.unit == Units.feet.value):
+                        self.exposure_db["ground_elevtn"] = self.exposure_db[
+                            "ground_elevtn"
+                        ].apply(lambda x: x * Conversion.meters_to_feet.value)
 
-                elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
-                    self.exposure_db["ground_elevtn"] = self.exposure_db[
-                        "ground_elevtn"
-                    ].apply(lambda x: x * Conversion.feet_to_meters.value)
-                else:
-                    self.logger.warning(
-                        "The elevation unit is not valid. Please provide the unit of your ground_elevtn in 'meters' or 'feet'"
-                    )
+                    elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
+                        self.exposure_db["ground_elevtn"] = self.exposure_db[
+                            "ground_elevtn"
+                        ].apply(lambda x: x * Conversion.feet_to_meters.value)
+                    else:
+                        self.logger.warning(
+                            "The elevation unit is not valid. Please provide the unit of your ground_elevtn in 'meters' or 'feet'"
+                        )
 
         else:
             self.logger.warning(
