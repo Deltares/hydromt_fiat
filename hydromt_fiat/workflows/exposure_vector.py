@@ -1920,7 +1920,7 @@ class ExposureVector(Exposure):
         original_df = exposure_to_modify.copy()  # to be used for metrics
         exposure_to_modify.loc[to_change, "Ground Floor Height"] = list(
             modified_objects_gdf.loc[to_change, attr_ref]
-            + raise_by
+            + raise_by[to_change]
             - exposure_to_modify.loc[to_change, "Ground Elevation"]
         )
 
