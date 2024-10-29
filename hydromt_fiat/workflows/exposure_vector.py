@@ -1903,6 +1903,10 @@ class ExposureVector(Exposure):
             "Object ID", drop=False
         )
 
+        # Ensure that the raise_by variable has the correct type
+        if raise_by is not pd.Series:
+            raise_by = pd.Series(raise_by, index=exposure_to_modify.index)
+        
         # Find indices of properties that are below the required level
         properties_below_level = (
             exposure_to_modify.loc[:, "Ground Floor Height"]
