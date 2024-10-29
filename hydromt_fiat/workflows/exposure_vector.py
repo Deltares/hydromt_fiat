@@ -1904,7 +1904,7 @@ class ExposureVector(Exposure):
         )
 
         # Ensure that the raise_by variable has the correct type
-        if raise_by is not pd.Series:
+        if not isinstance(raise_by, pd.Series):
             raise_by = pd.Series(raise_by, index=exposure_to_modify.index)
         
         # Find indices of properties that are below the required level
