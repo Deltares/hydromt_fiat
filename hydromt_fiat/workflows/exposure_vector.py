@@ -1153,9 +1153,10 @@ class ExposureVector(Exposure):
             del gdf['geometry']
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
-                "fn_affected_people",
+                "max_affected_people",
                 attribute_name,
             )
+            self.exposure_db["fn_affected_people"] = "population"
         
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame

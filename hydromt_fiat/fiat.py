@@ -304,6 +304,26 @@ class FiatModel(GridModel):
             max_hazard_value,
             step_hazard_value,
         )
+    def setup_population_vulnerability(
+        self,
+        vertical_unit: str,
+        threshold_value: float = 0.4,
+        min_hazard_value: float = 0,
+        max_hazard_value: float = 10,
+        step_hazard_value: float = 1.0,
+    ):
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                vertical_unit,
+                self.logger,
+            )
+        self.vulnerability.create_step_function(
+            "population",
+            threshold_value,
+            min_hazard_value,
+            max_hazard_value,
+            step_hazard_value,
+        )
 
     def setup_exposure_buildings(
         self,
@@ -525,7 +545,7 @@ class FiatModel(GridModel):
             )
         self.exposure.setup_impacted_population(impacted_population_fn, attribute_name, method_impacted_pop,max_dist)
         
-
+        self.set_config("exposure.types", ["damages", "affected"])
     def bf_spatial_joins(self):
         self.building_footprint = self.exposure.building_footprints
         self.building_footprint["BF_FID"] = [
@@ -663,7 +683,25 @@ class FiatModel(GridModel):
                 if hasattr(da, "units"):
                     if self.exposure.unit != da.units:
                         da = da * unit_conversion_factor
+                # clip bonding boxes and save new exposure
+                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                #exposure_bounding_box = gdf.total_bounds
+                da_bounding_box =da.rio.bounds() 
+                gdf = gpd.clip(gdf, da_bounding_box)
+                if gdf["primary_object_type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+                    gdf_buildings= gdf[~gdf.isin(gdf_roads)]
+                    idx_buildings = self.exposure.geom_names.index("buildings")
+                    idx_roads = self.exposure.geom_names.index("roads")
+                    self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[["object_id", "geometry"]]
+                    self.exposure.exposure_geoms[idx_roads] = gdf_roads[["object_id", "geometry"]]
+                else:
+                    self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+                
+                del gdf["geometry"]
+                self.exposure.exposure_db = gdf
 
+            # convert to gdal compliant
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
 
