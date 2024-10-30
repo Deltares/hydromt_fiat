@@ -91,8 +91,8 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
         exposure_modified["primary_object_type"] == "New development area"
     ]
     assert round(sum([38142538.34, 13528445.7])) == round(
-        sum(exposure_new_composite["max_damage_content"].values)
+        sum(exposure_new_composite["max_damages_content"].values)
     )
     assert round(sum([61681912.36, 21877421.83])) == round(
-        sum(exposure_new_composite["max_damage_structure"].values)
+        sum(exposure_new_composite["max_damages_structure"].values)
     )

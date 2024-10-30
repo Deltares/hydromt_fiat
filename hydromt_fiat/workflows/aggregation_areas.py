@@ -165,10 +165,10 @@ def spatial_joins(
 
         # Split max potential damages into new composite areas
         exposure_max_potential_damage_struct = list(
-            exposure_gdf_copy["max_damage_structure"].values
+            exposure_gdf_copy["max_damages_structure"].values
         )
         exposure_max_potential_damage_cont = list(
-            exposure_gdf_copy["max_damage_content"].values
+            exposure_gdf_copy["max_damages_content"].values
         )
         exposure_gdf = split_max_damages_new_composite_area(
             exposure_gdf,
@@ -267,9 +267,9 @@ def split_max_damages_new_composite_area(
     exposure_gdf : gpd.GeoDataFrame
         Exposure data to split the max potential damages.
     exposure_max_potential_damage_struct: Union[int, List[int]]
-        max_damage_structure of new composite area per polygon. In case of multiple polygons, multiple max potential damages
+        max_damages_structure of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     exposure_max_potential_damage_cont: Union[int, List[int]]
-        max_damage_content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
+        max_damages_content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     """
     new_composite_areas_struct = []
     new_composite_areas_cont = []
@@ -293,7 +293,7 @@ def split_max_damages_new_composite_area(
     ):
         # Calculate relative Max Potential Damages for Structure and Content based on area
         filtered_exposure_gdf_struct = exposure_gdf[
-            exposure_gdf["max_damage_structure"]
+            exposure_gdf["max_damages_structure"]
             == exposure_max_potential_damage_struct
         ]
         for index, row in filtered_exposure_gdf_struct.iterrows():
@@ -306,7 +306,7 @@ def split_max_damages_new_composite_area(
             )
 
         filtered_exposure_gdf_cont = exposure_gdf[
-            exposure_gdf["max_damage_content"]
+            exposure_gdf["max_damages_content"]
             == exposure_max_potential_damage_cont
         ]
         for index, row in filtered_exposure_gdf_cont.iterrows():
@@ -318,10 +318,10 @@ def split_max_damages_new_composite_area(
                 * exposure_max_potential_damage_cont
             )
 
-        filtered_exposure_gdf_struct["max_damage_structure"] = (
+        filtered_exposure_gdf_struct["max_damages_structure"] = (
             filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
         )
-        filtered_exposure_gdf_cont["max_damage_content"] = (
+        filtered_exposure_gdf_cont["max_damages_content"] = (
             filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
         )
         filtered_exposure_gdf_struct.drop(
@@ -341,16 +341,16 @@ def split_max_damages_new_composite_area(
 
     # Combine Damage Type gdfs to one gdf
     exposure_gdf = exposure_gdf_struct.merge(
-        exposure_gdf_cont[["object_id", "max_damage_content"]],
+        exposure_gdf_cont[["object_id", "max_damages_content"]],
         on="object_id",
         how="left",
     )
-    exposure_gdf["max_damage_content_x"] = exposure_gdf[
-        "max_damage_content_y"
+    exposure_gdf["max_damages_content_x"] = exposure_gdf[
+        "max_damages_content_y"
     ]
-    exposure_gdf.drop("max_damage_content_y", axis=1, inplace=True)
+    exposure_gdf.drop("max_damages_content_y", axis=1, inplace=True)
     exposure_gdf = exposure_gdf.rename(
-        columns={"max_damage_content_x": "max_damage_content"}
+        columns={"max_damages_content_x": "max_damages_content"}
     )
 
     del exposure_gdf["ca_ID"]

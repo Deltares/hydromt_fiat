@@ -65,12 +65,12 @@ class ExposureVector(Exposure):
         "secondary_object_type": str,
         "extract_method": str,
         "Aggregation Label": str,
-        "fn_damage_structure": str,
-        "fn_damage_content": str,
+        "fn_damages_structure": str,
+        "fn_damages_content": str,
         "Ground Flood Height": float,
         "ground_elevtn": float,
-        "max_damage_structure": float,
-        "max_damage_content": float,
+        "max_damages_structure": float,
+        "max_damages_content": float,
     }
 
     def __init__(
@@ -293,14 +293,14 @@ class ExposureVector(Exposure):
             road_damage = self.data_catalog.get_dataframe(road_damage)
             roads[
                 [
-                    "max_damage_structure",
+                    "max_damages_structure",
                     "Segment Length",
                     "extract_method",
                 ]
             ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, (int, float)) or road_damage is None:
             roads["Segment Length"] = road_length
-            roads["max_damage_structure"] = road_damage
+            roads["max_damages_structure"] = road_damage
 
         self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")

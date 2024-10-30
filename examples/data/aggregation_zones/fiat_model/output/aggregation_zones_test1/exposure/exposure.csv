@@ -1,4 +1,4 @@
-object_id,object_name,primary_object_type,secondary_object_type,max_damage_structure,max_damage_content,ground_elevtn,X Coordinate,Y Coordinate,Aggregation Label: Census Block,ground_flht,extract_method,fn_damage_structure,Aggregation Label: Base_zones
+object_id,object_name,primary_object_type,secondary_object_type,max_damages_structure,max_damages_content,ground_elevtn,X Coordinate,Y Coordinate,Aggregation Label: Census Block,ground_flht,extract_method,fn_damages_structure,Aggregation Label: Base_zones
 573783417,573783417,COM,RES4,1177614.2,588807.1,8.381748561544418,-79.93000008,32.770545239,450190002002010,1,centroid,RES4,SR-3
 573783433,573783433,COM,RES4,476216.254,238108.127,7.374183635444641,-79.92968382,32.771271301,450190002002010,1,centroid,RES4,SR-4
 573785665,573785665,RES,RES1-2SNB,330007.42,165003.71,7.364031290178299,-79.93179589,32.773364727,450190002002004,1,centroid,RES1-2SNB,SR-5

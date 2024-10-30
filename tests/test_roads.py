@@ -86,8 +86,8 @@ def test_setup_roads(case):
         "lanes",
         "object_id",
         "primary_object_type",
-        "fn_damage_structure",
-        "max_damage_structure",
+        "fn_damages_structure",
+        "max_damages_structure",
         "Segment Length [m]",
     ]
     assert set(required_columns) == set(exposure.columns)
