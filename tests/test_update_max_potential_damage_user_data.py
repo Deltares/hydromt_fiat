@@ -47,7 +47,7 @@ def test_update_max_potential_damage(case):
     )
     fm.read()
 
-    target_column = f"max_damage_{_cases[case]['damage_types']}"
+    target_column = f"max_damages_{_cases[case]['damage_types']}"
 
     original_exposure = copy.deepcopy(fm.exposure.exposure_db)
     unique_mp_original = original_exposure[target_column].unique()
