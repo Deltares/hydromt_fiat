@@ -223,7 +223,6 @@ def join_spatial_data(
                 right_gdf.at[index, 'geometry'] = largest_polygon 
         assert len(right_gdf.geom_type.unique()) == 1
 
-    method = 'nearest'
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)
 
