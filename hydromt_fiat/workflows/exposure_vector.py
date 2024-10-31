@@ -2011,7 +2011,7 @@ class ExposureVector(Exposure):
             # To be able to append the values from the GeoDataFrame to the DataFrame, it
             # must be sorted on the object_id.
             identifier = (
-                "object_id"
+                "Object ID"
                 if "Object ID" in modified_objects_gdf.columns
                 else "object_id"
             )
