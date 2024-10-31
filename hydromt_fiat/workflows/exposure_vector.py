@@ -2012,7 +2012,7 @@ class ExposureVector(Exposure):
             # must be sorted on the object_id.
             identifier = (
                 "object_id"
-                if "object_id" in modified_objects_gdf.columns
+                if "Object ID" in modified_objects_gdf.columns
                 else "object_id"
             )
 
