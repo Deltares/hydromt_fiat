@@ -1264,10 +1264,7 @@ class FiatModel(GridModel):
         sj_path = Path(self.root).joinpath("spatial_joins.toml")
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
-            if sj.attrs.aggregation_areas is not None:
-                self.spatial_joins["aggregation_areas"] = [dict(entry) for entry in sj.attrs.aggregation_areas]
-            if sj.attrs.additional_attributes is not None:
-                self.spatial_joins["additional_attributes"] = [dict(entry) for entry in sj.attrs.additional_attributes]
+            self.spatial_joins = sj.attrs.model_dump()
             
             
 

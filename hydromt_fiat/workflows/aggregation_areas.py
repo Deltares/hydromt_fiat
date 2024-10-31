@@ -164,16 +164,10 @@ def spatial_joins(
         )
 
         # Split max potential damages into new composite areas
-        exposure_max_potential_damage_struct = list(
-            exposure_gdf_copy["max_damages_structure"].values
-        )
-        exposure_max_potential_damage_cont = list(
-            exposure_gdf_copy["max_damages_content"].values
-        )
+        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "Max Potential Damage: Structure", "Max Potential Damage: Content"]].set_index("ca_ID")
         exposure_gdf = split_max_damages_new_composite_area(
             exposure_gdf,
-            exposure_max_potential_damage_struct,
-            exposure_max_potential_damage_cont,
+            exposure_max_potential_damage,
         )
 
     return exposure_gdf, filtered_areas
@@ -257,8 +251,7 @@ def split_composite_area(
 
 def split_max_damages_new_composite_area(
     exposure_gdf: gpd.GeoDataFrame,
-    exposure_max_potential_damage_struct: Union[float, int, List[Union[float, int]]],
-    exposure_max_potential_damage_cont: Union[float, int, List[Union[float, int]]],
+    exposure_max_potential_damage: pd.DataFrame,
 ) -> gpd.GeoDataFrame:
     """Split the max potential damages by area size
 
@@ -266,92 +259,28 @@ def split_max_damages_new_composite_area(
     ----------
     exposure_gdf : gpd.GeoDataFrame
         Exposure data to split the max potential damages.
-    exposure_max_potential_damage_struct: Union[int, List[int]]
-        max_damages_structure of new composite area per polygon. In case of multiple polygons, multiple max potential damages
-    exposure_max_potential_damage_cont: Union[int, List[int]]
-        max_damages_content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
+    exposure_max_potential_damage: pd.DataFrame
+        Max potential damage: Structure and Content of new composite area per polygon. In case of multiple polygons, multiple max potential damages
     """
-    new_composite_areas_struct = []
-    new_composite_areas_cont = []
 
-    # Caculate area per new composite area ID
+    # Calculate area per new composite area ID
     area_by_id = (
         exposure_gdf.groupby("ca_ID")["geometry"]
         .apply(lambda x: x.area.sum())
         .reset_index()
-    )
-    exposure_total_area = area_by_id["geometry"].tolist()
+    ).set_index("ca_ID")
+    
+    exposure_max_potential_damage = exposure_max_potential_damage.join(area_by_id)
 
-    for (
-        exposure_total_area,
-        exposure_max_potential_damage_struct,
-        exposure_max_potential_damage_cont,
-    ) in zip(
-        exposure_total_area,
-        exposure_max_potential_damage_struct,
-        exposure_max_potential_damage_cont,
-    ):
+    for index_ca, row_ca in exposure_max_potential_damage.iterrows():
         # Calculate relative Max Potential Damages for Structure and Content based on area
-        filtered_exposure_gdf_struct = exposure_gdf[
-            exposure_gdf["max_damages_structure"]
-            == exposure_max_potential_damage_struct
-        ]
-        for index, row in filtered_exposure_gdf_struct.iterrows():
-            filtered_exposure_gdf_struct.at[index, "rel_area"] = (
-                row.geometry.area / exposure_total_area
-            )
-            filtered_exposure_gdf_struct.at[index, "rel_max_pot_damages_struct"] = (
-                filtered_exposure_gdf_struct.at[index, "rel_area"]
-                * exposure_max_potential_damage_struct
-            )
-
-        filtered_exposure_gdf_cont = exposure_gdf[
-            exposure_gdf["max_damages_content"]
-            == exposure_max_potential_damage_cont
-        ]
-        for index, row in filtered_exposure_gdf_cont.iterrows():
-            filtered_exposure_gdf_cont.at[index, "rel_area"] = (
-                row.geometry.area / exposure_total_area
-            )
-            filtered_exposure_gdf_cont.at[index, "rel_max_pot_damages_cont"] = (
-                filtered_exposure_gdf_cont.at[index, "rel_area"]
-                * exposure_max_potential_damage_cont
-            )
-
-        filtered_exposure_gdf_struct["max_damages_structure"] = (
-            filtered_exposure_gdf_struct["rel_max_pot_damages_struct"]
-        )
-        filtered_exposure_gdf_cont["max_damages_content"] = (
-            filtered_exposure_gdf_cont["rel_max_pot_damages_cont"]
-        )
-        filtered_exposure_gdf_struct.drop(
-            columns=["rel_max_pot_damages_struct", "rel_area"], inplace=True
-        )
-        filtered_exposure_gdf_cont.drop(
-            columns=["rel_max_pot_damages_cont", "rel_area"], inplace=True
-        )
-
-        # Add all gdfs to a list
-        new_composite_areas_struct.append(filtered_exposure_gdf_struct)
-        new_composite_areas_cont.append(filtered_exposure_gdf_cont)
-
-    # Combine all individual new composite areas back to one gdf for each Damage Type
-    exposure_gdf_struct = pd.concat(new_composite_areas_struct, ignore_index=True)
-    exposure_gdf_cont = pd.concat(new_composite_areas_cont, ignore_index=True)
-
-    # Combine Damage Type gdfs to one gdf
-    exposure_gdf = exposure_gdf_struct.merge(
-        exposure_gdf_cont[["object_id", "max_damages_content"]],
-        on="object_id",
-        how="left",
-    )
-    exposure_gdf["max_damages_content_x"] = exposure_gdf[
-        "max_damages_content_y"
-    ]
-    exposure_gdf.drop("max_damages_content_y", axis=1, inplace=True)
-    exposure_gdf = exposure_gdf.rename(
-        columns={"max_damages_content_x": "max_damages_content"}
-    )
+        splitted_exposure_gdf = exposure_gdf[exposure_gdf["ca_ID"]== index_ca]
+        
+        if len(splitted_exposure_gdf) > 1:
+            for index, row in splitted_exposure_gdf.iterrows():
+                rel_area = row.geometry.area / row_ca["geometry"]
+                exposure_gdf.at[index, "Max Potential Damage: Structure"] = rel_area * row_ca["Max Potential Damage: Structure"]
+                exposure_gdf.at[index, "Max Potential Damage: Content"] = rel_area * row_ca["Max Potential Damage: Content"]
 
     del exposure_gdf["ca_ID"]
 

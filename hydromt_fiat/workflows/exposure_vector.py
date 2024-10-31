@@ -2043,6 +2043,10 @@ class ExposureVector(Exposure):
             "object_id", drop=False
         )
 
+        # Ensure that the raise_by variable has the correct type
+        if not isinstance(raise_by, pd.Series):
+            raise_by = pd.Series(raise_by, index=exposure_to_modify.index)
+        
         # Find indices of properties that are below the required level
         properties_below_level = (
             exposure_to_modify.loc[:, "ground_flht"]
@@ -2060,8 +2064,8 @@ class ExposureVector(Exposure):
         original_df = exposure_to_modify.copy()  # to be used for metrics
         exposure_to_modify.loc[to_change, "ground_flht"] = list(
             modified_objects_gdf.loc[to_change, attr_ref]
-            + raise_by
-            - exposure_to_modify.loc[to_change, "ground_elevtn"]
+            + raise_by[to_change]
+            - exposure_to_modify.loc[to_change, "Ground Elevation"]
         )
 
         # Get some metrics on changes
