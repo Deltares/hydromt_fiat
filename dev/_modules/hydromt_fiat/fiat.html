@@ -1338,7 +1338,11 @@
         <span class="n">equity</span><span class="o">.</span><span class="n">download_census_data</span><span class="p">(</span><span class="n">year_data</span><span class="p">)</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">rename_census_data</span><span class="p">()</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">match_geo_ID</span><span class="p">()</span>
-        <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">equity</span><span class="o">.</span><span class="n">download_shp_geom</span><span class="p">(</span><span class="n">year_data</span><span class="p">,</span> <span class="n">county_numbers</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">merge_equity_data_shp</span><span class="p">()</span>
         <span class="n">equity</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
         <span class="n">gdf</span> <span class="o">=</span> <span class="n">rename_geoid_short</span><span class="p">(</span><span class="n">equity</span><span class="o">.</span><span class="n">equity_data_shp</span><span class="p">)</span>
