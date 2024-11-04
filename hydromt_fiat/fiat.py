@@ -978,7 +978,11 @@ class FiatModel(GridModel):
         equity.download_census_data(year_data)
         equity.rename_census_data()
         equity.match_geo_ID()
-        equity.download_shp_geom(year_data, county_numbers)
+        try:
+            equity.download_shp_geom(year_data, county_numbers)
+        except:
+            self.logger.warning("The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!")
+            return
         equity.merge_equity_data_shp()
         equity.clean()
         gdf = rename_geoid_short(equity.equity_data_shp)
