@@ -10,13 +10,14 @@ import xarray as xr
 import geopandas as gpd
 import hydromt
 import pandas as pd
+import tomli
+import tomli_w
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
 from shapely.geometry import box
 import shutil
 
 from hydromt_fiat.api.data_types import Units
-from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
@@ -1216,8 +1217,9 @@ class FiatModel(GridModel):
     def _configread(self, fn):
         """Parse Delft-FIAT configuration toml file to dict."""
         # Read the fiat configuration toml file.
-        config = Config()
-        return config.load_file(fn)
+        with open(fn, mode="rb") as fp:
+            config = tomli.load(fp)
+        return config 
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
@@ -1420,7 +1422,8 @@ class FiatModel(GridModel):
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
-        Config().save(self.config, Path(self.root).joinpath("settings.toml"))
+        with open(fn, "wb") as f:
+            tomli_w.dump(self.config, f) 
 
     # FIAT specific attributes and methods
     @property
