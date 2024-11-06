@@ -454,7 +454,7 @@ class FiatModel(GridModel):
             if crs is None:
                 break
             if crs.to_authority() == src_crs.to_authority():
-                break # NOTE: why break here
+                break
             for item in self.exposure.exposure_geoms:
                 item.to_crs(crs, inplace=True)
             self.exposure.crs = ":".join(crs.to_authority())
