@@ -413,13 +413,14 @@
 <span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
 <span class="kn">import</span> <span class="nn">hydromt</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tomli</span>
+<span class="kn">import</span> <span class="nn">tomli_w</span>
 <span class="kn">from</span> <span class="nn">hydromt.models.model_grid</span> <span class="kn">import</span> <span class="n">GridModel</span>
 <span class="kn">from</span> <span class="nn">pyproj.crs</span> <span class="kn">import</span> <span class="n">CRS</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="kn">from</span> <span class="nn">hydromt_fiat.api.data_types</span> <span class="kn">import</span> <span class="n">Units</span>
-<span class="kn">from</span> <span class="nn">hydromt_fiat.config</span> <span class="kn">import</span> <span class="n">Config</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.util</span> <span class="kn">import</span> <span class="n">DATADIR</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.spatial_joins</span> <span class="kn">import</span> <span class="n">SpatialJoins</span>
 <span class="kn">from</span> <span class="nn">hydromt_fiat.workflows.exposure_vector</span> <span class="kn">import</span> <span class="n">ExposureVector</span>
@@ -1648,8 +1649,9 @@
     <span class="k">def</span> <span class="nf">_configread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse Delft-FIAT configuration toml file to dict.&quot;&quot;&quot;</span>
         <span class="c1"># Read the fiat configuration toml file.</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="n">Config</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">tomli</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">config</span> 
 
     <span class="k">def</span> <span class="nf">read_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the model tables for vulnerability and exposure data.&quot;&quot;&quot;</span>
@@ -1861,7 +1863,8 @@
     <span class="k">def</span> <span class="nf">_configwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write config to Delft-FIAT configuration toml file.&quot;&quot;&quot;</span>
         <span class="c1"># Save the configuration file.</span>
-        <span class="n">Config</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;settings.toml&quot;</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">tomli_w</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> 
 
     <span class="c1"># FIAT specific attributes and methods</span>
     <span class="nd">@property</span>
