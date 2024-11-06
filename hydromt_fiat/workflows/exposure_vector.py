@@ -302,6 +302,12 @@ class ExposureVector(Exposure):
             roads["Segment Length"] = road_length
             roads["Max Potential Damage: Structure"] = road_damage
 
+        # Convert crs to exposure buildings crs
+        if roads.crs != self.exposure_geoms[0].crs:
+            crs = self.exposure_geoms[0].crs
+            roads = roads.to_crs(crs)
+
+        # Set the exposure_geoms
         self.set_exposure_geoms(roads[["Object ID", "geometry"]])
         self.set_geom_names("roads")
 
