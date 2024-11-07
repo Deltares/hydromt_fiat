@@ -634,6 +634,25 @@ class FiatModel(GridModel):
                     if self.exposure.unit != da.units:
                         da = da * unit_conversion_factor
 
+                                # clip bonding boxes and save new exposure
+                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                #exposure_bounding_box = gdf.total_bounds
+                da_bounding_box =da.rio.bounds() 
+                gdf = gpd.clip(gdf, da_bounding_box)
+                if gdf["primary_object_type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+                    gdf_buildings= gdf[~gdf.isin(gdf_roads)]
+                    idx_buildings = self.exposure.geom_names.index("buildings")
+                    idx_roads = self.exposure.geom_names.index("roads")
+                    self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[["object_id", "geometry"]]
+                    self.exposure.exposure_geoms[idx_roads] = gdf_roads[["object_id", "geometry"]]
+                else:
+                    self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+
+                del gdf["geometry"]
+                self.exposure.exposure_db = gdf
+
+            # convert to gdal compliant
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
 
