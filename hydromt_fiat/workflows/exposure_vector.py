@@ -477,6 +477,9 @@ class ExposureVector(Exposure):
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_building.crs != self.crs:
             occupancy_building = occupancy_building.to_crs(self.crs)
+            occupancy_landuse = occupancy_landuse.to_crs(self.crs)
+            occupancy_amenity = occupancy_amenity.to_crs(self.crs)
+
             self.logger.warning(
                 "The CRS of the occupancy map is not the same as that "
                 "of the exposure data. The occupancy map has been "
@@ -491,9 +494,11 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
-            gdf = sjoin_largest_area(
-                self.exposure_geoms[0], occupancy_building[to_keep]
+            gdf = gpd.sjoin(
+                self.exposure_geoms[0], occupancy_building[to_keep], how = "left"
             )
+            gdf.drop(columns=["index_right"], inplace=True)
+            gdf.drop_duplicates(subset='geometry', inplace=True)
 
             if occupancy_source == 'OSM':
             # Replace values with landuse if applicable for Primary and Secondary Object Type
@@ -504,16 +509,20 @@ class ExposureVector(Exposure):
                     },
                     inplace=True,
                 )
-                gdf_landuse = gpd.sjoin(
-                    gdf, occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
+                
+                gdf_landuse = gdf.sjoin(
+                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
                 )
+                gdf_landuse.drop(columns=["index_right"], inplace=True)
+                gdf_landuse.drop_duplicates(subset='geometry', inplace=True)
+
                 gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
                     gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
                 )
                 gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = (
                     gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
                 )
-                gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
+                gdf_landuse.drop(columns=["pot", "pot_2"], inplace=True)
 
                 # Fill nan values with values amenity for Primary and Secondary Object Type
                 occupancy_amenity.rename(
@@ -523,16 +532,24 @@ class ExposureVector(Exposure):
                     },
                     inplace=True,
                 )
+
                 gdf_amenity = gdf_landuse.sjoin(
                     occupancy_amenity[["geometry", "pot", "pot_2"]], how="left"
                 )
+                
+                gdf_amenity.drop(columns=["index_right"], inplace=True)
+                gdf_amenity.drop_duplicates(subset='geometry', inplace=True)
+
                 gdf_amenity.loc[
                     gdf_amenity["Primary Object Type"].isna(), "Secondary Object Type"
                 ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot_2"]
                 gdf_amenity.loc[
                     gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"
                 ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
-                gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
+                
+                gdf_amenity.drop(columns=["pot", "pot_2"], inplace=True)
+                if "index_right" in gdf_amenity.columns:
+                    gdf_amenity.drop(columns=["index_right"], inplace=True)
 
                 # Rename some major catgegories
                 gdf_amenity.loc[
@@ -553,6 +570,11 @@ class ExposureVector(Exposure):
                     gdf.loc[gdf["Primary Object Type"].isna()].index
                 ) + len(gdf.loc[gdf["Primary Object Type"] == ""].index)
                 if keep_unclassified:
+                    # merge assets with occupancy
+                    if len(self.exposure_geoms[0]) > len(gdf):
+                        gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
+                        gdf.drop_duplicates(subset = "Object ID", inplace = True)	
+                    # assign residential if no primary object type
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Secondary Object Type"
                     ] = "residential"
@@ -826,7 +848,7 @@ class ExposureVector(Exposure):
 
                 # Unit conversion
                 self.unit_conversion("Ground Floor Height", gfh_unit)
-                
+
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
 
