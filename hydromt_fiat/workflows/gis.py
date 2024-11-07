@@ -206,6 +206,20 @@ def join_spatial_data(
             f"{get_crs_str_from_gdf(left_gdf.crs)}."
         )
         right_gdf = right_gdf.to_crs(left_gdf.crs)
+    
+    if 'MultiPolygon' in list(left_gdf.geom_type.unique()):
+        for index, row in left_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                left_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(left_gdf.geom_type.unique()) == 1
+
+    if 'MultiPolygon' in list(right_gdf.geom_type.unique()):
+        for index, row in right_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                right_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(right_gdf.geom_type.unique()) == 1
 
     left_gdf_type = check_geometry_type(left_gdf)
     right_gdf_type = check_geometry_type(right_gdf)
