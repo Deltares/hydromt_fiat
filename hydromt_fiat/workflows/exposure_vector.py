@@ -579,8 +579,8 @@ class ExposureVector(Exposure):
             gdf.reset_index(drop=True, inplace=True)
 
             # Add secondary Object Type if not in columns
-            if "Secondary Object Type" not in self.exposure_db.columns:
-                self.exposure_db["Secondary Object Type"] = self.exposure_db["Primary Object Type"]
+            if "Secondary Object Type" not in gdf.columns:
+                gdf["Secondary Object Type"] =gdf["Primary Object Type"]
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
