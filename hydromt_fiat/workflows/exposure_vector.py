@@ -538,7 +538,7 @@ class ExposureVector(Exposure):
             if "Primary Object Type" in gdf.columns:
                 nr_without_primary_object = len(
                     gdf.loc[gdf["Primary Object Type"].isna()].index
-                ) + len(gdf.loc[gdf["Primary Object Type"] != ""].index)
+                ) + len(gdf.loc[gdf["Primary Object Type"] == ""].index)
                 if keep_unclassified:
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Secondary Object Type"
