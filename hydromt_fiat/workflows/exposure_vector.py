@@ -82,6 +82,8 @@ class ExposureVector(Exposure):
         unit: str = Units.feet.value,
         country: str = None,
         damage_unit=Currency.dollar.value,
+        gfh_unit = None,
+        ground_elevation_unit = None
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
 
@@ -97,6 +99,10 @@ class ExposureVector(Exposure):
             The CRS of the Exposure data, by default None
         damage_unit : str, optional
             The unit/currency of the (potential) damages, by default USD$
+        gfh_unit : str, optional
+            The unit of the ground floor height if different from model unit
+        ground_elevation_unit : str, optional
+            The unit of the ground elevation if different from model unit
         """
         super().__init__(
             data_catalog=data_catalog, logger=logger, region=region, crs=crs
@@ -106,6 +112,8 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
+        self.gfh_unit = gfh_unit
+        self.ground_elevation_unit = ground_elevation_unit
         self.building_footprints = gpd.GeoDataFrame
 
     def bounding_box(self):
@@ -323,11 +331,13 @@ class ExposureVector(Exposure):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        unit: str,
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
+        gfh_unit: str = None,
         max_dist: Union[int, float, List[float], List[int], None] = 10,
         ground_elevation_file: Union[int, float, str, Path, None] = None,
         ground_elevation_unit: str = None,
@@ -354,7 +364,7 @@ class ExposureVector(Exposure):
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
         self.setup_ground_floor_height(
-            ground_floor_height, attribute_name, gfh_method, max_dist
+            ground_floor_height, attribute_name, gfh_method, max_dist, gfh_unit
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
@@ -736,6 +746,7 @@ class ExposureVector(Exposure):
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
+        gfh_unit: Union[str, Units] = None
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
@@ -812,6 +823,10 @@ class ExposureVector(Exposure):
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attribute_name
                 )
+
+                # Unit conversion
+                self.unit_conversion("Ground Floor Height", gfh_unit)
+                
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
 
@@ -1000,7 +1015,7 @@ class ExposureVector(Exposure):
                 )
     
     def setup_ground_elevation(
-        self, ground_elevation: Union[int, float, None, str, Path], unit: str
+        self, ground_elevation: Union[int, float, None, str, Path], ground_elevation_unit: str
     ) -> None:
         if ground_elevation:
             self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
@@ -1008,21 +1023,9 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
+        
             # Unit conversion
-            if unit != self.unit:
-                if (unit == Units.meters.value) and (self.unit == Units.feet.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
-                    ].apply(lambda x: x * Conversion.meters_to_feet.value)
-
-                elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
-                    ].apply(lambda x: x * Conversion.feet_to_meters.value)
-                else:
-                    self.logger.warning(
-                        "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
-                    )
+            self.unit_conversion("Ground Elevation", ground_elevation_unit)
 
         else:
             self.logger.warning(
@@ -2013,6 +2016,25 @@ class ExposureVector(Exposure):
             "AQ": "antarctica",
         }
         return continent_dict[continent_code]
+
+    def unit_conversion(self, parameter: str,unit: Union[str, Units]) -> Union[str, Units]:
+                    # Unit conversion
+        if unit != self.unit:
+            if (unit == Units.meters.value) and (self.unit == Units.feet.value):
+                self.exposure_db[parameter] = self.exposure_db[
+                    parameter
+                ].apply(lambda x: x * Conversion.meters_to_feet.value)
+
+            elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
+                self.exposure_db[parameter] = self.exposure_db[
+                    parameter
+                ].apply(lambda x: x * Conversion.feet_to_meters.value)
+            else:
+                self.logger.warning(
+                    f"The {parameter} unit is not valid. Please provide the unit of your {parameter} in 'meters' or 'feet'"
+                )
+        else:
+            pass
 
     @staticmethod
     def _set_values_from_other_column(

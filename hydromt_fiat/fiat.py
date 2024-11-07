@@ -313,6 +313,8 @@ class FiatModel(GridModel):
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         unit: str,
+        gfh_unit: str = None,
+        ground_elevation_unit: str = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
@@ -341,7 +343,11 @@ class FiatModel(GridModel):
             height or a path to the data that can be used to add the ground floor
             height to the assets.
         unit : str
+            The unit of the model
+        gfh_unit : str
             The unit of the ground_floor_height
+        ground_elevation_unit : str
+            The unit of the ground_elevation
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -371,12 +377,15 @@ class FiatModel(GridModel):
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
             unit = unit.value
+
         self.exposure = ExposureVector(
             self.data_catalog,
             self.logger,
             self.region,
             unit=unit,
             damage_unit=damage_unit,
+            gfh_unit = gfh_unit,
+            ground_elevation_unit=ground_elevation_unit,
         )
 
         if asset_locations == max_potential_damage:
@@ -398,10 +407,13 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
+                unit,
                 occupancy_attr,
                 damage_types=damage_types,
                 country=country,
+                gfh_unit=gfh_unit,
                 ground_elevation_file=ground_elevation_file,
+                ground_elevation_unit=ground_elevation_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn = damage_translation_fn

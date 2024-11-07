@@ -81,13 +81,15 @@ class ExposureBuildingsSettings(BaseModel):
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: Union[str, float]
-    unit: Units
+    gfh_unit: Union[str, Units] = None
+    unit: Union[str, Units]
     extraction_method: ExtractionMethod
     damage_types: Optional[List[str]] = None
     damage_unit: str
     country: str = None
     bf_conversion: bool = False
     keep_unclassified: bool = True
+    ground_elevation_unit: Union[str, Units] = None
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
@@ -95,11 +97,12 @@ class ExposureSetupGroundFloorHeight(BaseModel):
     attribute_name: Optional[Union[str, List[str]]] = None
     gfh_method: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int]] = None
+    gfh_unit: Union[str, Units] = None
 
 
 class ExposureSetupGroundElevation(BaseModel):
     source: Union[int, float, None, str]
-    unit: Union[str, Units]
+    ground_elevation_unit: Union[str, Units] = None
 
 
 class ExposureSetupDamages(BaseModel):
