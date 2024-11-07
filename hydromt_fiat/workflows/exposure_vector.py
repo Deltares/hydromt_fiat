@@ -399,6 +399,9 @@ class ExposureVector(Exposure):
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
+        if len(assets.columns) > 2:
+            assets = assets[['object_id', 'geometry']]
+
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
 
