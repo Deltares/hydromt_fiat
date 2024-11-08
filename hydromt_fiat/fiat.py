@@ -1324,7 +1324,7 @@ class FiatModel(GridModel):
         ):
             self.write_spatial_joins()
         if self.building_footprint_fn:
-            folder = Path(self.root).joinpath("exposure", "building_footprints")
+            folder = Path(self.root).joinpath("geoms", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
