@@ -1435,7 +1435,7 @@
         <span class="p">):</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span>
-                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/aggregation_areas/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;geoms/aggregation_areas/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
                 <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
@@ -1489,7 +1489,7 @@
         <span class="p">):</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">label_name</span><span class="p">,</span>
-                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;exposure/additional_attributes/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.gpkg&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;geoms/additional_attributes/</span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">,</span>  <span class="c1"># TODO Should we define this location somewhere globally?</span>
                 <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="n">attribute_name</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="c1"># If not exist, add to spatial joins</span>
@@ -1730,7 +1730,7 @@
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_spatial_joins</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint_fn</span><span class="p">:</span>
-            <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
+            <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">copy_datasets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building_footprint_fn</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_building_footprints</span><span class="p">()</span>
@@ -1765,11 +1765,11 @@
         <span class="n">spatial_joins_conf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;spatial_joins.toml&quot;</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">write_building_footprints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
+        <span class="n">folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span>
-            <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;building_footprints.gpkg&quot;</span><span class="p">)</span>
+            <span class="n">Path</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;building_footprints.geojson&quot;</span><span class="p">)</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="FiatModel.write_geoms">
