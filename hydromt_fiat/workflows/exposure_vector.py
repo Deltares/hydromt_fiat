@@ -495,12 +495,13 @@ class ExposureVector(Exposure):
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
             gdf = gpd.sjoin(
-                self.exposure_geoms[0], occupancy_building[to_keep], how = "left"
+                self.exposure_geoms[0], occupancy_building[to_keep], how = "left", predicate="intersects"
             )
             gdf.drop(columns=["index_right"], inplace=True)
-            gdf.drop_duplicates(subset='geometry', inplace=True)
 
             if occupancy_source == 'OSM':
+            
+            ## Landuse
             # Replace values with landuse if applicable for Primary and Secondary Object Type
                 occupancy_landuse.rename(
                     columns={
@@ -511,19 +512,18 @@ class ExposureVector(Exposure):
                 )
                 
                 gdf_landuse = gdf.sjoin(
-                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
+                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
-                gdf_landuse.drop(columns=["index_right"], inplace=True)
-                gdf_landuse.drop_duplicates(subset='geometry', inplace=True)
+                gdf_landuse.reset_index(inplace = True)
 
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
-                )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
-                )
-                gdf_landuse.drop(columns=["pot", "pot_2"], inplace=True)
+                # Replace values with landuse
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = gdf_landuse["pot"]
+                gdf_landuse.loc[gdf_landuse["pot_2"].notna(), "Secondary Object Type"] = gdf_landuse["pot_2"]
 
+                gdf_landuse.drop(columns=["index_right","pot", "pot_2"], inplace=True)
+
+                
+                ## Amenity
                 # Fill nan values with values amenity for Primary and Secondary Object Type
                 occupancy_amenity.rename(
                     columns={
@@ -534,22 +534,14 @@ class ExposureVector(Exposure):
                 )
 
                 gdf_amenity = gdf_landuse.sjoin(
-                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left"
+                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
+                gdf_amenity.reset_index(inplace = True)
+                # Replace values with amenity
+                gdf_amenity.loc[gdf_amenity["pot"].notna(), "Primary Object Type"] = gdf_amenity["pot"]
+                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "Secondary Object Type"] = gdf_amenity["pot_2"]
                 
-                gdf_amenity.drop(columns=["index_right"], inplace=True)
-                gdf_amenity.drop_duplicates(subset='geometry', inplace=True)
-
-                gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Secondary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot_2"]
-                gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
-                
-                gdf_amenity.drop(columns=["pot", "pot_2"], inplace=True)
-                if "index_right" in gdf_amenity.columns:
-                    gdf_amenity.drop(columns=["index_right"], inplace=True)
+                gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
                 # Rename some major catgegories
                 gdf_amenity.loc[
@@ -562,6 +554,7 @@ class ExposureVector(Exposure):
                     gdf_amenity["Secondary Object Type"] == "apartments", "Secondary Object Type"
                 ] = "residential"
                 gdf = gdf_amenity
+                gdf.drop_duplicates(subset='geometry', inplace=True)
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
