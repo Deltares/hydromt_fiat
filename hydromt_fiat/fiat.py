@@ -1006,7 +1006,7 @@ class FiatModel(GridModel):
         ):
             attrs = {
                 "name": label_name,
-                "file": f"exposure/aggregation_areas/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
+                "file": f"geoms/aggregation_areas/{file_name}.geojson",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)
@@ -1060,7 +1060,7 @@ class FiatModel(GridModel):
         ):
             attrs = {
                 "name": label_name,
-                "file": f"exposure/additional_attributes/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
+                "file": f"geoms/additional_attributes/{file_name}.geojson",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
             # If not exist, add to spatial joins
@@ -1293,7 +1293,7 @@ class FiatModel(GridModel):
         ):
             self.write_spatial_joins()
         if self.building_footprint_fn:
-            folder = Path(self.root).joinpath("exposure", "building_footprints")
+            folder = Path(self.root).joinpath("geoms", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
@@ -1327,11 +1327,11 @@ class FiatModel(GridModel):
         spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
 
     def write_building_footprints(self) -> None:
-        folder = Path(self.root).joinpath("exposure", "building_footprints")
+        folder = Path(self.root).joinpath("geoms", "building_footprints")
         if not os.path.exists(folder):
             os.makedirs(folder)
         self.building_footprint.to_file(
-            Path(folder).joinpath("building_footprints.gpkg")
+            Path(folder).joinpath("building_footprints.geojson")
         )
 
     def write_geoms(self):
