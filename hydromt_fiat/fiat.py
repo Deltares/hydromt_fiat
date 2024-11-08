@@ -1037,7 +1037,7 @@ class FiatModel(GridModel):
         ):
             attrs = {
                 "name": label_name,
-                "file": f"exposure/aggregation_areas/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
+                "file": f"geoms/aggregation_areas/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)

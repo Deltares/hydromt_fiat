@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
@@ -356,6 +356,8 @@ class ExposureVector(Exposure):
         if (
             any(
                 isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
+            ) or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"]
+                
             )
             and bf_conversion
         ):
