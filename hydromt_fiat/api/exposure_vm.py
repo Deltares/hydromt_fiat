@@ -135,6 +135,7 @@ class ExposureViewModel:
                 ground_elevation_unit=ground_elevation_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
+                unit=Units.meters.value,
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
