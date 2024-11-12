@@ -12,19 +12,6 @@ class ExtractionMethod(str, Enum):
 class Units(str, Enum):
     meters = "meters",
     feet = "feet"
-    @classmethod
-    def from_string(cls, value: str):
-        """Map different strings to the correct Units enum."""
-        mappings = {
-            "meters": cls.meters,
-            "m": cls.meters,
-            "feet": cls.feet,
-            "ft": cls.feet,
-        }
-        try:
-            return mappings[value]
-        except KeyError:
-            raise ValueError(f"Unknown unit: {value}")
 
 class Conversion(float, Enum):
     meters_to_feet = 3.28084

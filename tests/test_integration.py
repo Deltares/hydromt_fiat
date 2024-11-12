@@ -56,7 +56,7 @@ _cases = {
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
                 "ground_floor_height": "NSI",
-                "unit": "ft",
+                "unit": "feet",
             },
             "setup_hazard": {
                 "map_fn": [
@@ -96,7 +96,7 @@ _cases = {
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
                 "ground_floor_height": "NSI",
-                "unit": "ft",
+                "unit": "feet",
             },
             "setup_hazard": {
                 "map_fn": [

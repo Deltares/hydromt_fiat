@@ -8,4 +8,4 @@ setup_exposure_roads:
   roads_fn: OSM
   road_types: ["motorway", "primary", "secondary", "tertiary"]
   road_damage: default_road_max_potential_damages
-  unit: meter
+  unit: meters
