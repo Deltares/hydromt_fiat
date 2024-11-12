@@ -651,15 +651,15 @@ class FiatModel(GridModel):
                 #exposure_bounding_box = gdf.total_bounds
                 da_bounding_box =da.rio.bounds() 
                 gdf = gpd.clip(gdf, da_bounding_box)
-                if gdf["primary_object_type"].str.contains("road").any():
-                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+                if gdf["Primary Object Type"].str.contains("road").any():
+                    gdf_roads = gdf[gdf["Primary Object Type"].str.contains("road")]
                     gdf_buildings= gdf[~gdf.isin(gdf_roads)]
                     idx_buildings = self.exposure.geom_names.index("buildings")
                     idx_roads = self.exposure.geom_names.index("roads")
-                    self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[["object_id", "geometry"]]
-                    self.exposure.exposure_geoms[idx_roads] = gdf_roads[["object_id", "geometry"]]
+                    self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[["Object ID", "geometry"]]
+                    self.exposure.exposure_geoms[idx_roads] = gdf_roads[["Object ID", "geometry"]]
                 else:
-                    self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+                    self.exposure.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
 
                 del gdf["geometry"]
                 self.exposure.exposure_db = gdf
