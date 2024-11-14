@@ -1382,15 +1382,6 @@ class FiatModel(GridModel):
                     f"exposure.geom.file{str(i+1)}",
                     fn.format(name=name),
                 )
-                # At the very last clip based on the region
-                if not self.region.empty:
-                    idx = gpd.sjoin(
-                        self.region.to_crs(geom.crs),
-                        geom,
-                        predicate="contains_properly",
-                        how="inner",
-                    ).index_right
-                    geom = geom.loc[idx]
                 geom.to_file(_fn)
 
         if self.geoms:
