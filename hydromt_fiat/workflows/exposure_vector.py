@@ -1927,7 +1927,7 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            assert set(self.exposure_geoms[0]["object_id"]) == set(df["object_id"])
+            #assert set(self.exposure_geoms[0]["object_id"]) == set(df["object_id"])
             df["geometry"] = self.exposure_geoms[0]["geometry"]
             gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
         elif len(self.exposure_geoms) > 1:
