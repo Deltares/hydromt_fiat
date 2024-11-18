@@ -258,7 +258,7 @@ def join_spatial_data(
 
 
 def ground_elevation_from_dem(
-    ground_elevation: Union[int, float, None, str, Path],
+    ground_elevation: Union[None, str, Path],
     exposure_db: pd.DataFrame,
     exposure_geoms: gpd.GeoDataFrame,
 ) -> None:

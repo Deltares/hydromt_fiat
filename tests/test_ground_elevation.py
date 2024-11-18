@@ -18,7 +18,7 @@ _cases = {
     "update_ground_elevation_with_dem": {
         "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_elevation",
-        "ground_elevation_file": DATADIR / "charleston_14m.tif",
+        "ground_elevation": DATADIR / "charleston_14m.tif",
     },
 }
 
@@ -37,7 +37,7 @@ def test_ground_elevation(case):
     unique_ge_original = original_exposure["Ground Elevation"].unique()
 
     fm.exposure.setup_ground_elevation(
-        _cases[case]["ground_elevation_file"],
+        _cases[case]["ground_elevation"],
     )
 
     # Remove the new root folder if it already exists
@@ -62,7 +62,7 @@ def test_ground_elevation(case):
 
     # Check if the calculated values are within the maximun and minimun value of the original daster file. This function could be used to calculate
     # Ground Elevation itself in case the ground_elevation_from_dem() function in gis.py is not accurate enough
-    raster_file_path = _cases[case]["ground_elevation_file"]
+    raster_file_path = _cases[case]["ground_elevation"]
     with rasterio.open(raster_file_path) as src:
         nodata_value = src.nodatavals[0]
         raster_data = src.read(1)

@@ -26,7 +26,7 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation_file": EXAMPLEDIR
+        "ground_elevation": EXAMPLEDIR
         / "test_setup_new_composite_area_elevation_aggregation"
         / "charleston_14m.tif",
         "aggregation_area_fn": [
@@ -61,7 +61,7 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
         elevation_reference=_cases[case]["type"],
         path_ref=_cases[case]["path_ref"],
         attr_ref=_cases[case]["attr_ref"],
-        ground_elevation=_cases[case]["ground_elevation_file"],
+        ground_elevation=_cases[case]["ground_elevation"],
         aggregation_area_fn=_cases[case]["aggregation_area_fn"],
         attribute_names=_cases[case]["attribute_names"],
         label_names=_cases[case]["label_names"],
