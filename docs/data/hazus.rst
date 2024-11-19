@@ -18,7 +18,7 @@ by providing the following values in the configuration file::
 
     [setup_exposure_buildings]
     max_potential_damage = "hazus_max_potential_damages"
-    unit = "m"
+    length_unit = "meters"
 
 
 The HAZUS flood depth-damage functions and replacement values are processed into an easy-to-use format

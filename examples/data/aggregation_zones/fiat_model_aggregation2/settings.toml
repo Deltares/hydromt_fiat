@@ -20,5 +20,5 @@ file = "./exposure/exposure.csv"
 
 [exposure.geom]
 crs = "EPSG:4326"
-unit = "feet"
+length_unit = "feet"
 file1 = "./exposure/buildings.gpkg"

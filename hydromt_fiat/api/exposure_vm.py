@@ -81,7 +81,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                unit=Units.feet.value,
+                length_unit=Units.feet.value,
                 country="United States",
             )
 
@@ -121,7 +121,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                unit=Units.meters.value,
+                length_unit=Units.meters.value,
                 country=country,
             )
             self.exposure.setup_buildings_from_multiple_sources(
@@ -135,7 +135,6 @@ class ExposureViewModel:
                 grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                unit=Units.meters.value,
             )
             primary_object_types = (
                 self.exposure.exposure_db["Primary Object Type"].unique().tolist()
@@ -169,7 +168,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                unit=Units.feet.value,  # TODO: make flexible
+                length_unit=Units.feet.value, 
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.dollar.value,
@@ -200,7 +199,7 @@ class ExposureViewModel:
                 keep_unclassified=keep_unclassified,
                 max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
-                unit=Units.meters.value,
+                length_unit=Units.meters.value,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.euro.value,
@@ -284,10 +283,10 @@ class ExposureViewModel:
             None,
             str,
         ],
-        unit: Union[str, Units],
+        grnd_elev_unit: Units,
     ):
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
-            source=source, unit=unit
+            source=source, grnd_elev_unit=grnd_elev_unit
         )
 
     def set_roads_settings(

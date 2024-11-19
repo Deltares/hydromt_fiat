@@ -311,13 +311,13 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        unit: str,
-        gfh_unit: str = None,
+        length_unit: Units = None,
+        gfh_unit: Units = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
-        damage_unit: str = Currency.dollar.value,
+        damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
         grnd_elev_unit: Units = None,
@@ -341,9 +341,9 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        unit : str
+        length_unit : Units
             The unit of the model
-        gfh_unit : str
+        gfh_unit : Units
             The unit of the ground_floor_height
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
@@ -356,7 +356,7 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
-        damage_unit: str, optional
+        damage_unit: Currency, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
@@ -376,14 +376,14 @@ class FiatModel(GridModel):
             The path to the translation function that can be used to relate user damage curves with user damages.
         """
         # In case the unit is passed as a pydantic value get the string
-        if hasattr(unit, "value"):
-            unit = unit.value
+        if hasattr(length_unit, "value"):
+            length_unit = length_unit.value
 
         self.exposure = ExposureVector(
             self.data_catalog,
             self.logger,
             self.region,
-            unit=unit,
+            length_unit=length_unit,
             damage_unit=damage_unit,
         )
 
@@ -406,7 +406,6 @@ class FiatModel(GridModel):
                 max_potential_damage,
                 ground_floor_height,
                 extraction_method,
-                unit,
                 occupancy_attr,
                 damage_types=damage_types,
                 country=country,
@@ -475,7 +474,7 @@ class FiatModel(GridModel):
         # Update the other config settings
         self.set_config("exposure.csv.file", "exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
-        self.set_config("exposure.geom.unit", unit)
+        self.set_config("exposure.geom.length_unit", length_unit)
         self.set_config("exposure.damage_unit", damage_unit)
 
     def setup_exposure_roads(
@@ -499,7 +498,7 @@ class FiatModel(GridModel):
                 self.data_catalog,
                 self.logger,
                 self.region,
-                unit=unit,
+                length_unit=unit,
             )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
@@ -644,7 +643,7 @@ class FiatModel(GridModel):
             # Convert to units of the exposure data if required
             if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
                 if hasattr(da, "units"):
-                    if self.exposure.unit != da.units:
+                    if self.exposure.length_unit != da.units:
                         da = da * unit_conversion_factor
 
             # convert to gdal compliant
@@ -1257,7 +1256,7 @@ class FiatModel(GridModel):
             self.exposure = ExposureVector(
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
-                unit=self.get_config("exposure.geom.unit"),
+                length_unit=self.get_config("exposure.geom.length_unit"),
                 damage_unit=self.get_config("exposure.damage_unit"),
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )

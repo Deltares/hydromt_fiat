@@ -31,7 +31,7 @@ Exposure data can be build from a data_catalog_, a data API key, or by supplying
 to local data on the user's machine. The `asset_locations`, `occupancy_type`, and `max_potential_damage`
 data should be provided as a vector file (e.g. *.shp* or *.gpkg*). The `ground_floor_height` can currently
 only be set to a single value (this will be updated soon!). The `damage_types` should be provided as a
-list of strings (e.g. ["structure", "content"]). The `unit` should be provided as a string (e.g. "m").
+list of strings (e.g. ["structure", "content"]). The `length_unit` should be provided as a string (e.g. "meters").
 See below how the `setup_exposure_buildings` method can be used to build or update the exposure data::
 
    [setup_exposure_buildings]
@@ -40,7 +40,7 @@ See below how the `setup_exposure_buildings` method can be used to build or upda
    damage_types = <List of damage types, e.g. ["structure", "content"]>
    max_potential_damage = <Key in the Data Catalog, data API key, or path to local data>
    ground_floor_height = <For now only a number can be entered here for uniform ground floor heights>
-   unit = <The unit of the values in the exposure data inputs, e.g. if the ground floor height in meters, "m">
+   length_unit = <The unit of the values in the exposure data inputs, e.g. if the ground floor height in meters, "meters">
 
 The following method is used to build or update the **exposure** data:
 
@@ -110,7 +110,7 @@ building footprint or over the whole length of the linestring). The user can use
 a default by setting it to "default". If required, the user can provide the names of the damage functions
 as a list to `functions_mean` or `functions_max` to respectively use the mean or max hazard value for all
 assets that use that damage function. The `damage_types` should be provided as a
-list of strings (e.g. ["structure", "content"]). The `unit` should be provided as a string (e.g. "m").
+list of strings (e.g. ["structure", "content"]). The `unit` should be provided as a string (e.g. "meters").
 The `step_size` should be provided as a float (e.g. 0.01).
 See below how the `setup_vulnerability` method can be used to build or update the exposure data::
 
