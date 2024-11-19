@@ -554,9 +554,10 @@ class ExposureVector(Exposure):
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
+                gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = np.nan
                 nr_without_primary_object = len(
                     gdf.loc[gdf["Primary Object Type"].isna()].index
-                ) + len(gdf.loc[gdf["Primary Object Type"] == ""].index)
+                )
                 if keep_unclassified:
                     # merge assets with occupancy
                     if len(self.exposure_geoms[0]) > len(gdf):
@@ -569,12 +570,6 @@ class ExposureVector(Exposure):
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Primary Object Type"
                     ] = "residential"
-                    gdf.loc[
-                        gdf["Primary Object Type"] == "", "Secondary Object Type"
-                    ] = "residential"
-                    gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = (
-                        "residential"
-                    )
                     self.logger.warning(
                         f"{nr_without_primary_object} objects were not overlapping with the "
                         "land use data and will be classified as residential buildings."
