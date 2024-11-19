@@ -509,7 +509,7 @@ class ExposureVector(Exposure):
                 gdf_landuse = gdf.sjoin(
                     occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
-                gdf_landuse.reset_index(inplace = True)
+                gdf_landuse.reset_index(inplace = True, drop=True)
 
                 # Replace values with landuse
                 gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = gdf_landuse["pot"]
@@ -531,7 +531,7 @@ class ExposureVector(Exposure):
                 gdf_amenity = gdf_landuse.sjoin(
                     occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
-                gdf_amenity.reset_index(inplace = True)
+                gdf_amenity.reset_index(inplace = True, drop=True)
                 # Replace values with amenity
                 gdf_amenity.loc[gdf_amenity["pot"].notna(), "Primary Object Type"] = gdf_amenity["pot"]
                 gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "Secondary Object Type"] = gdf_amenity["pot_2"]
