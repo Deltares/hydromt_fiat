@@ -1326,13 +1326,16 @@ class FiatModel(GridModel):
             self.exposure.read_geoms(exposure_fn)
 
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
-        
         if self.spatial_joins["aggregation_areas"]:
             fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas","*.geojson").as_posix())
             fns.append(fns_aggregation[0])
         if self.spatial_joins["additional_attributes"]:
-            fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())
-            fns.append(fns_additional_attributes[0])
+            if len(glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())) > 0:
+                fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())
+                fns.append(fns_additional_attributes[0])
+            if len(glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())) > 0:
+                fns_building_footprints = glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())
+                fns.append(fns_building_footprints[0])
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
