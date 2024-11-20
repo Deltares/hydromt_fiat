@@ -66,7 +66,7 @@ class ExposureViewModel:
         max_potential_damage: str = None,
         fiat_key_maps: Optional[Dict[str, str]] = None,
         crs: Union[str, int] = None,
-        ground_elevation_unit: str = None,
+        grnd_elev_unit: Units = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
     ):
@@ -81,10 +81,9 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                unit=Units.feet.value,
-                country="United States",
+                length_unit=Units.feet.value,
             )
-
+        
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
@@ -121,9 +120,9 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                unit=Units.meters.value,
-                country=country,
-            )
+                length_unit=Units.meters.value,
+                )
+            
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations=source,
                 occupancy_source=source,
@@ -132,7 +131,7 @@ class ExposureViewModel:
                 extraction_method="centroid",
                 damage_types=["structure", "content"],
                 country=country,
-                ground_elevation_unit=ground_elevation_unit,
+                grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
             )
@@ -168,7 +167,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                unit=Units.feet.value,  # TODO: make flexible
+                length_unit=Units.feet.value, 
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.dollar.value,
@@ -199,7 +198,7 @@ class ExposureViewModel:
                 keep_unclassified=keep_unclassified,
                 max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
-                unit=Units.meters.value,  # TODO: make flexible
+                length_unit=Units.meters.value,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.euro.value,
@@ -283,10 +282,10 @@ class ExposureViewModel:
             None,
             str,
         ],
-        unit: Union[str, Units],
+        grnd_elev_unit: Units,
     ):
         self.exposure_ground_elevation_model = ExposureSetupGroundElevation(
-            source=source, unit=unit
+            source=source, grnd_elev_unit=grnd_elev_unit
         )
 
     def set_roads_settings(

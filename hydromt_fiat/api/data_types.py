@@ -13,7 +13,6 @@ class Units(str, Enum):
     meters = "meters"
     feet = "feet"
 
-
 class Conversion(float, Enum):
     meters_to_feet = 3.28084
     feet_to_meters = 0.3048
@@ -81,13 +80,15 @@ class ExposureBuildingsSettings(BaseModel):
     occupancy_type: str
     max_potential_damage: str
     ground_floor_height: Union[str, float]
-    unit: Units
+    gfh_unit: Units = None
+    length_unit: Units
     extraction_method: ExtractionMethod
     damage_types: Optional[List[str]] = None
     damage_unit: str
     country: str = None
     bf_conversion: bool = False
     keep_unclassified: bool = True
+    grnd_elev_unit: Units = None
 
 
 class ExposureSetupGroundFloorHeight(BaseModel):
@@ -95,11 +96,12 @@ class ExposureSetupGroundFloorHeight(BaseModel):
     attribute_name: Optional[Union[str, List[str]]] = None
     gfh_method: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int]] = None
+    gfh_unit: Units = None
 
 
 class ExposureSetupGroundElevation(BaseModel):
     source: Union[int, float, None, str]
-    unit: Union[str, Units]
+    grnd_elev_unit: Units = None
 
 
 class ExposureSetupDamages(BaseModel):

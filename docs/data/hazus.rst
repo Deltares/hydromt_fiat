@@ -14,11 +14,11 @@ by providing the following values in the configuration file::
     [setup_vulnerability]
     vulnerability_fn = "default_vulnerability_curves"
     vulnerability_identifiers_and_linking_fn = "default_hazus_iwr_linking"
-    unit = "ft"
+    unit = "feet"
 
     [setup_exposure_buildings]
     max_potential_damage = "hazus_max_potential_damages"
-    unit = "m"
+    length_unit = "meters"
 
 
 The HAZUS flood depth-damage functions and replacement values are processed into an easy-to-use format

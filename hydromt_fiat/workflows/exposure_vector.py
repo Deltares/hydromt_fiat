@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
@@ -79,8 +79,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        unit: str = Units.feet.value,
-        country: str = None,
+        length_unit: Units = Units.feet.value,
         damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
@@ -95,6 +94,8 @@ class ExposureVector(Exposure):
             The region of interest, by default None
         crs : str, optional
             The CRS of the Exposure data, by default None
+        length_unit : Units, optional
+            The length_unit of the model, by default feet
         damage_unit : str, optional
             The unit/currency of the (potential) damages, by default USD$
         """
@@ -103,7 +104,7 @@ class ExposureVector(Exposure):
         )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
-        self.unit = unit
+        self.length_unit = length_unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
         self.building_footprints = gpd.GeoDataFrame
@@ -146,7 +147,7 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,
+        ground_elevation: Union[int, float, str, Path, None] = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -232,9 +233,9 @@ class ExposureVector(Exposure):
 
         # Set the ground floor height if not yet set
         # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
-        if ground_elevation_file is not None:
+        if ground_elevation is not None:
             self.setup_ground_elevation(
-                ground_elevation_file,
+                ground_elevation,
             )
 
         # Remove the geometry column from the exposure_db
@@ -284,7 +285,7 @@ class ExposureVector(Exposure):
 
         # Convert OSM road from meters to feet (if model unit is feet)
         road_length = get_road_lengths(roads)
-        if self.unit == Units.feet.value and str(source).upper() == "OSM":
+        if self.length_unit == Units.feet.value and str(source).upper() == "OSM":
             road_length = road_length * Conversion.meters_to_feet.value
         road_length = road_length.apply(lambda x: f"{x:.2f}")
 
@@ -328,9 +329,10 @@ class ExposureVector(Exposure):
         country: Union[str, None] = None,
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
+        gfh_unit: Units = None,
         max_dist: Union[int, float, List[float], List[int], None] = 10,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,
-        ground_elevation_unit: str = None,
+        ground_elevation: Union[int, float, str, Path, None] = None,
+        grnd_elev_unit: Units = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         damage_translation_fn: Union[Path, str] = None,
@@ -346,6 +348,8 @@ class ExposureVector(Exposure):
         if (
             any(
                 isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
+            ) or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"]
+                
             )
             and bf_conversion
         ):
@@ -354,10 +358,10 @@ class ExposureVector(Exposure):
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
         self.setup_ground_floor_height(
-            ground_floor_height, attribute_name, gfh_method, max_dist
+            ground_floor_height, attribute_name, gfh_method, max_dist, gfh_unit
         )
         self.setup_extraction_method(extraction_method)
-        self.setup_ground_elevation(ground_elevation_file, ground_elevation_unit)
+        self.setup_ground_elevation(ground_elevation, grnd_elev_unit)
 
     def setup_asset_locations(self, asset_locations: str) -> None:
         """Set up the asset locations (points or polygons).
@@ -399,6 +403,9 @@ class ExposureVector(Exposure):
 
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
+        if len(assets.columns) > 2:
+            assets = assets[['Object ID', 'geometry']]
+
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
 
@@ -464,6 +471,9 @@ class ExposureVector(Exposure):
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_building.crs != self.crs:
             occupancy_building = occupancy_building.to_crs(self.crs)
+            occupancy_landuse = occupancy_landuse.to_crs(self.crs)
+            occupancy_amenity = occupancy_amenity.to_crs(self.crs)
+
             self.logger.warning(
                 "The CRS of the occupancy map is not the same as that "
                 "of the exposure data. The occupancy map has been "
@@ -478,11 +488,14 @@ class ExposureVector(Exposure):
             # If there is only one exposure geom, do the spatial join with the
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
-            gdf = sjoin_largest_area(
-                self.exposure_geoms[0], occupancy_building[to_keep]
+            gdf = gpd.sjoin(
+                self.exposure_geoms[0], occupancy_building[to_keep], how = "left", predicate="intersects"
             )
+            gdf.drop(columns=["index_right"], inplace=True)
 
             if occupancy_source == 'OSM':
+            
+            ## Landuse
             # Replace values with landuse if applicable for Primary and Secondary Object Type
                 occupancy_landuse.rename(
                     columns={
@@ -491,17 +504,20 @@ class ExposureVector(Exposure):
                     },
                     inplace=True,
                 )
-                gdf_landuse = gpd.sjoin(
-                    gdf, occupancy_landuse[["geometry", "pot", "pot_2"]], how="left"
+                
+                gdf_landuse = gdf.sjoin(
+                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
-                )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Secondary Object Type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
-                )
-                gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
+                gdf_landuse.reset_index(inplace = True, drop=True)
 
+                # Replace values with landuse
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "Primary Object Type"] = gdf_landuse["pot"]
+                gdf_landuse.loc[gdf_landuse["pot_2"].notna(), "Secondary Object Type"] = gdf_landuse["pot_2"]
+
+                gdf_landuse.drop(columns=["index_right","pot", "pot_2"], inplace=True)
+
+                
+                ## Amenity
                 # Fill nan values with values amenity for Primary and Secondary Object Type
                 occupancy_amenity.rename(
                     columns={
@@ -510,15 +526,15 @@ class ExposureVector(Exposure):
                     },
                     inplace=True,
                 )
+
                 gdf_amenity = gdf_landuse.sjoin(
-                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left"
+                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
                 )
-                gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Secondary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot_2"]
-                gdf_amenity.loc[
-                    gdf_amenity["Primary Object Type"].isna(), "Primary Object Type"
-                ] = gdf_amenity.loc[gdf_amenity["Primary Object Type"].isna(), "pot"]
+                gdf_amenity.reset_index(inplace = True, drop=True)
+                # Replace values with amenity
+                gdf_amenity.loc[gdf_amenity["pot"].notna(), "Primary Object Type"] = gdf_amenity["pot"]
+                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "Secondary Object Type"] = gdf_amenity["pot_2"]
+                
                 gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
                 # Rename some major catgegories
@@ -532,26 +548,27 @@ class ExposureVector(Exposure):
                     gdf_amenity["Secondary Object Type"] == "apartments", "Secondary Object Type"
                 ] = "residential"
                 gdf = gdf_amenity
+                gdf.drop_duplicates(subset='geometry', inplace=True)
 
             # Remove the objects that do not have a Primary Object Type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "Primary Object Type" in gdf.columns:
+                gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = np.nan
                 nr_without_primary_object = len(
                     gdf.loc[gdf["Primary Object Type"].isna()].index
-                ) + len(gdf.loc[gdf["Primary Object Type"] != ""].index)
+                )
                 if keep_unclassified:
+                    # merge assets with occupancy
+                    if len(self.exposure_geoms[0]) > len(gdf):
+                        gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
+                        gdf.drop_duplicates(subset = "Object ID", inplace = True)	
+                    # assign residential if no primary object type
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Secondary Object Type"
                     ] = "residential"
                     gdf.loc[
                         gdf["Primary Object Type"].isna(), "Primary Object Type"
                     ] = "residential"
-                    gdf.loc[
-                        gdf["Primary Object Type"] == "", "Secondary Object Type"
-                    ] = "residential"
-                    gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = (
-                        "residential"
-                    )
                     self.logger.warning(
                         f"{nr_without_primary_object} objects were not overlapping with the "
                         "land use data and will be classified as residential buildings."
@@ -577,6 +594,10 @@ class ExposureVector(Exposure):
             # Remove Object ID duplicates
             gdf.drop_duplicates(inplace=True, subset="Object ID")
             gdf.reset_index(drop=True, inplace=True)
+
+            # Add secondary Object Type if not in columns
+            if "Secondary Object Type" not in gdf.columns:
+                gdf["Secondary Object Type"] =gdf["Primary Object Type"]
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["Object ID", "geometry"]]
@@ -729,6 +750,7 @@ class ExposureVector(Exposure):
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
+        gfh_unit: Units = None
     ) -> None:
         """Set the ground floor height of the exposure data. This function overwrites
         the existing Ground Floor Height column if it already exists.
@@ -805,6 +827,10 @@ class ExposureVector(Exposure):
                 self.exposure_db = self._set_values_from_other_column(
                     gdf, "Ground Floor Height", attribute_name
                 )
+
+                # Unit conversion
+                self.unit_conversion("Ground Floor Height", gfh_unit)
+
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
 
@@ -993,7 +1019,7 @@ class ExposureVector(Exposure):
                 )
     
     def setup_ground_elevation(
-        self, ground_elevation: Union[int, float, None, str, Path], unit: str
+        self, ground_elevation: Union[None, str, Path], grnd_elev_unit: Units
     ) -> None:
         if ground_elevation:
             self.exposure_db["Ground Elevation"] = ground_elevation_from_dem(
@@ -1001,21 +1027,9 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
+        
             # Unit conversion
-            if unit != self.unit:
-                if (unit == Units.meters.value) and (self.unit == Units.feet.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
-                    ].apply(lambda x: x * Conversion.meters_to_feet.value)
-
-                elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
-                    self.exposure_db["Ground Elevation"] = self.exposure_db[
-                        "Ground Elevation"
-                    ].apply(lambda x: x * Conversion.feet_to_meters.value)
-                else:
-                    self.logger.warning(
-                        "The elevation unit is not valid. Please provide the unit of your ground elevation in 'meters' or 'feet'"
-                    )
+            self.unit_conversion("Ground Elevation", grnd_elev_unit)
 
         else:
             self.logger.warning(
@@ -1453,12 +1467,12 @@ class ExposureVector(Exposure):
                 axis=1
             )
             self.logger.info(
-                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
+                f"The elevation of the new development area is {new_area['height'].values} {self.length_unit}"
                 " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
             self.logger.info(
-                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
+                f"The elevation of the new development area is {new_area['height'].values} {self.length_unit}"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
@@ -2006,6 +2020,25 @@ class ExposureVector(Exposure):
             "AQ": "antarctica",
         }
         return continent_dict[continent_code]
+
+    def unit_conversion(self, parameter: str,unit: Union[str, Units]) -> Union[str, Units]:
+                    # Unit conversion
+        if unit != self.length_unit:
+            if (unit == Units.meters.value) and (self.length_unit == Units.feet.value):
+                self.exposure_db[parameter] = self.exposure_db[
+                    parameter
+                ].apply(lambda x: x * Conversion.meters_to_feet.value)
+
+            elif (unit == Units.feet.value) and (self.length_unit == Units.meters.value):
+                self.exposure_db[parameter] = self.exposure_db[
+                    parameter
+                ].apply(lambda x: x * Conversion.feet_to_meters.value)
+            else:
+                self.logger.warning(
+                    f"The {parameter} unit is not valid. Please provide the unit of your {parameter} in 'meters' or 'feet'"
+                )
+        else:
+            pass
 
     @staticmethod
     def _set_values_from_other_column(

@@ -13,7 +13,7 @@ default_vulnerability_curves:
   data_type: DataFrame
   driver: csv
   meta:
-    unit: ft
+    unit: feet
     category: vulnerability
     source: HAZUS SQL database, USACE-IWR and FEMA expert elicitation curves. The source of these curves is the Draft Report Nonresidential Flood Depth-Damage Functions Derived from Expert Elicitation, April 2009, Revised 2013. FEMA Contract Number HSFEHQ-06-D-0162. Task Order HSFEHQ-08-J-0014. Not for distribution, but data shared by USACE.
 
@@ -22,7 +22,7 @@ jrc_vulnerability_curves:
   data_type: DataFrame
   driver: xlsx
   meta:
-    unit: m
+    unit: meters
     category: vulnerability
 
 hazus_max_potential_damages:
@@ -30,7 +30,7 @@ hazus_max_potential_damages:
   data_type: DataFrame
   driver: xlsx
   meta:
-    unit: ft
+    unit: feet
     category: vulnerability
 
 social_vulnerability:
@@ -52,6 +52,6 @@ default_road_max_potential_damages:
   data_type: DataFrame
   driver: csv
   meta:
-    unit: ft
+    unit: feet
     category: exposure
     source: Bouwer, Laurens & Haasnoot, Marjolijn & Wagenaar, Dennis & Roscoe, Kathryn. (2018). Assessment of alternative flood mitigation strategies for the C-7 Basin in Miami, Florida.

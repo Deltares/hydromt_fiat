@@ -39,7 +39,7 @@ _cases = {
         "dir": "test_roads_from_OSM",
         "configuration": {
             "setup_road_vulnerability": {
-                "vertical_unit": "ft",
+                "vertical_unit": "feet",
                 "threshold_value": 0.5,
                 "min_hazard_value": 0,
                 "max_hazard_value": 15,
@@ -49,7 +49,7 @@ _cases = {
                 "roads_fn": "OSM",
                 "road_types": ["motorway", "primary", "secondary", "tertiary"],
                 "road_damage": "default_road_max_potential_damages",
-                "unit": "ft",
+                "unit": "feet",
             },
         },
         "region": _region,
