@@ -309,7 +309,7 @@ class ExposureVector(Exposure):
             roads = roads.to_crs(crs)
 
         # Set the exposure_geoms
-        self.set_exposure_geoms(roads[["Object ID", "geometry"]])
+        self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")
 
         del roads["geometry"]
@@ -598,8 +598,8 @@ class ExposureVector(Exposure):
                 )
                 gdf_amenity.reset_index(inplace = True, drop=True)
                 # Replace values with amenity
-                gdf_amenity.loc[gdf_amenity["pot"].notna(), "Primary Object Type"] = gdf_amenity["pot"]
-                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "Secondary Object Type"] = gdf_amenity["pot_2"]
+                gdf_amenity.loc[gdf_amenity["pot"].notna(), "primary_object_type"] = gdf_amenity["pot"]
+                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "secondary_object_type"] = gdf_amenity["pot_2"]
                 
                 gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
@@ -618,16 +618,16 @@ class ExposureVector(Exposure):
 
             # Remove the objects that do not have a primary_object_type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
-            if "Primary Object Type" in gdf.columns:
-                gdf.loc[gdf["Primary Object Type"] == "", "Primary Object Type"] = np.nan
+            if "primary_object_type" in gdf.columns:
+                gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = np.nan
                 nr_without_primary_object = len(
-                    gdf.loc[gdf["Primary Object Type"].isna()].index
+                    gdf.loc[gdf["primary_object_type"].isna()].index
                 )
                 if keep_unclassified:
                     # merge assets with occupancy
                     if len(self.exposure_geoms[0]) > len(gdf):
                         gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
-                        gdf.drop_duplicates(subset = "Object ID", inplace = True)	
+                        gdf.drop_duplicates(subset = "object_id", inplace = True)	
                     # assign residential if no primary object type
                     gdf.loc[
                         gdf["primary_object_type"].isna(), "secondary_object_type"
@@ -662,8 +662,8 @@ class ExposureVector(Exposure):
             gdf.reset_index(drop=True, inplace=True)
 
             # Add secondary Object Type if not in columns
-            if "Secondary Object Type" not in gdf.columns:
-                gdf["Secondary Object Type"] =gdf["Primary Object Type"]
+            if "secondary_object_type" not in gdf.columns:
+                gdf["secondary_object_type"] =gdf["primary_object_type"]
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["object_id", "geometry"]]
