@@ -212,7 +212,7 @@ class HydroMtViewModel:
         source = config_yaml.model_extra["update_ground_floor_height"].source
         gfh_attribute_name = config_yaml.model_extra[
             "update_ground_floor_height"
-        ].attribute_name
+        ].gfh_attribute_name
         gfh_method = config_yaml.model_extra["update_ground_floor_height"].gfh_method
         max_dist = config_yaml.model_extra["update_ground_floor_height"].max_dist
         self.fiat_model.exposure.setup_ground_floor_height(
