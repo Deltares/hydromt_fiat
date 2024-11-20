@@ -417,7 +417,6 @@
 <span class="kn">import</span> <span class="nn">tomli_w</span>
 <span class="kn">from</span> <span class="nn">hydromt.models.model_grid</span> <span class="kn">import</span> <span class="n">GridModel</span>
 <span class="kn">from</span> <span class="nn">pyproj.crs</span> <span class="kn">import</span> <span class="n">CRS</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="kn">from</span> <span class="nn">hydromt_fiat.api.data_types</span> <span class="kn">import</span> <span class="n">Units</span>
@@ -734,14 +733,16 @@
         <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">max_potential_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">ground_floor_height</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">length_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gfh_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">occupancy_attr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">occupancy_object_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">extraction_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;centroid&quot;</span><span class="p">,</span>
         <span class="n">damage_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;structure&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">],</span>
-        <span class="n">damage_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Currency</span><span class="o">.</span><span class="n">dollar</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">damage_unit</span><span class="p">:</span> <span class="n">Currency</span> <span class="o">=</span> <span class="n">Currency</span><span class="o">.</span><span class="n">dollar</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
         <span class="n">country</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">ground_elevation_file</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ground_elevation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">grnd_elev_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">bf_conversion</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">keep_unclassified</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">dst_crs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -762,7 +763,9 @@
 <span class="sd">            Either a number (int or float), to give all assets the same ground floor</span>
 <span class="sd">            height or a path to the data that can be used to add the ground floor</span>
 <span class="sd">            height to the assets.</span>
-<span class="sd">        unit : str</span>
+<span class="sd">        length_unit : Units</span>
+<span class="sd">            The unit of the model</span>
+<span class="sd">        gfh_unit : Units</span>
 <span class="sd">            The unit of the ground_floor_height</span>
 <span class="sd">        occupancy_attr : Union[str, None], optional</span>
 <span class="sd">            The name of the field in the occupancy type data that contains the</span>
@@ -775,11 +778,15 @@
 <span class="sd">            The damage types that should be used for the exposure data, by default</span>
 <span class="sd">            [&quot;structure&quot;, &quot;content&quot;]. The damage types are used to link the</span>
 <span class="sd">            vulnerability functions to the exposure data.</span>
-<span class="sd">        damage_unit: str, optional</span>
+<span class="sd">        damage_unit: Currency, optional</span>
 <span class="sd">            The currency/unit of the Damage data, default in USD $</span>
 <span class="sd">        country : Union[str, None], optional</span>
 <span class="sd">            The country that is used for the exposure data, by default None. This is</span>
 <span class="sd">            only required when using the JRC vulnerability curves.</span>
+<span class="sd">        ground_elevation: Union[int, float, str, Path None]</span>
+<span class="sd">            Either a number (int or float), to give all assets the same ground elevation or a path to the data that can be used to add the elevation to the assets.</span>
+<span class="sd">        grnd_elev_unit : Units</span>
+<span class="sd">            The unit of the ground_elevation</span>
 <span class="sd">        bf_conversion: bool, optional</span>
 <span class="sd">            If building footprints shall be converted into point data.</span>
 <span class="sd">        keep_unclassified: bool, optional</span>
@@ -791,13 +798,14 @@
 <span class="sd">            The path to the translation function that can be used to relate user damage curves with user damages.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># In case the unit is passed as a pydantic value get the string</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
-            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">length_unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
+            <span class="n">length_unit</span> <span class="o">=</span> <span class="n">length_unit</span><span class="o">.</span><span class="n">value</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-            <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+            <span class="n">length_unit</span><span class="o">=</span><span class="n">length_unit</span><span class="p">,</span>
             <span class="n">damage_unit</span><span class="o">=</span><span class="n">damage_unit</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -808,7 +816,7 @@
                 <span class="n">asset_locations</span><span class="p">,</span>
                 <span class="n">ground_floor_height</span><span class="p">,</span>
                 <span class="n">extraction_method</span><span class="p">,</span>
-                <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span>
+                <span class="n">ground_elevation</span><span class="o">=</span><span class="n">ground_elevation</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -823,7 +831,9 @@
                 <span class="n">occupancy_attr</span><span class="p">,</span>
                 <span class="n">damage_types</span><span class="o">=</span><span class="n">damage_types</span><span class="p">,</span>
                 <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
-                <span class="n">ground_elevation_file</span><span class="o">=</span><span class="n">ground_elevation_file</span><span class="p">,</span>
+                <span class="n">gfh_unit</span><span class="o">=</span><span class="n">gfh_unit</span><span class="p">,</span>
+                <span class="n">ground_elevation</span><span class="o">=</span><span class="n">ground_elevation</span><span class="p">,</span>
+                <span class="n">grnd_elev_unit</span><span class="o">=</span><span class="n">grnd_elev_unit</span><span class="p">,</span>
                 <span class="n">bf_conversion</span><span class="o">=</span><span class="n">bf_conversion</span><span class="p">,</span>
                 <span class="n">keep_unclassified</span><span class="o">=</span><span class="n">keep_unclassified</span><span class="p">,</span>
                 <span class="n">damage_translation_fn</span> <span class="o">=</span> <span class="n">damage_translation_fn</span>
@@ -854,7 +864,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bf_spatial_joins</span><span class="p">()</span>
             <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;exposure/building_footprints/building_footprints.gpkg&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="s2">&quot;geoms/building_footprints/building_footprints.geojson&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;field_name&quot;</span><span class="p">:</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">,</span>  <span class="c1"># TODO check how and where this is defined</span>
             <span class="p">}</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
@@ -886,7 +896,7 @@
         <span class="c1"># Update the other config settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.csv.file&quot;</span><span class="p">,</span> <span class="s2">&quot;exposure/exposure.csv&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.length_unit&quot;</span><span class="p">,</span> <span class="n">length_unit</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">,</span> <span class="n">damage_unit</span><span class="p">)</span></div>
 
 
@@ -911,7 +921,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+                <span class="n">length_unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_roads</span><span class="p">(</span><span class="n">roads_fn</span><span class="p">,</span> <span class="n">road_damage</span><span class="p">,</span> <span class="n">road_types</span><span class="p">)</span>
 
@@ -936,11 +946,12 @@
         <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
         <span class="n">attribute_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gfh_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+        <span class="n">gfh_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_floor_height</span><span class="p">(</span>
-                <span class="n">source</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">gfh_method</span><span class="p">,</span> <span class="n">max_dist</span>
+                <span class="n">source</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">gfh_method</span><span class="p">,</span> <span class="n">max_dist</span><span class="p">,</span> <span class="n">gfh_unit</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_max_potential_damage</span><span class="p">(</span>
@@ -965,10 +976,10 @@
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update_ground_elevation</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">grnd_elev_unit</span><span class="p">:</span> <span class="n">Units</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_ground_elevation</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">grnd_elev_unit</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">setup_exposure_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup raster exposure data for Delft-FIAT.</span>
@@ -990,6 +1001,7 @@
         <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;flooding&quot;</span><span class="p">,</span>
         <span class="n">risk_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">unit_conversion_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up hazard maps. This component integrates multiple checks for the hazard</span>
 <span class="sd">        maps.</span>
@@ -1056,9 +1068,10 @@
             <span class="c1"># Convert to units of the exposure data if required</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>  <span class="c1"># change to be sure that the unit information is available from the exposure dataset</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">length_unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
                         <span class="n">da</span> <span class="o">=</span> <span class="n">da</span> <span class="o">*</span> <span class="n">unit_conversion_factor</span>
 
+            <span class="c1"># convert to gdal compliant</span>
             <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;_FillValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">gdal_compliant</span><span class="p">()</span>
 
@@ -1675,7 +1688,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
                 <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">),</span>
                 <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">),</span>
+                <span class="n">length_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.length_unit&quot;</span><span class="p">),</span>
                 <span class="n">damage_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">),</span>
                 <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>  <span class="c1"># TODO: See if this works also when no data catalog is provided</span>
             <span class="p">)</span>
@@ -1791,15 +1804,6 @@
                     <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                     <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
                 <span class="p">)</span>
-                <span class="c1"># At the very last clip based on the region</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-                    <span class="n">idx</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span>
-                        <span class="n">geom</span><span class="p">,</span>
-                        <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;contains_properly&quot;</span><span class="p">,</span>
-                        <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
-                    <span class="p">)</span><span class="o">.</span><span class="n">index_right</span>
-                    <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
                 <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
@@ -1902,6 +1906,7 @@
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting table: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span></div>
+
 
 </pre></div>
 
