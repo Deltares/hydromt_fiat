@@ -327,7 +327,7 @@ class ExposureVector(Exposure):
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         gfh_unit: Units = None,
         max_dist: Union[int, float, List[float], List[int], None] = 10,
@@ -358,7 +358,7 @@ class ExposureVector(Exposure):
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
             )
         self.setup_ground_floor_height(
-            ground_floor_height, attribute_name, gfh_method, max_dist, gfh_unit
+            ground_floor_height, gfh_attribute_name, gfh_method, max_dist, gfh_unit
         )
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation, grnd_elev_unit)
@@ -747,7 +747,7 @@ class ExposureVector(Exposure):
     def setup_ground_floor_height(
         self,
         ground_floor_height: Union[int, float, None, str, Path, List[str], List[Path]],
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
         gfh_unit: Units = None
@@ -763,7 +763,7 @@ class ExposureVector(Exposure):
             list of paths to files that contain the Ground Floor Height of each asset,
             in the order of preference (the first item in the list gets the highest
             priority in assigning the values).
-        attribute_name : Union[str, List[str]], optional
+        gfh_attribute_name : Union[str, List[str]], optional
             The name of the attribute that contains the Ground Floor Height in the
             file(s) that are submitted. If multiple `ground_floor_height` files are
             submitted, the attribute names are linked to the files in the same order as
@@ -796,7 +796,7 @@ class ExposureVector(Exposure):
                     columns_to_drop = [
                         col
                         for col in gfh.columns
-                        if col != attribute_name and col != "geometry"
+                        if col != gfh_attribute_name and col != "geometry"
                     ]
                     gfh = gfh.drop(columns=columns_to_drop)
 
@@ -808,7 +808,7 @@ class ExposureVector(Exposure):
                     gdf = join_spatial_data(
                         gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
                         gfh,
-                        attribute_name,
+                        gfh_attribute_name,
                         gfh_method,
                         max_dist,
                         self.logger,
@@ -816,7 +816,7 @@ class ExposureVector(Exposure):
                     gdf = pd.concat([gdf, gdf_roads])
                 else:
                     gdf = join_spatial_data(
-                        gdf, gfh, attribute_name, gfh_method, max_dist, self.logger
+                        gdf, gfh, gfh_attribute_name, gfh_method, max_dist, self.logger
                     )
 
                 # If method is "intersection" rename *"_left" to original exposure_db name
@@ -825,7 +825,7 @@ class ExposureVector(Exposure):
 
                 # Update exposure_db
                 self.exposure_db = self._set_values_from_other_column(
-                    gdf, "Ground Floor Height", attribute_name
+                    gdf, "Ground Floor Height", gfh_attribute_name
                 )
 
                 # Unit conversion
