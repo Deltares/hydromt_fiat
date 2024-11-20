@@ -333,7 +333,7 @@ class FiatModel(GridModel):
         ground_floor_height: Union[int, float, str, Path, None],
         length_unit: Units = None,
         gfh_unit: Units = None,
-        gfh_attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: str = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
@@ -366,7 +366,7 @@ class FiatModel(GridModel):
             The unit of the model
         gfh_unit : Units
             The unit of the ground_floor_height
-        gfh_attribute_name : str, List[str], None
+        gfh_attribute_name : str
             The attribute name to be used to set the ground_flht. If None, the
             attribute name will be set to 'ground_floor_height'. 
         occupancy_attr : Union[str, None], optional
@@ -566,14 +566,14 @@ class FiatModel(GridModel):
     def update_ground_floor_height(
         self,
         source: Union[int, float, str, Path, None],
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: str = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         gfh_unit: Units = None,
         max_dist: float = 10,
     ):
         if self.exposure:
             self.exposure.setup_ground_floor_height(
-                source, attribute_name, gfh_method, max_dist, gfh_unit
+                source, gfh_attribute_name, gfh_method, max_dist, gfh_unit
             )
 
     def update_max_potential_damage(

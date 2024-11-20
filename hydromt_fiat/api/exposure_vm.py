@@ -247,13 +247,13 @@ class ExposureViewModel:
     def set_ground_floor_height(
         self,
         source: str,
-        attribute_name: Union[str, List[str], None] = None,
+        gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: Union[float, int, None] = 10,
     ):
         self.exposure_ground_floor_height_model = ExposureSetupGroundFloorHeight(
             source=source,
-            attribute_name=attribute_name,
+            gfh_attribute_name=gfh_attribute_name,
             gfh_method=gfh_method,
             max_dist=max_dist,
         )
