@@ -436,23 +436,23 @@ class ExposureVector(Exposure):
             a point or polygon dataset.
         """
         self.logger.info("Setting up asset locations...")
-        if isinstance(asset_locations, str):
-            if str(asset_locations).upper() == "OSM":
-                polygon = self.region.to_crs(4326).geometry.values[0]
-                assets = get_assets_from_osm(polygon)
+        #if isinstance(asset_locations, str):
+        if str(asset_locations).upper() == "OSM":
+            polygon = self.region.to_crs(4326).geometry.values[0]
+            assets = get_assets_from_osm(polygon)
 
-                if assets.empty:
-                    self.logger.warning(
-                        "No assets found in the selected region from source "
-                        f"{asset_locations}."
-                    )
-
-                # Rename the osmid column to object_id
-                assets.rename(columns={"osmid": "object_id"}, inplace=True)
-            else:
-                assets = self.data_catalog.get_geodataframe(
-                    asset_locations, geom=self.region
+            if assets.empty:
+                self.logger.warning(
+                    "No assets found in the selected region from source "
+                    f"{asset_locations}."
                 )
+
+            # Rename the osmid column to object_id
+            assets.rename(columns={"osmid": "object_id"}, inplace=True)
+        else:
+            assets = self.data_catalog.get_geodataframe(
+                asset_locations, geom=self.region
+            )
 
         # Set the CRS of the exposure data
         self.crs = get_crs_str_from_gdf(assets.crs)
