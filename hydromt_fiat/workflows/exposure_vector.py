@@ -80,7 +80,6 @@ class ExposureVector(Exposure):
         region: gpd.GeoDataFrame = None,
         crs: str = None,
         length_unit: Units = Units.feet.value,
-        country: str = None,
         damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.

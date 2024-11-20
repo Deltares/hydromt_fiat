@@ -82,9 +82,8 @@ class ExposureViewModel:
                 region=region,
                 crs=crs,
                 length_unit=Units.feet.value,
-                country="United States",
             )
-
+        
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
@@ -122,8 +121,8 @@ class ExposureViewModel:
                 region=region,
                 crs=crs,
                 length_unit=Units.meters.value,
-                country=country,
-            )
+                )
+            
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations=source,
                 occupancy_source=source,
