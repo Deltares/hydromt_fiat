@@ -93,7 +93,7 @@ class ExposureBuildingsSettings(BaseModel):
 
 class ExposureSetupGroundFloorHeight(BaseModel):
     source: str
-    attribute_name: Optional[Union[str, List[str]]] = None
+    gfh_attribute_name: Optional[Union[str, List[str]]] = None
     gfh_method: Optional[Union[str, List[str]]] = None
     max_dist: Optional[Union[float, int]] = None
     gfh_unit: Units = None
