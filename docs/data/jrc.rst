@@ -12,11 +12,11 @@ by providing the following values in the configuration file::
     [setup_vulnerability]
     vulnerability_fn = "jrc_vulnerability_curves"
     vulnerability_identifiers_and_linking_fn = "jrc_vulnerability_curves_linking"
-    unit = "m"
+    unit = "meters"
 
     [setup_exposure_buildings]
     max_potential_damage = "jrc_damage_values"
-    unit = "m"
+    length_unit = "meters"
 
 
 The JRC Global flood depth-damage functions and replacement values are processed into an easy-to-use format

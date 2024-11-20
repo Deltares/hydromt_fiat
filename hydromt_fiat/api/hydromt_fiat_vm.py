@@ -252,8 +252,8 @@ class HydroMtViewModel:
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
-        unit = config_yaml.model_extra["update_ground_elevation"].unit
-        self.fiat_model.exposure.setup_ground_elevation(source, unit)
+        grnd_elev_unit = config_yaml.model_extra["update_ground_elevation"].grnd_elev_unit
+        self.fiat_model.exposure.setup_ground_elevation(source, grnd_elev_unit)
 
     def new_max_potential_damages(self, config_yaml):
         source = config_yaml.model_extra["update_max_potential_damage"].source

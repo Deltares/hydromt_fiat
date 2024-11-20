@@ -10,13 +10,13 @@ import xarray as xr
 import geopandas as gpd
 import hydromt
 import pandas as pd
+import tomli
+import tomli_w
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
-from shapely.geometry import box
 import shutil
 
 from hydromt_fiat.api.data_types import Units
-from hydromt_fiat.config import Config
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
@@ -331,16 +331,17 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        unit: str,
+        length_unit: Units = None,
+        gfh_unit: Units = None,
         gfh_attribute_name: Union[str, List[str], None] = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
-        damage_unit: str = Currency.dollar.value,
+        damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
-        ground_elevation_file: Union[int, float, str, Path, None] = None,
-        ground_elevation_unit: str = None,
+        ground_elevation: Union[int, float, str, Path, None] = None,
+        grnd_elev_unit: Units = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
@@ -361,7 +362,9 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        unit : str
+        length_unit : Units
+            The unit of the model
+        gfh_unit : Units
             The unit of the ground_floor_height
         gfh_attribute_name : str, List[str], None
             The attribute name to be used to set the ground_flht. If None, the
@@ -377,15 +380,15 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
-        damage_unit: str, optional
+        damage_unit: Currency, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
             The country that is used for the exposure data, by default None. This is
             only required when using the JRC vulnerability curves.
-        ground_elevation_file: Union[int, float, str, Path, None] = None.
-            File path to ground elevation data
-        ground_elevation_unit: str = None,
-            Unit of the ground elevation data
+        ground_elevation: Union[int, float, str, Path None]
+            Either a number (int or float), to give all assets the same ground elevation or a path to the data that can be used to add the elevation to the assets.
+        grnd_elev_unit : Units
+            The unit of the ground_elevation
         bf_conversion: bool, optional
             If building footprints shall be converted into point data.
         keep_unclassified: bool, optional
@@ -397,13 +400,14 @@ class FiatModel(GridModel):
             The path to the translation function that can be used to relate user damage curves with user damages.
         """
         # In case the unit is passed as a pydantic value get the string
-        if hasattr(unit, "value"):
-            unit = unit.value
+        if hasattr(length_unit, "value"):
+            length_unit = length_unit.value
+
         self.exposure = ExposureVector(
             self.data_catalog,
             self.logger,
             self.region,
-            unit=unit,
+            length_unit=length_unit,
             damage_unit=damage_unit,
         )
 
@@ -414,7 +418,7 @@ class FiatModel(GridModel):
                 asset_locations,
                 ground_floor_height,
                 extraction_method,
-                ground_elevation_file=ground_elevation_file,
+                ground_elevation=ground_elevation,
             )
 
         else:
@@ -430,8 +434,9 @@ class FiatModel(GridModel):
                 occupancy_attr,
                 damage_types=damage_types,
                 country=country,
-                ground_elevation_file=ground_elevation_file,
-                ground_elevation_unit = ground_elevation_unit,
+                gfh_unit=gfh_unit,
+                ground_elevation=ground_elevation,
+                grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn = damage_translation_fn,
@@ -463,7 +468,7 @@ class FiatModel(GridModel):
             self.bf_spatial_joins()
             attrs = {
                 "name": "BF_FID",
-                "file": "exposure/building_footprints/building_footprints.gpkg",
+                "file": "geoms/building_footprints/building_footprints.geojson",
                 "field_name": "BF_FID",  # TODO check how and where this is defined
             }
             if not self.spatial_joins["additional_attributes"]:
@@ -495,7 +500,7 @@ class FiatModel(GridModel):
         # Update the other config settings
         self.set_config("exposure.csv.file", "exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
-        self.set_config("exposure.geom.unit", unit)
+        self.set_config("exposure.geom.length_unit", length_unit)
         self.set_config("exposure.damage_unit", damage_unit)
 
     def setup_exposure_roads(
@@ -519,7 +524,7 @@ class FiatModel(GridModel):
                 self.data_catalog,
                 self.logger,
                 self.region,
-                unit=unit,
+                length_unit=unit,
             )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
@@ -563,11 +568,12 @@ class FiatModel(GridModel):
         source: Union[int, float, str, Path, None],
         attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
+        gfh_unit: Units = None,
         max_dist: float = 10,
     ):
         if self.exposure:
             self.exposure.setup_ground_floor_height(
-                source, attribute_name, gfh_method, max_dist
+                source, attribute_name, gfh_method, max_dist, gfh_unit
             )
 
     def update_max_potential_damage(
@@ -592,10 +598,10 @@ class FiatModel(GridModel):
             )
 
     def update_ground_elevation(
-        self, source: Union[int, float, None, str, Path], unit: str
+        self, source: Union[int, float, None, str, Path], grnd_elev_unit: Units
     ):
         if self.exposure:
-            self.exposure.setup_ground_elevation(source, unit)
+            self.exposure.setup_ground_elevation(source, grnd_elev_unit)
 
     def setup_exposure_raster(self):
         """Setup raster exposure data for Delft-FIAT.
@@ -615,6 +621,7 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
+        
     ) -> None:
         """Set up hazard maps. This component integrates multiple checks for the hazard
         maps.
@@ -681,25 +688,8 @@ class FiatModel(GridModel):
             # Convert to units of the exposure data if required
             if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
                 if hasattr(da, "units"):
-                    if self.exposure.unit != da.units:
+                    if self.exposure.length_unit != da.units:
                         da = da * unit_conversion_factor
-                # clip bonding boxes and save new exposure
-                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-                #exposure_bounding_box = gdf.total_bounds
-                da_bounding_box =da.rio.bounds() 
-                gdf = gpd.clip(gdf, da_bounding_box)
-                if gdf["primary_object_type"].str.contains("road").any():
-                    gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
-                    gdf_buildings= gdf[~gdf.isin(gdf_roads)]
-                    idx_buildings = self.exposure.geom_names.index("buildings")
-                    idx_roads = self.exposure.geom_names.index("roads")
-                    self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[["object_id", "geometry"]]
-                    self.exposure.exposure_geoms[idx_roads] = gdf_roads[["object_id", "geometry"]]
-                else:
-                    self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
-                
-                del gdf["geometry"]
-                self.exposure.exposure_db = gdf
 
             # convert to gdal compliant
             da.encoding["_FillValue"] = None
@@ -1074,7 +1064,7 @@ class FiatModel(GridModel):
         ):
             attrs = {
                 "name": label_name,
-                "file": f"exposure/aggregation_areas/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
+                "file": f"geoms/aggregation_areas/{file_name}.geojson",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)
@@ -1128,7 +1118,7 @@ class FiatModel(GridModel):
         ):
             attrs = {
                 "name": label_name,
-                "file": f"exposure/additional_attributes/{file_name}.gpkg",  # TODO Should we define this location somewhere globally?
+                "file": f"geoms/additional_attributes/{file_name}.geojson",  # TODO Should we define this location somewhere globally?
                 "field_name": attribute_name,
             }
             # If not exist, add to spatial joins
@@ -1285,8 +1275,9 @@ class FiatModel(GridModel):
     def _configread(self, fn):
         """Parse Delft-FIAT configuration toml file to dict."""
         # Read the fiat configuration toml file.
-        config = Config()
-        return config.load_file(fn)
+        with open(fn, mode="rb") as fp:
+            config = tomli.load(fp)
+        return config 
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
@@ -1310,7 +1301,7 @@ class FiatModel(GridModel):
             self.exposure = ExposureVector(
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
-                unit=self.get_config("exposure.geom.unit"),
+                length_unit=self.get_config("exposure.geom.length_unit"),
                 damage_unit=self.get_config("exposure.damage_unit"),
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
@@ -1367,7 +1358,7 @@ class FiatModel(GridModel):
         ):
             self.write_spatial_joins()
         if self.building_footprint_fn:
-            folder = Path(self.root).joinpath("exposure", "building_footprints")
+            folder = Path(self.root).joinpath("geoms", "building_footprints")
             self.copy_datasets(self.building_footprint_fn, folder)
         if not self.building_footprint.empty:
             self.write_building_footprints()
@@ -1401,11 +1392,11 @@ class FiatModel(GridModel):
         spatial_joins_conf.save(Path(self.root).joinpath("spatial_joins.toml"))
 
     def write_building_footprints(self) -> None:
-        folder = Path(self.root).joinpath("exposure", "building_footprints")
+        folder = Path(self.root).joinpath("geoms", "building_footprints")
         if not os.path.exists(folder):
             os.makedirs(folder)
         self.building_footprint.to_file(
-            Path(folder).joinpath("building_footprints.gpkg")
+            Path(folder).joinpath("building_footprints.geojson")
         )
 
     def write_geoms(self):
@@ -1425,7 +1416,6 @@ class FiatModel(GridModel):
                     f"exposure.geom.file{str(i+1)}",
                     fn.format(name=name),
                 )
-
                 geom.to_file(_fn)
         if self.geoms:
             GridModel.write_geoms(self)
@@ -1487,7 +1477,8 @@ class FiatModel(GridModel):
     def _configwrite(self, fn):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
-        Config().save(self.config, Path(self.root).joinpath("settings.toml"))
+        with open(fn, "wb") as f:
+            tomli_w.dump(self.config, f) 
 
     # FIAT specific attributes and methods
     @property
@@ -1525,3 +1516,4 @@ class FiatModel(GridModel):
             elif self._read:
                 self.logger.warning(f"Overwriting table: {name}")
         self._tables[name] = df
+

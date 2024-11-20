@@ -208,6 +208,20 @@ def join_spatial_data(
             f"{get_crs_str_from_gdf(left_gdf.crs)}."
         )
         right_gdf = right_gdf.to_crs(left_gdf.crs)
+    
+    if 'MultiPolygon' in list(left_gdf.geom_type.unique()):
+        for index, row in left_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                left_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(left_gdf.geom_type.unique()) == 1
+
+    if 'MultiPolygon' in list(right_gdf.geom_type.unique()):
+        for index, row in right_gdf.iterrows():
+            if row['geometry'].geom_type == "MultiPolygon":
+                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
+                right_gdf.at[index, 'geometry'] = largest_polygon 
+        assert len(right_gdf.geom_type.unique()) == 1
 
     if 'MultiPolygon' in list(left_gdf.geom_type.unique()):
         for index, row in left_gdf.iterrows():
@@ -260,7 +274,7 @@ def join_spatial_data(
 
 
 def ground_elevation_from_dem(
-    ground_elevation: Union[int, float, None, str, Path],
+    ground_elevation: Union[None, str, Path],
     exposure_db: pd.DataFrame,
     exposure_geoms: gpd.GeoDataFrame,
 ) -> None:

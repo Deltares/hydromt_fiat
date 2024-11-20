@@ -56,7 +56,7 @@ _cases = {
                 "occupancy_type": "NSI",
                 "max_potential_damage": "NSI",
                 "ground_floor_height": "NSI",
-                "unit": "ft",
+                "length_unit": "feet",
             },
             "setup_equity_data": {
                 "census_key": "495a349ce22bdb1294b378fb199e4f27e57471a9",
