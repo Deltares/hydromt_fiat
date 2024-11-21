@@ -1029,7 +1029,8 @@ class ExposureVector(Exposure):
             )
         
             # Unit conversion
-            self.unit_conversion("Ground Elevation", grnd_elev_unit)
+            if grnd_elev_unit:
+                self.unit_conversion(parameter = "Ground Elevation", unit = grnd_elev_unit)
 
         else:
             self.logger.warning(
@@ -2021,8 +2022,8 @@ class ExposureVector(Exposure):
         }
         return continent_dict[continent_code]
 
-    def unit_conversion(self, parameter: str,unit: Union[str, Units]) -> Union[str, Units]:
-                    # Unit conversion
+    def unit_conversion(self, parameter: str, unit:Units) -> None:
+        # Unit conversion
         if unit != self.length_unit:
             if (unit == Units.meters.value) and (self.length_unit == Units.feet.value):
                 self.exposure_db[parameter] = self.exposure_db[

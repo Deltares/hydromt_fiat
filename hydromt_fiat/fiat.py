@@ -1286,19 +1286,24 @@ class FiatModel(GridModel):
 
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if self.spatial_joins["aggregation_areas"]:
-            fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas","*.geojson").as_posix())
-            fns.append(fns_aggregation[0])
+            fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas/*").as_posix())
+            fns.extend(fns_aggregation)
         if self.spatial_joins["additional_attributes"]:
-            if len(glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())) > 0:
-                fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())
-                fns.append(fns_additional_attributes[0])
+            if len(glob.glob(Path(self.root, "geoms", "additional_attributes/*").as_posix())) > 0:
+                fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes/*").as_posix())
+                fns.extend(fns_additional_attributes)
             if len(glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())) > 0:
-                fns_building_footprints = glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())
-                fns.append(fns_building_footprints[0])
+                fns_building_footprints = glob.glob(Path(self.root, "geoms", "building_footprints/*").as_posix())
+                self.building_footprint = gpd.read_file(fns_building_footprints[0])
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
-            name = Path(fn).stem
+            if "aggregation_areas" in fn:
+                name = f"aggregation_areas/{Path(fn).stem}"
+            elif "additional_attributes" in fn:
+                name = f"additional_attributes/{Path(fn).stem}"
+            else: 
+                name = Path(fn).stem 
             self.set_geoms(gpd.read_file(fn), name=name)
 
     def write(self):
