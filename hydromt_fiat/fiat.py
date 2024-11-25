@@ -1284,17 +1284,22 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
+        
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if self.spatial_joins["aggregation_areas"]:
-            fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas/*").as_posix())
+            fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas/*").as_posix())                
             fns.extend(fns_aggregation)
+            fns = self.get_shapefiles(fns)
         if self.spatial_joins["additional_attributes"]:
             if len(glob.glob(Path(self.root, "geoms", "additional_attributes/*").as_posix())) > 0:
                 fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes/*").as_posix())
                 fns.extend(fns_additional_attributes)
-            if len(glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())) > 0:
+                fns = self.get_shapefiles(fns)
+            if len(glob.glob(Path(self.root, "geoms", "building_footprints/*").as_posix())) > 0:
                 fns_building_footprints = glob.glob(Path(self.root, "geoms", "building_footprints/*").as_posix())
+                fns_building_footprints = self.get_shapefiles(fns_building_footprints)
                 self.building_footprint = gpd.read_file(fns_building_footprints[0])
+                
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
@@ -1305,6 +1310,13 @@ class FiatModel(GridModel):
             else: 
                 name = Path(fn).stem 
             self.set_geoms(gpd.read_file(fn), name=name)
+
+    def get_shapefiles(self, fns: list):
+        shapefile_extensions = ['.shx', '.dbf', '.prj', '.sbn', '.sbx','.fbn', '.fbx', '.ain', '.aih', '.atx', '.ixs','.mxs', '.cpg', '.qix', '.qmd', '.xml', '.prj']
+        for filename in fns[:]:  # Iterate over a copy to safely modify the original list
+                if any(filename.endswith(ext) for ext in shapefile_extensions):
+                    fns.remove(filename) 
+        return fns
 
     def write(self):
         """Method to write the complete model schematization and configuration to file."""
