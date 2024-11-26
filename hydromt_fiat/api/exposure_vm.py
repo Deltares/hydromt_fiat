@@ -81,7 +81,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                length_unit=Units.feet.value,
+                unit=Units.feet.value,
             )
         
             self.exposure.setup_buildings_from_single_source(
@@ -120,7 +120,7 @@ class ExposureViewModel:
                 logger=self.logger,
                 region=region,
                 crs=crs,
-                length_unit=Units.meters.value,
+                unit=Units.meters.value,
                 )
             
             self.exposure.setup_buildings_from_multiple_sources(
@@ -167,7 +167,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                length_unit=Units.feet.value, 
+                unit=Units.feet.value, 
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.dollar.value,
@@ -198,7 +198,7 @@ class ExposureViewModel:
                 keep_unclassified=keep_unclassified,
                 max_potential_damage=max_potential_damage,
                 ground_floor_height=ground_floor_height,
-                length_unit=Units.meters.value,
+                unit=Units.meters.value,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.euro.value,

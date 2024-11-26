@@ -79,7 +79,7 @@ class ExposureVector(Exposure):
         logger: logging.Logger = None,
         region: gpd.GeoDataFrame = None,
         crs: str = None,
-        length_unit: Units = Units.feet.value,
+        unit: Units = Units.feet.value,
         damage_unit=Currency.dollar.value,
     ) -> None:
         """Transforms data into Vector Exposure data for Delft-FIAT.
@@ -94,8 +94,8 @@ class ExposureVector(Exposure):
             The region of interest, by default None
         crs : str, optional
             The CRS of the Exposure data, by default None
-        length_unit : Units, optional
-            The length_unit of the model, by default feet
+        unit : Units, optional
+            The unit of the model, by default feet
         damage_unit : str, optional
             The unit/currency of the (potential) damages, by default USD$
         """
@@ -104,7 +104,7 @@ class ExposureVector(Exposure):
         )
         self.exposure_db = pd.DataFrame()
         self.exposure_geoms = list()  # A list of GeoDataFrames
-        self.length_unit = length_unit
+        self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
         self.building_footprints = gpd.GeoDataFrame
@@ -285,7 +285,7 @@ class ExposureVector(Exposure):
 
         # Convert OSM road from meters to feet (if model unit is feet)
         road_length = get_road_lengths(roads)
-        if self.length_unit == Units.feet.value and str(source).upper() == "OSM":
+        if self.unit == Units.feet.value and str(source).upper() == "OSM":
             road_length = road_length * Conversion.meters_to_feet.value
         road_length = road_length.apply(lambda x: f"{x:.2f}")
 
@@ -1469,12 +1469,12 @@ class ExposureVector(Exposure):
                 axis=1
             )
             self.logger.info(
-                f"The elevation of the new development area is {new_area['height'].values} {self.length_unit}"
+                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
                 " relative to datum."  # TODO: make unit flexible
             )
         elif elevation_reference == "geom":
             self.logger.info(
-                f"The elevation of the new development area is {new_area['height'].values} {self.length_unit}"
+                f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
                 f" relative to {Path(path_ref).stem}. The height of the floodmap is"
                 f" identified with column {attr_ref}."  # TODO: make unit flexible
             )
@@ -2023,15 +2023,15 @@ class ExposureVector(Exposure):
         }
         return continent_dict[continent_code]
 
-    def unit_conversion(self, parameter: str, unit:Units) -> None:
-        # Unit conversion
-        if unit != self.length_unit:
-            if (unit == Units.meters.value) and (self.length_unit == Units.feet.value):
+    def unit_conversion(self, parameter: str,unit: Union[str, Units]) -> Union[str, Units]:
+                    # Unit conversion
+        if unit != self.unit:
+            if (unit == Units.meters.value) and (self.unit == Units.feet.value):
                 self.exposure_db[parameter] = self.exposure_db[
                     parameter
                 ].apply(lambda x: x * Conversion.meters_to_feet.value)
 
-            elif (unit == Units.feet.value) and (self.length_unit == Units.meters.value):
+            elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
                 self.exposure_db[parameter] = self.exposure_db[
                     parameter
                 ].apply(lambda x: x * Conversion.feet_to_meters.value)

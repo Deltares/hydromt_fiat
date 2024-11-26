@@ -18,5 +18,5 @@ step_size = 0.1
 [exposure.geom]
 csv = "./exposure/exposure.csv"
 crs = "EPSG:4326"
-length_unit = "feet"
+unit = "feet"
 file1 = "./exposure/buildings.gpkg"

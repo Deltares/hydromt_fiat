@@ -40,7 +40,7 @@ class ExposureGeomModel(BaseModel):
     crs: str
     file1: str
     file2: str
-    length_unit: str
+    unit: str
     damage_unit: str
 
 

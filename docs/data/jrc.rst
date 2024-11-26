@@ -16,7 +16,7 @@ by providing the following values in the configuration file::
 
     [setup_exposure_buildings]
     max_potential_damage = "jrc_damage_values"
-    length_unit = "meters"
+    unit = "meters"
 
 
 The JRC Global flood depth-damage functions and replacement values are processed into an easy-to-use format
