@@ -311,7 +311,7 @@ class FiatModel(GridModel):
         occupancy_type: Union[str, Path],
         max_potential_damage: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
-        length_unit: Units = None,
+        unit: Units = None,
         gfh_unit: Units = None,
         gfh_attribute_name: str = None,
         occupancy_attr: Union[str, None] = None,
@@ -342,7 +342,7 @@ class FiatModel(GridModel):
             Either a number (int or float), to give all assets the same ground floor
             height or a path to the data that can be used to add the ground floor
             height to the assets.
-        length_unit : Units
+        unit : Units
             The unit of the model
         gfh_unit : Units
             The unit of the ground_floor_height
@@ -380,14 +380,14 @@ class FiatModel(GridModel):
             The path to the translation function that can be used to relate user damage curves with user damages.
         """
         # In case the unit is passed as a pydantic value get the string
-        if hasattr(length_unit, "value"):
-            length_unit = length_unit.value
+        if hasattr(unit, "value"):
+            unit = unit.value
 
         self.exposure = ExposureVector(
             self.data_catalog,
             self.logger,
             self.region,
-            length_unit=length_unit,
+            unit=unit,
             damage_unit=damage_unit,
         )
 
@@ -478,7 +478,7 @@ class FiatModel(GridModel):
         # Update the other config settings
         self.set_config("exposure.csv.file", "exposure/exposure.csv")
         self.set_config("exposure.geom.crs", self.exposure.crs)
-        self.set_config("exposure.geom.length_unit", length_unit)
+        self.set_config("exposure.geom.unit", unit)
         self.set_config("exposure.damage_unit", damage_unit)
 
     def setup_exposure_roads(
@@ -502,7 +502,7 @@ class FiatModel(GridModel):
                 self.data_catalog,
                 self.logger,
                 self.region,
-                length_unit=unit,
+                unit=unit,
             )
         self.exposure.setup_roads(roads_fn, road_damage, road_types)
 
@@ -647,7 +647,7 @@ class FiatModel(GridModel):
             # Convert to units of the exposure data if required
             if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
                 if hasattr(da, "units"):
-                    if self.exposure.length_unit != da.units:
+                    if self.exposure.unit != da.units:
                         da = da * unit_conversion_factor
 
             # convert to gdal compliant
@@ -1260,7 +1260,7 @@ class FiatModel(GridModel):
             self.exposure = ExposureVector(
                 crs=self.get_config("exposure.geom.crs"),
                 logger=self.logger,
-                length_unit=self.get_config("exposure.geom.length_unit"),
+                unit=self.get_config("exposure.geom.unit"),
                 damage_unit=self.get_config("exposure.damage_unit"),
                 data_catalog=self.data_catalog,  # TODO: See if this works also when no data catalog is provided
             )
