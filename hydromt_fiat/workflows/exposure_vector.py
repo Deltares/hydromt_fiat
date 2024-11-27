@@ -49,7 +49,7 @@ from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_a
 
 class ExposureVector(Exposure):
     _REQUIRED_COLUMNS = ["object_id", "extract_method", "ground_flht"]
-    _REQUIRED_VARIABLE_COLUMNS = ["fn_damages_{}", "max_damages_{}"]
+    _REQUIRED_VARIABLE_COLUMNS = ["fn_damage_{}", "max_damage_{}"]
     _OPTIONAL_COLUMNS = [
         "object_name",
         "primary_object_type",
@@ -955,17 +955,17 @@ class ExposureVector(Exposure):
         ):
             # Set the column(s) to a single value
             for damage_type in damage_types:
-                self.exposure_db[f"max_damages_{damage_type}"] = (
+                self.exposure_db[f"max_damage_{damage_type}"] = (
                     max_potential_damage
                 )
 
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground_flht to the assets
-            for max_damages,attribute, method, max_dis,damage_type in zip(max_potential_damage,attribute_name,method_damages,max_dist,damage_types):
+            for max_damage,attribute, method, max_dis,damage_type in zip(max_potential_damage,attribute_name,method_damages,max_dist,damage_types):
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
                 # assign the ground_flht to the assets
-                mpd = self.data_catalog.get_geodataframe(max_damages)
+                mpd = self.data_catalog.get_geodataframe(max_damage)
 
                 # If method is "intersection" remove columns from gfh exept for attribute name and geometry
                 if method == "intersection":
@@ -1008,7 +1008,7 @@ class ExposureVector(Exposure):
                 # Update exposure_db with updated dataframe
                 self.exposure_db = self._set_values_from_other_column(
                     gdf,
-                    f"max_damages_{damage_type}",
+                    f"max_damage_{damage_type}",
                     attribute,
                 )
                 if "geometry" in self.exposure_db.columns:
@@ -1081,7 +1081,7 @@ class ExposureVector(Exposure):
                     )
                 self.exposure_db = self._set_values_from_other_column(
                     gdf,
-                    f"max_damages_{damage_types[0]}",
+                    f"max_damage_{damage_types[0]}",
                     attribute_name,
                 )
     
@@ -1355,7 +1355,7 @@ class ExposureVector(Exposure):
                 d
                 for d in list(
                     self.exposure_db.iloc[idx, :][
-                        f"fn_damages_{df_type}"
+                        f"fn_damage_{df_type}"
                     ].unique()
                 )
                 if d == d
@@ -1565,7 +1565,7 @@ class ExposureVector(Exposure):
             }
             dict_new_objects_data.update(
                 {
-                    f"fn_damages_{damage_type}": [
+                    f"fn_damage_{damage_type}": [
                         new_damage_functions[damage_type]
                     ]
                     for damage_type in damage_types
@@ -1573,7 +1573,7 @@ class ExposureVector(Exposure):
             )
             dict_new_objects_data.update(
                 {
-                    f"max_damages_{damage_type}": [
+                    f"max_damage_{damage_type}": [
                         new_object_damages[damage_type] * perc_damages
                     ]
                     for damage_type in damage_types
@@ -1741,7 +1741,7 @@ class ExposureVector(Exposure):
                         f"{str(list(diff_secondary_linking_types))}"
                     )
 
-            self.exposure_db[f"fn_damages_{damage_type}"] = (
+            self.exposure_db[f"fn_damage_{damage_type}"] = (
                 self.exposure_db[linking_column].map(linking_dict)
             )
 
@@ -1789,7 +1789,7 @@ class ExposureVector(Exposure):
                     # Calculate the maximum potential damage for each object and per damage type
                     try:
                         self.exposure_db[
-                            f"max_damages_{damage_type}"
+                            f"max_damage_{damage_type}"
                         ] = [
                             damage_values[building_type][damage_type.lower()]
                             * square_meters

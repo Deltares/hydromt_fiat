@@ -165,7 +165,7 @@ def spatial_joins(
 
         # Split max potential damages into new composite areas
         exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "Max Potential Damage: Structure", "Max Potential Damage: Content"]].set_index("ca_ID")
-        exposure_gdf = split_max_damages_new_composite_area(
+        exposure_gdf = split_max_damage_new_composite_area(
             exposure_gdf,
             exposure_max_potential_damage,
         )
@@ -249,7 +249,7 @@ def split_composite_area(
     return new_exposure_aggregation, exposure_gdf
 
 
-def split_max_damages_new_composite_area(
+def split_max_damage_new_composite_area(
     exposure_gdf: gpd.GeoDataFrame,
     exposure_max_potential_damage: pd.DataFrame,
 ) -> gpd.GeoDataFrame:
