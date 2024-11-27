@@ -1108,7 +1108,8 @@ class ExposureVector(Exposure):
             )
         
             # Unit conversion
-            self.unit_conversion("Ground Elevation", grnd_elev_unit)
+            if grnd_elev_unit:
+                self.unit_conversion(parameter = "Ground Elevation", unit = grnd_elev_unit)
 
         else:
             self.logger.warning(

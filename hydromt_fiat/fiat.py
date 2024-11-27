@@ -1325,21 +1325,35 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
+        
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if self.spatial_joins["aggregation_areas"]:
-            fns_aggregation = glob.glob(Path(self.root, "geoms", "aggregation_areas","*.geojson").as_posix())
-            fns.append(fns_aggregation[0])
+            fns_aggregation = []
+            for i in self.spatial_joins['aggregation_areas']:
+                fn_aggregation = i['file']
+                fn_aggregation = str(Path(self.root, fn_aggregation))
+                fns_aggregation.append(fn_aggregation)               
+            fns.extend(fns_aggregation)
         if self.spatial_joins["additional_attributes"]:
-            if len(glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())) > 0:
-                fns_additional_attributes = glob.glob(Path(self.root, "geoms", "additional_attributes","*.geojson").as_posix())
-                fns.append(fns_additional_attributes[0])
-            if len(glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())) > 0:
-                fns_building_footprints = glob.glob(Path(self.root, "geoms", "building_footprints","*.geojson").as_posix())
-                fns.append(fns_building_footprints[0])
+            fns_additional_attributes = []
+            for i in self.spatial_joins['additional_attributes']:
+                fn_additional_attributes = i['file']
+                fn_additional_attributes = str(Path(self.root, fn_additional_attributes))
+                if 'building_footprints' in fn_additional_attributes:
+                    self.building_footprint = gpd.read_file(fn_additional_attributes)
+                else:
+                    fns_additional_attributes.append(fn_additional_attributes)
+                fns.extend(fns_additional_attributes)
+                
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
-            name = Path(fn).stem
+            if "aggregation_areas" in fn:
+                name = f"aggregation_areas/{Path(fn).stem}"
+            elif "additional_attributes" in fn:
+                name = f"additional_attributes/{Path(fn).stem}"
+            else: 
+                name = Path(fn).stem 
             self.set_geoms(gpd.read_file(fn), name=name)
 
     def write(self):
