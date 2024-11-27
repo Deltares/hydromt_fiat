@@ -6,9 +6,9 @@ default_jrc_max_damage_adjustment_values = {
     "construction_cost_vs_depreciated_value_res": 0.6,
     "construction_cost_vs_depreciated_value_com": 0.6,
     "construction_cost_vs_depreciated_value_ind": 0.6,
-    "max_damages_content_inventory_res": 0.5,
-    "max_damages_content_inventory_com": 1,
-    "max_damages_content_inventory_ind": 1.5,
+    "max_damage_content_inventory_res": 0.5,
+    "max_damage_content_inventory_com": 1,
+    "max_damage_content_inventory_ind": 1.5,
     "undamageable_part_res": 0.4,
     "undamageable_part_com": 0.4,
     "undamageable_part_ind": 0.4,
@@ -64,7 +64,7 @@ def preprocess_jrc_damage_values(
             f"construction_cost_vs_depreciated_value_{building_type_short}"
         ]
         mdci = max_damage_adjustment_values[
-            f"max_damages_content_inventory_{building_type_short}"
+            f"max_damage_content_inventory_{building_type_short}"
         ]
         up = max_damage_adjustment_values[f"undamageable_part_{building_type_short}"]
         mu = max_damage_adjustment_values[f"material_used_{building_type_short}"]

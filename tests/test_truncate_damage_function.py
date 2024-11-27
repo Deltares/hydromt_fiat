@@ -33,7 +33,7 @@ def test_truncate_damage_function(case):
     print(
         fm.exposure.exposure_db.loc[
             fm.exposure.exposure_db["object_id"].isin(objectids_to_modify),
-            "fn_damages_structure",
+            "fn_damage_structure",
         ].unique()
     )
 
@@ -65,6 +65,6 @@ def test_truncate_damage_function(case):
     ]
 
     assert all(
-        exposure_modified_selection["fn_damages_structure"]
-        != exposure_original_selection["fn_damages_structure"]
+        exposure_modified_selection["fn_damage_structure"]
+        != exposure_original_selection["fn_damage_structure"]
     )
