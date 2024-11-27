@@ -829,7 +829,8 @@ class ExposureVector(Exposure):
                 )
 
                 # Unit conversion
-                self.unit_conversion("Ground Floor Height", gfh_unit)
+                if gfh_unit:
+                    self.unit_conversion("Ground Floor Height", gfh_unit)
 
                 if "geometry" in self.exposure_db.columns:
                     self.exposure_db.drop(columns=["geometry"], inplace=True)
@@ -1029,7 +1030,8 @@ class ExposureVector(Exposure):
             )
         
             # Unit conversion
-            self.unit_conversion("Ground Elevation", grnd_elev_unit)
+            if grnd_elev_unit:
+                self.unit_conversion(parameter = "Ground Elevation", unit = grnd_elev_unit)
 
         else:
             self.logger.warning(
