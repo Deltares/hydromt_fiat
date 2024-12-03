@@ -1958,9 +1958,14 @@ class ExposureVector(Exposure):
         elif len(self.exposure_geoms) > 1:
             gdf_list = []
             for i in range(len(self.exposure_geoms)):
-                gdf_list.append(
-                    self.exposure_geoms[i].merge(df, on="object_id", how="left")
-                )
+                if "Object ID" in self.exposure_geoms[i].columns:
+                    gdf_list.append(
+                        self.exposure_geoms[i].merge(df, on="Object ID", how="left")
+                    )
+                elif "object_id" in self.exposure_geoms[i].columns:
+                    gdf_list.append(
+                        self.exposure_geoms[i].merge(df, on="object_id", how="left")
+                    )
             gdf = gpd.GeoDataFrame(pd.concat(gdf_list, ignore_index=True))
         return gdf
 
