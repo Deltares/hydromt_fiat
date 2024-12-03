@@ -418,7 +418,8 @@ class FiatModel(GridModel):
                 grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                damage_translation_fn = damage_translation_fn
+                damage_translation_fn = damage_translation_fn,
+                gfh_attribute_name = gfh_attribute_name
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
