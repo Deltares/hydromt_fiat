@@ -733,7 +733,7 @@
         <span class="n">occupancy_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">max_potential_damage</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span>
         <span class="n">ground_floor_height</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
-        <span class="n">length_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gfh_unit</span><span class="p">:</span> <span class="n">Units</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gfh_attribute_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">occupancy_attr</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -764,7 +764,7 @@
 <span class="sd">            Either a number (int or float), to give all assets the same ground floor</span>
 <span class="sd">            height or a path to the data that can be used to add the ground floor</span>
 <span class="sd">            height to the assets.</span>
-<span class="sd">        length_unit : Units</span>
+<span class="sd">        unit : Units</span>
 <span class="sd">            The unit of the model</span>
 <span class="sd">        gfh_unit : Units</span>
 <span class="sd">            The unit of the ground_floor_height</span>
@@ -802,14 +802,14 @@
 <span class="sd">            The path to the translation function that can be used to relate user damage curves with user damages.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># In case the unit is passed as a pydantic value get the string</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">length_unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
-            <span class="n">length_unit</span> <span class="o">=</span> <span class="n">length_unit</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">):</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">value</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-            <span class="n">length_unit</span><span class="o">=</span><span class="n">length_unit</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
             <span class="n">damage_unit</span><span class="o">=</span><span class="n">damage_unit</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -840,7 +840,8 @@
                 <span class="n">grnd_elev_unit</span><span class="o">=</span><span class="n">grnd_elev_unit</span><span class="p">,</span>
                 <span class="n">bf_conversion</span><span class="o">=</span><span class="n">bf_conversion</span><span class="p">,</span>
                 <span class="n">keep_unclassified</span><span class="o">=</span><span class="n">keep_unclassified</span><span class="p">,</span>
-                <span class="n">damage_translation_fn</span> <span class="o">=</span> <span class="n">damage_translation_fn</span>
+                <span class="n">damage_translation_fn</span> <span class="o">=</span> <span class="n">damage_translation_fn</span><span class="p">,</span>
+                <span class="n">gfh_attribute_name</span> <span class="o">=</span> <span class="n">gfh_attribute_name</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">asset_locations</span> <span class="o">!=</span> <span class="n">occupancy_type</span><span class="p">)</span> <span class="ow">and</span> <span class="n">occupancy_object_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -900,7 +901,7 @@
         <span class="c1"># Update the other config settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.csv.file&quot;</span><span class="p">,</span> <span class="s2">&quot;exposure/exposure.csv&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.length_unit&quot;</span><span class="p">,</span> <span class="n">length_unit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">,</span> <span class="n">damage_unit</span><span class="p">)</span></div>
 
 
@@ -925,7 +926,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-                <span class="n">length_unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_roads</span><span class="p">(</span><span class="n">roads_fn</span><span class="p">,</span> <span class="n">road_damage</span><span class="p">,</span> <span class="n">road_types</span><span class="p">)</span>
 
@@ -1072,7 +1073,7 @@
             <span class="c1"># Convert to units of the exposure data if required</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>  <span class="c1"># change to be sure that the unit information is available from the exposure dataset</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">length_unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
                         <span class="n">da</span> <span class="o">=</span> <span class="n">da</span> <span class="o">*</span> <span class="n">unit_conversion_factor</span>
 
             <span class="c1"># convert to gdal compliant</span>
@@ -1692,7 +1693,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
                 <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.crs&quot;</span><span class="p">),</span>
                 <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
-                <span class="n">length_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.length_unit&quot;</span><span class="p">),</span>
+                <span class="n">unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.geom.unit&quot;</span><span class="p">),</span>
                 <span class="n">damage_unit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="s2">&quot;exposure.damage_unit&quot;</span><span class="p">),</span>
                 <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>  <span class="c1"># TODO: See if this works also when no data catalog is provided</span>
             <span class="p">)</span>
@@ -1718,21 +1719,35 @@
             <span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">read_geoms</span><span class="p">(</span><span class="n">exposure_fn</span><span class="p">)</span>
 
+        
         <span class="n">fns</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;aggregation_areas&quot;</span><span class="p">]:</span>
-            <span class="n">fns_aggregation</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation_areas&quot;</span><span class="p">,</span><span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
-            <span class="n">fns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fns_aggregation</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">fns_aggregation</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s1">&#39;aggregation_areas&#39;</span><span class="p">]:</span>
+                <span class="n">fn_aggregation</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+                <span class="n">fn_aggregation</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">fn_aggregation</span><span class="p">))</span>
+                <span class="n">fns_aggregation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn_aggregation</span><span class="p">)</span>               
+            <span class="n">fns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">fns_aggregation</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s2">&quot;additional_attributes&quot;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;additional_attributes&quot;</span><span class="p">,</span><span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">fns_additional_attributes</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;additional_attributes&quot;</span><span class="p">,</span><span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
-                <span class="n">fns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fns_additional_attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">,</span><span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">fns_building_footprints</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;geoms&quot;</span><span class="p">,</span> <span class="s2">&quot;building_footprints&quot;</span><span class="p">,</span><span class="s2">&quot;*.geojson&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
-                <span class="n">fns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fns_building_footprints</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">fns_additional_attributes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spatial_joins</span><span class="p">[</span><span class="s1">&#39;additional_attributes&#39;</span><span class="p">]:</span>
+                <span class="n">fn_additional_attributes</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span>
+                <span class="n">fn_additional_attributes</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">fn_additional_attributes</span><span class="p">))</span>
+                <span class="k">if</span> <span class="s1">&#39;building_footprints&#39;</span> <span class="ow">in</span> <span class="n">fn_additional_attributes</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">fn_additional_attributes</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">fns_additional_attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn_additional_attributes</span><span class="p">)</span>
+                <span class="n">fns</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">fns_additional_attributes</span><span class="p">)</span>
+                
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading static geometries&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">fns</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
+            <span class="k">if</span> <span class="s2">&quot;aggregation_areas&quot;</span> <span class="ow">in</span> <span class="n">fn</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;aggregation_areas/</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">elif</span> <span class="s2">&quot;additional_attributes&quot;</span> <span class="ow">in</span> <span class="n">fn</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;additional_attributes/</span><span class="si">{</span><span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">set_geoms</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
