@@ -655,6 +655,15 @@ class FiatModel(GridModel):
             da.encoding["_FillValue"] = None
             da = da.raster.gdal_compliant()
 
+            # ensure variable name is lowercase, since FIAT seems to be failing if not # TODO check with FIAT
+            da_name = da_name.lower()
+            da = da.rename(da_name)
+            
+            # Check if map is rotated and if yes, reproject to a non-rotated grid
+            if "xc" in da.coords:
+                self.logger.warning("Hazard map is rotated. It will be reprojected to a none rotated grid using nearest neighbor interpolation")
+                da = da.raster.reproject(dst_crs=da.rio.crs)
+
             # check masp projection, null data, and grids
             check_maps_metadata(self.staticmaps, params, da, da_name, idx)
 
@@ -740,7 +749,7 @@ class FiatModel(GridModel):
         )
 
         self.set_config(
-            "hazard.elevation_reference", "dem" if da_type == "water_depth" else "datum"
+            "hazard.elevation_reference", "DEM" if da_type == "water_depth" else "datum"
         )
 
         # Set the configurations for a multiband netcdf
