@@ -21,4 +21,4 @@ file = "./exposure/exposure.csv"
 [exposure.geom]
 crs = "EPSG:4326"
 unit = "feet"
-file1 = "./exposure/buildings.gpkg"
+file1 = "exposure/buildings.gpkg"

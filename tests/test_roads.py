@@ -76,7 +76,7 @@ def test_setup_roads(case):
     # Check if the exposure data exists
     assert root.joinpath("exposure", "roads.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
-    assert root.joinpath("exposure", "region.gpkg").exists()
+    assert root.joinpath("geoms", "region.geojson").exists()
 
     # Read the resulting exposure data and check if the required columns exist
     exposure = pd.read_csv(root.joinpath("exposure", "exposure.csv"))
@@ -86,9 +86,10 @@ def test_setup_roads(case):
         "lanes",
         "object_id",
         "primary_object_type",
-        "fn_damage_structure",
+        "extract_method",
+        "ground_flht",
         "max_damage_structure",
-        "Segment Length [m]",
+        "Segment Length",
     ]
     assert set(required_columns) == set(exposure.columns)
 

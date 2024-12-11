@@ -19,6 +19,7 @@ _cases = {
         "dir": "fiat_model",
         "new_root": EXAMPLEDIR / "test_update_ground_elevation",
         "ground_elevation": DATADIR / "charleston_14m.tif",
+        "grnd_elev_unit": "meters",
     },
 }
 
@@ -38,6 +39,7 @@ def test_ground_elevation(case):
 
     fm.exposure.setup_ground_elevation(
         _cases[case]["ground_elevation"],
+        _cases[case]["grnd_elev_unit"],
     )
 
     # Remove the new root folder if it already exists

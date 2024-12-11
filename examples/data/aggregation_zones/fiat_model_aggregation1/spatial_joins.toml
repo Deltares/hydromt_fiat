@@ -1,0 +1,4 @@
+[[additional_attributes]]
+name = "Zoning_map"
+file = "geoms/additional_attributes/base_zones.geojson"
+field_name = "ZONE_BASE"

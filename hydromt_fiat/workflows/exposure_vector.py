@@ -296,7 +296,6 @@ class ExposureVector(Exposure):
                 [
                     "max_damage_structure",
                     "Segment Length",
-                    "extract_method",
                 ]
             ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, (int, float)) or road_damage is None:
@@ -304,9 +303,10 @@ class ExposureVector(Exposure):
             roads["max_damage_structure"] = road_damage
 
         # Convert crs to exposure buildings crs
-        if roads.crs != self.exposure_geoms[0].crs:
-            crs = self.exposure_geoms[0].crs
-            roads = roads.to_crs(crs)
+        if len(self.exposure_geoms) > 0:
+            if roads.crs != self.exposure_geoms[0].crs:
+                crs = self.exposure_geoms[0].crs
+                roads = roads.to_crs(crs)
 
         # Set the exposure_geoms
         self.set_exposure_geoms(roads[["object_id", "geometry"]])
@@ -1109,7 +1109,7 @@ class ExposureVector(Exposure):
         
             # Unit conversion
             if grnd_elev_unit:
-                self.unit_conversion(parameter = "Ground Elevation", unit = grnd_elev_unit)
+                self.unit_conversion(parameter = "grnd_elevtn", unit = grnd_elev_unit)
 
         else:
             self.logger.warning(
@@ -2095,7 +2095,7 @@ class ExposureVector(Exposure):
         exposure_to_modify.loc[to_change, "ground_flht"] = list(
             modified_objects_gdf.loc[to_change, attr_ref]
             + raise_by[to_change]
-            - exposure_to_modify.loc[to_change, "Ground Elevation"]
+            - exposure_to_modify.loc[to_change, "ground_elevtn"]
         )
 
         # Get some metrics on changes
