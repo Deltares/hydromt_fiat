@@ -85,7 +85,7 @@ def test_equity_data(case):
     # Check if the exposure data exists
     assert root.joinpath("exposure", "buildings.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
-    assert root.joinpath("exposure", "region.geojson").exists()
+    assert root.joinpath("geoms", "region.geojson").exists()
 
     # Check if the equity data exists
     assert root.joinpath("exposure", "equity", "equity_data.csv").exists()

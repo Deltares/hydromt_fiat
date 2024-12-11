@@ -26,8 +26,7 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation": EXAMPLEDIR
-        / "test_setup_new_composite_area_elevation_aggregation"
+        "ground_elevation": DATADIRDEM
         / "charleston_14m.tif",
         "aggregation_area_fn": [
             AGGRDIR / "aggregation_zones" / "council.gpkg",

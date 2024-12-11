@@ -147,7 +147,9 @@ class ExposureVector(Exposure):
         source: Union[str, Path],
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
+        gfh_unit: Units = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
+        grnd_elev_unit: Units = None,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -236,6 +238,7 @@ class ExposureVector(Exposure):
         if ground_elevation is not None:
             self.setup_ground_elevation(
                 ground_elevation,
+                grnd_elev_unit
             )
 
         # Remove the geometry column from the exposure_db
@@ -1044,7 +1047,10 @@ class ExposureVector(Exposure):
 
         elif isinstance(max_potential_damage, str) or isinstance(
             max_potential_damage, Path
-        ):  
+        ):
+            if isinstance(max_potential_damage, Path):
+                max_potential_damage = str(max_potential_damage)
+
             # Using a csv file with a translation table to assign damages to damage curves
             if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(".xlsx"):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
@@ -1086,7 +1092,7 @@ class ExposureVector(Exposure):
                 )
     
     def setup_ground_elevation(
-        self, ground_elevation: Union[None, str, Path], grnd_elev_unit: Units
+        self, ground_elevation: Union[None, str, Path], grnd_elev_unit: Units = None
     ) -> None:
         """
         Set the ground elevation of the exposure data.
@@ -1106,7 +1112,7 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
-        
+            
             # Unit conversion
             if grnd_elev_unit:
                 self.unit_conversion(parameter = "grnd_elevtn", unit = grnd_elev_unit)
@@ -1372,7 +1378,7 @@ class ExposureVector(Exposure):
         damage_function_column_idx = [
             self.exposure_db.columns.get_loc(c)
             for c in self.get_damage_function_columns()
-            if c.split(": ")[-1] in damage_function_types
+            if c.split("_")[-1] in damage_function_types
         ]
         self.exposure_db.iloc[idx, damage_function_column_idx] = (
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix

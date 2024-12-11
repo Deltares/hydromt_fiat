@@ -60,6 +60,11 @@ def spatial_joins(
 
     """
 
+    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path):
+        aggregation_area_fn = [aggregation_area_fn]
+        attribute_names = [attribute_names]
+        label_names = [label_names]
+
     filtered_areas = []
 
     # Create column to assign new composite area ID and create copy of new composite area gdf
@@ -164,7 +169,7 @@ def spatial_joins(
         )
 
         # Split max potential damages into new composite areas
-        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "Max Potential Damage: Structure", "Max Potential Damage: Content"]].set_index("ca_ID")
+        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "max_damage_structure", "max_damage_content"]].set_index("ca_ID")
         exposure_gdf = split_max_damage_new_composite_area(
             exposure_gdf,
             exposure_max_potential_damage,
@@ -279,8 +284,8 @@ def split_max_damage_new_composite_area(
         if len(splitted_exposure_gdf) > 1:
             for index, row in splitted_exposure_gdf.iterrows():
                 rel_area = row.geometry.area / row_ca["geometry"]
-                exposure_gdf.at[index, "Max Potential Damage: Structure"] = rel_area * row_ca["Max Potential Damage: Structure"]
-                exposure_gdf.at[index, "Max Potential Damage: Content"] = rel_area * row_ca["Max Potential Damage: Content"]
+                exposure_gdf.at[index, "max_damage_structure"] = rel_area * row_ca["max_damage_structure"]
+                exposure_gdf.at[index, "max_damage_content"] = rel_area * row_ca["max_damage_content"]
 
     del exposure_gdf["ca_ID"]
 

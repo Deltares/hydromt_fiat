@@ -19,4 +19,4 @@ file = "./exposure/exposure.csv"
 
 [exposure.geom]
 crs = "EPSG:4326"
-file1 = "./exposure/building_points.gpkg"
+file1 = "exposure/building_points.gpkg"

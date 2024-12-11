@@ -19,6 +19,5 @@ file = "./exposure/exposure.csv"
 
 [exposure.geom]
 crs = "EPSG:4326"
-file1 = "./exposure/building_points.gpkg"
-file2 = "./exposure/new_development_area.gpkg"
-file3 = "./exposure/new_development_area_aggregated.gpkg"
+file1 = "exposure/building_points.gpkg"
+file2 = "exposure/new_development_area_aggregated.gpkg"
