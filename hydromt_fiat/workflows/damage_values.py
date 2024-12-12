@@ -136,7 +136,7 @@ def preprocess_damage_values(
     base_damage_values : pd.DataFrame
         The JRC damage values data.
     damage_translation_fn : Union[Path, str]
-        The path to a file that relates the max. potential damage values with the exposure primary object type. 
+        The path to a file that relates the max. potential damage values with the exposure primary_object_type. 
 
     Returns
     -------
@@ -154,7 +154,7 @@ def preprocess_damage_values(
 
     rename_dict = dict(zip(translation_df.iloc[0:,0],translation_df.iloc[0:,1]))
 
-    # Rename damage values with primary object type
+    # Rename damage values with primary_object_type
     base_damage_values.rename(columns=rename_dict, inplace=True)
     
 

@@ -12,13 +12,11 @@ name1 = "spatial.gpkg"
 
 [vulnerability]
 file = "./vulnerability/vulnerability_curves.csv"
-unit = "feet"
-step_size = 0.1
+scale = 0.1
 
 [exposure.csv]
 file = "./exposure/exposure.csv"
 
 [exposure.geom]
 crs = "EPSG:4326"
-unit = "ft"
-file1 = "./exposure/buildings.gpkg"
+file1 = "exposure/building_points.gpkg"

@@ -53,12 +53,17 @@ def spatial_joins(
     - If the exposure GeoDataFrame and the aggregation area have different coordinate reference systems (CRS),
       the aggregation area will be reprojected to match the CRS of the exposure GeoDataFrame.
     - The function performs a spatial join using the 'intersects' predicate.
-    - If duplicates exist in the joined data, the function aggregates the data by grouping on the 'Object ID'
+    - If duplicates exist in the joined data, the function aggregates the data by grouping on the 'object_id'
       column and creating a list of values for each attribute.
     - The function expects the order of the label names to match the order of the aggregation areas in the 'areas'
       parameter.
 
     """
+
+    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path):
+        aggregation_area_fn = [aggregation_area_fn]
+        attribute_names = [attribute_names]
+        label_names = [label_names]
 
     filtered_areas = []
 
@@ -109,9 +114,9 @@ def spatial_joins(
 
         # aggregate the data if duplicates exist
         aggregated = (
-            exposure_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
+            exposure_gdf.groupby("object_id")[attribute_name].agg(list).reset_index()
         )
-        exposure_gdf.drop_duplicates(subset="Object ID", keep="first", inplace=True)
+        exposure_gdf.drop_duplicates(subset="object_id", keep="first", inplace=True)
 
         # Check if new gdf was already created in previous loop
         try:
@@ -128,7 +133,7 @@ def spatial_joins(
             )
         else:
             exposure_gdf.drop(columns=attribute_name, inplace=True)
-            exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID")
+            exposure_gdf = exposure_gdf.merge(aggregated, on="object_id")
 
             # Create a string from the list of values in the duplicated aggregation area
             # column
@@ -152,20 +157,20 @@ def spatial_joins(
         area_threshold = total_area * filter_percentage
         exposure_gdf = exposure_gdf[exposure_gdf.geometry.area >= area_threshold]
 
-        # Create new Object IDs
-        init_Object_ID = exposure_gdf_copy.loc[0, "Object Name"]
+        # Create new object_ids
+        init_Object_ID = exposure_gdf_copy.loc[0, "object_name"]
         init_Object_ID = int(init_Object_ID.split(": ", 1)[1])
-        exposure_gdf.loc[0:, "Object ID"] = np.arange(
+        exposure_gdf.loc[0:, "object_id"] = np.arange(
             init_Object_ID, init_Object_ID + int(len(exposure_gdf)), 1
         ).tolist()
-        # Create new Object Names
-        exposure_gdf["Object Name"] = exposure_gdf["Object ID"].apply(
+        # Create new object_names
+        exposure_gdf["object_name"] = exposure_gdf["object_id"].apply(
             lambda x: f"New development area: {int(x)}"
         )
 
         # Split max potential damages into new composite areas
-        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "Max Potential Damage: Structure", "Max Potential Damage: Content"]].set_index("ca_ID")
-        exposure_gdf = split_max_damages_new_composite_area(
+        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "max_damage_structure", "max_damage_content"]].set_index("ca_ID")
+        exposure_gdf = split_max_damage_new_composite_area(
             exposure_gdf,
             exposure_max_potential_damage,
         )
@@ -211,7 +216,7 @@ def split_composite_area(
         exposure_gdf = pd.concat(
             [res_intersection, exposure_outside_aggregation], ignore_index=True
         )
-        exposure_gdf.dropna(subset=["Object ID"], inplace=True)
+        exposure_gdf.dropna(subset=["object_id"], inplace=True)
 
         # Explode Multipolygons
         exposure_gdf = exposure_gdf.explode().reset_index()
@@ -224,10 +229,10 @@ def split_composite_area(
             if "level_1" in exposure_gdf.columns:
                 exposure_gdf.drop(["level_1"], axis=1, inplace=True)
 
-        # create new Object IDs
-        exposure_gdf["Object ID"] = exposure_gdf["Object ID"].astype(int)
-        init_Object_ID = exposure_gdf.loc[0, "Object ID"]
-        exposure_gdf.loc[0:, "Object ID"] = np.arange(
+        # create new object_ids
+        exposure_gdf["object_id"] = exposure_gdf["object_id"].astype(int)
+        init_Object_ID = exposure_gdf.loc[0, "object_id"]
+        exposure_gdf.loc[0:, "object_id"] = np.arange(
             init_Object_ID + 1, init_Object_ID + 1 + int(len(exposure_gdf)), 1
         ).tolist()
 
@@ -249,7 +254,7 @@ def split_composite_area(
     return new_exposure_aggregation, exposure_gdf
 
 
-def split_max_damages_new_composite_area(
+def split_max_damage_new_composite_area(
     exposure_gdf: gpd.GeoDataFrame,
     exposure_max_potential_damage: pd.DataFrame,
 ) -> gpd.GeoDataFrame:
@@ -279,8 +284,8 @@ def split_max_damages_new_composite_area(
         if len(splitted_exposure_gdf) > 1:
             for index, row in splitted_exposure_gdf.iterrows():
                 rel_area = row.geometry.area / row_ca["geometry"]
-                exposure_gdf.at[index, "Max Potential Damage: Structure"] = rel_area * row_ca["Max Potential Damage: Structure"]
-                exposure_gdf.at[index, "Max Potential Damage: Content"] = rel_area * row_ca["Max Potential Damage: Content"]
+                exposure_gdf.at[index, "max_damage_structure"] = rel_area * row_ca["max_damage_structure"]
+                exposure_gdf.at[index, "max_damage_content"] = rel_area * row_ca["max_damage_content"]
 
     del exposure_gdf["ca_ID"]
 
@@ -323,7 +328,7 @@ def join_exposure_aggregation_areas(
     )
 
     # Remove the geometry column from the exposure_gdf to return a dataframe
-    exposure_geoms = exposure_gdf[["Object ID", "geometry"]]
+    exposure_geoms = exposure_gdf[["object_id", "geometry"]]
 
     del exposure_gdf["geometry"]
 

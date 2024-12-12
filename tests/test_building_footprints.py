@@ -44,8 +44,8 @@ def test_building_footprints(case: ParameterSet | Sequence[object] | object):
     # Check if the BF_FID column is added
     assert "BF_FID" in fm.exposure.exposure_db.columns
 
-    # Check for Object ID duplicates
-    assert fm.exposure.exposure_db["Object ID"].duplicated().sum() == 0
+    # Check for object_id duplicates
+    assert fm.exposure.exposure_db["object_id"].duplicated().sum() == 0
 
     # Check original exposure is same length new exposure
-    assert len(fm.exposure.exposure_db["Object ID"]) == len(exposure_orig["Object ID"])
+    assert len(fm.exposure.exposure_db["object_id"]) == len(exposure_orig["object_id"])

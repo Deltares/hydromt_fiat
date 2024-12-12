@@ -1,0 +1,19 @@
+[[additional_attributes]]
+name = "Zoning_map"
+file = "geoms/additional_attributes/base_zones.geojson"
+field_name = "ZONE_BASE"
+
+[[additional_attributes]]
+name = "Land_use_map"
+file = "geoms/additional_attributes/land_use.geojson"
+field_name = "LAND_USE"
+
+[[additional_attributes]]
+name = "Horse_track"
+file = "geoms/additional_attributes/Horse_Carriage_Tour_Zones.geojson"
+field_name = "ZoneName"
+
+[[additional_attributes]]
+name = "Accomodation_Zone"
+file = "geoms/additional_attributes/accomodation_type.geojson"
+field_name = "ACCOM"
