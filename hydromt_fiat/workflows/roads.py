@@ -17,7 +17,7 @@ def get_max_potential_damage_roads(
     roads = gpd.GeoDataFrame(
         {
             "lanes": pd.to_numeric(roads["lanes"], errors="coerce"),
-            "Segment Length": roads.length,
+            "segment_length": roads.length,
             "geometry": roads["geometry"],
         }
     )
@@ -31,7 +31,7 @@ def get_max_potential_damage_roads(
     roads["damage_value"] = roads["lanes"].map(damage_dic)
 
     # Potentially convert the length to meters
-    roads["max_damage_structure"] = roads["damage_value"] * roads["Segment Length"]
+    roads["max_damage_structure"] = roads["damage_value"] * roads["segment_length"]
     if unit == "meters" or unit == "metre" or unit == "m":
         roads["max_damage_structure"] = roads["max_damage_structure"] * 0.3048
     else:
@@ -39,7 +39,7 @@ def get_max_potential_damage_roads(
             "You are using the wrong unit for the segment length. Please use <'foot/feet/ft'> or <'meters/metre/m'>"
         )
 
-    return roads[["max_damage_structure", "Segment Length"]]
+    return roads[["max_damage_structure", "segment_length"]]
 
 
 def get_road_lengths(roads):

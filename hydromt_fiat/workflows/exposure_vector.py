@@ -298,11 +298,11 @@ class ExposureVector(Exposure):
             roads[
                 [
                     "max_damage_structure",
-                    "Segment Length",
+                    "segment_length",
                 ]
             ] = get_max_potential_damage_roads(roads, road_damage)
         elif isinstance(road_damage, (int, float)) or road_damage is None:
-            roads["Segment Length"] = road_length
+            roads["segment_length"] = road_length
             roads["max_damage_structure"] = road_damage
 
         # Convert crs to exposure buildings crs

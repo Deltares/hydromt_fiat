@@ -89,7 +89,7 @@ def test_setup_roads(case):
         "extract_method",
         "ground_flht",
         "max_damage_structure",
-        "Segment Length",
+        "segment_length",
     ]
     assert set(required_columns) == set(exposure.columns)
 
