@@ -162,7 +162,7 @@ class HydroMtViewModel:
                 self.new_additional_attributes(config_yaml)
             elif "ground_elevtn" in item:
                 self.new_ground_elevation(config_yaml)
-            elif "Max Potential Damages" in item:
+            elif "max_damage" in item:
                 self.new_max_potential_damages(config_yaml)
 
         # Write model
