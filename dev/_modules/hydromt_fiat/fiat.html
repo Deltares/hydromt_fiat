@@ -628,11 +628,11 @@
 <span class="sd">            The unit of the vulnerability functions.</span>
 <span class="sd">        functions_mean : Union[str, List[str], None], optional</span>
 <span class="sd">            The name(s) of the vulnerability functions that should use the mean hazard</span>
-<span class="sd">            value when using the area extraction method, by default &quot;default&quot; (this</span>
+<span class="sd">            value when using the area extract_method, by default &quot;default&quot; (this</span>
 <span class="sd">            means that all vulnerability functions are using mean).</span>
 <span class="sd">        functions_max : Union[str, List[str], None], optional</span>
 <span class="sd">            The name(s) of the vulnerability functions that should use the maximum</span>
-<span class="sd">            hazard value when using the area extraction method, by default None (this</span>
+<span class="sd">            hazard value when using the area extract_method, by default None (this</span>
 <span class="sd">            means that all vulnerability functions are using mean).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -669,7 +669,7 @@
             <span class="n">continent</span><span class="o">=</span><span class="n">continent</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># Set the area extraction method for the vulnerability curves</span>
+        <span class="c1"># Set the area extract_method for the vulnerability curves</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">set_area_extraction_methods</span><span class="p">(</span>
             <span class="n">functions_mean</span><span class="o">=</span><span class="n">functions_mean</span><span class="p">,</span> <span class="n">functions_max</span><span class="o">=</span><span class="n">functions_max</span>
         <span class="p">)</span>
@@ -719,6 +719,26 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">create_step_function</span><span class="p">(</span>
             <span class="s2">&quot;roads&quot;</span><span class="p">,</span>
+            <span class="n">threshold_value</span><span class="p">,</span>
+            <span class="n">min_hazard_value</span><span class="p">,</span>
+            <span class="n">max_hazard_value</span><span class="p">,</span>
+            <span class="n">step_hazard_value</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">setup_population_vulnerability</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">vertical_unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">threshold_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="n">min_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">max_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">step_hazard_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span> <span class="o">=</span> <span class="n">Vulnerability</span><span class="p">(</span>
+                <span class="n">vertical_unit</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">create_step_function</span><span class="p">(</span>
+            <span class="s2">&quot;population&quot;</span><span class="p">,</span>
             <span class="n">threshold_value</span><span class="p">,</span>
             <span class="n">min_hazard_value</span><span class="p">,</span>
             <span class="n">max_hazard_value</span><span class="p">,</span>
@@ -826,6 +846,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># The source for the asset locations, occupancy type and maximum potential</span>
             <span class="c1"># damage is different, use three sources to create the exposure data.</span>
+            <span class="c1"># Setup exposure buildings</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_buildings_from_multiple_sources</span><span class="p">(</span>
                 <span class="n">asset_locations</span><span class="p">,</span>
                 <span class="n">occupancy_type</span><span class="p">,</span>
@@ -933,17 +954,36 @@
         <span class="c1"># Link to vulnerability curves</span>
 
         <span class="c1"># Combine the exposure database with pre-existing exposure data if available</span>
-
+    <span class="k">def</span> <span class="nf">setup_exposure_population</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">impacted_population_fn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">attribute_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method_impacted_pop</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;intersection&quot;</span><span class="p">,</span>
+        <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;meters&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="o">=</span> <span class="n">ExposureVector</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_impacted_population</span><span class="p">(</span><span class="n">impacted_population_fn</span><span class="p">,</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">method_impacted_pop</span><span class="p">,</span><span class="n">max_dist</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;exposure.types&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;damages&quot;</span><span class="p">,</span> <span class="s2">&quot;affected&quot;</span><span class="p">])</span>
     <span class="k">def</span> <span class="nf">bf_spatial_joins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">building_footprints</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;BF_FID&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
         <span class="p">]</span>
         <span class="n">BF_exposure_gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[[</span><span class="s2">&quot;object_id&quot;</span><span class="p">,</span> <span class="s2">&quot;BF_FID&quot;</span><span class="p">]],</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;object_id&quot;</span>
         <span class="p">)</span>
         <span class="k">del</span> <span class="n">BF_exposure_gdf</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span><span class="p">[</span><span class="s2">&quot;object_id&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="n">BF_exposure_gdf</span>
 
     <span class="k">def</span> <span class="nf">update_ground_floor_height</span><span class="p">(</span>
@@ -1267,7 +1307,7 @@
 
             <span class="c1"># Link the SVI score to the exposure data</span>
             <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
-            <span class="n">exposure_data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;Object ID&quot;</span><span class="p">)</span>
+            <span class="n">exposure_data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;object_id&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">crs</span> <span class="o">!=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
                 <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="o">=</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1284,7 +1324,7 @@
                 <span class="n">cols_to_save</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;composite_svi_z&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]</span>
 
             <span class="c1"># Filter out the roads because they do not have an SVI score</span>
-            <span class="n">filter_roads</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="s2">&quot;Primary Object Type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;roads&quot;</span>
+            <span class="n">filter_roads</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="s2">&quot;primary_object_type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;roads&quot;</span>
             <span class="n">svi_exp_joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
                 <span class="n">exposure_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">filter_roads</span><span class="p">],</span>
                 <span class="n">svi</span><span class="o">.</span><span class="n">svi_data_shp</span><span class="p">[</span><span class="n">cols_to_save</span><span class="p">],</span>
@@ -1295,8 +1335,8 @@
             <span class="n">svi_exp_joined</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;composite_svi_z&quot;</span><span class="p">:</span> <span class="s2">&quot;SVI&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">svi_exp_joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-                <span class="n">svi_exp_joined</span><span class="p">[[</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI&quot;</span><span class="p">]],</span>
-                <span class="n">on</span><span class="o">=</span><span class="s2">&quot;Object ID&quot;</span><span class="p">,</span>
+                <span class="n">svi_exp_joined</span><span class="p">[[</span><span class="s2">&quot;object_id&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI_key_domain&quot;</span><span class="p">,</span> <span class="s2">&quot;SVI&quot;</span><span class="p">]],</span>
+                <span class="n">on</span><span class="o">=</span><span class="s2">&quot;object_id&quot;</span><span class="p">,</span>
                 <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="c1"># Define spatial join info</span>
@@ -1546,8 +1586,8 @@
 <span class="sd">         damage_types : Union[List[str], str]</span>
 <span class="sd">             &quot;structure&quot;or/and &quot;content&quot;</span>
 <span class="sd">         remove_object_type: bool</span>
-<span class="sd">             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.</span>
-<span class="sd">             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).</span>
+<span class="sd">             True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.</span>
+<span class="sd">             E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_occupancy_type</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">type_add</span><span class="p">)</span>
@@ -1555,13 +1595,13 @@
         <span class="c1"># Drop Object Type that has not been updated.</span>
 
         <span class="k">if</span> <span class="n">remove_object_type</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">type_add</span> <span class="o">==</span> <span class="s2">&quot;Primary Object Type&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">type_add</span> <span class="o">==</span> <span class="s2">&quot;primary_object_type&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
-                    <span class="s2">&quot;Secondary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="s2">&quot;secondary_object_type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
                 <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
-                    <span class="s2">&quot;Primary Object Type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
+                    <span class="s2">&quot;primary_object_type&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
                 <span class="p">)</span>
         <span class="n">linking_table_new</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">update_user_linking_table</span><span class="p">(</span>
             <span class="n">old_values</span><span class="p">,</span> <span class="n">new_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vf_ids_and_linking_df</span>
@@ -1834,7 +1874,6 @@
                     <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
                 <span class="p">)</span>
                 <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
             <span class="n">GridModel</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
