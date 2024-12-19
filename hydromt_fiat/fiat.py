@@ -4,17 +4,19 @@ import csv
 import glob
 import logging
 import os
+import shutil
 from pathlib import Path
 from typing import List, Optional, Union
-import xarray as xr
+
 import geopandas as gpd
 import hydromt
 import pandas as pd
+import shapely.geometry as sg
 import tomli
 import tomli_w
+import xarray as xr
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
-import shutil
 
 from hydromt_fiat.api.data_types import Units
 from hydromt_fiat.util import DATADIR
@@ -169,7 +171,7 @@ class FiatModel(GridModel):
 
         kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
         if kind == "bbox":
-            geom = gpd.GeoDataFrame(geometry=[box(*region["bbox"])], crs=4326)
+            geom = gpd.GeoDataFrame(geometry=[sg.box(*region["bbox"])], crs=4326)
         elif kind == "grid":
             geom = region["grid"].raster.box
         elif kind == "geom":
@@ -336,6 +338,7 @@ class FiatModel(GridModel):
         gfh_attribute_name: str = None,
         occupancy_attr: Union[str, None] = None,
         occupancy_object_type: Union[str, List[str]] = None,
+        occupancy_link_table: Union[str, None] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
         damage_unit: Currency = Currency.dollar.value,
@@ -432,6 +435,7 @@ class FiatModel(GridModel):
                 ground_floor_height,
                 extraction_method,
                 occupancy_attr,
+                occupancy_link_table=occupancy_link_table,
                 damage_types=damage_types,
                 country=country,
                 gfh_unit=gfh_unit,

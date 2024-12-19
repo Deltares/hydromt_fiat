@@ -328,6 +328,7 @@ class ExposureVector(Exposure):
         ground_floor_height: Union[int, float, str, Path, None],
         extraction_method: str,
         occupancy_attr: Union[str, None] = None,
+        occupancy_link_table: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
         country: Union[str, None] = None,
         gfh_attribute_name: Union[str, List[str], None] = None,
@@ -403,21 +404,19 @@ class ExposureVector(Exposure):
         self.logger.info("Setting up exposure data from multiple sources...")
 
         # If asset location_fn != OSM and equals occupancy type, take the geometry from occupancy type
-        self.setup_asset_locations(asset_locations)
+        self.setup_asset_locations(asset_locations, occupancy_attr)
         self.setup_occupancy_type(
-            occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
+            occupancy_source,
+            occupancy_attr,
+            occupancy_link_table=occupancy_link_table,
+            equal=occupancy_source==asset_locations,
+            keep_unclassified=keep_unclassified,
         )
         self.setup_max_potential_damage(
             max_potential_damage, damage_types, country=country, damage_translation_fn = damage_translation_fn
         )
-        if (
-            any(
-                isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
-            ) or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"]
-                
-            )
-            and bf_conversion
-        ):
+        geom_types = self.exposure_geoms[0].geom_type.unique()
+        if (any(["polygon" in item.lower() for item in geom_types]) and bf_conversion):
             self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
                 self.exposure_geoms[0], self.exposure_geoms[0].crs
@@ -428,7 +427,11 @@ class ExposureVector(Exposure):
         self.setup_extraction_method(extraction_method)
         self.setup_ground_elevation(ground_elevation, grnd_elev_unit)
 
-    def setup_asset_locations(self, asset_locations: str) -> None:
+    def setup_asset_locations(
+            self, 
+            asset_locations: str,
+            occupancy_attr: Union[str, None] = None,
+        ) -> None:
         """Set up the asset locations (points or polygons).
 
         Parameters
@@ -470,7 +473,10 @@ class ExposureVector(Exposure):
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
         if len(assets.columns) > 2:
-            assets = assets[['object_id', 'geometry']]
+            keep = ['object_id', 'geometry']
+            if occupancy_attr is not None:
+                keep += [occupancy_attr]
+            assets = assets[keep]
 
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
@@ -503,6 +509,8 @@ class ExposureVector(Exposure):
         self,
         occupancy_source: str,
         occupancy_attr: str,
+        occupancy_link_table: str,
+        equal: bool,
         type_add: str = "primary_object_type",
         keep_unclassified: bool = True,
     ) -> None:
@@ -513,8 +521,9 @@ class ExposureVector(Exposure):
             The occupancy source (default: Open Street Map or National Structure Inventory )
         occupancy_attr : str
             Other classification to be updated by Primary/Secondary Classification
-        type_add : str
-            "primary_object_type" or "secondary_object_type"
+        equal : bool
+            Whether the occupancy source dataset is equal (the same) as the asset 
+            locations dataset.
         keep_unclassified : Bool
             Whether to re-classify Primary/secondary_object_types as "residential" or remove rows if no Object Type
         """
@@ -527,187 +536,193 @@ class ExposureVector(Exposure):
 
             occupancy_types = ["primary_object_type", "secondary_object_type"]
         else:
-            occupancy_building = self.data_catalog.get_geodataframe(
-                occupancy_source, geom=self.region
+            occupancy_building = self.setup_occupancy_from_user_input(
+                occupancy_source=occupancy_source,
+                occupancy_attr=occupancy_attr,
+                equal=equal,
+                link_table=occupancy_link_table,
             )
-            if occupancy_attr is not None:
-                occupancy_building.rename(columns={occupancy_attr: type_add}, inplace=True)
-            occupancy_types = [type_add]
-
-        # Check if the CRS of the occupancy map is the same as the exposure data
-        if occupancy_building.crs != self.crs:
-            occupancy_building = occupancy_building.to_crs(self.crs)
-            occupancy_landuse = occupancy_landuse.to_crs(self.crs)
-            occupancy_amenity = occupancy_amenity.to_crs(self.crs)
-
-            self.logger.warning(
-                "The CRS of the occupancy map is not the same as that "
-                "of the exposure data. The occupancy map has been "
-                f"reprojected to the CRS of the exposure data ({self.crs}) before "
-                "doing the spatial join."
-            )
+            occupancy_types = ["primary_object_type"]
 
         to_keep = ["geometry"] + occupancy_types
+        # Check if the CRS of the occupancy map is the same as the exposure data
+        if isinstance(occupancy_building, gpd.GeoDataFrame):
+            if occupancy_building.crs != self.crs:
+                occupancy_building = occupancy_building.to_crs(self.crs)
+                occupancy_landuse = occupancy_landuse.to_crs(self.crs)
+                occupancy_amenity = occupancy_amenity.to_crs(self.crs)
 
-        # Spatially join the exposure data with the occupancy buildings
-        if len(self.exposure_geoms) == 1:
-            # If there is only one exposure geom, do the spatial join with the
-            # occupancy_landuse. Only take the largest overlapping object from the
-            # occupancy_landuse.
+                self.logger.warning(
+                    "The CRS of the occupancy map is not the same as that "
+                    "of the exposure data. The occupancy map has been "
+                    f"reprojected to the CRS of the exposure data ({self.crs}) before "
+                    "doing the spatial join."
+                )
             gdf = gpd.sjoin(
                 self.exposure_geoms[0], occupancy_building[to_keep], how = "left", predicate="intersects"
             )
             gdf.drop(columns=["index_right"], inplace=True)
-
-            if occupancy_source == 'OSM':
-            
-            ## Landuse
-            # Replace values with landuse if applicable for Primary and Secondary Object Type
-                occupancy_landuse.rename(
-                    columns={
-                        "primary_object_type": "pot",
-                        "secondary_object_type": "pot_2",
-                    },
-                    inplace=True,
-                )
-                
-                gdf_landuse = gdf.sjoin(
-                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
-                )
-                gdf_landuse.reset_index(inplace = True, drop=True)
-
-                # Replace values with landuse
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "primary_object_type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
-                )
-                gdf_landuse.loc[gdf_landuse["pot"].notna(), "secondary_object_type"] = (
-                    gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
-                )
-                gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
-
-                
-                ## Amenity
-                # Fill nan values with values amenity for Primary and Secondary Object Type
-                occupancy_amenity.rename(
-                    columns={
-                        "primary_object_type": "pot",
-                        "secondary_object_type": "pot_2",
-                    },
-                    inplace=True,
-                )
-
-                gdf_amenity = gdf_landuse.sjoin(
-                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
-                )
-                gdf_amenity.reset_index(inplace = True, drop=True)
-                # Replace values with amenity
-                gdf_amenity.loc[gdf_amenity["pot"].notna(), "primary_object_type"] = gdf_amenity["pot"]
-                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "secondary_object_type"] = gdf_amenity["pot_2"]
-                
-                gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
-
-                # Rename some major catgegories
-                gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "yes", "secondary_object_type"
-                ] = "residential"
-                gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "house", "secondary_object_type"
-                ] = "residential"
-                gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "apartments", "secondary_object_type"
-                ] = "residential"
-                gdf = gdf_amenity
-                gdf.drop_duplicates(subset='geometry', inplace=True)
-
-            # Remove the objects that do not have a primary_object_type, that were not
-            # overlapping with the land use map, or that had a land use type of 'nan'.
-            if "primary_object_type" in gdf.columns:
-                gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = np.nan
-                nr_without_primary_object = len(
-                    gdf.loc[gdf["primary_object_type"].isna()].index
-                )
-                if keep_unclassified:
-                    # merge assets with occupancy
-                    if len(self.exposure_geoms[0]) > len(gdf):
-                        gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
-                        gdf.drop_duplicates(subset = "object_id", inplace = True)	
-                    # assign residential if no primary object type
-                    gdf.loc[
-                        gdf["primary_object_type"].isna(), "secondary_object_type"
-                    ] = "residential"
-                    gdf.loc[
-                        gdf["primary_object_type"].isna(), "primary_object_type"
-                    ] = "residential"
-                    self.logger.warning(
-                        f"{nr_without_primary_object} objects were not overlapping with the "
-                        "land use data and will be classified as residential buildings."
-                    )
-                else:
-                    self.logger.warning(
-                        f"{nr_without_primary_object} objects do not have a Primary Object "
-                        "Type and will be removed from the exposure data."
-                    )
-                gdf = gdf.loc[gdf["primary_object_type"] != ""]
-
-                nr_without_landuse = len(
-                    gdf.loc[gdf["primary_object_type"].isna()].index
-                )
-                if nr_without_landuse > 0:
-                    self.logger.warning(
-                        f"{nr_without_landuse} objects were not overlapping with the "
-                        "land use data and will be removed from the exposure data."
-                    )
-                    gdf = gdf[gdf["primary_object_type"].notna()]
-                    gdf = gdf[gdf["primary_object_type"] != ""]
-
-            # Remove object_id duplicates
-            gdf.drop_duplicates(inplace=True, subset="object_id")
-            gdf.reset_index(drop=True, inplace=True)
-
-            # Add secondary Object Type if not in columns
-            if "secondary_object_type" not in gdf.columns:
-                gdf["secondary_object_type"] =gdf["primary_object_type"]
-
-            # Update the exposure geoms
-            self.exposure_geoms[0] = gdf[["object_id", "geometry"]]
-
-            # Remove the geometry column from the exposure database
-            del gdf["geometry"]
-
-            # Update the exposure database
-            if type_add in self.exposure_db:
-                if "primary_object_type" in gdf.columns:
-                    gdf.rename(columns={"primary_object_type": "pot"}, inplace=True)
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="object_id", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "primary_object_type", "pot"
-                    )
-                    # Replace secondary_object_type with new classification to assign correct damage curves
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="object_id", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "secondary_object_type", "pot"
-                    )
-                elif "secondary_object_type" in gdf.columns:
-                    gdf.rename(columns={"secondary_object_type": "pot"}, inplace=True)
-                    self.exposure_db = pd.merge(
-                        self.exposure_db, gdf, on="object_id", how="left"
-                    )
-                    self.exposure_db = self._set_values_from_other_column(
-                        self.exposure_db, "secondary_object_type", "pot"
-                    )
-
-            else:
-                self.exposure_db = gdf.copy()
         else:
-            self.logger.warning(
-                "NotImplemented the spatial join of the exposure data with the "
-                "occupancy map the for multiple exposure geoms"
+            gdf = self.exposure_geoms[0].merge(
+                occupancy_building,
+                how="left",
+                on="object_id"
             )
-            NotImplemented
+
+        # Spatially join the exposure data with the occupancy buildings
+        if len(self.exposure_geoms) != 1:
+            msg = "NotImplemented the spatial join of the exposure data with the \
+occupancy map the for multiple exposure geoms"
+            self.logger.warning(msg)
+            NotImplemented # TODO What does this even do in this state?
+            return
+        
+        # If there is only one exposure geom, do the spatial join with the
+        # occupancy_landuse. Only take the largest overlapping object from the
+        # occupancy_landuse.
+        
+        if occupancy_source == 'OSM':
+        ## Landuse
+        # Replace values with landuse if applicable for Primary and Secondary Object Type
+            occupancy_landuse.rename(
+                columns={
+                    "primary_object_type": "pot",
+                    "secondary_object_type": "pot_2",
+                },
+                inplace=True,
+            )
+            
+            gdf_landuse = gdf.sjoin(
+                occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
+            )
+            gdf_landuse.reset_index(inplace = True, drop=True)
+
+            # Replace values with landuse
+            gdf_landuse.loc[gdf_landuse["pot"].notna(), "primary_object_type"] = (
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot"]
+            )
+            gdf_landuse.loc[gdf_landuse["pot"].notna(), "secondary_object_type"] = (
+                gdf_landuse.loc[gdf_landuse["pot"].notna(), "pot_2"]
+            )
+            gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
+
+            
+            ## Amenity
+            # Fill nan values with values amenity for Primary and Secondary Object Type
+            occupancy_amenity.rename(
+                columns={
+                    "primary_object_type": "pot",
+                    "secondary_object_type": "pot_2",
+                },
+                inplace=True,
+            )
+
+            gdf_amenity = gdf_landuse.sjoin(
+                occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
+            )
+            gdf_amenity.reset_index(inplace = True, drop=True)
+            # Replace values with amenity
+            gdf_amenity.loc[gdf_amenity["pot"].notna(), "primary_object_type"] = gdf_amenity["pot"]
+            gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "secondary_object_type"] = gdf_amenity["pot_2"]
+            
+            gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
+
+            # Rename some major catgegories
+            gdf_amenity.loc[
+                gdf_amenity["secondary_object_type"] == "yes", "secondary_object_type"
+            ] = "residential"
+            gdf_amenity.loc[
+                gdf_amenity["secondary_object_type"] == "house", "secondary_object_type"
+            ] = "residential"
+            gdf_amenity.loc[
+                gdf_amenity["secondary_object_type"] == "apartments", "secondary_object_type"
+            ] = "residential"
+            gdf = gdf_amenity
+            gdf.drop_duplicates(subset='geometry', inplace=True)
+
+        # Remove the objects that do not have a primary_object_type, that were not
+        # overlapping with the land use map, or that had a land use type of 'nan'.
+        if "primary_object_type" in gdf.columns:
+            gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = np.nan
+            nr_without_primary_object = len(
+                gdf.loc[gdf["primary_object_type"].isna()].index
+            )
+            if keep_unclassified:
+                # merge assets with occupancy
+                if len(self.exposure_geoms[0]) > len(gdf):
+                    gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
+                    gdf.drop_duplicates(subset = "object_id", inplace = True)	
+                # assign residential if no primary object type
+                gdf.loc[
+                    gdf["primary_object_type"].isna(), "secondary_object_type"
+                ] = "residential"
+                gdf.loc[
+                    gdf["primary_object_type"].isna(), "primary_object_type"
+                ] = "residential"
+                self.logger.warning(
+                    f"{nr_without_primary_object} objects were not overlapping with the "
+                    "land use data and will be classified as residential buildings."
+                )
+            else:
+                self.logger.warning(
+                    f"{nr_without_primary_object} objects do not have a Primary Object "
+                    "Type and will be removed from the exposure data."
+                )
+            gdf = gdf.loc[gdf["primary_object_type"] != ""]
+
+            nr_without_landuse = len(
+                gdf.loc[gdf["primary_object_type"].isna()].index
+            )
+            if nr_without_landuse > 0:
+                self.logger.warning(
+                    f"{nr_without_landuse} objects were not overlapping with the "
+                    "land use data and will be removed from the exposure data."
+                )
+                gdf = gdf[gdf["primary_object_type"].notna()]
+                gdf = gdf[gdf["primary_object_type"] != ""]
+
+        # Remove object_id duplicates
+        gdf.drop_duplicates(inplace=True, subset="object_id")
+        gdf.reset_index(drop=True, inplace=True)
+
+        # Add secondary Object Type if not in columns
+        if "secondary_object_type" not in gdf.columns:
+            gdf["secondary_object_type"] =gdf["primary_object_type"]
+
+        # Update the exposure geoms
+        self.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+
+        # Remove the geometry column from the exposure database
+        del gdf["geometry"]
+
+        # Update the exposure database
+        if type_add in self.exposure_db:
+            if "primary_object_type" in gdf.columns:
+                gdf.rename(columns={"primary_object_type": "pot"}, inplace=True)
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="object_id", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "primary_object_type", "pot"
+                )
+                # Replace secondary_object_type with new classification to assign correct damage curves
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="object_id", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "secondary_object_type", "pot"
+                )
+            elif "secondary_object_type" in gdf.columns:
+                gdf.rename(columns={"secondary_object_type": "pot"}, inplace=True)
+                self.exposure_db = pd.merge(
+                    self.exposure_db, gdf, on="object_id", how="left"
+                )
+                self.exposure_db = self._set_values_from_other_column(
+                    self.exposure_db, "secondary_object_type", "pot"
+                )
+
+        else:
+            self.exposure_db = gdf.copy()
 
     def setup_occupancy_type_from_osm(self) -> None:
         # We assume that the OSM land use data contains an attribute 'landuse' that
@@ -784,6 +799,36 @@ class ExposureVector(Exposure):
         # In next step where spatial joint of exposure and occupancy map do a spatial joint with buildings, where are Nan values.
 
         return occupancy_types
+    
+    def setup_occupancy_from_user_input(
+        self,
+        occupancy_source: str,
+        occupancy_attr: str,
+        equal: bool,
+        link_table: Union[None, str] = None,
+    ) -> pd.DataFrame:
+        """_summary_."""
+        new_str = "primary_object_type"
+
+        # Get the data
+        if equal:
+            otype = self.exposure_geoms[0][["object_id", occupancy_attr]]
+        else:
+            otype = self.data_catalog.get_geodataframe(
+                occupancy_source,
+                geom=self.region,
+            )
+        otype.rename({occupancy_attr: new_str}, axis=1, inplace=True)
+
+        # Link is necessary
+        if link_table is not None:
+            link_table = self.data_catalog.get_dataframe(link_table)
+            otype[new_str] = otype[new_str].map(
+                dict(zip(link_table["current"], link_table["new"]))
+            )
+        
+        return otype
+        
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["extract_method"] = extraction_method
