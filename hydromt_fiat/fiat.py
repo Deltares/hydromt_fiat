@@ -15,7 +15,10 @@ import tomli_w
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
 import shutil
+from shapely.geometry import box
+import tempfile
 
+from hydromt.raster import full_from_transform
 from hydromt_fiat.api.data_types import Units
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
@@ -1014,6 +1017,8 @@ class FiatModel(GridModel):
         label_names: Union[List[str], str],
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
+        res_x: Union[int, float] = None, 
+        res_y: Union[int, float] = None,        
     ):
         """_summary_
 
@@ -1030,14 +1035,23 @@ class FiatModel(GridModel):
         file_names : Union[List[str], str]
             The name of the spatial file(s) if saved in aggregation_areas/
             folder in the root directory (Default is None).
+        res_x : Union[int, float]
+            The x resolution of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default"
+        res_y : Union[int, float]
+            The y resolution of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default"
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
-        if not isinstance(aggregation_area_fn, list):
-            aggregation_area_fn = [aggregation_area_fn]
-            attribute_names = [attribute_names]
-            label_names = [label_names]
-            if file_names:
-                file_names = [file_names]
+        if aggregation_area_fn == "default":
+            aggregation_area_fn, atribute_names, label_names, file_names = self.create_default_aggregation(res_x, res_y)
+        else: 
+            if not isinstance(aggregation_area_fn, list):
+                aggregation_area_fn = [aggregation_area_fn]
+                attribute_names = [attribute_names]
+                label_names = [label_names]
+                if file_names:
+                    file_names = [file_names]
 
         # Perform spatial join for each aggregation area provided
         # First get all exposure geometries
@@ -1211,6 +1225,84 @@ class FiatModel(GridModel):
         # Set the building_footprint_fn property to save the building footprints
         self.building_footprint_fn = building_footprint_fn
 
+    def create_default_aggregation(
+        self,
+        res_x: Union[int, float] = None,
+        res_y: Union[int, float] = None
+    ):
+        """
+        Creates a default aggregation grid based on the specified region and resolution.
+
+        This function generates a grid of polygon geometries over the given region with 
+        specified resolutions in the x and y directions. The grid is saved as a vector 
+        file, which can be used for aggregation purposes.
+
+        Parameters
+        ----------
+        res_x : Union[int, float], optional
+            The resolution in the x direction, by default 0.05.
+        res_y : Union[int, float], optional
+            The resolution in the y direction, by default 0.05.
+
+        Returns
+        -------
+        List
+            Lists of the file path to the saved aggregation grid vector file, the attribute name, label name and file name.
+        """
+        rotation = 0
+        bounds = self.region.get_bounds()
+        width = int((bounds["maxx"] - bounds["minx"]) / res_x)
+        height = int((bounds["maxy"] - bounds["miny"]) / res_y)
+
+        # chatgbt
+        length_x = bounds["maxx"] - bounds["minx"]
+        length_y = bounds["maxy"] - bounds["miny"]
+
+        # Adjust resolution or length to ensure alignment
+        res_x = length_x / int(length_x / res_x)
+        res_y = length_y / int(length_y / res_y)
+
+        transform_affine = (
+            res_x[0],
+            rotation,
+            bounds["minx"][0],
+            rotation,
+            -res_y[0],
+            bounds["maxy"][0],
+        )
+        shape = (height, width)
+
+        # aggregation_areas is the vector file of the grid.
+        aggregation_areas = full_from_transform(transform_affine, shape)
+
+        # Create vector file
+        geometries = []
+        for j, y in enumerate(aggregation_areas["y"]):
+            for i, x in enumerate(aggregation_areas["x"]):
+                cell_geom = box(
+                    x.values - res_x / 2,
+                    y.values - res_y / 2,
+                    x.values + res_x / 2,
+                    y.values + res_y / 2,
+                )
+                geometries.append(
+                    {"geometry": cell_geom, "value": aggregation_areas[j, i].item()}
+                )
+
+        # Create a GeoDataFrame from the geometries
+        crs = region.crs
+        default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
+        
+        # Create Aggregation Label Value 
+        default_aggregation_gdf["value"] = range(1, len(default_aggregation_gdf["geometry"]) + 1, 1)
+        default_aggregation_gdf["value"] = default_aggregation_gdf["value"].astype(str)
+        default_aggregation_gdf.rename(columns={"value": "default_aggregation"}, inplace=True)
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.geojson') as tmp_file:
+            default_aggregation_gdf.to_file(tmp_file.name, driver='GeoJSON')
+            default_aggregation_fn = tmp_file.name
+
+        return [default_aggregation_fn], ["default_aggregation"], ["default_aggregation"], ["default_aggregation_grid"]
+    
     # Update functions
     def update_all(self):
         self.logger.info("Updating all data objects...")
