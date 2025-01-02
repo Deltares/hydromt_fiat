@@ -1013,8 +1013,8 @@ class FiatModel(GridModel):
         aggregation_area_fn: Union[
             List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
         ],
-        attribute_names: Union[List[str], str],
-        label_names: Union[List[str], str],
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
         res_x: Union[int, float] = None, 
