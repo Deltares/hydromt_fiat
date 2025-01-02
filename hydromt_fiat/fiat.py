@@ -1044,7 +1044,7 @@ class FiatModel(GridModel):
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if aggregation_area_fn == "default":
-            aggregation_area_fn, atribute_names, label_names, file_names = self.create_default_aggregation(res_x, res_y)
+            aggregation_area_fn, attribute_names, label_names, file_names = self.create_default_aggregation(res_x, res_y)
         else: 
             if not isinstance(aggregation_area_fn, list):
                 aggregation_area_fn = [aggregation_area_fn]
@@ -1082,7 +1082,10 @@ class FiatModel(GridModel):
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)
-
+        
+        # Clean up temp aggregation file
+        if attribute_names[0] == "default_aggregation":
+            os.remove(aggregation_area_fn[0])
     def setup_additional_attributes(
         self,
         aggregation_area_fn: Union[
@@ -1250,11 +1253,10 @@ class FiatModel(GridModel):
             Lists of the file path to the saved aggregation grid vector file, the attribute name, label name and file name.
         """
         rotation = 0
-        bounds = self.region.get_bounds()
+        bounds = self.region.bounds
         width = int((bounds["maxx"] - bounds["minx"]) / res_x)
         height = int((bounds["maxy"] - bounds["miny"]) / res_y)
 
-        # chatgbt
         length_x = bounds["maxx"] - bounds["minx"]
         length_y = bounds["maxy"] - bounds["miny"]
 
@@ -1290,16 +1292,16 @@ class FiatModel(GridModel):
                 )
 
         # Create a GeoDataFrame from the geometries
-        crs = region.crs
+        crs = self.region.crs
         default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
         
         # Create Aggregation Label Value 
         default_aggregation_gdf["value"] = range(1, len(default_aggregation_gdf["geometry"]) + 1, 1)
         default_aggregation_gdf["value"] = default_aggregation_gdf["value"].astype(str)
         default_aggregation_gdf.rename(columns={"value": "default_aggregation"}, inplace=True)
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.geojson') as tmp_file:
-            default_aggregation_gdf.to_file(tmp_file.name, driver='GeoJSON')
-            default_aggregation_fn = tmp_file.name
+        fd, default_aggregation_fn = tempfile.mkstemp(suffix='.geojson')
+        os.close(fd)
+        default_aggregation_gdf.to_file(default_aggregation_fn, driver='GeoJSON')
 
         return [default_aggregation_fn], ["default_aggregation"], ["default_aggregation"], ["default_aggregation_grid"]
     
