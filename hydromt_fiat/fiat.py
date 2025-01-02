@@ -1309,10 +1309,8 @@ class FiatModel(GridModel):
         default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
 
         # Create Aggregation Label Value
-        default_aggregation_gdf["value"] = range(
-            1, len(default_aggregation_gdf["geometry"]) + 1, 1
-        )
-        default_aggregation_gdf["value"] = default_aggregation_gdf["value"].astype(str)
+        default_aggregation_gdf["value"] = [
+        f"Aggr:{i}" for i in range(1, len(default_aggregation_gdf["geometry"]) + 1)]
         default_aggregation_gdf.rename(
             columns={"value": "default_aggregation"}, inplace=True
         )
