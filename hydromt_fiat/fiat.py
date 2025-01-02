@@ -307,6 +307,7 @@ class FiatModel(GridModel):
             max_hazard_value,
             step_hazard_value,
         )
+
     def setup_population_vulnerability(
         self,
         vertical_unit: str,
@@ -348,7 +349,7 @@ class FiatModel(GridModel):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
-        damage_translation_fn: Union[Path, str] = None
+        damage_translation_fn: Union[Path, str] = None,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -371,7 +372,7 @@ class FiatModel(GridModel):
             The unit of the ground_floor_height
         gfh_attribute_name : str
             The attribute name to be used to set the ground_flht. If None, the
-            attribute name will be set to 'ground_floor_height'. 
+            attribute name will be set to 'ground_floor_height'.
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -442,8 +443,8 @@ class FiatModel(GridModel):
                 grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                damage_translation_fn = damage_translation_fn,
-                gfh_attribute_name = gfh_attribute_name
+                damage_translation_fn=damage_translation_fn,
+                gfh_attribute_name=gfh_attribute_name,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -534,6 +535,7 @@ class FiatModel(GridModel):
         # Link to vulnerability curves
 
         # Combine the exposure database with pre-existing exposure data if available
+
     def setup_exposure_population(
         self,
         impacted_population_fn: Union[
@@ -551,9 +553,12 @@ class FiatModel(GridModel):
                 self.region,
                 unit=unit,
             )
-        self.exposure.setup_impacted_population(impacted_population_fn, attribute_name, method_impacted_pop,max_dist)
-        
+        self.exposure.setup_impacted_population(
+            impacted_population_fn, attribute_name, method_impacted_pop, max_dist
+        )
+
         self.set_config("exposure.types", ["damages", "affected"])
+
     def bf_spatial_joins(self):
         self.building_footprint = self.exposure.building_footprints
         self.building_footprint["BF_FID"] = [
@@ -624,7 +629,6 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
-        
     ) -> None:
         """Set up hazard maps. This component integrates multiple checks for the hazard
         maps.
@@ -689,7 +693,9 @@ class FiatModel(GridModel):
                     "The hazard map provided should be a path like object or an DataArray"
                 )
             # Convert to units of the exposure data if required
-            if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
+            if (
+                self.exposure
+            ):  # change to be sure that the unit information is available from the exposure dataset
                 if hasattr(da, "units"):
                     if self.exposure.unit != da.units:
                         da = da * unit_conversion_factor
@@ -765,21 +771,25 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.file",
-            [
-                str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
+            (
+                [
+                    str(Path("hazard") / (hazard_map + ".nc"))
+                    for hazard_map in self.maps.keys()
+                ][0]
+                if not risk_output
+                else [str(Path("hazard") / ("risk_map" + ".nc"))][0]
+            ),
         )
         self.set_config(
             "hazard.crs",
-            [
-                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else ["EPSG:" + str((self.crs.to_epsg()))][0],
+            (
+                [
+                    "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
+                    for hazard_map in self.maps.keys()
+                ][0]
+                if not risk_output
+                else ["EPSG:" + str((self.crs.to_epsg()))][0]
+            ),
         )
 
         self.set_config(
@@ -789,9 +799,11 @@ class FiatModel(GridModel):
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
-            if not risk_output
-            else sorted_names,
+            (
+                [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
+                if not risk_output
+                else sorted_names
+            ),
         )
 
         self.set_config(
@@ -974,7 +986,9 @@ class FiatModel(GridModel):
         try:
             equity.download_shp_geom(year_data, county_numbers)
         except:
-            self.logger.warning("The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!")
+            self.logger.warning(
+                "The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!"
+            )
             return
         equity.merge_equity_data_shp()
         equity.clean()
@@ -1017,8 +1031,8 @@ class FiatModel(GridModel):
         label_names: Union[List[str], str] = None,
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
-        res_x: Union[int, float] = None, 
-        res_y: Union[int, float] = None,        
+        res_x: Union[int, float] = None,
+        res_y: Union[int, float] = None,
     ):
         """_summary_
 
@@ -1044,8 +1058,10 @@ class FiatModel(GridModel):
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if aggregation_area_fn == "default":
-            aggregation_area_fn, attribute_names, label_names, file_names = self.create_default_aggregation(res_x, res_y)
-        else: 
+            aggregation_area_fn, attribute_names, label_names, file_names = (
+                self.create_default_aggregation(res_x, res_y)
+            )
+        else:
             if not isinstance(aggregation_area_fn, list):
                 aggregation_area_fn = [aggregation_area_fn]
                 attribute_names = [attribute_names]
@@ -1082,10 +1098,11 @@ class FiatModel(GridModel):
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)
-        
+
         # Clean up temp aggregation file
         if attribute_names[0] == "default_aggregation":
             os.remove(aggregation_area_fn[0])
+
     def setup_additional_attributes(
         self,
         aggregation_area_fn: Union[
@@ -1123,12 +1140,13 @@ class FiatModel(GridModel):
         # Save metadata on spatial joins
         if not self.spatial_joins["additional_attributes"]:
             self.spatial_joins["additional_attributes"] = []
-    
+
         # Check if additional attributes already exist
-        add_attrs_existing = [
-            attr["name"]
-            for attr in self.spatial_joins["additional_attributes"]
-            ] if self.spatial_joins["additional_attributes"] is not None else []
+        add_attrs_existing = (
+            [attr["name"] for attr in self.spatial_joins["additional_attributes"]]
+            if self.spatial_joins["additional_attributes"] is not None
+            else []
+        )
 
         for label_name, file_name, attribute_name in zip(
             label_names, file_names, attribute_names
@@ -1141,9 +1159,6 @@ class FiatModel(GridModel):
             # If not exist, add to spatial joins
             if label_name not in add_attrs_existing:
                 self.spatial_joins["additional_attributes"].append(attrs)
-         
-            
-
 
     def setup_classification(
         self,
@@ -1229,15 +1244,13 @@ class FiatModel(GridModel):
         self.building_footprint_fn = building_footprint_fn
 
     def create_default_aggregation(
-        self,
-        res_x: Union[int, float] = None,
-        res_y: Union[int, float] = None
+        self, res_x: Union[int, float] = None, res_y: Union[int, float] = None
     ):
         """
         Creates a default aggregation grid based on the specified region and resolution.
 
-        This function generates a grid of polygon geometries over the given region with 
-        specified resolutions in the x and y directions. The grid is saved as a vector 
+        This function generates a grid of polygon geometries over the given region with
+        specified resolutions in the x and y directions. The grid is saved as a vector
         file, which can be used for aggregation purposes.
 
         Parameters
@@ -1294,17 +1307,26 @@ class FiatModel(GridModel):
         # Create a GeoDataFrame from the geometries
         crs = self.region.crs
         default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
-        
-        # Create Aggregation Label Value 
-        default_aggregation_gdf["value"] = range(1, len(default_aggregation_gdf["geometry"]) + 1, 1)
-        default_aggregation_gdf["value"] = default_aggregation_gdf["value"].astype(str)
-        default_aggregation_gdf.rename(columns={"value": "default_aggregation"}, inplace=True)
-        fd, default_aggregation_fn = tempfile.mkstemp(suffix='.geojson')
-        os.close(fd)
-        default_aggregation_gdf.to_file(default_aggregation_fn, driver='GeoJSON')
 
-        return [default_aggregation_fn], ["default_aggregation"], ["default_aggregation"], ["default_aggregation_grid"]
-    
+        # Create Aggregation Label Value
+        default_aggregation_gdf["value"] = range(
+            1, len(default_aggregation_gdf["geometry"]) + 1, 1
+        )
+        default_aggregation_gdf["value"] = default_aggregation_gdf["value"].astype(str)
+        default_aggregation_gdf.rename(
+            columns={"value": "default_aggregation"}, inplace=True
+        )
+        fd, default_aggregation_fn = tempfile.mkstemp(suffix=".geojson")
+        os.close(fd)
+        default_aggregation_gdf.to_file(default_aggregation_fn, driver="GeoJSON")
+
+        return (
+            [default_aggregation_fn],
+            ["default_aggregation"],
+            ["default_aggregation"],
+            ["default_aggregation_grid"],
+        )
+
     # Update functions
     def update_all(self):
         self.logger.info("Updating all data objects...")
@@ -1353,8 +1375,6 @@ class FiatModel(GridModel):
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
             self.spatial_joins = sj.attrs.model_dump()
-            
-            
 
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
@@ -1371,7 +1391,7 @@ class FiatModel(GridModel):
         # Read the fiat configuration toml file.
         with open(fn, mode="rb") as fp:
             config = tomli.load(fp)
-        return config 
+        return config
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
@@ -1419,26 +1439,27 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-        
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if self.spatial_joins["aggregation_areas"]:
             fns_aggregation = []
-            for i in self.spatial_joins['aggregation_areas']:
-                fn_aggregation = i['file']
+            for i in self.spatial_joins["aggregation_areas"]:
+                fn_aggregation = i["file"]
                 fn_aggregation = str(Path(self.root, fn_aggregation))
-                fns_aggregation.append(fn_aggregation)               
+                fns_aggregation.append(fn_aggregation)
             fns.extend(fns_aggregation)
         if self.spatial_joins["additional_attributes"]:
             fns_additional_attributes = []
-            for i in self.spatial_joins['additional_attributes']:
-                fn_additional_attributes = i['file']
-                fn_additional_attributes = str(Path(self.root, fn_additional_attributes))
-                if 'building_footprints' in fn_additional_attributes:
+            for i in self.spatial_joins["additional_attributes"]:
+                fn_additional_attributes = i["file"]
+                fn_additional_attributes = str(
+                    Path(self.root, fn_additional_attributes)
+                )
+                if "building_footprints" in fn_additional_attributes:
                     self.building_footprint = gpd.read_file(fn_additional_attributes)
                 else:
                     fns_additional_attributes.append(fn_additional_attributes)
                 fns.extend(fns_additional_attributes)
-                
+
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
@@ -1446,8 +1467,8 @@ class FiatModel(GridModel):
                 name = f"aggregation_areas/{Path(fn).stem}"
             elif "additional_attributes" in fn:
                 name = f"additional_attributes/{Path(fn).stem}"
-            else: 
-                name = Path(fn).stem 
+            else:
+                name = Path(fn).stem
             self.set_geoms(gpd.read_file(fn), name=name)
 
     def write(self):
@@ -1589,7 +1610,7 @@ class FiatModel(GridModel):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
         with open(fn, "wb") as f:
-            tomli_w.dump(self.config, f) 
+            tomli_w.dump(self.config, f)
 
     # FIAT specific attributes and methods
     @property
@@ -1627,4 +1648,3 @@ class FiatModel(GridModel):
             elif self._read:
                 self.logger.warning(f"Overwriting table: {name}")
         self._tables[name] = df
-
