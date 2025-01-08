@@ -855,42 +855,29 @@ class FiatModel(GridModel):
             ]
             bf_fid = self.building_footprint["BF_FID"]
             fieldname = "BF_FID"
-
-            # Clip the exposure geometries
-            # Filter buildings and roads
-            if gdf["primary_object_type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
-                gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
-                gdf_buildings = gdf[~gdf.isin(gdf_roads)]
-                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-                idx_buildings = self.exposure.geom_names.index("buildings")
-                idx_roads = self.exposure.geom_names.index("roads")
-                self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                    ["object_id", "geometry"]
-                ]
-                self.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                    ["object_id", "geometry"]
-                ]
-            else:
-                gdf = gdf[gdf[fieldname].isin(bf_fid)]
-                self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
         else:
             gdf = gdf[gdf["geometry"].within(fm_geom)]
 
-            # Filter buildings and roads
-            if gdf["primary_object_type"].str.contains("road").any():
-                gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
-                gdf_buildings = gdf[~gdf.isin(gdf_roads)]
-                idx_buildings = self.exposure.geom_names.index("buildings")
-                idx_roads = self.exposure.geom_names.index("roads")
-                self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
-                    ["object_id", "geometry"]
-                ].dropna()
-                self.exposure.exposure_geoms[idx_roads] = gdf_roads[
-                    ["object_id", "geometry"]
-                ].dropna()
-            else:
-                self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+        # Clip the exposure geometries
+        # Filter buildings and roads
+        if gdf["primary_object_type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
+            gdf_buildings = gdf[~gdf.isin(gdf_roads)].dropna()
+            if not self.building_footprint.empty:
+                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+            idx_buildings = self.exposure.geom_names.index("buildings")
+            idx_roads = self.exposure.geom_names.index("roads")
+            self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["object_id", "geometry"]
+            ]
+            self.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["object_id", "geometry"]
+            ]
+        else:
+            if not self.building_footprint.empty:
+                gdf = gdf[gdf[fieldname].isin(bf_fid)]
+            self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
 
         # Save exposure dataframe
         del gdf["geometry"]
