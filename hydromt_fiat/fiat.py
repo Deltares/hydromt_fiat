@@ -862,7 +862,7 @@ class FiatModel(GridModel):
         # Filter buildings and roads
         if gdf["primary_object_type"].str.contains("road").any():
             gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
-            gdf_buildings = gdf[~gdf.isin(gdf_roads)].dropna()
+            gdf_buildings = gdf[~gdf.isin(gdf_roads)].dropna(subset=["object_id"])
             if not self.building_footprint.empty:
                 gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
                 gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
