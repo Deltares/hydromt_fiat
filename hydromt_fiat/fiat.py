@@ -841,7 +841,7 @@ class FiatModel(GridModel):
         clipped_region = self.region.clip(fm_geom)
         self.geoms["region"] = clipped_region
 
-        if self.building_footprint is not None:
+        if not self.building_footprint.empty:
             # Clip the building footprints
             self.building_footprint = self.building_footprint[
                 self.building_footprint["geometry"].within(fm_geom)
