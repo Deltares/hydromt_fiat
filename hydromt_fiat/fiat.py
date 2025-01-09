@@ -1306,7 +1306,7 @@ class FiatModel(GridModel):
 
         # Create a GeoDataFrame from the geometries
         crs = self.region.crs
-        default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
+        default_aggregation_gdf = gpd.GeoDataFrame(geometry = geometries, crs=crs)
 
         # Create Aggregation Label Value
         default_aggregation_gdf["value"] = [
