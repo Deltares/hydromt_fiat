@@ -16,6 +16,7 @@ class Units(str, Enum):
 class Conversion(float, Enum):
     meters_to_feet = 3.28084
     feet_to_meters = 0.3048
+    eur_to_us_dollars = 1.34 #NOTE This is a random number, must be fixed!!!
 
 
 class Currency(str, Enum):

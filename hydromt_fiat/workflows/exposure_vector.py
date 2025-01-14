@@ -150,6 +150,7 @@ class ExposureVector(Exposure):
         gfh_unit: Units = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
         grnd_elev_unit: Units = None,
+        conversion_US_dollar: bool = False
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -165,6 +166,10 @@ class ExposureVector(Exposure):
             height to the assets.
         extraction_method : str
             The extract_method to be used for all of the assets.
+        extraction_method : str
+            The extract_method to be used for all of the assets.
+        conversion_US_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
         """
         if str(source).upper() == "NSI":
             # The NSI data is selected, so get the assets from the NSI
@@ -339,6 +344,7 @@ class ExposureVector(Exposure):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         damage_translation_fn: Union[Path, str] = None,
+        conversion_US_dollar: bool = False
     ):
         """
         Set up the exposure data using multiple sources.
@@ -395,6 +401,8 @@ class ExposureVector(Exposure):
         damage_translation_fn : Path, str
             The path to the file that contains the translation of the damage types to
             the damage values. If None, the default translation file will be used.
+        conversion_US_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
 
         Returns
         -------
@@ -408,7 +416,7 @@ class ExposureVector(Exposure):
             occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
         )
         self.setup_max_potential_damage(
-            max_potential_damage, damage_types, country=country, damage_translation_fn = damage_translation_fn
+            max_potential_damage, damage_types, country=country, damage_translation_fn = damage_translation_fn, conversion_US_dollar = conversion_US_dollar
         )
         if (
             any(
@@ -923,6 +931,7 @@ class ExposureVector(Exposure):
         max_dist: float = 10,
         country: Union[str, None] = None,
         damage_translation_fn: Union[str, Path] = None,
+        conversion_US_dollar: bool = False
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -942,6 +951,8 @@ class ExposureVector(Exposure):
             _description_, by default 10
         damage_translation_fn: Union[Path, str], optional
             The path to the translation function that can be used to relate user damage curves with user damages.
+        conversion_US_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
         """
         if damage_types is None:
             damage_types = ["total"]
@@ -1029,7 +1040,7 @@ class ExposureVector(Exposure):
                         f"No country specified, using the '{country}' JRC damage values."
                     )
 
-                damage_values = preprocess_jrc_damage_values(damage_source, country)
+                damage_values = preprocess_jrc_damage_values(damage_source, country, conversion_US_dollar)
 
             elif max_potential_damage == "hazus_max_potential_damages":
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)

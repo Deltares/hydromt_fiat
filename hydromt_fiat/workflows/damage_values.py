@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from typing import Union
+from hydromt_fiat.api.data_types import Conversion
 
 default_jrc_max_damage_adjustment_values = {
     "construction_cost_vs_depreciated_value_res": 0.6,
@@ -21,6 +22,7 @@ default_jrc_max_damage_adjustment_values = {
 def preprocess_jrc_damage_values(
     jrc_base_damage_values: pd.DataFrame,
     country: str,
+    conversion_US_dollar: bool = False,
     max_damage_adjustment_values: dict = default_jrc_max_damage_adjustment_values,
 ) -> dict:
     """Preprocess the JRC damage values data.
@@ -31,6 +33,8 @@ def preprocess_jrc_damage_values(
         The JRC damage values data.
     country : str
         The country to filter the data on.
+    conversion_US_dollar: bool
+        Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
 
     Returns
     -------
@@ -81,7 +85,9 @@ def preprocess_jrc_damage_values(
                 + ((jrc_base_value * cc_vs_dv * (1 - up) * mu) * mdci)
             ),
         }
-
+    
+    if conversion_US_dollar:
+        damage_values = damage_values * Conversion.eur_to_us_dollars
     return damage_values
 
 
