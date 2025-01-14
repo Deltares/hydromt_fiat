@@ -862,10 +862,12 @@ class FiatModel(GridModel):
         # Filter buildings and roads
         if gdf["primary_object_type"].str.contains("road").any():
             gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
             gdf_buildings = gdf[~gdf.isin(gdf_roads)].dropna(subset=["object_id"])
             if not self.building_footprint.empty:
-                gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
-                gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+                gdf_buildings = self.check_bf_complete(
+                    gdf_buildings, fieldname, clipped_region, bf_fid
+                )
             idx_buildings = self.exposure.geom_names.index("buildings")
             idx_roads = self.exposure.geom_names.index("roads")
             self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
@@ -876,12 +878,60 @@ class FiatModel(GridModel):
             ]
         else:
             if not self.building_footprint.empty:
-                gdf = gdf[gdf[fieldname].isin(bf_fid)]
+                gdf = self.check_bf_complete(gdf, fieldname, clipped_region, bf_fid)
             self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
 
         # Save exposure dataframe
         del gdf["geometry"]
         self.exposure.exposure_db = gdf
+
+    def check_bf_complete(
+        self,
+        gdf_exposure: gpd.GeoDataFrame,
+        fieldname: str,
+        clipped_region: gpd.GeoDataFrame,
+        bf_fid: gpd.GeoDataFrame,
+    ):
+        """Checks whether all building points have a building footprint.
+
+        This method checks if all points have a building footprint. If a point does not have a biulding footprint
+        it will be concenated with the exposure gdf anyhow and not be filtered out. By this it is assured
+        that even if a building footprint is not available on e.g. OSM, the exposure point does not get lost.
+
+        Parameters
+        ----------
+        gdf_exposure: gpd.GeoDataFrame
+            The GeoDataFrame that contains the full exposure (excl. roads).
+        fieldname: str
+            The fieldname of the building footprint.
+        clipped_region: gpd.GeoDataFrame
+            The clipped region.
+        bf_fid: gpd.GeoDataFrame
+            The GeoDataFrame of the building footprints.
+
+        Returns
+        -------
+        gdf_buildings: GeoDataFrame
+        """
+        
+        if gdf_exposure[fieldname].isna().any():
+            gdf_building_points = gdf_exposure[gdf_exposure[fieldname].isna()]
+            gdf_building_footprints = gdf_exposure[~gdf_exposure[fieldname].isna()]
+            gdf_building_points_clipped = gdf_building_points[
+                gdf_building_points["geometry"].within(
+                    clipped_region["geometry"].union_all()
+                )
+            ]
+            gdf_building_footprints_clipped = gdf_building_footprints[
+                gdf_building_footprints[fieldname].isin(bf_fid)
+            ]
+            gdf_buildings = pd.concat(
+                [gdf_building_points_clipped, gdf_building_footprints_clipped]
+            )
+        else:
+            gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+        
+        return gdf_buildings
 
     def setup_social_vulnerability_index(
         self,
