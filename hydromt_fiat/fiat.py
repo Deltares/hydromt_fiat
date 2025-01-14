@@ -913,7 +913,7 @@ class FiatModel(GridModel):
         -------
         gdf_buildings: GeoDataFrame
         """
-        
+
         if gdf_exposure[fieldname].isna().any():
             gdf_building_points = gdf_exposure[gdf_exposure[fieldname].isna()]
             gdf_building_footprints = gdf_exposure[~gdf_exposure[fieldname].isna()]
@@ -930,7 +930,7 @@ class FiatModel(GridModel):
             )
         else:
             gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
-        
+
         return gdf_buildings
 
     def setup_social_vulnerability_index(
