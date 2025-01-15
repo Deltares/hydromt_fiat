@@ -346,7 +346,7 @@ class FiatModel(GridModel):
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
         damage_translation_fn: Union[Path, str] = None,
-        conversion_US_dollar: bool = False
+        eur_to_us_dollar: bool = False
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -399,7 +399,7 @@ class FiatModel(GridModel):
             it is taken from the region attribute of `FiatModel`. By default None
         damage_translation_fn: Union[Path, str], optional
             The path to the translation function that can be used to relate user damage curves with user damages.
-        conversion_US_dollar: bool
+        eur_to_us_dollar: bool
             Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
         """
         # In case the unit is passed as a pydantic value get the string
@@ -422,7 +422,7 @@ class FiatModel(GridModel):
                 ground_floor_height,
                 extraction_method,
                 ground_elevation=ground_elevation,
-                conversion_US_dollar = conversion_US_dollar
+                eur_to_us_dollar = eur_to_us_dollar
             )
 
         else:
@@ -445,7 +445,7 @@ class FiatModel(GridModel):
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn = damage_translation_fn,
                 gfh_attribute_name = gfh_attribute_name,
-                conversion_US_dollar = conversion_US_dollar
+                eur_to_us_dollar = eur_to_us_dollar
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -591,7 +591,7 @@ class FiatModel(GridModel):
         attribute_name: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
-        conversion_US_dollar: bool = False
+        eur_to_us_dollar: bool = False
     ):
         if self.exposure:
             self.exposure.setup_max_potential_damage(
@@ -601,7 +601,7 @@ class FiatModel(GridModel):
                 attribute_name=attribute_name,
                 method_damages=method_damages,
                 max_dist=max_dist,
-                conversion_US_dollar = conversion_US_dollar
+                eur_to_us_dollar = eur_to_us_dollar
             )
 
     def update_ground_elevation(
