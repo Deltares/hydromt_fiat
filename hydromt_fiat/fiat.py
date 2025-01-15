@@ -448,7 +448,7 @@ class FiatModel(GridModel):
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn=damage_translation_fn,
-                gfh_attribute_name=gfh_attribute_name,,
+                gfh_attribute_name=gfh_attribute_name,
                 eur_to_us_dollar = eur_to_us_dollar
             )
 
