@@ -862,15 +862,13 @@ class FiatModel(GridModel):
             ]
             bf_fid = self.building_footprint["BF_FID"]
             fieldname = "BF_FID"
-        else:
-            gdf = gdf[gdf["geometry"].within(fm_geom)]
 
         # Clip the exposure geometries
         # Filter buildings and roads
         if gdf["primary_object_type"].str.contains("road").any():
             gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
             gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
-            gdf_buildings = gdf[~gdf.isin(gdf_roads)].dropna(subset=["object_id"])
+            gdf_buildings = gdf[~gdf["primary_object_type"].str.contains("road")]
             if not self.building_footprint.empty:
                 gdf_buildings = self.check_bf_complete(
                     gdf_buildings, fieldname, clipped_region, bf_fid
@@ -883,9 +881,12 @@ class FiatModel(GridModel):
             self.exposure.exposure_geoms[idx_roads] = gdf_roads[
                 ["object_id", "geometry"]
             ]
+            gdf = pd.concat([gdf_buildings, gdf_roads])
         else:
             if not self.building_footprint.empty:
                 gdf = self.check_bf_complete(gdf, fieldname, clipped_region, bf_fid)
+            else:
+                gdf = gdf[gdf["geometry"].within(fm_geom)]
             self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
 
         # Save exposure dataframe
@@ -936,7 +937,7 @@ class FiatModel(GridModel):
                 [gdf_building_points_clipped, gdf_building_footprints_clipped]
             )
         else:
-            gdf_buildings = gdf_buildings[gdf_buildings[fieldname].isin(bf_fid)]
+            gdf_buildings = gdf_exposure[gdf_exposure[fieldname].isin(bf_fid)]
 
         return gdf_buildings
 
