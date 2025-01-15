@@ -316,14 +316,19 @@ class ExposureVector(Exposure):
                 crs = self.exposure_geoms[0].crs
                 roads = roads.to_crs(crs)
 
+        # align object_id with exposure_db
+        full_exposure = pd.concat([self.get_full_gdf(self.exposure_db), roads]).reset_index(drop=True)
+        full_exposure["object_id"] = full_exposure["object_id"].index
+        roads = full_exposure[full_exposure["primary_object_type"].str.contains("road", regex=False)]
+        
         # Set the exposure_geoms
         self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")
 
-        del roads["geometry"]
+        del full_exposure["geometry"]
 
         # Update the exposure_db
-        self.exposure_db = pd.concat([self.exposure_db, roads]).reset_index(drop=True)
+        self.exposure_db = full_exposure
 
     def setup_buildings_from_multiple_sources(
         self,
