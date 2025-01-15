@@ -344,7 +344,7 @@ class ExposureVector(Exposure):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         damage_translation_fn: Union[Path, str] = None,
-        eur_to_us_dollar: bool = None, 
+        eur_to_us_dollar: bool = False, 
     ):
         """
         Set up the exposure data using multiple sources.
