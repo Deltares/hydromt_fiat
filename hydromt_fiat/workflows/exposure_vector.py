@@ -326,7 +326,7 @@ class ExposureVector(Exposure):
         self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")
         idx_buildings = self.geom_names.index("buildings")
-        self.exposure_geoms[idx_buildings] = buildings
+        self.exposure_geoms[idx_buildings] = buildings[["object_id", "geometry"]]
         del full_exposure["geometry"]
         
         assert not full_exposure["object_id"].duplicated().any()
