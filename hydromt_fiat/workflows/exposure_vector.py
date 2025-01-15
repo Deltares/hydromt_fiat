@@ -328,6 +328,8 @@ class ExposureVector(Exposure):
         idx_buildings = self.geom_names.index("buildings")
         self.exposure_geoms[idx_buildings] = buildings
         del full_exposure["geometry"]
+        
+        assert not full_exposure["object_id"].duplicated().any()
 
         # Update the exposure_db
         self.exposure_db = full_exposure
