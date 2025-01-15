@@ -1026,13 +1026,13 @@ class FiatModel(GridModel):
         self,
         aggregation_area_fn: Union[
             List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
-        ],
+        ] = "default",
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
-        res_x: Union[int, float] = None,
-        res_y: Union[int, float] = None,
+        res_x: Union[int, float] = 1,
+        res_y: Union[int, float] = 1,
     ):
         """_summary_
 
@@ -1051,10 +1051,10 @@ class FiatModel(GridModel):
             folder in the root directory (Default is None).
         res_x : Union[int, float]
             The x resolution of the default aggregation area grid if no aggregation is provided and
-            aggregation_area_fn = "default"
+            aggregation_area_fn = "default",  default set to 1
         res_y : Union[int, float]
             The y resolution of the default aggregation area grid if no aggregation is provided and
-            aggregation_area_fn = "default"
+            aggregation_area_fn = "default", default set to 1
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if aggregation_area_fn == "default":
