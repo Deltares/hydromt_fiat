@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css" />
@@ -425,8 +425,12 @@
 <p>To run the FIAT model on a road network it is necessary to create the <a class="reference external" href="https://github.com/Deltares/Delft-FIAT/blob/master/docs/user_guide/data/exposure.qmd">exposure data</a> and <a class="reference external" href="https://github.com/Deltares/Delft-FIAT/blob/master/docs/user_guide/data/vulnerability.qmd">vulnerability data</a>.</p>
 <div class="line-block">
 <div class="line"><strong>Notebook Output</strong>:</div>
-<div class="line">The output of this notebook will be: - <code class="docutils literal notranslate"><span class="pre">exposure</span> <span class="pre">data</span></code> - <code class="docutils literal notranslate"><span class="pre">vulnerability</span> <span class="pre">data</span></code></div>
+<div class="line">The output of this notebook will be:</div>
 </div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">exposure</span> <span class="pre">data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vulnerability</span> <span class="pre">data</span></code></p></li>
+</ul>
 <p>which are neccessary to run the FIAT model for various events and scenarios of a flood event on a road network.</p>
 <blockquote>
 <div><p>*Note: This notebook will cover the road impact assessment based on Open Sreet Map (OSM) data.</p>
@@ -443,24 +447,35 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, all required packages must be installed.</span>
 
-<span class="kn">from</span> <span class="nn">hydromt_fiat.fiat</span> <span class="kn">import</span> <span class="n">FiatModel</span>
-<span class="kn">from</span> <span class="nn">hydromt.log</span> <span class="kn">import</span> <span class="n">setuplog</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">from</span> <span class="nn">hydromt.config</span> <span class="kn">import</span> <span class="n">configread</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">FiatModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.log</span><span class="w"> </span><span class="kn">import</span> <span class="n">setuplog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">configread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Step-2:-Data-Input">
 <h1><strong>Step 2:</strong> Data Input<a class="headerlink" href="#Step-2:-Data-Input" title="Link to this heading">#</a></h1>
-<p>To run FIAT the user must provide data about the road network and the sudy area of interest; - Polygon of the region of interest (from the coordinates we will create a shapely polygon) - Information on the road network within the study area (geospatial file format e.g. <em>.shp,</em> .geojson, *.gpkg ): - road type - number of lanes - segment length - Model configuration (see section <strong>Step 2b: Create configuration file</strong>)</p>
+<p>To run FIAT the user must provide data about the road network and the sudy area of interest;</p>
+<ul class="simple">
+<li><p>Polygon of the region of interest (from the coordinates we will create a shapely polygon)</p></li>
+<li><p>Information on the road network within the study area (geospatial file format e.g. <em>.shp,</em> .geojson, *.gpkg ):</p>
+<ul>
+<li><p>road type</p></li>
+<li><p>number of lanes</p></li>
+<li><p>segment length</p></li>
+</ul>
+</li>
+<li><p>Model configuration (see section <strong>Step 2b: Create configuration file</strong>)</p></li>
+</ul>
 <section id="Step-2a:-Define-the-study-area">
 <h2><strong>Step 2a:</strong> Define the study area<a class="headerlink" href="#Step-2a:-Define-the-study-area" title="Link to this heading">#</a></h2>
 <p>FIAT requires the input of a region in form of a <strong>shapely Polygon</strong> to download the <strong>OSM road dataset</strong>. This can be done via <strong>vector file</strong> or <strong>GeoJSON object</strong> of the study area. We recommened to download the region from <a class="reference external" href="https://geojson.io/#map=2/0/20">Geojson.io</a>.</p>
@@ -512,8 +527,21 @@
 <div class="line">We must configure the FIAT model form of a <code class="docutils literal notranslate"><span class="pre">yaml</span></code>-file or a dictionary, in which the model parameters are defined. The configuration file must define the <strong>vulnerability</strong> and <strong>exposure setup</strong>.</div>
 <div class="line">The required fields are:</div>
 </div>
-<p><em>setup_road_vulnerability:</em> - <strong>vertical_unit</strong>:Unit of vertical inundation (feet or meter) - <strong>threshold_value</strong>: Threshold inundation height at which road is fully destroyed - <strong>min_hazard_value</strong>: minimum inundation height (recommended: 0) - <strong>max_hazard_value</strong>: maximum inundation height (e.g. 6 meters) - <strong>step_hazard_value</strong>: discrete levels or steps of inundation height</p>
-<p><em>setup_exposure_roads:</em> - <strong>roads_fn</strong>: File path to road network file or OSM data (for OSM data use: “OSM”) - <strong>road_types</strong>: Road type keys (if OSM data use keys from from OSM e.g. “motorway”, “primary”) - <strong>road_damage</strong>: Damages per lane and per length unit - <strong>unit</strong>: Unit of road length (feet or meter)</p>
+<p><em>setup_road_vulnerability:</em></p>
+<ul class="simple">
+<li><p><strong>vertical_unit</strong>:Unit of vertical inundation (feet or meter)</p></li>
+<li><p><strong>threshold_value</strong>: Threshold inundation height at which road is fully destroyed</p></li>
+<li><p><strong>min_hazard_value</strong>: minimum inundation height (recommended: 0)</p></li>
+<li><p><strong>max_hazard_value</strong>: maximum inundation height (e.g. 6 meters)</p></li>
+<li><p><strong>step_hazard_value</strong>: discrete levels or steps of inundation height</p></li>
+</ul>
+<p><em>setup_exposure_roads:</em></p>
+<ul class="simple">
+<li><p><strong>roads_fn</strong>: File path to road network file or OSM data (for OSM data use: “OSM”)</p></li>
+<li><p><strong>road_types</strong>: Road type keys (if OSM data use keys from from OSM e.g. “motorway”, “primary”)</p></li>
+<li><p><strong>road_damage</strong>: Damages per lane and per length unit</p></li>
+<li><p><strong>unit</strong>: Unit of road length (feet or meter)</p></li>
+</ul>
 <p>The provided parameters need to be incorporated into the YAML structure. Please check <a class="reference external" href="C:/Users/rautenba/hydromt_fiat/examples/data/road_network/configuration.yaml">here</a> for the setup of the <em>configuration.yml</em>.</p>
 <section id="Load-the-configuration-file">
 <h3>Load the configuration file<a class="headerlink" href="#Load-the-configuration-file" title="Link to this heading">#</a></h3>
@@ -566,10 +594,13 @@
 </section>
 <section id="Step-3:-Define-variables-for-the-FIAT-model">
 <h1><strong>Step 3</strong>: Define variables for the FIAT model<a class="headerlink" href="#Step-3:-Define-variables-for-the-FIAT-model" title="Link to this heading">#</a></h1>
-<div class="line-block">
-<div class="line">To build the model some settings must be ingested as variables. So you need to set up the root path to the FIAT model, the logger settings, the region and the data catalog: - <code class="docutils literal notranslate"><span class="pre">root</span></code>: Directory path where the FIAT model data is stored.</div>
-<div class="line">- <code class="docutils literal notranslate"><span class="pre">logger</span></code>: The logger variable defines the frequencies of log-entries during the initialisation of the model. - <code class="docutils literal notranslate"><span class="pre">region</span></code>: Define the region as a variable from the config dictionary. - <code class="docutils literal notranslate"><span class="pre">data_catalog_yml</span></code>: Define the data catalogue as a variable from the config dictionary.</div>
-</div>
+<p>To build the model some settings must be ingested as variables. So you need to set up the root path to the FIAT model, the logger settings, the region and the data catalog:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">root</span></code>: Directory path where the FIAT model data is stored.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logger</span></code>: The logger variable defines the frequencies of log-entries during the initialisation of the model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code>: Define the region as a variable from the config dictionary.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data_catalog_yml</span></code>: Define the data catalogue as a variable from the config dictionary.</p></li>
+</ul>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
