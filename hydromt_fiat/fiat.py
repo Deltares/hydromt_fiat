@@ -1352,6 +1352,7 @@ class FiatModel(GridModel):
 
         # Set the building_footprint_fn property to save the building footprints
         self.building_footprint_fn = building_footprint_fn
+        self.building_footprint = gpd.read_file(building_footprint_fn)
 
     # Update functions
     def update_all(self):

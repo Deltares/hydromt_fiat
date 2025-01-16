@@ -7,7 +7,7 @@ def process_value(value):
     if isinstance(value, list) and len(value) == 1:
         return value[0]
     elif isinstance(value, list) and len(value) > 1:
-        return ", ".join(value)
+        return ", ".join([str(val) for val in value if isinstance(val, int)])
     else:
         return value
 
