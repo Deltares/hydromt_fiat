@@ -873,6 +873,8 @@ class FiatModel(GridModel):
                 gdf_buildings = self.check_bf_complete(
                     gdf_buildings, fieldname, clipped_region, bf_fid
                 )
+            else:
+                gdf_buildings = gdf_buildings[gdf_buildings["geometry"].within(fm_geom)]
             idx_buildings = self.exposure.geom_names.index("buildings")
             idx_roads = self.exposure.geom_names.index("roads")
             self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
