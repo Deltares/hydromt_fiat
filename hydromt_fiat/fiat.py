@@ -14,6 +14,7 @@ import tomli
 import tomli_w
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
+from shapely.geometry import box
 import shutil
 from shapely.geometry import box
 import tempfile
@@ -449,7 +450,7 @@ class FiatModel(GridModel):
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn=damage_translation_fn,
                 gfh_attribute_name=gfh_attribute_name,
-                eur_to_us_dollar = eur_to_us_dollar
+                eur_to_us_dollar = eur_to_us_dollar,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -636,6 +637,7 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
+        clip_exposure: bool = False,
     ) -> None:
         """Set up hazard maps. This component integrates multiple checks for the hazard
         maps.
@@ -674,6 +676,8 @@ class FiatModel(GridModel):
             Type of hazard to be studied, by default "flooding"
         risk_output : bool, optional
             The parameter that defines if a risk analysis is required, by default False
+        clip_exposure : bool, optional
+            The parameter that defines if the exposure dataset should be clipped by the hazard extent, by default False
         """
         # create lists of maps and their parameters to be able to iterate over them
         params = create_lists(map_fn, map_type, rp, crs, nodata, var, chunks)
@@ -822,6 +826,124 @@ class FiatModel(GridModel):
             "hazard.risk",
             risk_output,
         )
+        # Clip exposure to hazard map
+        if clip_exposure:
+            self.clip_exposure_to_hazard_extent(da)
+
+    def clip_exposure_to_hazard_extent(self, floodmap: xr.DataArray = None):
+        """Clip the exposure data to the bounding box of the hazard data.
+
+        This method clips the exposure data to the bounding box of the hazard data. It creates a GeoDataFrame
+        from the hazard polygons, and then uses the `gpd.clip` function to clip the exposure geometries to the
+        bounding box of the hazard polygons. If the exposure data contains roads, it is split into two separate
+        GeoDataFrames: one for buildings and one for roads. The clipped exposure data is then saved back to the
+        `exposure_db` attribute of the `FiatModel` object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+        gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        crs = gdf.crs
+        floodmap = floodmap.rio.reproject(crs)
+        fm_bounds = floodmap.raster.bounds
+        fm_geom = box(*fm_bounds)
+
+        # Clip the fiat region
+        clipped_region = self.region.clip(fm_geom)
+        self.geoms["region"] = clipped_region
+
+        if not self.building_footprint.empty:
+            # Clip the building footprints
+            self.building_footprint = self.building_footprint[
+                self.building_footprint["geometry"].within(fm_geom)
+            ]
+            bf_fid = self.building_footprint["BF_FID"]
+            fieldname = "BF_FID"
+
+        # Clip the exposure geometries
+        # Filter buildings and roads
+        if gdf["primary_object_type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
+            gdf_buildings = gdf[~gdf["primary_object_type"].str.contains("road")]
+            if not self.building_footprint.empty:
+                gdf_buildings = self.check_bf_complete(
+                    gdf_buildings, fieldname, clipped_region, bf_fid
+                )
+            else:
+                gdf_buildings = gdf_buildings[gdf_buildings["geometry"].within(fm_geom)]
+            idx_buildings = self.exposure.geom_names.index("buildings")
+            idx_roads = self.exposure.geom_names.index("roads")
+            self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["object_id", "geometry"]
+            ]
+            self.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["object_id", "geometry"]
+            ]
+            gdf = pd.concat([gdf_buildings, gdf_roads])
+        else:
+            if not self.building_footprint.empty:
+                gdf = self.check_bf_complete(gdf, fieldname, clipped_region, bf_fid)
+            else:
+                gdf = gdf[gdf["geometry"].within(fm_geom)]
+            self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+
+        # Save exposure dataframe
+        del gdf["geometry"]
+        self.exposure.exposure_db = gdf
+
+    def check_bf_complete(
+        self,
+        gdf_exposure: gpd.GeoDataFrame,
+        fieldname: str,
+        clipped_region: gpd.GeoDataFrame,
+        bf_fid: gpd.GeoDataFrame,
+    ):
+        """Checks whether all building points have a building footprint.
+
+        This method checks if all points have a building footprint. If a point does not have a biulding footprint
+        it will be concenated with the exposure gdf anyhow and not be filtered out. By this it is assured
+        that even if a building footprint is not available on e.g. OSM, the exposure point does not get lost.
+
+        Parameters
+        ----------
+        gdf_exposure: gpd.GeoDataFrame
+            The GeoDataFrame that contains the full exposure (excl. roads).
+        fieldname: str
+            The fieldname of the building footprint.
+        clipped_region: gpd.GeoDataFrame
+            The clipped region.
+        bf_fid: gpd.GeoDataFrame
+            The GeoDataFrame of the building footprints.
+
+        Returns
+        -------
+        gdf_buildings: GeoDataFrame
+        """
+
+        if gdf_exposure[fieldname].isna().any():
+            gdf_building_points = gdf_exposure[gdf_exposure[fieldname].isna()]
+            gdf_building_footprints = gdf_exposure[~gdf_exposure[fieldname].isna()]
+            gdf_building_points_clipped = gdf_building_points[
+                gdf_building_points["geometry"].within(
+                    clipped_region["geometry"].union_all()
+                )
+            ]
+            gdf_building_footprints_clipped = gdf_building_footprints[
+                gdf_building_footprints[fieldname].isin(bf_fid)
+            ]
+            gdf_buildings = pd.concat(
+                [gdf_building_points_clipped, gdf_building_footprints_clipped]
+            )
+        else:
+            gdf_buildings = gdf_exposure[gdf_exposure[fieldname].isin(bf_fid)]
+
+        return gdf_buildings
 
     def setup_social_vulnerability_index(
         self,
@@ -1249,6 +1371,7 @@ class FiatModel(GridModel):
 
         # Set the building_footprint_fn property to save the building footprints
         self.building_footprint_fn = building_footprint_fn
+        self.building_footprint = gpd.read_file(building_footprint_fn)
 
     def create_default_aggregation(
         self, res_x: Union[int, float] = None, res_y: Union[int, float] = None
