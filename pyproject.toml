@@ -19,6 +19,7 @@ dependencies = [
     "geopandas",
     "geopy",
     "numpy",
+    "datashader",
     "openpyxl",
     "pandas",
     "pyogrio",
@@ -32,7 +33,7 @@ dependencies = [
     "xarray-spatial",
     "tqdm",
     "pycountry-convert",
-    "pyarrow"
+    "pyarrow",
 ]
 readme = "README.rst"
 classifiers = [
