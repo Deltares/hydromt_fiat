@@ -19,7 +19,7 @@ dependencies = [
     "geopandas",
     "geopy",
     "numpy",
-    "datashader",
+    "dask",
     "openpyxl",
     "pandas",
     "pyogrio",
