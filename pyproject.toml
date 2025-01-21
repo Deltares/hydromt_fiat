@@ -32,7 +32,8 @@ dependencies = [
     "xarray-spatial",
     "tqdm",
     "pycountry-convert",
-    "pyarrow"
+    "pyarrow",
+    "dask<=2024.12.1"
 ]
 readme = "README.rst"
 classifiers = [
