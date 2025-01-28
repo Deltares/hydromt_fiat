@@ -1160,8 +1160,8 @@ class FiatModel(GridModel):
         label_names: Union[List[str], str] = None,
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
-        res_x: Union[int, float] = 1,
-        res_y: Union[int, float] = 1,
+        res_x: Union[int, float] = 1e3,
+        res_y: Union[int, float] = 1e3,
     ):
         """_summary_
 
@@ -1178,12 +1178,12 @@ class FiatModel(GridModel):
         file_names : Union[List[str], str]
             The name of the spatial file(s) if saved in aggregation_areas/
             folder in the root directory (Default is None).
-        res_x : Union[int, float]
-            The x resolution of the default aggregation area grid if no aggregation is provided and
-            aggregation_area_fn = "default",  default set to 1
+        res_x, : Union[int, float]
+            The x resolution [m] of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default",  default set to 1 km
         res_y : Union[int, float]
-            The y resolution of the default aggregation area grid if no aggregation is provided and
-            aggregation_area_fn = "default", default set to 1
+            The y resolution [m] of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default", default set to 1 km
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
         if aggregation_area_fn == "default":
@@ -1374,7 +1374,7 @@ class FiatModel(GridModel):
         self.building_footprint = gpd.read_file(building_footprint_fn)
 
     def create_default_aggregation(
-        self, res_x: Union[int, float] = None, res_y: Union[int, float] = None
+        self, res_x: Union[int, float] = 1e3, res_y: Union[int, float] = 1e3
     ):
         """
         Creates a default aggregation grid based on the specified region and resolution.
@@ -1386,9 +1386,9 @@ class FiatModel(GridModel):
         Parameters
         ----------
         res_x : Union[int, float], optional
-            The resolution in the x direction, by default 0.05.
+            The resolution in the x direction [m], by default 1 km.
         res_y : Union[int, float], optional
-            The resolution in the y direction, by default 0.05.
+            The resolution in the y direction [m], by default 1 km.
 
         Returns
         -------
@@ -1397,6 +1397,11 @@ class FiatModel(GridModel):
         """
         rotation = 0
         bounds = self.region.bounds
+        crs: CRS = self.region.crs
+        if crs.is_geographic:
+            res_x = res_x / 111_111  # 1 degree is ~ 111_111 meters
+            res_y = res_y / 111_111
+
         width = int((bounds["maxx"] - bounds["minx"]) / res_x)
         height = int((bounds["maxy"] - bounds["miny"]) / res_y)
 
@@ -1418,7 +1423,7 @@ class FiatModel(GridModel):
         shape = (height, width)
 
         # aggregation_areas is the vector file of the grid.
-        aggregation_areas = full_from_transform(transform_affine, shape)
+        aggregation_areas = full_from_transform(transform_affine, shape, lazy=True)
 
         # Create vector file
         geometries = []
@@ -1435,7 +1440,6 @@ class FiatModel(GridModel):
                 )
 
         # Create a GeoDataFrame from the geometries
-        crs = self.region.crs
         default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
 
         # Create Aggregation Label Value
