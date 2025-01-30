@@ -1127,8 +1127,8 @@ class FiatModel(GridModel):
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
 
-        # Update the aggregation label: Census Blockgroup
-        del self.exposure.exposure_db["Aggregation Label: Census Blockgroup"]
+        # Update the aggregation_label: Census Blockgroup
+        del self.exposure.exposure_db["aggregation_label: Census Blockgroup"]
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
@@ -1206,7 +1206,7 @@ class FiatModel(GridModel):
             aggregation_area_fn,
             attribute_names,
             # Make sure that column name for aggregation areas includes the Aggregation Label part
-            ["Aggregation Label: " + name for name in label_names],
+            ["aggregation_label: " + name for name in label_names],
             new_composite_area,
             keep_all=False,
         )

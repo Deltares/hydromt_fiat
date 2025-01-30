@@ -56,7 +56,7 @@ class ExposureVector(Exposure):
         "secondary_object_type",
         "ground_elevtn",
     ]
-    _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
+    _OPTIONAL_VARIABLE_COLUMNS = ["aggregation_label: {}", "Aggregation Variable: {}"]
 
     _CSV_COLUMN_DATATYPES = {
         "object_id": int,
@@ -64,10 +64,10 @@ class ExposureVector(Exposure):
         "primary_object_type": str,
         "secondary_object_type": str,
         "extract_method": str,
-        "Aggregation Label": str,
+        "aggregation_lable:": str,
         "fn_damage_structure": str,
         "fn_damage_content": str,
-        "Ground Flood Height": float,
+        "ground_flht": float,
         "ground_elevtn": float,
         "max_damage_structure": float,
         "max_damage_content": float,
@@ -1985,7 +1985,7 @@ class ExposureVector(Exposure):
                 ids = buildings["object_id"]
             elif selection_type == "aggregation_area":
                 ids = buildings.loc[
-                    buildings[f"Aggregation Label: {aggregation}"]
+                    buildings[f"aggregation_label: {aggregation}"]
                     == aggregation_area_name,
                     "object_id",
                 ]
