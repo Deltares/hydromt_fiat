@@ -1436,7 +1436,7 @@ class FiatModel(GridModel):
                     y.values + res_y / 2,
                 )
                 geometries.append(
-                    {"geometry": cell_geom, "value": aggregation_areas[j, i].item()}
+                    {"geometry": cell_geom, "value": aggregation_areas[j, i]}
                 )
 
         # Create a GeoDataFrame from the geometries
