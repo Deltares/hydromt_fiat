@@ -563,7 +563,7 @@ class FiatModel(GridModel):
             impacted_population_fn, attribute_name, method_impacted_pop, max_dist
         )
 
-        self.set_config("exposure.types", ["damages", "affected"])
+        self.set_config("exposure.types", ["damage", "affected"])
 
     def bf_spatial_joins(self):
         self.building_footprint = self.exposure.building_footprints
