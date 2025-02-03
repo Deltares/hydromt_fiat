@@ -1563,8 +1563,8 @@
         <span class="c1"># Save the census block aggregation area data</span>
         <span class="n">block_groups</span> <span class="o">=</span> <span class="n">equity</span><span class="o">.</span><span class="n">get_block_groups</span><span class="p">()</span>
 
-        <span class="c1"># Update the aggregation label: Census Blockgroup</span>
-        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">[</span><span class="s2">&quot;Aggregation Label: Census Blockgroup&quot;</span><span class="p">]</span>
+        <span class="c1"># Update the aggregation_label:Census Blockgroup</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">[</span><span class="s2">&quot;aggregation_label:Census Blockgroup&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setup_aggregation_areas</span><span class="p">(</span>
             <span class="n">aggregation_area_fn</span><span class="o">=</span><span class="n">block_groups</span><span class="p">,</span>
             <span class="n">attribute_names</span><span class="o">=</span><span class="s2">&quot;GEOID_short&quot;</span><span class="p">,</span>
@@ -1596,8 +1596,8 @@
         <span class="n">label_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">new_composite_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">file_names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">res_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">res_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">res_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span><span class="p">,</span>
+        <span class="n">res_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_</span>
 
@@ -1614,12 +1614,12 @@
 <span class="sd">        file_names : Union[List[str], str]</span>
 <span class="sd">            The name of the spatial file(s) if saved in aggregation_areas/</span>
 <span class="sd">            folder in the root directory (Default is None).</span>
-<span class="sd">        res_x : Union[int, float]</span>
-<span class="sd">            The x resolution of the default aggregation area grid if no aggregation is provided and</span>
-<span class="sd">            aggregation_area_fn = &quot;default&quot;,  default set to 1</span>
+<span class="sd">        res_x, : Union[int, float]</span>
+<span class="sd">            The x resolution [m] of the default aggregation area grid if no aggregation is provided and</span>
+<span class="sd">            aggregation_area_fn = &quot;default&quot;,  default set to 1 km</span>
 <span class="sd">        res_y : Union[int, float]</span>
-<span class="sd">            The y resolution of the default aggregation area grid if no aggregation is provided and</span>
-<span class="sd">            aggregation_area_fn = &quot;default&quot;, default set to 1</span>
+<span class="sd">            The y resolution [m] of the default aggregation area grid if no aggregation is provided and</span>
+<span class="sd">            aggregation_area_fn = &quot;default&quot;, default set to 1 km</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists</span>
         <span class="k">if</span> <span class="n">aggregation_area_fn</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span><span class="p">:</span>
@@ -1642,7 +1642,7 @@
             <span class="n">aggregation_area_fn</span><span class="p">,</span>
             <span class="n">attribute_names</span><span class="p">,</span>
             <span class="c1"># Make sure that column name for aggregation areas includes the Aggregation Label part</span>
-            <span class="p">[</span><span class="s2">&quot;Aggregation Label: &quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">label_names</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;aggregation_label:&quot;</span> <span class="o">+</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">label_names</span><span class="p">],</span>
             <span class="n">new_composite_area</span><span class="p">,</span>
             <span class="n">keep_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1810,7 +1810,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">building_footprint</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">building_footprint_fn</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">create_default_aggregation</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">res_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">res_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">res_x</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span><span class="p">,</span> <span class="n">res_y</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1e3</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a default aggregation grid based on the specified region and resolution.</span>
@@ -1822,9 +1822,9 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        res_x : Union[int, float], optional</span>
-<span class="sd">            The resolution in the x direction, by default 0.05.</span>
+<span class="sd">            The resolution in the x direction [m], by default 1 km.</span>
 <span class="sd">        res_y : Union[int, float], optional</span>
-<span class="sd">            The resolution in the y direction, by default 0.05.</span>
+<span class="sd">            The resolution in the y direction [m], by default 1 km.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1833,6 +1833,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">rotation</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="n">crs</span><span class="p">:</span> <span class="n">CRS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">crs</span>
+        <span class="k">if</span> <span class="n">crs</span><span class="o">.</span><span class="n">is_geographic</span><span class="p">:</span>
+            <span class="n">res_x</span> <span class="o">=</span> <span class="n">res_x</span> <span class="o">/</span> <span class="mi">111_111</span>  <span class="c1"># 1 degree is ~ 111_111 meters</span>
+            <span class="n">res_y</span> <span class="o">=</span> <span class="n">res_y</span> <span class="o">/</span> <span class="mi">111_111</span>
+
         <span class="n">width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;maxx&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;minx&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">res_x</span><span class="p">)</span>
         <span class="n">height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;maxy&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">bounds</span><span class="p">[</span><span class="s2">&quot;miny&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">res_y</span><span class="p">)</span>
 
@@ -1854,7 +1859,7 @@
         <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
 
         <span class="c1"># aggregation_areas is the vector file of the grid.</span>
-        <span class="n">aggregation_areas</span> <span class="o">=</span> <span class="n">full_from_transform</span><span class="p">(</span><span class="n">transform_affine</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="n">aggregation_areas</span> <span class="o">=</span> <span class="n">full_from_transform</span><span class="p">(</span><span class="n">transform_affine</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Create vector file</span>
         <span class="n">geometries</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1871,7 +1876,6 @@
                 <span class="p">)</span>
 
         <span class="c1"># Create a GeoDataFrame from the geometries</span>
-        <span class="n">crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">crs</span>
         <span class="n">default_aggregation_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">geometries</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">)</span>
 
         <span class="c1"># Create Aggregation Label Value</span>

@@ -506,7 +506,7 @@ To prepare the data, an aggregation configuration file (<em>.yml</em>) must be c
 </div>
 <p>After loading the configuration file (<em>.yml</em>) and executing the <strong>FIAT Hydro MT</strong> model builder, the user receives a file (<em>.csv</em>) with the original exposure data and an additional column with the aggregation label(s) as output. The <a class="reference external" href="https://github.com/Deltares/delft-fiat">FIAT toolbox</a> will automatically prepend “<em>Aggregation Label</em>” to the prior specified aggregation label, therefore the aggregation labels can be identified as such.</p>
 <blockquote>
-<div><p>Aggregation Label: {label_name}</p>
+<div><p>aggregation_label:{label_name}</p>
 </div></blockquote>
 <p><em>Note: It may occur that polygons overlap in the aggregation vector files. In this case the information for the affected object_id will be merged and both aggregation zones will be assigned to the object.</em></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">object_id</span>   <span class="n">Zone</span>
