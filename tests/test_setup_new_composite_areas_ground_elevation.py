@@ -58,7 +58,7 @@ _cases = {
             "test_read", "exposure", "aggregation_areas", "block_groups.gpkg"
         ),
         "attribute_names": "GEOID_short",
-        "label_names": "Aggregation Label: Census Block",
+        "label_names": "aggregation_label:Census Block",
     },
 }
 
