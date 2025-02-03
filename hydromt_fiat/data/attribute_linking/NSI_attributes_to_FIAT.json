@@ -8,5 +8,5 @@
     "ground_flht": "found_ht",
     "ground_elevtn": "ground_elv",
     "geometry": "geometry",
-    "aggregation_label: Census Blockgroup": "cbfips"
+    "aggregation_label:Census Blockgroup": "cbfips"
 }
