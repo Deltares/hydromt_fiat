@@ -4116,10 +4116,11 @@ packages:
   timestamp: 1718701607231
 - pypi: .
   name: hydromt-fiat
-  version: 0.5.0.dev0
-  sha256: 499063e7d251f2b72c418a6fba44035a80b3259e4b76e75f22a7f005b2e49cc8
+  version: 0.5.1
+  sha256: 3c238621599365bc8ed33a986f84b5c4db492a0629c64bee327da054a54abf81
   requires_dist:
   - census
+  - dask
   - hydromt>=0.9.4,<1.0
   - geopandas
   - geopy

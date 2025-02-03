@@ -87,7 +87,7 @@ In case the user wants to add several aggregation zones at once, multiple aggreg
 
 After loading the configuration file (*.yml*) and executing the **FIAT Hydro MT** model builder, the user receives a file (*.csv*) with the original exposure data and an additional column with the aggregation label(s) as output. The `FIAT toolbox <https://github.com/Deltares/delft-fiat>`_ will automatically prepend "*Aggregation Label*" to the prior specified aggregation label, therefore the aggregation labels can be identified as such.
 
-   Aggregation Label: {label_name}
+   aggregation_label:{label_name}
 
 *Note: It may occur that polygons overlap in the aggregation vector files. In this case the information for the affected object_id will be merged and both aggregation zones will be assigned to the object.* ::
 
