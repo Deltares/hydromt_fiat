@@ -2,8 +2,22 @@
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hydromt_fiat*"]
+
+[tool.setuptools.package-data]
+"hydromt_fiat" = ["data/**"]
+
+[tool.setuptools.dynamic]
+version = { attr = "hydromt_fiat.version.__version__" }
+
 [project]
 name = "hydromt_fiat"
+dynamic = ["version"]
 # TODO description = "Hydrological model for flood impact assessment and adaptation planning"
 authors = [
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
@@ -13,26 +27,28 @@ authors = [
 	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
     {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
 ]
-requires-python = ">=3.8"
+
+requires-python = ">=3.10"
 dependencies = [
-    "hydromt<1.0",
+    "census",
+    "hydromt>=0.9.4, <1.0",
     "geopandas",
     "geopy",
     "numpy",
     "openpyxl",
-    "pandas",
-    "pyogrio",
-    "tomli-w",
-    "tomli",
-    "xarray",
-    "pydantic",
     "osmnx>=1,<2",
-    "census",
-    "us",
-    "xarray-spatial",
+    "pandas",
+    "pycountry-convert",
+    "pydantic",    
+    "pyogrio",
+    "tomli",
+    "tomli-w",
     "tqdm",
-    "pycountry-convert"
+    "us",
+    "xarray",
+    "xarray-spatial"
 ]
+
 readme = "README.rst"
 classifiers = [
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -43,32 +59,26 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
-dynamic = ["version"]
-
-[tool.setuptools]
-zip-safe = false
-
-[tool.setuptools.dynamic]
-version = { attr = "hydromt_fiat.version.__version__" }
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["hydromt_fiat*"]
-
-[tool.setuptools.package-data]
-"hydromt_fiat" = ["data/**"]
 
 [project.optional-dependencies]
-test = [
-	"testpath",
-	"responses",
-	"pytest>=2.7.3",
-	"pytest-cov",
-]
-doc = [
-	"sphinx",
-	"sphinx_rtd_theme",
+dev = [
+    "pre-commit",
 	"ruff==0.6.8",
+]
+docs = [
+    "jupyter",
+    "matplotlib",
+    "nbsphinx",
+    "pydata-sphinx-theme",
+    "sphinx",
+    "sphinx_autosummary_accessors",
+    "sphinx_design",
+    
+]
+test = [
+    "responses",
+    "pytest>=2.7.3",
+    "pytest-cov",
 ]
 
 [project.urls]
@@ -80,4 +90,36 @@ fiat = "hydromt_fiat.fiat:FiatModel"
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ['py310']
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["linux-64", "win-64"]
+
+[tool.pixi.tasks]
+lint = { cmd = ["pre-commit", "run", "--all"] }
+
+doctest = { cmd = ["sphinx-build", "-M", "doctest", "docs",	"docs/_build", "-W"] }
+docs-build = { cmd = ["sphinx-build", "-M", "html", "docs",	"docs/_build", "-W"] }
+docs = { depends-on = ["docs-build"] }
+serve = { cmd = ["python", "-m", "http.server", "-d", "docs/_build/html"] }
+
+test = { cmd = ["pytest"] }
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
+test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"] }
+test-cov = { cmd = [ "pytest", "--verbose",	"--cov=hydromt_fiat", "--cov-report", "xml"] }
+
+[tool.pixi.dependencies]
+hydromt = ">=0.9.4, <0.11"
+pip = "*"
+
+[tool.pixi.pypi-dependencies]
+hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.feature.docs.dependencies]
+pandoc = "*"
+
+[tool.pixi.environments]
+default = {features = ["dev", "docs", "test"]}
+dev = {features = ["dev", "test"]}
+docs = {features = ["docs"]}
