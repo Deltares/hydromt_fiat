@@ -1,10 +1,11 @@
-"""Implement fiat model class"""
+"""Implement fiat model class."""
 
 import csv
 import glob
 import logging
 import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -16,35 +17,32 @@ import tomli
 import tomli_w
 import xarray as xr
 from hydromt.models.model_grid import GridModel
-from pyproj.crs import CRS
-import tempfile
-
 from hydromt.raster import full_from_transform
-from hydromt_fiat.api.data_types import Units
-from hydromt_fiat.util import DATADIR
+from pyproj.crs import CRS
+
+from hydromt_fiat.api.data_types import Currency, Units
 from hydromt_fiat.spatial_joins import SpatialJoins
+from hydromt_fiat.util import DATADIR
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
+from hydromt_fiat.workflows.equity_data import EquityData
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.hazard import (
-    create_lists,
     check_lists_size,
-    read_maps,
+    check_map_uniqueness,
     check_maps_metadata,
     check_maps_rp,
-    check_map_uniqueness,
+    create_lists,
     create_risk_dataset,
+    read_maps,
 )
-from hydromt_fiat.workflows.equity_data import EquityData
 from hydromt_fiat.workflows.social_vulnerability_index import (
     SocialVulnerabilityIndex,
     list_of_states,
 )
+from hydromt_fiat.workflows.utils import get_us_county_numbers, rename_geoid_short
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
-from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
-from hydromt_fiat.workflows.gis import locate_from_exposure
-from hydromt_fiat.workflows.utils import get_us_county_numbers
-from hydromt_fiat.workflows.utils import rename_geoid_short
-from hydromt_fiat.api.data_types import Currency
 
 __all__ = ["FiatModel"]
 
@@ -112,7 +110,7 @@ class FiatModel(GridModel):
         thread: int = None,
         chunk: List[int] = None,
     ) -> None:
-        """Setup Delft-FIAT global settings.
+        """Set up Delft-FIAT global settings.
 
         Parameters
         ----------
@@ -136,7 +134,7 @@ class FiatModel(GridModel):
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
     ) -> None:
-        """Setup Delft-FIAT output folder and files.
+        """Set up Delft-FIAT output folder and files.
 
         Parameters
         ----------
@@ -170,7 +168,6 @@ class FiatModel(GridModel):
         region: dict
             Dictionary describing region of interest, e.g. {'bbox': [xmin, ymin, xmax, ymax]}. See :py:meth:`~hydromt.workflows.parse_region()` for all options.
         """
-
         kind, region = hydromt.workflows.parse_region(region, logger=self.logger)
         if kind == "bbox":
             geom = gpd.GeoDataFrame(geometry=[sg.box(*region["bbox"])], crs=4326)
@@ -202,7 +199,7 @@ class FiatModel(GridModel):
         step_size: Optional[float] = None,
         continent: Optional[str] = None,
     ) -> None:
-        """Setup the vulnerability curves from various possible inputs.
+        """Set up the vulnerability curves from various possible inputs.
 
         Parameters
         ----------
@@ -223,7 +220,6 @@ class FiatModel(GridModel):
             hazard value when using the area extract_method, by default None (this
             means that all vulnerability functions are using mean).
         """
-
         # Read the vulnerability data
         df_vulnerability = self.data_catalog.get_dataframe(vulnerability_fn)
 
@@ -270,7 +266,7 @@ class FiatModel(GridModel):
             self.set_config("vulnerability.step_size", step_size)
 
     def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], unit: str) -> None:
-        """Setup the vulnerability curves from one or multiple csv files.
+        """Set up the vulnerability curves from one or multiple csv files.
 
         Parameters
         ----------
@@ -354,7 +350,7 @@ class FiatModel(GridModel):
         damage_translation_fn: Union[Path, str] = None,
         eur_to_us_dollar: bool = False,
     ) -> None:
-        """Setup building exposure (vector) data for Delft-FIAT.
+        """Set up building exposure (vector) data for Delft-FIAT.
 
         Parameters
         ----------
@@ -522,7 +518,7 @@ class FiatModel(GridModel):
         road_types: Union[str, List[str], bool] = True,
         unit: str = "meters",
     ):
-        """Setup road exposure data for Delft-FIAT.
+        """Set up road exposure data for Delft-FIAT.
 
         Parameters
         ----------
@@ -622,10 +618,11 @@ class FiatModel(GridModel):
             self.exposure.setup_ground_elevation(source, grnd_elev_unit)
 
     def setup_exposure_raster(self):
-        """Setup raster exposure data for Delft-FIAT.
+        """Set up raster exposure data for Delft-FIAT.
+
         This function will be implemented at a later stage.
         """
-        NotImplemented
+        raise NotImplementedError
 
     def setup_hazard(
         self,
@@ -641,8 +638,7 @@ class FiatModel(GridModel):
         unit_conversion_factor: float = 1.0,
         clip_exposure: bool = False,
     ) -> None:
-        """Set up hazard maps. This component integrates multiple checks for the hazard
-        maps.
+        """Set up hazard maps.
 
         Parameters
         ----------
@@ -694,7 +690,8 @@ class FiatModel(GridModel):
                 # if path is provided read and load it as xarray
                 da_map_fn, da_name, da_type = read_maps(params, da_map_fn, idx)
                 da = self.data_catalog.get_rasterdataset(
-                    da_map_fn
+                    da_map_fn,
+                    geom=self.region,
                 )  # removed geom=self.region because it is not always there
             elif isinstance(da_map_fn, xr.DataArray):
                 # if xarray is provided directly assign that
@@ -723,7 +720,7 @@ class FiatModel(GridModel):
             # check maps return periods
             da_rp = check_maps_rp(params, da, da_name, idx, risk_output)
 
-            if risk_output and da_map_fn.stem == "sfincs_map":
+            if risk_output and da_name == "sfincs_map":
                 da_name = da_name + f"_{str(da_rp)}"
 
             post = f"(rp {da_rp})" if risk_output else ""
@@ -853,7 +850,7 @@ class FiatModel(GridModel):
         crs = gdf.crs
         floodmap = floodmap.rio.reproject(crs)
         fm_bounds = floodmap.raster.bounds
-        fm_geom = box(*fm_bounds)
+        fm_geom = sg.box(*fm_bounds)
 
         # Clip the fiat region
         clipped_region = self.region.clip(fm_geom)
@@ -906,7 +903,7 @@ class FiatModel(GridModel):
         clipped_region: gpd.GeoDataFrame,
         bf_fid: gpd.GeoDataFrame,
     ):
-        """Checks whether all building points have a building footprint.
+        """Check whether all building points have a building footprint.
 
         This method checks if all points have a building footprint. If a point does not have a biulding footprint
         it will be concenated with the exposure gdf anyhow and not be filtered out. By this it is assured
@@ -927,7 +924,6 @@ class FiatModel(GridModel):
         -------
         gdf_buildings: GeoDataFrame
         """
-
         if gdf_exposure[fieldname].isna().any():
             gdf_building_points = gdf_exposure[gdf_exposure[fieldname].isna()]
             gdf_building_footprints = gdf_exposure[~gdf_exposure[fieldname].isna()]
@@ -954,9 +950,11 @@ class FiatModel(GridModel):
         year_data: int = None,
         save_all: bool = False,
     ):
-        """Setup the social vulnerability index for the vector exposure data for
-        Delft-FIAT. This method has so far only been tested with US Census data
-        but aims to be generalized to other datasets as well.
+        """Set up the social vulnerability index.
+        
+        For the vector exposure data for Delft-FIAT. This method has so far only 
+        been tested with US Census data but aims to be generalized 
+        to other datasets as well.
 
         Parameters
         ----------
@@ -1074,7 +1072,7 @@ class FiatModel(GridModel):
         census_key: str,
         year_data: int = None,
     ):
-        """Setup the download procedure for equity data similarly to the SVI setup
+        """Set up the download procedure for equity data similarly to the SVI setup.
 
         Parameters
         ----------
@@ -1165,7 +1163,7 @@ class FiatModel(GridModel):
         res_x: Union[int, float] = 1e3,
         res_y: Union[int, float] = 1e3,
     ):
-        """_summary_
+        """_summary_.
 
         Parameters
         ----------
@@ -1301,7 +1299,7 @@ class FiatModel(GridModel):
         damage_types=Union[List[str], str],
         remove_object_type=bool,
     ):
-        """_summary_
+        """_summary_.
 
          Parameters
          ----------
@@ -1323,7 +1321,6 @@ class FiatModel(GridModel):
              True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
              E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).
         """
-
         self.exposure.setup_occupancy_type(source, attribute, type_add)
 
         # Drop Object Type that has not been updated.
@@ -1350,7 +1347,7 @@ class FiatModel(GridModel):
         building_footprint_fn: Union[str, Path],
         attribute_name: str,
     ):
-        """_summary_
+        """_summary_.
 
         Parameters
         ----------
@@ -1363,7 +1360,6 @@ class FiatModel(GridModel):
         column_name: str = "BF_FID"
             Name of building footprint in new exposure output
         """
-
         exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
         self.exposure.exposure_db = join_exposure_building_footprints(
             exposure_gdf,
@@ -1378,8 +1374,7 @@ class FiatModel(GridModel):
     def create_default_aggregation(
         self, res_x: Union[int, float] = 1e3, res_y: Union[int, float] = 1e3
     ):
-        """
-        Creates a default aggregation grid based on the specified region and resolution.
+        """Create a default aggregation grid based on the specified region and resolution.
 
         This function generates a grid of polygon geometries over the given region with
         specified resolutions in the x and y directions. The grid is saved as a vector
@@ -1431,7 +1426,7 @@ class FiatModel(GridModel):
         geometries = []
         for j, y in enumerate(aggregation_areas["y"]):
             for i, x in enumerate(aggregation_areas["x"]):
-                cell_geom = box(
+                cell_geom = sg.box(
                     x.values - res_x / 2,
                     y.values - res_y / 2,
                     x.values + res_x / 2,
@@ -1497,8 +1492,7 @@ class FiatModel(GridModel):
 
     # I/O
     def read(self):
-        """Method to read the complete model schematization and configuration from
-        file."""
+        """Read the complete model schematization and configuration from file."""
         self.logger.info(f"Reading model data from {self.root}")
 
         # Read the configuration file
@@ -1606,13 +1600,16 @@ class FiatModel(GridModel):
             self.set_geoms(gpd.read_file(fn), name=name)
 
     def write(self):
-        """Method to write the complete model schematization and configuration to file."""
+        """Write the complete model schematization and configuration to file."""
         self.update_all()
         self.logger.info(f"Writing model data to {self.root}")
 
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
+            dvars = self.grid.data_vars
+            encoding = {k: {"zlib": True} for k in dvars}
+            kwargs = {"encoding": encoding}
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
         # Use a custom write_geoms to handle the exposure geoms as an exception
         self.write_geoms()
@@ -1634,7 +1631,7 @@ class FiatModel(GridModel):
     def copy_datasets(
         self, data: Union[list, str, Path], folder: Union[Path, str]
     ) -> None:
-        """Copies datasets to another folder
+        """Copy datasets to another folder.
 
         Parameters
         ----------

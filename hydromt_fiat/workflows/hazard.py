@@ -1,14 +1,16 @@
-from hydromt_fiat.validation import get_param, check_uniqueness
-from pathlib import Path
-from ast import literal_eval
+"""Hazard workflow module."""
+
 import os
+from ast import literal_eval
+from pathlib import Path
+
+# from hydromt_sfincs import SfincsModel
+# from hydromt_sfincs import SfincsModel
+from typing import Tuple, Union
+
 import xarray as xr
 
-# from hydromt_sfincs import SfincsModel
-
-# from hydromt_sfincs import SfincsModel
-from typing import Union
-from typing import Tuple
+from hydromt_fiat.validation import check_uniqueness, get_param
 
 
 def create_lists(
@@ -92,7 +94,9 @@ def create_lists(
 def check_lists_size(
     params: dict,
 ):
-    """Check that list of parameters are of the same size in case multiple maps are
+    """Check list size of different parameters.
+        
+    Whether these are of the same size in case multiple maps are
     provided to ensure all the maps have their corresponding metadata to process. In
     case the same metadata applies for all the maps a one item list can be provided.
     This excludes return period 'rp'which requires to be defined explicitly per map
@@ -174,8 +178,9 @@ def read_maps(
     idx: int,
     **kwargs,
 ) -> Tuple[Union[str, Path], str, str]:
-    """Read names and types of flood maps. Converts to a Path object
-    the path provided as String
+    """Read names and types of flood maps.
+    
+    Converts to a Path object the path provided as String.
 
     Parameters
     ----------
@@ -199,20 +204,21 @@ def read_maps(
         Rises an error in case a netcdf file is provided withouth indicating the
         name of the layer
     """
-
     # load dictionary variables
     chunks = params["chunks"]
     var = params["var"]
     map_fn_lst = params["map_fn_lst"]
     map_type_lst = params["map_type_lst"]
 
+    da_name = Path(da_map_fn).stem
+
     # check existance of path
-    if os.path.exists(da_map_fn):
-        da_map_fn = Path(da_map_fn)
-        da_name = da_map_fn.stem
-        da_suffix = da_map_fn.suffix
-    else:
-        raise ValueError(f"The map {da_map_fn} could not be found.")
+    # if os.path.exists(da_map_fn):
+    #     da_map_fn = Path(da_map_fn)
+    #     da_name = da_map_fn.stem
+    #     da_suffix = da_map_fn.suffix
+    # else:
+    #     raise ValueError(f"The map {da_map_fn} could not be found.")
 
     # retrieve data type
     da_type = get_param(map_type_lst, map_fn_lst, "hazard", da_name, idx, "map type")
@@ -221,21 +227,21 @@ def read_maps(
     kwargs.update(chunks=chunks if chunks == "auto" else params["chunks_lst"][idx])
 
     # check if we are providing a NetCDF file
-    if da_suffix == ".nc":
-        if var is None:
-            raise ValueError(
-                "The 'var' parameter is required when reading NetCDF data."
-            )
-        # retrieve variable name from parameter lists
-        da_var = get_param(
-            params["var_lst"],
-            map_fn_lst,
-            "hazard",
-            da_name,
-            idx,
-            "NetCDF variable",
-        )
-        kwargs.update(variables=da_var)
+    # if da_suffix == ".nc":
+    #     if var is None:
+    #         raise ValueError(
+    #             "The 'var' parameter is required when reading NetCDF data."
+    #         )
+    #     # retrieve variable name from parameter lists
+    #     da_var = get_param(
+    #         params["var_lst"],
+    #         map_fn_lst,
+    #         "hazard",
+    #         da_name,
+    #         idx,
+    #         "NetCDF variable",
+    #     )
+    #     kwargs.update(variables=da_var)
 
     return da_map_fn, da_name, da_type
 
@@ -247,7 +253,7 @@ def check_maps_metadata(
     da_name: str,
     idx: int,
 ):
-    """Check projection, null data and grids of a hazard map
+    """Check projection, null data and grids of a hazard map.
 
     Parameters
     ----------
@@ -271,7 +277,6 @@ def check_maps_metadata(
     ValueError
         Error in case the hazard maps should have identical grids.
     """
-
     map_fn_lst = params["map_fn_lst"]
     crs = params["crs"]
     nodata = params["nodata"]
