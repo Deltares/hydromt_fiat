@@ -1613,9 +1613,6 @@ class FiatModel(GridModel):
         if self.maps:
             self.write_maps(fn="hazard/{name}.nc", gdal_compliant=True)
         if self.grid:
-            dvars = self.grid.data_vars
-            encoding = {k: {"zlib": True} for k in dvars}
-            kwargs = {"encoding": encoding}
             self.write_grid(fn="hazard/risk_map.nc", gdal_compliant=True)
         # Use a custom write_geoms to handle the exposure geoms as an exception
         self.write_geoms()
