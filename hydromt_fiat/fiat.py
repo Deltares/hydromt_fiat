@@ -1722,7 +1722,7 @@ class FiatModel(GridModel):
             # Exposure
             elif name == "exposure":
                 if self.output_single_file:
-                    break
+                    continue
                 # The default location and save settings of the exposure data
                 fn = "exposure/exposure.csv"
                 kwargs = {"index": False}
