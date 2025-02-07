@@ -275,13 +275,16 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
-    def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], unit: str) -> None:
+    def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
 
         Parameters
         ----------
             csv_fn : str
                 The full path to the folder which holds the single vulnerability curves.
+            vulnerability_identifiers_and_linking_fn : Union[str, Path]
+                The (relative) path to the table that links the vulnerability functions and
+                exposure categories.
             unit : str
                 The unit of the water depth column for all vulnerability functions
                 (e.g. meter).
@@ -293,6 +296,11 @@ class FiatModel(GridModel):
                 self.logger,
             )
         self.vulnerability.from_csv(csv_fn)
+        
+        # Read the vulnerability linking table
+        self.vf_ids_and_linking_df = pd.read_csv(
+            vulnerability_identifiers_and_linking_fn
+        )
 
     def setup_road_vulnerability(
         self,
@@ -349,6 +357,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
+        linking_column: str = "primary_object_type",
         damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
@@ -392,6 +401,8 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
+        linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         damage_unit: Currency, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
@@ -448,6 +459,7 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
+                max_damage_linking_column=linking_column,
                 country=country,
                 gfh_unit=gfh_unit,
                 ground_elevation=ground_elevation,
@@ -476,7 +488,7 @@ class FiatModel(GridModel):
                 "the 'setup_exposure_buildings' function. Error message: {e}"
             )
         self.exposure.link_exposure_vulnerability(
-            self.vf_ids_and_linking_df, damage_types
+            self.vf_ids_and_linking_df, damage_types, linking_column
         )
 
         # Set building footprints
