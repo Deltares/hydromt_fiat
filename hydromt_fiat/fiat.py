@@ -1670,30 +1670,37 @@ class FiatModel(GridModel):
 
     def write_geoms(self):
         """_summary_."""
-        if self.exposure and "exposure" in self._tables:
-            fn = "exposure/{name}.gpkg"
-            if self.output_single_file :
-                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
-                name = "exposure.gpkg"
-                _fn = os.path.join(self.root, "exposure" , name)
-                gdf.to_file(os.path.join(self.root, _fn))
-            else:
-                for i, (geom, name) in enumerate(
-                    zip(self.exposure.exposure_geoms, self.exposure.geom_names)
-                ):
-                    _fn = os.path.join(self.root, fn.format(name=name))
-                    if not os.path.isdir(os.path.dirname(_fn)):
-                        os.makedirs(os.path.dirname(_fn))
+        if not self.exposure or "exposure" not in self._tables:
+            return
+        fn = "exposure/{name}"
+        if self.output_single_file :
+            gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+            name = "exposure.fgb"
+            _fn = os.path.join(self.root, "exposure" , name)
+            gdf.to_file(os.path.join(self.root, _fn))
+            self.set_config(
+                    "exposure.geom.file1",
+                    fn.format(name=name),
+                )
+            del self._config["exposure"]["csv"]
+        else:
+            for i, (geom, name) in enumerate(
+                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+            ):
+                name = f"{name}.gpkg"
+                _fn = os.path.join(self.root, fn.format(name=name))
+                if not os.path.isdir(os.path.dirname(_fn)):
+                    os.makedirs(os.path.dirname(_fn))
 
-                    # This whole ordeal is terrible,
-                    # but it needs a refactor that is too much to fix this properly
-                    self.set_config(
-                        f"exposure.geom.file{str(i+1)}",
-                        fn.format(name=name),
-                    )
-                    geom.to_file(_fn)
-            if self.geoms:
-                GridModel.write_geoms(self)
+                # This whole ordeal is terrible,
+                # but it needs a refactor that is too much to fix this properly
+                self.set_config(
+                    f"exposure.geom.file{str(i+1)}",
+                    fn.format(name=name),
+                )
+                geom.to_file(_fn)
+        if self.geoms:
+            GridModel.write_geoms(self)
             
 
     def write_tables(self) -> None:

@@ -1,0 +1,29 @@
+[output]
+path = "output"
+
+[output.csv]
+name = "output.csv"
+
+[output.geom]
+name1 = "spatial.gpkg"
+
+[vulnerability]
+file = "vulnerability/vulnerability_curves.csv"
+unit = "meters"
+
+[exposure]
+damage_unit = "$"
+
+[exposure.geom]
+crs = "EPSG:4326"
+unit = "meters"
+file1 = "exposure/exposure.gpkg"
+
+[exposure.csv]
+file = "exposure/exposure.csv"
+
+[hazard]
+file = "hazard/event_map.nc"
+crs = "EPSG:4326"
+elevation_reference = "dem"
+risk = false
