@@ -135,6 +135,7 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+        output_single_file: bool = False
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -146,14 +147,19 @@ class FiatModel(GridModel):
             The name of the output csv file, by default "output.csv".
         output_vector_name : Union[str, List[str]], optional
             The name of the output vector file, by default "spatial.gpkg".
+        output_single_file: bool
+            If True the exposure data is written in a single spatial file. Default set to False
         """
+        self.output_single_file = False
         self.set_config("output.path", output_dir)
         self.set_config("output.csv.name", output_csv_name)
         if isinstance(output_vector_name, str):
             output_vector_name = [output_vector_name]
         for i, name in enumerate(output_vector_name):
             self.set_config(f"output.geom.name{str(i+1)}", name)
-
+        if output_single_file:
+            self.output_single_file = True
+            
     def setup_region(
         self,
         region,
@@ -1667,22 +1673,29 @@ class FiatModel(GridModel):
         """_summary_."""
         if self.exposure and "exposure" in self._tables:
             fn = "exposure/{name}.gpkg"
-            for i, (geom, name) in enumerate(
-                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
-            ):
-                _fn = os.path.join(self.root, fn.format(name=name))
-                if not os.path.isdir(os.path.dirname(_fn)):
-                    os.makedirs(os.path.dirname(_fn))
+            if self.output_single_file :
+                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                name = "exposure.gpkg"
+                _fn = os.path.join(self.root, "exposure" , name)
+                gdf.to_file(os.path.join(self.root, _fn))
+            else:
+                for i, (geom, name) in enumerate(
+                    zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+                ):
+                    _fn = os.path.join(self.root, fn.format(name=name))
+                    if not os.path.isdir(os.path.dirname(_fn)):
+                        os.makedirs(os.path.dirname(_fn))
 
-                # This whole ordeal is terrible,
-                # but it needs a refactor that is too much to fix this properly
-                self.set_config(
-                    f"exposure.geom.file{str(i+1)}",
-                    fn.format(name=name),
-                )
-                geom.to_file(_fn)
-        if self.geoms:
-            GridModel.write_geoms(self)
+                    # This whole ordeal is terrible,
+                    # but it needs a refactor that is too much to fix this properly
+                    self.set_config(
+                        f"exposure.geom.file{str(i+1)}",
+                        fn.format(name=name),
+                    )
+                    geom.to_file(_fn)
+            if self.geoms:
+                GridModel.write_geoms(self)
+            
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
@@ -1708,6 +1721,8 @@ class FiatModel(GridModel):
                         writer.writerow([metadata])
             # Exposure
             elif name == "exposure":
+                if self.output_single_file:
+                    continue
                 # The default location and save settings of the exposure data
                 fn = "exposure/exposure.csv"
                 kwargs = {"index": False}
