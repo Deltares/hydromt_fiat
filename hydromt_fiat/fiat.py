@@ -1669,7 +1669,7 @@ class FiatModel(GridModel):
 
     def write_geoms(self, output_single_file: bool = False):
         """_summary_."""
-        if not hasattr(self, 'output_single_file'):
+        if not hasattr(self, "output_single_file"):
             self.output_single_file = False
         if self.exposure and "exposure" in self._tables:
             fn = "exposure/{name}.gpkg"
