@@ -426,7 +426,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyproj.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">full_from_transform</span>
@@ -555,6 +554,7 @@
         <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output&quot;</span><span class="p">,</span>
         <span class="n">output_csv_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;output.csv&quot;</span><span class="p">,</span>
         <span class="n">output_vector_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="s2">&quot;spatial.gpkg&quot;</span><span class="p">,</span>
+        <span class="n">output_single_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Delft-FIAT output folder and files.</span>
 
@@ -566,13 +566,18 @@
 <span class="sd">            The name of the output csv file, by default &quot;output.csv&quot;.</span>
 <span class="sd">        output_vector_name : Union[str, List[str]], optional</span>
 <span class="sd">            The name of the output vector file, by default &quot;spatial.gpkg&quot;.</span>
+<span class="sd">        output_single_file: bool</span>
+<span class="sd">            If True the exposure data is written in a single spatial file. Default set to False</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_single_file</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output.path&quot;</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;output.csv.name&quot;</span><span class="p">,</span> <span class="n">output_csv_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_vector_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">output_vector_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">output_vector_name</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">output_vector_name</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;output.geom.name</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;output.geom.name</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_single_file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_single_file</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">setup_region</span><span class="p">(</span>
@@ -856,7 +861,7 @@
                 <span class="n">ground_floor_height</span><span class="p">,</span>
                 <span class="n">extraction_method</span><span class="p">,</span>
                 <span class="n">ground_elevation</span><span class="o">=</span><span class="n">ground_elevation</span><span class="p">,</span>
-                <span class="n">eur_to_us_dollar</span> <span class="o">=</span> <span class="n">eur_to_us_dollar</span>
+                <span class="n">eur_to_us_dollar</span><span class="o">=</span><span class="n">eur_to_us_dollar</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
@@ -879,7 +884,7 @@
                 <span class="n">keep_unclassified</span><span class="o">=</span><span class="n">keep_unclassified</span><span class="p">,</span>
                 <span class="n">damage_translation_fn</span><span class="o">=</span><span class="n">damage_translation_fn</span><span class="p">,</span>
                 <span class="n">gfh_attribute_name</span><span class="o">=</span><span class="n">gfh_attribute_name</span><span class="p">,</span>
-                <span class="n">eur_to_us_dollar</span> <span class="o">=</span> <span class="n">eur_to_us_dollar</span><span class="p">,</span>
+                <span class="n">eur_to_us_dollar</span><span class="o">=</span><span class="n">eur_to_us_dollar</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">asset_locations</span> <span class="o">!=</span> <span class="n">occupancy_type</span><span class="p">)</span> <span class="ow">and</span> <span class="n">occupancy_object_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1030,7 +1035,7 @@
         <span class="n">attribute_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">method_damages</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
         <span class="n">max_dist</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-        <span class="n">eur_to_us_dollar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">eur_to_us_dollar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">setup_max_potential_damage</span><span class="p">(</span>
@@ -1040,7 +1045,7 @@
                 <span class="n">attribute_name</span><span class="o">=</span><span class="n">attribute_name</span><span class="p">,</span>
                 <span class="n">method_damages</span><span class="o">=</span><span class="n">method_damages</span><span class="p">,</span>
                 <span class="n">max_dist</span><span class="o">=</span><span class="n">max_dist</span><span class="p">,</span>
-                <span class="n">eur_to_us_dollar</span> <span class="o">=</span> <span class="n">eur_to_us_dollar</span>
+                <span class="n">eur_to_us_dollar</span><span class="o">=</span><span class="n">eur_to_us_dollar</span><span class="p">,</span>
             <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update_ground_elevation</span><span class="p">(</span>
@@ -1136,9 +1141,7 @@
                     <span class="s2">&quot;The hazard map provided should be a path like object or an DataArray&quot;</span>
                 <span class="p">)</span>
             <span class="c1"># Convert to units of the exposure data if required</span>
-            <span class="k">if</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span>
-            <span class="p">):</span>  <span class="c1"># change to be sure that the unit information is available from the exposure dataset</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="p">:</span>  <span class="c1"># change to be sure that the unit information is available from the exposure dataset</span>
                 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">da</span><span class="p">,</span> <span class="s2">&quot;units&quot;</span><span class="p">):</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">unit</span> <span class="o">!=</span> <span class="n">da</span><span class="o">.</span><span class="n">units</span><span class="p">:</span>
                         <span class="n">da</span> <span class="o">=</span> <span class="n">da</span> <span class="o">*</span> <span class="n">unit_conversion_factor</span>
@@ -1880,7 +1883,8 @@
 
         <span class="c1"># Create Aggregation Label Value</span>
         <span class="n">default_aggregation_gdf</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="sa">f</span><span class="s2">&quot;Aggr:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">default_aggregation_gdf</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="sa">f</span><span class="s2">&quot;Aggr:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">default_aggregation_gdf</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">]</span>
         <span class="n">default_aggregation_gdf</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
             <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;default_aggregation&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
@@ -2110,26 +2114,34 @@
 
 <div class="viewcode-block" id="FiatModel.write_geoms">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_single_file</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;_summary_.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output_single_file&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_single_file</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span> <span class="ow">and</span> <span class="s2">&quot;exposure&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tables</span><span class="p">:</span>
             <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;exposure/</span><span class="si">{name}</span><span class="s2">.gpkg&quot;</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-                <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">geom_names</span><span class="p">)</span>
-            <span class="p">):</span>
-                <span class="n">_fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">)):</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">output_single_file</span><span class="p">:</span>
+                <span class="n">gdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">get_full_gdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_db</span><span class="p">)</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;exposure.gpkg&quot;</span>
+                <span class="n">_fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="s2">&quot;exposure&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">_fn</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                    <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposure</span><span class="o">.</span><span class="n">geom_names</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">_fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">)):</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_fn</span><span class="p">))</span>
 
-                <span class="c1"># This whole ordeal is terrible,</span>
-                <span class="c1"># but it needs a refactor that is too much to fix this properly</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
-                <span class="p">)</span>
-                <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
-            <span class="n">GridModel</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+                    <span class="c1"># This whole ordeal is terrible,</span>
+                    <span class="c1"># but it needs a refactor that is too much to fix this properly</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">fn</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">geom</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">_fn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
+                <span class="n">GridModel</span><span class="o">.</span><span class="n">write_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">write_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -2156,6 +2168,8 @@
                         <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">([</span><span class="n">metadata</span><span class="p">])</span>
             <span class="c1"># Exposure</span>
             <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;exposure&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_single_file</span><span class="p">:</span>
+                    <span class="k">continue</span>
                 <span class="c1"># The default location and save settings of the exposure data</span>
                 <span class="n">fn</span> <span class="o">=</span> <span class="s2">&quot;exposure/exposure.csv&quot;</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
