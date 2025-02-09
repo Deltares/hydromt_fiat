@@ -85,7 +85,7 @@ def preprocess_jrc_damage_values(
                 + ((jrc_base_value * cc_vs_dv * (1 - up) * mu) * mdci)
             ),
         }
-    
+
     if eur_to_us_dollar:
         for damage_types, occupancy_types in damage_values.items():
             for occupancy_type in occupancy_types:
@@ -133,6 +133,7 @@ def preprocess_hazus_damage_values(hazus_table: pd.DataFrame) -> dict:
 
     return damage_values
 
+
 def preprocess_damage_values(
     base_damage_values: pd.DataFrame,
     damage_translation_fn: Union[Path, str] = None,
@@ -145,7 +146,7 @@ def preprocess_damage_values(
     base_damage_values : pd.DataFrame
         The JRC damage values data.
     damage_translation_fn : Union[Path, str]
-        The path to a file that relates the max. potential damage values with the exposure primary_object_type. 
+        The path to a file that relates the max. potential damage values with the exposure primary_object_type.
 
     Returns
     -------
@@ -155,7 +156,6 @@ def preprocess_damage_values(
     # Create an empty dictionary that will be used to store the damage values per
     # category
     damage_values = {}
-    
 
     if damage_types is None:
         # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve

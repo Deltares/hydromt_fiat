@@ -75,4 +75,6 @@ def test_ground_elevation(case):
         valid_values = (
             fm.exposure.exposure_db["ground_elevtn"] >= min_value_excluding_nodata
         ) & (fm.exposure.exposure_db["ground_elevtn"] <= max_value_excluding_nodata)
-    assert valid_values.all(), "The ground_elevtn is beyond the maximun and minimun values of the provided DEM"
+    assert (
+        valid_values.all()
+    ), "The ground_elevtn is beyond the maximun and minimun values of the provided DEM"
