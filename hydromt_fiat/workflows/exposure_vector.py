@@ -33,7 +33,6 @@ from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
     get_area,
-    sjoin_largest_area,
     get_crs_str_from_gdf,
     join_spatial_data,
     ground_elevation_from_dem,
@@ -595,7 +594,6 @@ class ExposureVector(Exposure):
             gdf.drop(columns=["index_right"], inplace=True)
 
             if occupancy_source == "OSM":
-
                 ## Landuse
                 # Replace values with landuse if applicable for Primary and Secondary Object Type
                 occupancy_landuse.rename(
@@ -1753,9 +1751,7 @@ class ExposureVector(Exposure):
             linking_per_damage_type = exposure_linking_table.loc[
                 exposure_linking_table["Damage Type"] == damage_type, :
             ]
-            assert (
-                not linking_per_damage_type.empty
-            ), f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
+            assert not linking_per_damage_type.empty, f"Damage type {damage_type} not found in the exposure-vulnerability linking table"
 
             # Create a dictionary that links the exposure data to the vulnerability data
             linking_dict = dict(

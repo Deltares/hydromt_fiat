@@ -16,7 +16,6 @@ from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
 from shapely.geometry import box
 import shutil
-from shapely.geometry import box
 import tempfile
 
 from hydromt.raster import full_from_transform
@@ -135,7 +134,7 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
-        output_single_file: bool = False
+        output_single_file: bool = False,
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -159,7 +158,7 @@ class FiatModel(GridModel):
             self.set_config(f"output.geom.name{str(i+1)}", name)
         if output_single_file:
             self.output_single_file = True
-            
+
     def setup_region(
         self,
         region,
@@ -433,7 +432,7 @@ class FiatModel(GridModel):
                 ground_floor_height,
                 extraction_method,
                 ground_elevation=ground_elevation,
-                eur_to_us_dollar = eur_to_us_dollar
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
         else:
@@ -456,7 +455,7 @@ class FiatModel(GridModel):
                 keep_unclassified=keep_unclassified,
                 damage_translation_fn=damage_translation_fn,
                 gfh_attribute_name=gfh_attribute_name,
-                eur_to_us_dollar = eur_to_us_dollar,
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -606,7 +605,7 @@ class FiatModel(GridModel):
         attribute_name: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
-        eur_to_us_dollar: bool = False
+        eur_to_us_dollar: bool = False,
     ):
         if self.exposure:
             self.exposure.setup_max_potential_damage(
@@ -616,7 +615,7 @@ class FiatModel(GridModel):
                 attribute_name=attribute_name,
                 method_damages=method_damages,
                 max_dist=max_dist,
-                eur_to_us_dollar = eur_to_us_dollar
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
     def update_ground_elevation(
@@ -710,9 +709,7 @@ class FiatModel(GridModel):
                     "The hazard map provided should be a path like object or an DataArray"
                 )
             # Convert to units of the exposure data if required
-            if (
-                self.exposure
-            ):  # change to be sure that the unit information is available from the exposure dataset
+            if self.exposure:  # change to be sure that the unit information is available from the exposure dataset
                 if hasattr(da, "units"):
                     if self.exposure.unit != da.units:
                         da = da * unit_conversion_factor
@@ -1450,7 +1447,8 @@ class FiatModel(GridModel):
 
         # Create Aggregation Label Value
         default_aggregation_gdf["value"] = [
-        f"Aggr:{i}" for i in range(1, len(default_aggregation_gdf["geometry"]) + 1)]
+            f"Aggr:{i}" for i in range(1, len(default_aggregation_gdf["geometry"]) + 1)
+        ]
         default_aggregation_gdf.rename(
             columns={"value": "default_aggregation"}, inplace=True
         )
@@ -1669,14 +1667,14 @@ class FiatModel(GridModel):
             Path(folder).joinpath("building_footprints.geojson")
         )
 
-    def write_geoms(self):
+    def write_geoms(self, output_single_file: bool = False):
         """_summary_."""
         if self.exposure and "exposure" in self._tables:
             fn = "exposure/{name}.gpkg"
-            if self.output_single_file :
+            if output_single_file:
                 gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
                 name = "exposure.gpkg"
-                _fn = os.path.join(self.root, "exposure" , name)
+                _fn = os.path.join(self.root, "exposure", name)
                 gdf.to_file(os.path.join(self.root, _fn))
             else:
                 for i, (geom, name) in enumerate(
@@ -1695,7 +1693,6 @@ class FiatModel(GridModel):
                     geom.to_file(_fn)
             if self.geoms:
                 GridModel.write_geoms(self)
-            
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:

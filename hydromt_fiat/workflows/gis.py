@@ -159,13 +159,15 @@ def intersect_points_polygons(left_gdf, right_gdf, attribute_name) -> gpd.GeoDat
 
     return gdf_merged
 
+
 def process_multipolygon(gdf):
-    if 'MultiPolygon' in list(gdf.geom_type.unique()):
+    if "MultiPolygon" in list(gdf.geom_type.unique()):
         for index, row in gdf.iterrows():
-            if row['geometry'].geom_type == "MultiPolygon":
-                largest_polygon = max(row['geometry'].geoms, key=lambda a: a.area)
-                gdf.at[index, 'geometry'] = largest_polygon
+            if row["geometry"].geom_type == "MultiPolygon":
+                largest_polygon = max(row["geometry"].geoms, key=lambda a: a.area)
+                gdf.at[index, "geometry"] = largest_polygon
         assert len(gdf.geom_type.unique()) == 1
+
 
 def join_spatial_data(
     left_gdf: gpd.GeoDataFrame,
@@ -296,7 +298,7 @@ def ground_elevation_from_dem(
     zonal_means = np.full(len(shapes), np.nan)
     zonal_means[[zonal_out["zone"].values - 1]] = zonal_out["mean"].values
 
-    # Fill nan values with neighboring values. 
+    # Fill nan values with neighboring values.
     # # Add ground_elevtn column and get rid of nans in the appropriate way
     exposure_db["ground_elevtn"] = zonal_means
     exposure_db["ground_elevtn"].bfill(inplace=True)
