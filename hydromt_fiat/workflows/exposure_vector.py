@@ -350,7 +350,7 @@ class ExposureVector(Exposure):
         extraction_method: str,
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
-        max_damage_linking_column :str = "primary_object_type",
+        linking_column :str = "primary_object_type",
         country: Union[str, None] = None,
         gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
@@ -390,7 +390,7 @@ class ExposureVector(Exposure):
         damage_types : List[str], None
             The list of damage types to be used. If None, the default damage types
             will be used.
-        max_damage_linking_column :str = "primary_object_type"
+        linking_column :str = "primary_object_type"
             Defines whether the damage curve should be assigned to the secondary or primary object type.
         country : str, None
             The country to be used to set the damage function. If None, the default
@@ -440,7 +440,7 @@ class ExposureVector(Exposure):
             country=country,
             damage_translation_fn=damage_translation_fn,
             eur_to_us_dollar=eur_to_us_dollar,
-            max_damage_linking_column= "primary_object_type"
+            linking_column= linking_column
         )
         if (
             any(
@@ -980,7 +980,7 @@ class ExposureVector(Exposure):
         country: Union[str, None] = None,
         damage_translation_fn: Union[str, Path] = None,
         eur_to_us_dollar: bool = False,
-        max_damage_linking_column = None, 
+        linking_column = None, 
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -1002,7 +1002,7 @@ class ExposureVector(Exposure):
             The path to the translation function that can be used to relate user damage curves with user damages.
         eur_to_us_dollar: bool
             Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
-        max_damage_linking_column:str = "primary_object_type"
+        linking_column:str = "primary_object_type"
             Defines whether the damage curve should be assigned to the secondary or primary object type.
         """
         if damage_types is None:
@@ -1131,21 +1131,14 @@ class ExposureVector(Exposure):
                 )
 
                 # Calculate the area of each object
-                gdf = self.get_full_gdf(self.exposure_db)
-                if "secondary_object_type" in gdf.columns:
-                    gdf = gdf[
-                    ["primary_object_type","secondary_object_type", "geometry"]
-                    ]
-                else:
-                    gdf = self.get_full_gdf(self.exposure_db)[
-                        ["primary_object_type", "geometry"]
-                    ]
+                gdf = self.get_full_gdf(self.exposure_db)[
+                    [linking_column, "geometry"]
+                ]
                 gdf = get_area(gdf)
-                gdf = gdf.dropna(subset="primary_object_type")
 
                 # Set the damage values to the exposure data
                 self.set_max_potential_damage_columns(
-                    damage_types, damage_values, gdf, max_potential_damage, max_damage_linking_column
+                    damage_types, damage_values, gdf, max_potential_damage, linking_column
                 )
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
@@ -1870,7 +1863,7 @@ class ExposureVector(Exposure):
         return [c for c in self.exposure_db.columns if "max_damage_" in c]
 
     def set_max_potential_damage_columns(
-        self, damage_types, damage_values, gdf, max_potential_damage, max_damage_linking_column = "primary_object_type"
+        self, damage_types, damage_values, gdf, max_potential_damage, linking_column = "primary_object_type"
     ) -> None:
         """Calculate and set the maximum potential damage columns based on the provided damage types and values.
 
@@ -1884,7 +1877,7 @@ class ExposureVector(Exposure):
             GeoDataFrame containing the primary_object_type and area information.
         max_potential_damage : str
             The maximum potential damage value.
-        max_damage_linking_column :str = "primary_object_type"
+        linking_column :str = "primary_object_type"
             Defines whether the damage curve should be assigned to the secondary or primary object type.
         Returns
         -------
@@ -1896,7 +1889,7 @@ class ExposureVector(Exposure):
                 self.exposure_db[f"max_damage_{damage_type}"] = [
                     damage_values[building_type][damage_type.lower()] * square_meters
                     for building_type, square_meters in zip(
-                        gdf[max_damage_linking_column], gdf["area"]
+                        gdf[linking_column], gdf["area"]
                     )
                 ]
             except KeyError as e:

@@ -295,13 +295,26 @@ class FiatModel(GridModel):
                 unit,
                 self.logger,
             )
-        self.vulnerability.from_csv(csv_fn)
-        
-        # Read the vulnerability linking table
-        self.vf_ids_and_linking_df = pd.read_csv(
+        # Read and set the vulnerability linking table
+        vulnerability_linking = pd.read_csv(
             vulnerability_identifiers_and_linking_fn
         )
+        self.vf_ids_and_linking_df = vulnerability_linking
+            
+        vf_names = [
+            name + "_" + type
+            for name, type in zip(
+                vulnerability_linking["FIAT Damage Function Name"].values,
+                vulnerability_linking["Damage Type"].values,
+            )
+        ]
+        self.vulnerability.from_csv(csv_fn, vf_names)
+        
+        # Update config
+        self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
+        self.set_config("vulnerability.unit", unit)
 
+        
     def setup_road_vulnerability(
         self,
         vertical_unit: str,
@@ -459,7 +472,7 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
-                max_damage_linking_column=linking_column,
+                linking_column=linking_column,
                 country=country,
                 gfh_unit=gfh_unit,
                 ground_elevation=ground_elevation,
