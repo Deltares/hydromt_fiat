@@ -350,6 +350,7 @@ class ExposureVector(Exposure):
         extraction_method: str,
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
+        max_damage_linking_column :str = "primary_object_type",
         country: Union[str, None] = None,
         gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
@@ -389,6 +390,8 @@ class ExposureVector(Exposure):
         damage_types : List[str], None
             The list of damage types to be used. If None, the default damage types
             will be used.
+        max_damage_linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         country : str, None
             The country to be used to set the damage function. If None, the default
             damage function will be used.
@@ -437,6 +440,7 @@ class ExposureVector(Exposure):
             country=country,
             damage_translation_fn=damage_translation_fn,
             eur_to_us_dollar=eur_to_us_dollar,
+            max_damage_linking_column= "primary_object_type"
         )
         if (
             any(
@@ -564,7 +568,10 @@ class ExposureVector(Exposure):
                 occupancy_building.rename(
                     columns={occupancy_attr: type_add}, inplace=True
                 )
-            occupancy_types = [type_add]
+            if "primary_object_type" and "secondary_object_type" in occupancy_building.columns:
+                occupancy_types = ["primary_object_type", "secondary_object_type"]
+            else:
+                occupancy_types = [type_add]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_building.crs != self.crs:
@@ -973,6 +980,7 @@ class ExposureVector(Exposure):
         country: Union[str, None] = None,
         damage_translation_fn: Union[str, Path] = None,
         eur_to_us_dollar: bool = False,
+        max_damage_linking_column = None, 
     ) -> None:
         """Setup the max potential damage column of the exposure data in various ways.
 
@@ -994,6 +1002,8 @@ class ExposureVector(Exposure):
             The path to the translation function that can be used to relate user damage curves with user damages.
         eur_to_us_dollar: bool
             Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
+        max_damage_linking_column:str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         """
         if damage_types is None:
             damage_types = ["total"]
@@ -1102,7 +1112,7 @@ class ExposureVector(Exposure):
 
             # Set the damage values to the exposure data
             self.set_max_potential_damage_columns(
-                damage_types, damage_values, gdf, max_potential_damage
+                damage_types, damage_values, gdf, max_potential_damage,
             )
 
         elif isinstance(max_potential_damage, str) or isinstance(
@@ -1117,19 +1127,25 @@ class ExposureVector(Exposure):
             ):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
                 damage_values = preprocess_damage_values(
-                    damage_source, damage_translation_fn
+                    damage_source, damage_translation_fn, damage_types
                 )
 
                 # Calculate the area of each object
-                gdf = self.get_full_gdf(self.exposure_db)[
-                    ["primary_object_type", "geometry"]
-                ]
+                gdf = self.get_full_gdf(self.exposure_db)
+                if "secondary_object_type" in gdf.columns:
+                    gdf = gdf[
+                    ["primary_object_type","secondary_object_type", "geometry"]
+                    ]
+                else:
+                    gdf = self.get_full_gdf(self.exposure_db)[
+                        ["primary_object_type", "geometry"]
+                    ]
                 gdf = get_area(gdf)
                 gdf = gdf.dropna(subset="primary_object_type")
 
                 # Set the damage values to the exposure data
                 self.set_max_potential_damage_columns(
-                    damage_types, damage_values, gdf, max_potential_damage
+                    damage_types, damage_values, gdf, max_potential_damage, max_damage_linking_column
                 )
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
@@ -1740,6 +1756,7 @@ class ExposureVector(Exposure):
         self,
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["structure", "content"],
+        linking_column: str = None
     ):
         if "Damage function name" not in exposure_linking_table.columns:
             exposure_linking_table["Damage function name"] = [
@@ -1764,65 +1781,66 @@ class ExposureVector(Exposure):
                     linking_per_damage_type["Damage function name"],
                 )
             )
-            unique_linking_types = set(linking_dict.keys())
+            if linking_column is None:
+                unique_linking_types = set(linking_dict.keys())
 
-            # Find the column to link the exposure data to the vulnerability data
-            unique_types_primary = set()
+                # Find the column to link the exposure data to the vulnerability data
+                unique_types_primary = set()
 
-            # Set the variables below to large numbers to ensure when there is no
-            # primary_object_type or secondary_object_type column in the exposure data
-            # that the available column is used to link the exposure data to the
-            # vulnerability data.
-            len_diff_primary_linking_types = 100000
-            len_diff_secondary_linking_types = 100000
-            if "primary_object_type" in self.exposure_db.columns:
-                unique_types_primary = set(self.get_primary_object_type())
-                diff_primary_linking_types = unique_types_primary - unique_linking_types
-                len_diff_primary_linking_types = len(diff_primary_linking_types)
+                # Set the variables below to large numbers to ensure when there is no
+                # primary_object_type or secondary_object_type column in the exposure data
+                # that the available column is used to link the exposure data to the
+                # vulnerability data.
+                len_diff_primary_linking_types = 100000
+                len_diff_secondary_linking_types = 100000
+                if "primary_object_type" in self.exposure_db.columns:
+                    unique_types_primary = set(self.get_primary_object_type())
+                    diff_primary_linking_types = unique_types_primary - unique_linking_types
+                    len_diff_primary_linking_types = len(diff_primary_linking_types)
 
-            unique_types_secondary = set()
-            if "secondary_object_type" in self.exposure_db.columns:
-                unique_types_secondary = set(self.get_secondary_object_type())
-                diff_secondary_linking_types = (
-                    unique_types_secondary - unique_linking_types
-                )
-                len_diff_secondary_linking_types = len(diff_secondary_linking_types)
+                unique_types_secondary = set()
+                if "secondary_object_type" in self.exposure_db.columns:
+                    unique_types_secondary = set(self.get_secondary_object_type())
+                    diff_secondary_linking_types = (
+                        unique_types_secondary - unique_linking_types
+                    )
+                    len_diff_secondary_linking_types = len(diff_secondary_linking_types)
 
-            # Check if the linking column is the primary_object_type or the Secondary
-            # Object Type
-            if (len(unique_types_primary) > 0) and (
-                unique_types_primary.issubset(unique_linking_types)
-            ):
-                linking_column = "primary_object_type"
-            elif (len(unique_types_secondary) > 0) and (
-                unique_types_secondary.issubset(unique_linking_types)
-            ):
-                linking_column = "secondary_object_type"
-            else:
-                if (
-                    len_diff_primary_linking_types < len_diff_secondary_linking_types
-                ) and (len(unique_types_primary) > 0):
+                # Check if the linking column is the primary_object_type or the Secondary
+                # Object Type
+                if (len(unique_types_primary) > 0) and (
+                    unique_types_primary.issubset(unique_linking_types)
+                ):
                     linking_column = "primary_object_type"
-                    self.logger.warning(
-                        "There are "
-                        f"{str(len_diff_primary_linking_types)} primary"
-                        " object types that are not in the linking "
-                        "table and will not have a damage function "
-                        f"assigned for {damage_type} damages: "
-                        f"{str(list(diff_primary_linking_types))}"
-                    )
-                elif (
-                    len_diff_secondary_linking_types < len_diff_primary_linking_types
-                ) and (len(unique_types_secondary) > 0):
+                elif (len(unique_types_secondary) > 0) and (
+                    unique_types_secondary.issubset(unique_linking_types)
+                ):
                     linking_column = "secondary_object_type"
-                    self.logger.warning(
-                        "There are "
-                        f"{str(len(diff_secondary_linking_types))} "
-                        "secondary_object_types that are not in the "
-                        "linking table and will not have a damage "
-                        f"function assigned for {damage_type} damages: "
-                        f"{str(list(diff_secondary_linking_types))}"
-                    )
+                else:
+                    if (
+                        len_diff_primary_linking_types < len_diff_secondary_linking_types
+                    ) and (len(unique_types_primary) > 0):
+                        linking_column = "primary_object_type"
+                        self.logger.warning(
+                            "There are "
+                            f"{str(len_diff_primary_linking_types)} primary"
+                            " object types that are not in the linking "
+                            "table and will not have a damage function "
+                            f"assigned for {damage_type} damages: "
+                            f"{str(list(diff_primary_linking_types))}"
+                        )
+                    elif (
+                        len_diff_secondary_linking_types < len_diff_primary_linking_types
+                    ) and (len(unique_types_secondary) > 0):
+                        linking_column = "secondary_object_type"
+                        self.logger.warning(
+                            "There are "
+                            f"{str(len(diff_secondary_linking_types))} "
+                            "secondary_object_types that are not in the "
+                            "linking table and will not have a damage "
+                            f"function assigned for {damage_type} damages: "
+                            f"{str(list(diff_secondary_linking_types))}"
+                        )
 
             self.exposure_db[f"fn_damage_{damage_type}"] = self.exposure_db[
                 linking_column
@@ -1852,7 +1870,7 @@ class ExposureVector(Exposure):
         return [c for c in self.exposure_db.columns if "max_damage_" in c]
 
     def set_max_potential_damage_columns(
-        self, damage_types, damage_values, gdf, max_potential_damage
+        self, damage_types, damage_values, gdf, max_potential_damage, max_damage_linking_column = "primary_object_type"
     ) -> None:
         """Calculate and set the maximum potential damage columns based on the provided damage types and values.
 
@@ -1866,6 +1884,8 @@ class ExposureVector(Exposure):
             GeoDataFrame containing the primary_object_type and area information.
         max_potential_damage : str
             The maximum potential damage value.
+        max_damage_linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         Returns
         -------
         None
@@ -1876,7 +1896,7 @@ class ExposureVector(Exposure):
                 self.exposure_db[f"max_damage_{damage_type}"] = [
                     damage_values[building_type][damage_type.lower()] * square_meters
                     for building_type, square_meters in zip(
-                        gdf["primary_object_type"], gdf["area"]
+                        gdf[max_damage_linking_column], gdf["area"]
                     )
                 ]
             except KeyError as e:
