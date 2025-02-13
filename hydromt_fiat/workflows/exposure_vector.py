@@ -1634,9 +1634,9 @@ class ExposureVector(Exposure):
 
             dict_new_objects_data = {
                 "object_id": [new_id],
-                "object_name": ["New development area: " + str(new_id)],
-                "primary_object_type": ["New development area"],
-                "secondary_object_type": ["New development area"],
+                "object_name": ["new_development_area:" + str(new_id)],
+                "primary_object_type": ["new_development_area:"],
+                "secondary_object_type": ["new_development_area:"],
                 "extract_method": ["area"],
                 "ground_flht": [0],
                 "ground_elevtn": [0],

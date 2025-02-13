@@ -159,13 +159,13 @@ def spatial_joins(
 
         # Create new object_ids
         init_Object_ID = exposure_gdf_copy.loc[0, "object_name"]
-        init_Object_ID = int(init_Object_ID.split(": ", 1)[1])
+        init_Object_ID = int(init_Object_ID.split(":", 1)[1])
         exposure_gdf.loc[0:, "object_id"] = np.arange(
             init_Object_ID, init_Object_ID + int(len(exposure_gdf)), 1
         ).tolist()
         # Create new object_names
         exposure_gdf["object_name"] = exposure_gdf["object_id"].apply(
-            lambda x: f"New development area: {int(x)}"
+            lambda x: f"new_develpoment_area:{int(x)}"
         )
 
         # Split max potential damages into new composite areas
