@@ -1517,6 +1517,7 @@ class ExposureVector(Exposure):
         aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
+        geom_name: str = "new_development_area"
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -1706,10 +1707,6 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
-        # Update the exposure_geoms
-        self.set_geom_names("new_development_area")
-        self.set_exposure_geoms(_new_exposure_geoms)
-
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
@@ -1720,14 +1717,13 @@ class ExposureVector(Exposure):
                 label_names=label_names,
                 new_composite_area=True,
             )
-            # Update the exposure_geoms incl aggregation
-            self.set_geom_names("new_development_area_aggregated")
-            self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            _new_exposure_geoms = aggregated_objects_geoms
+            
+        # Update the exposure_geoms incl aggregation
+        self.set_geom_names(geom_name)
+        self.set_exposure_geoms(_new_exposure_geoms)
 
-            # Remove initial composite areas
-            idx = self.geom_names.index("new_development_area")
-            self.geom_names.pop(idx)
-            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
