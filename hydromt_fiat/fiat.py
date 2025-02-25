@@ -295,9 +295,13 @@ class FiatModel(GridModel):
                 self.logger,
             )
         # Read and set the vulnerability linking table
-        vulnerability_linking = pd.read_csv(
-            vulnerability_identifiers_and_linking_fn
-        )
+        if vulnerability_identifiers_and_linking_fn.endswith(".csv") or vulnerability_identifiers_and_linking_fn.endswith(
+                ".xlsx"):
+            vulnerability_linking = pd.read_csv(
+                vulnerability_identifiers_and_linking_fn
+            )
+        else:
+            vulnerability_linking = self.data_catalog.get_dataframe(vulnerability_identifiers_and_linking_fn)
         self.vf_ids_and_linking_df = vulnerability_linking
             
         vf_names = [
@@ -307,7 +311,12 @@ class FiatModel(GridModel):
                 vulnerability_linking["Damage Type"].values,
             )
         ]
-        self.vulnerability.from_csv(csv_fn, vf_names)
+        if csv_fn.endswith(".csv") or csv_fn.endswith(
+                ".xlsx"):
+            self.vulnerability.from_csv(csv_fn, vf_names)
+        else:
+            csv_fn = Path(self.data_catalog.get_source(csv_fn).path)
+            self.vulnerability.from_csv(csv_fn, vf_names)
         
         # Update config
         self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")

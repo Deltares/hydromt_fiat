@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
+import re
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.api.data_types import Units, Conversion, Currency
@@ -1118,9 +1119,11 @@ class ExposureVector(Exposure):
         ):
             if isinstance(max_potential_damage, Path):
                 max_potential_damage = str(max_potential_damage)
-
+            else:
+                 file_path = bool(re.search(r"\.[a-zA-Z0-9]+$", max_potential_damage))
+            
             # Using a csv file with a translation table to assign damages to damage curves
-            if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(
+            if file_path is False or max_potential_damage.endswith(".csv") or max_potential_damage.endswith(
                 ".xlsx"
             ):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
