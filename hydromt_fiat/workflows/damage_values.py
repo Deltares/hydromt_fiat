@@ -137,7 +137,7 @@ def preprocess_hazus_damage_values(hazus_table: pd.DataFrame) -> dict:
 def preprocess_damage_values(
     base_damage_values: pd.DataFrame,
     damage_translation_fn: Union[Path, str] = None,
-    damage_types: list = None
+    damage_types: list = ["structure", "content"],	
 ) -> dict:  
     """Preprocess the JRC damage values data.
 
@@ -147,7 +147,9 @@ def preprocess_damage_values(
         The JRC damage values data.
     damage_translation_fn : Union[Path, str]
         The path to a file that relates the max. potential damage values with the exposure primary_object_type.
-
+    damage_types : list
+        The type of damage that will be processed. Default set to structure and content.
+        
     Returns
     -------
     pd.DataFrame
@@ -157,7 +159,7 @@ def preprocess_damage_values(
     # category
     damage_values = {}
 
-    if damage_types is None:
+    if "structure" not in damage_types and "content" not in damage_types:
         # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve
         # Rename the column names to shorter names
         translation_df = pd.read_csv(damage_translation_fn, header = None, encoding='utf-8', index_col = None)
