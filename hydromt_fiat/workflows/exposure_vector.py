@@ -1111,7 +1111,7 @@ class ExposureVector(Exposure):
 
             # Set the damage values to the exposure data
             self.set_max_potential_damage_columns(
-                damage_types, damage_values, gdf, max_potential_damage,
+                damage_types, damage_values, gdf, max_potential_damage
             )
 
         elif isinstance(max_potential_damage, str) or isinstance(
