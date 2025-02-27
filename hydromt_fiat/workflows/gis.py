@@ -8,11 +8,13 @@ from xrspatial import zonal_stats
 import pandas as pd
 import numpy as np
 import xarray as xr
+import math
 from pathlib import Path
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 import pint
+from hydromt_fiat.api.data_types import Units, Conversion
 
 
 def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
@@ -46,7 +48,14 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     unit = ureg(unit).units
     model_unit = ureg(model_length_unit).units
     
-    assert unit == model_unit, f"The length unit of your model and the projection mismatch: {unit} != {model_unit}. Update the model projection or length unit in the configuration file. "
+    if unit != model_unit:
+        if model_unit == Units.meters.value and unit == Units.feet.value:
+            gdf["area"] = gdf["area"] * math.exp(Conversion.feet_to_meters)
+        elif model_unit == Units.feet.value and unit == Units.meters.value:
+            gdf["area"] = gdf["area"] * math.exp(Conversion.meters_to_feet)
+        else:
+            raise ValueError(f"Unsupported unit: {unit}")
+    
     return gdf
 
 def sjoin_largest_area(
