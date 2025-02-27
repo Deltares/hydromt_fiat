@@ -14,13 +14,15 @@ from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 
 
-def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     """Adds an area column to a GeoDataFrame.
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
         The GeoDataFrame to which the area column will be added.
+    model_length_unit: 
+        The length unit of the model in meters or feet. 
 
     Returns
     -------
@@ -31,13 +33,20 @@ def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     if gdf.crs.is_geographic:
         # If the CRS is geographic, reproject to the nearest UTM zone
         nearest_utm = utm_crs(gdf.total_bounds)
+        unit = nearest_utm.axis_info[0].unit_name
         gdf_utm = gdf.to_crs(nearest_utm)
         gdf["area"] = gdf_utm["geometry"].area
     elif gdf.crs.is_projected:
         # If the CRS is projected, calculate the area in the same CRS
+        unit = gdf.crs.axis_info[0].unit_name
         gdf["area"] = gdf["geometry"].area
+    
+    ureg = pint.UnitRegistry()
+    unit = ureg(unit).units
+    model_unit = ureg(model_unit).units
+    
+    assert unit == model_unit
     return gdf
-
 
 def sjoin_largest_area(
     left_gdf: gpd.GeoDataFrame, right_gdf: gpd.GeoDataFrame, id_col: str = "object_id"
