@@ -1095,7 +1095,7 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)[
                 ["primary_object_type", "geometry"]
             ]
-            gdf = get_area(gdf)
+            gdf = get_area(gdf,self.unit)
             gdf = gdf.dropna(subset="primary_object_type")
 
             # Set the damage values to the exposure data
@@ -1122,7 +1122,7 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)[
                     ["primary_object_type", "geometry"]
                 ]
-                gdf = get_area(gdf)
+                gdf = get_area(gdf, self.unit)
                 gdf = gdf.dropna(subset="primary_object_type")
 
                 # Set the damage values to the exposure data
