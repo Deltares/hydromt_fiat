@@ -323,8 +323,7 @@ class FiatModel(GridModel):
         ]
         vf_names = set(vf_names)
         
-        if vulnerability_curves.endswith(".csv") or vulnerability_curves.endswith(
-                ".xlsx"):
+        if os.path.exists(vulnerability_curves):
             self.vulnerability.from_csv(vulnerability_curves, vf_names)
         else:
             vulnerability_curves = Path(self.data_catalog.get_source(vulnerability_curves).path)
