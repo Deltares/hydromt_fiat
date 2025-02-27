@@ -12,6 +12,7 @@ from pathlib import Path
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
+import pint
 
 
 def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
@@ -43,9 +44,9 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     
     ureg = pint.UnitRegistry()
     unit = ureg(unit).units
-    model_unit = ureg(model_unit).units
+    model_unit = ureg(model_length_unit).units
     
-    assert unit == model_unit
+    assert unit == model_unit, f"The length unit of your model and the projection mismatch: {unit} != {model_unit}. Update the model projection or length unit in the configuration file. "
     return gdf
 
 def sjoin_largest_area(
