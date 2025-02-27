@@ -8,7 +8,6 @@ from xrspatial import zonal_stats
 import pandas as pd
 import numpy as np
 import xarray as xr
-import math
 from pathlib import Path
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
@@ -50,9 +49,9 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     
     if unit != model_unit:
         if model_unit == Units.meters.value and unit == Units.feet.value:
-            gdf["area"] = gdf["area"] * math.exp(Conversion.feet_to_meters)
+            gdf["area"] = gdf["area"] * (Conversion.feet_to_meters.value)**2
         elif model_unit == Units.feet.value and unit == Units.meters.value:
-            gdf["area"] = gdf["area"] * math.exp(Conversion.meters_to_feet)
+            gdf["area"] = gdf["area"] * (Conversion.meters_to_feet.value)**2
         else:
             raise ValueError(f"Unsupported unit: {unit}")
     
