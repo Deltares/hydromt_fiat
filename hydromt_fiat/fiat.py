@@ -276,7 +276,17 @@ class FiatModel(GridModel):
 
     def setup_vulnerability_from_csv(self, vulnerability_curves: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
+            
+        Each vulnerability curve CSV file must contain the following columns:
+        - waterdepth: The inundation depth, which should be in the same unit (meters or feet) for all curves.
+        - factor: The factor of damage per water depth.
 
+        The linking file cv must contain the following columns:
+        - Fiat Damage Function Name: The name of the vulnerability curve file.  
+        - Exposure Link: The primary or secondary object type in the exposure data to link the vulnerability curve.  
+        - Damage Type: The type of damage. This can be structural, content or any other damage the user would like to assess.   
+        - Type: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification. 
+        
         Parameters
         ----------
             vulnerability_curves:str
