@@ -15,14 +15,14 @@ import time
 import pint
 
 
-def get_area(gdf: gpd.GeoDataFrame, model_unit: str) -> gpd.GeoDataFrame:
+def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     """Adds an area column to a GeoDataFrame.
 
     Parameters
     ----------
     gdf : gpd.GeoDataFrame
         The GeoDataFrame to which the area column will be added.
-    model_unit: 
+    model_length_unit: 
         The length unit of the model in meters or feet. 
 
     Returns
