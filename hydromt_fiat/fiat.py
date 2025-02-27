@@ -321,12 +321,14 @@ class FiatModel(GridModel):
                 vulnerability_linking["Damage Type"].values,
             )
         ]
+        vf_names = set(vf_names)
+        
         if vulnerability_curves.endswith(".csv") or vulnerability_curves.endswith(
                 ".xlsx"):
             self.vulnerability.from_csv(vulnerability_curves, vf_names)
         else:
-            vulnerability_curves_dir = Path(self.data_catalog.get_source(vulnerability_curves).path)
-            self.vulnerability.from_csv(vulnerability_curves_dir, vf_names)
+            vulnerability_curves = Path(self.data_catalog.get_source(vulnerability_curves).path)
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
         
         # Update config
         self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
