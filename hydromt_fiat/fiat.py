@@ -314,14 +314,9 @@ class FiatModel(GridModel):
             vulnerability_linking = self.data_catalog.get_dataframe(vulnerability_identifiers_and_linking_fn)
         self.vf_ids_and_linking_df = vulnerability_linking
             
-        vf_names = [
-            name + "_" + type
-            for name, type in zip(
-                vulnerability_linking["FIAT Damage Function Name"].values,
-                vulnerability_linking["Damage Type"].values,
-            )
-        ]
-        vf_names = set(vf_names)
+        vf_names =  pd.DataFrame({"FIAT Damage Function Name": vulnerability_linking["FIAT Damage Function Name"], "new_name": vulnerability_linking["FIAT Damage Function Name"] + "_" + vulnerability_linking["Damage Type"]})
+        vf_names.set_index("FIAT Damage Function Name", inplace = True)
+        
         
         if os.path.exists(vulnerability_curves):
             self.vulnerability.from_csv(vulnerability_curves, vf_names)
