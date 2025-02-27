@@ -33,7 +33,8 @@ dependencies = [
     "tqdm",
     "pycountry-convert",
     "pyarrow",
-    "dask<=2024.12.1"
+    "dask<=2024.12.1",
+    "pint"
 ]
 readme = "README.rst"
 classifiers = [
