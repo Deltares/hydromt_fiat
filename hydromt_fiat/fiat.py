@@ -274,13 +274,13 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
-    def setup_vulnerability_from_csv(self, vulnerability_curves_dir: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
+    def setup_vulnerability_from_csv(self, vulnerability_curves: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
 
         Parameters
         ----------
-            vulnerability_curves_dir: str
-                The full path to the directory which holds the single vulnerability curves.
+            vulnerability_curves:str
+                The full path to either the directory which holds the single vulnerability curves or a single csv file with the aggregated vulnerability curves.
             vulnerability_identifiers_and_linking_fn : Union[str, Path]
                 The (relative) path to the table that links the vulnerability functions and
                 exposure categories.
@@ -311,11 +311,11 @@ class FiatModel(GridModel):
                 vulnerability_linking["Damage Type"].values,
             )
         ]
-        if vulnerability_curves_dir.endswith(".csv") or vulnerability_curves_dir.endswith(
+        if vulnerability_curves.endswith(".csv") or vulnerability_curves.endswith(
                 ".xlsx"):
-            self.vulnerability.from_csv(vulnerability_curves_dir, vf_names)
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
         else:
-            vulnerability_curves_dir = Path(self.data_catalog.get_source(vulnerability_curves_dir).path)
+            vulnerability_curves_dir = Path(self.data_catalog.get_source(vulnerability_curves).path)
             self.vulnerability.from_csv(vulnerability_curves_dir, vf_names)
         
         # Update config
