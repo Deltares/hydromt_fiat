@@ -11,7 +11,7 @@ class ExtractionMethod(str, Enum):
 
 class Units(str, Enum):
     meters = "meters"
-    metres = "metres"
+    meter = "meter"
     feet = "feet"
 
 
