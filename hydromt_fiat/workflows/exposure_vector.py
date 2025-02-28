@@ -972,12 +972,13 @@ class ExposureVector(Exposure):
         damage_translation_fn: Union[str, Path] = None,
         eur_to_us_dollar: bool = False,
     ) -> None:
-        """Setup the max potential damage column of the exposure data in various ways.
+        """Setup the max potential damage column of the exposure data in various ways. 
 
         Parameters
         ----------
         max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
             _description_, by default None
+            The max_potential_damage values per square unit should be in the same unit as the length unit. That means if the length unit is for example in meters, the damage values should be in value per square meters.
         damage_types : Union[List[str], str, None], optional
             _description_, by default None
         country : Union[str, None], optional
