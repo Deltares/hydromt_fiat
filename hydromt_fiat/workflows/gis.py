@@ -47,10 +47,11 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     unit = ureg(unit).units
     model_unit = ureg(model_length_unit).units
     
+    
     if unit != model_unit:
-        if model_unit == Units.meter.value and unit == Units.feet.value:
+        if model_unit == ureg("meters").units and unit == ureg("feets").units:
             gdf["area"] = gdf["area"] * (Conversion.feet_to_meters.value)**2
-        elif model_unit == Units.feet.value and unit == Units.meter.value:
+        elif model_unit == ureg("feets").units and unit == ureg("meters").units:
             gdf["area"] = gdf["area"] * (Conversion.meters_to_feet.value)**2
         else:
             raise ValueError(f"Unsupported unit: {unit}")
