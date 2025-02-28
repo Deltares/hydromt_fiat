@@ -136,8 +136,9 @@ def preprocess_hazus_damage_values(hazus_table: pd.DataFrame) -> dict:
 
 def preprocess_damage_values(
     base_damage_values: pd.DataFrame,
-    damage_translation_fn: Union[Path, str],
-) -> dict:
+    damage_translation_fn: Union[Path, str] = None,
+    damage_types: list = ["structure", "content"],	
+) -> dict:  
     """Preprocess the JRC damage values data.
 
     Parameters
@@ -146,7 +147,9 @@ def preprocess_damage_values(
         The JRC damage values data.
     damage_translation_fn : Union[Path, str]
         The path to a file that relates the max. potential damage values with the exposure primary_object_type.
-
+    damage_types : list
+        The type of damage that will be processed. Default set to structure and content.
+        
     Returns
     -------
     pd.DataFrame
@@ -156,24 +159,29 @@ def preprocess_damage_values(
     # category
     damage_values = {}
 
-    # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve
-    # Rename the column names to shorter names
-    translation_df = pd.read_csv(
-        damage_translation_fn, header=None, encoding="utf-8", index_col=None
-    )
+    if "structure" not in damage_types and "content" not in damage_types:
+        # Read a csv with the translation of the damage values with column a: max. potential damage naming convention and column b: naming convention as link for damage curve
+        # Rename the column names to shorter names
+        translation_df = pd.read_csv(damage_translation_fn, header = None, encoding='utf-8', index_col = None)
+        rename_dict = dict(zip(translation_df.iloc[0:,0],translation_df.iloc[0:,1]))
 
-    rename_dict = dict(zip(translation_df.iloc[0:, 0], translation_df.iloc[0:, 1]))
+        # Rename damage values with primary_object_type
+        base_damage_values.rename(columns=rename_dict, inplace=True)
+        
 
-    # Rename damage values with primary_object_type
-    base_damage_values.rename(columns=rename_dict, inplace=True)
-
-    # Get building types and their values
-    for building_type in translation_df.iloc[0:, 1]:
-        base_damage_value = base_damage_values[building_type].values[0]
-        damage_values[building_type] = {
-            "structure": base_damage_value,
-            "content": base_damage_value,
-            "total": base_damage_value,
-        }
-
+        # Get building types and their values
+        for building_type in translation_df.iloc[0:,1]:
+            base_damage_value = base_damage_values[building_type].values[0]
+            damage_values[building_type] = {
+                    "structure":  base_damage_value,
+                    "content": base_damage_value,
+                    "total": base_damage_value, 
+            } 
+    else: 
+        for building_type in base_damage_values.iloc[0:,0]:
+            for damage in damage_types:
+                    base_damage_value = [float(row.iloc[1]) for index, row in base_damage_values.iterrows() if row.iloc[0] == building_type and row.iloc[2] == damage]
+                    if building_type not in damage_values:
+                            damage_values[building_type] = {}
+                    damage_values[building_type][damage] = base_damage_value[0]
     return damage_values

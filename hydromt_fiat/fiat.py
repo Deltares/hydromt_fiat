@@ -274,13 +274,26 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
-    def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], unit: str) -> None:
+    def setup_vulnerability_from_csv(self, vulnerability_curves: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
+            
+        Each vulnerability curve CSV file must contain the following columns:
+        - waterdepth: The inundation depth, which should be in the same unit (meters or feet) for all curves.
+        - factor: The factor of damage per water depth.
 
+        The linking file cv must contain the following columns:
+        - Fiat Damage Function Name: The name of the vulnerability curve file.  
+        - Exposure Link: The primary or secondary object type in the exposure data to link the vulnerability curve.  
+        - Damage Type: The type of damage. This can be structural, content or any other damage the user would like to assess.   
+        - Type: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification. 
+        
         Parameters
         ----------
-            csv_fn : str
-                The full path to the folder which holds the single vulnerability curves.
+            vulnerability_curves:str
+                The full path to either the directory which holds the single vulnerability curves or a single csv file with the aggregated vulnerability curves.
+            vulnerability_identifiers_and_linking_fn : Union[str, Path]
+                The (relative) path to the table that links the vulnerability functions and
+                exposure categories.
             unit : str
                 The unit of the water depth column for all vulnerability functions
                 (e.g. meter).
@@ -291,8 +304,31 @@ class FiatModel(GridModel):
                 unit,
                 self.logger,
             )
-        self.vulnerability.from_csv(csv_fn)
+        # Read and set the vulnerability linking table
+        if vulnerability_identifiers_and_linking_fn.endswith(".csv") or vulnerability_identifiers_and_linking_fn.endswith(
+                ".xlsx"):
+            vulnerability_linking = pd.read_csv(
+                vulnerability_identifiers_and_linking_fn
+            )
+        else:
+            vulnerability_linking = self.data_catalog.get_dataframe(vulnerability_identifiers_and_linking_fn)
+        self.vf_ids_and_linking_df = vulnerability_linking
+            
+        vf_names =  pd.DataFrame({"FIAT Damage Function Name": vulnerability_linking["FIAT Damage Function Name"], "new_name": vulnerability_linking["FIAT Damage Function Name"] + "_" + vulnerability_linking["Damage Type"]})
+        vf_names.set_index("FIAT Damage Function Name", inplace = True)
+        
+        
+        if os.path.exists(vulnerability_curves):
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
+        else:
+            vulnerability_curves = Path(self.data_catalog.get_source(vulnerability_curves).path)
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
+        
+        # Update config
+        self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
+        self.set_config("vulnerability.unit", unit)
 
+        
     def setup_road_vulnerability(
         self,
         vertical_unit: str,
@@ -348,6 +384,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
+        linking_column: str = "primary_object_type",
         damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
@@ -391,6 +428,8 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
+        linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         damage_unit: Currency, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
@@ -447,6 +486,7 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
+                linking_column=linking_column,
                 country=country,
                 gfh_unit=gfh_unit,
                 ground_elevation=ground_elevation,
@@ -475,7 +515,7 @@ class FiatModel(GridModel):
                 "the 'setup_exposure_buildings' function. Error message: {e}"
             )
         self.exposure.link_exposure_vulnerability(
-            self.vf_ids_and_linking_df, damage_types
+            self.vf_ids_and_linking_df, damage_types, linking_column
         )
 
         # Set building footprints

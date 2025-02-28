@@ -12,6 +12,7 @@ from pathlib import Path
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
+import pint
 
 
 def get_area(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
