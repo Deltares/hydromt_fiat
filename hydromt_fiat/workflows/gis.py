@@ -13,7 +13,7 @@ from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
 import pint
-from hydromt_fiat.api.data_types import Units, Conversion
+from hydromt_fiat.api.data_types import Conversion
 
 
 def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
