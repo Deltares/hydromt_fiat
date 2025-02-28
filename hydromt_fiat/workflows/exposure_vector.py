@@ -981,12 +981,13 @@ class ExposureVector(Exposure):
         eur_to_us_dollar: bool = False,
         linking_column = None, 
     ) -> None:
-        """Setup the max potential damage column of the exposure data in various ways.
+        """Setup the max potential damage column of the exposure data in various ways. 
 
         Parameters
         ----------
         max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
             _description_, by default None
+            The max_potential_damage values per square unit should be in the same unit as the length unit. That means if the length unit is for example in meters, the damage values should be in value per square meters.
         damage_types : Union[List[str], str, None], optional
             _description_, by default None
         country : Union[str, None], optional
@@ -1106,7 +1107,7 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)[
                 ["primary_object_type", "geometry"]
             ]
-            gdf = get_area(gdf)
+            gdf = get_area(gdf,self.unit)
             gdf = gdf.dropna(subset="primary_object_type")
 
             # Set the damage values to the exposure data
@@ -1135,7 +1136,7 @@ class ExposureVector(Exposure):
                 gdf = self.get_full_gdf(self.exposure_db)[
                     [linking_column, "geometry"]
                 ]
-                gdf = get_area(gdf)
+                gdf = get_area(gdf, self.unit)
 
                 # Set the damage values to the exposure data
                 self.set_max_potential_damage_columns(
