@@ -1342,11 +1342,11 @@ class ExposureVector(Exposure):
             return
 
         # Get the index of the objects to raise the ground_flht.
-        idx = self.exposure_db.loc[self.exposure_db["object_id"].isin(objectids)].index
+        id_df = self.exposure_db.loc[self.exposure_db["object_id"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
         self.logger.info(
-            f"Raising the ground_flht of {len(idx)} properties to {raise_by}."
+            f"Raising the ground_flht of {len(id_df)} properties to {raise_by}."
         )  # TODO: add the unit of the ground_flht
 
         if height_reference.lower() == "datum":
@@ -1359,7 +1359,7 @@ class ExposureVector(Exposure):
                     self.exposure_db["ground_flht"] + self.exposure_db["ground_elevtn"]
                     < raise_by
                 )
-                & self.exposure_db.index.isin(idx),
+                & self.exposure_db.index.isin(id_df),
                 "ground_flht",
             ] += raise_by - (
                 self.exposure_db["ground_flht"] + self.exposure_db["ground_elevtn"]
@@ -1376,11 +1376,13 @@ class ExposureVector(Exposure):
             if len(self.exposure_geoms) == 0:
                 self.set_exposure_geoms_from_xy()
 
-            # TODO the way that indexing and geom indexing is working now is error prone!!!!
+            # Get geometries that are affected
+            gdf = self.get_full_gdf(self.exposure_db)[["object_id", "geometry"]]
+            id_gdf = gdf.loc[gdf["object_id"].isin(objectids)].index
 
             new_values = self.set_height_relative_to_reference(
-                self.exposure_db.loc[idx, :],
-                self.exposure_geoms[0].iloc[idx, :],
+                self.exposure_db.loc[id_df, :],
+                gdf.loc[id_gdf, :],
                 height_reference,
                 path_ref,
                 attr_ref,
