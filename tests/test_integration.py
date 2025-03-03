@@ -148,7 +148,7 @@ def test_integration(case):
     # Check if the exposure data exists
     assert root.joinpath("exposure", "buildings.gpkg").exists()
     assert root.joinpath("exposure", "exposure.csv").exists()
-    assert root.joinpath("exposure", "region.gpkg").exists()
+    assert root.joinpath("geoms", "region.geojson").exists()
 
     # Check if the vulnerability data exists
     assert root.joinpath("vulnerability", "vulnerability_curves.csv").exists()

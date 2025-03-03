@@ -7,7 +7,7 @@ def process_value(value):
     if isinstance(value, list) and len(value) == 1:
         return value[0]
     elif isinstance(value, list) and len(value) > 1:
-        return ", ".join(value)
+        return ", ".join([str(val) for val in value if isinstance(val, int)])
     else:
         return value
 
@@ -66,8 +66,8 @@ def join_exposure_building_footprints(
     )
 
     # Aggregate the data if duplicates exist
-    aggregated = joined_gdf.groupby("Object ID")[attribute_name].agg(list).reset_index()
-    exposure_gdf = exposure_gdf.merge(aggregated, on="Object ID", how="left")
+    aggregated = joined_gdf.groupby("object_id")[attribute_name].agg(list).reset_index()
+    exposure_gdf = exposure_gdf.merge(aggregated, on="object_id", how="left")
 
     # Create a string from the list of values in the duplicated aggregation area
     # column

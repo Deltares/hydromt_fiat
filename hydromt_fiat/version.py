@@ -1,8 +1,8 @@
 """Versioning."""
 
 major = 0
-minor = 4
+minor = 5
 patch = 2
-suffix = ".dev"
+suffix = ""
 
 __version__ = f"{major}.{minor}.{patch}{suffix}"

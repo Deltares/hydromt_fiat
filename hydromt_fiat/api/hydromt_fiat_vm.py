@@ -156,13 +156,13 @@ class HydroMtViewModel:
         if isinstance(parameter, str):
             parameter = [parameter]
         for item in parameter:
-            if "Finished Floor Height" in item:
+            if "ground_flht" in item:
                 self.new_ground_floor_height(config_yaml)
             elif "Additional Attributes" in item:
                 self.new_additional_attributes(config_yaml)
-            elif "Ground Elevation" in item:
+            elif "ground_elevtn" in item:
                 self.new_ground_elevation(config_yaml)
-            elif "Max Potential Damages" in item:
+            elif "max_damage" in item:
                 self.new_max_potential_damages(config_yaml)
 
         # Write model
@@ -189,13 +189,13 @@ class HydroMtViewModel:
         ):
             # Buildings and roads are set up
             full_gdf = self.fiat_model.exposure.get_full_gdf(exposure_db)
-            buildings_gdf = full_gdf.loc[full_gdf["Primary Object Type"] != "road"]
+            buildings_gdf = full_gdf.loc[full_gdf["primary_object_type"] != "road"]
             if "SVI" in full_gdf.columns and "SVI_key_domain" in full_gdf.columns:
                 roads_gdf = full_gdf.drop(["SVI", "SVI_key_domain"], axis=1).loc[
-                    full_gdf["Primary Object Type"] == "road"
+                    full_gdf["primary_object_type"] == "road"
                 ]
             else:
-                roads_gdf = full_gdf.loc[full_gdf["Primary Object Type"] == "road"]
+                roads_gdf = full_gdf.loc[full_gdf["primary_object_type"] == "road"]
 
             return buildings_gdf, roads_gdf
         elif (
@@ -231,16 +231,21 @@ class HydroMtViewModel:
             "setup_additional_attributes"
         ].new_composite_area
         # Check if additional attributes already exist
-        add_attrs_existing = [ attr["name"]
-            for attr in self.fiat_model.spatial_joins["additional_attributes"] 
-            ] if self.fiat_model.spatial_joins["additional_attributes"] is not None else []
+        add_attrs_existing = (
+            [
+                attr["name"]
+                for attr in self.fiat_model.spatial_joins["additional_attributes"]
+            ]
+            if self.fiat_model.spatial_joins["additional_attributes"] is not None
+            else []
+        )
         indices_to_remove = []
         for i, label_name in enumerate(label_names):
             if (
                 label_name in add_attrs_existing
             ):  # if it exists exclude it from the list
                 indices_to_remove.append(i)
-                
+
         for i in sorted(indices_to_remove, reverse=True):
             aggregation_area_fn.pop(i)
             attribute_names.pop(i)
@@ -252,7 +257,9 @@ class HydroMtViewModel:
 
     def new_ground_elevation(self, config_yaml):
         source = config_yaml.model_extra["update_ground_elevation"].source
-        grnd_elev_unit = config_yaml.model_extra["update_ground_elevation"].grnd_elev_unit
+        grnd_elev_unit = config_yaml.model_extra[
+            "update_ground_elevation"
+        ].grnd_elev_unit
         self.fiat_model.exposure.setup_ground_elevation(source, grnd_elev_unit)
 
     def new_max_potential_damages(self, config_yaml):

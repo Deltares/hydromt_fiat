@@ -58,7 +58,7 @@ _cases = {
             "test_read", "exposure", "aggregation_areas", "block_groups.gpkg"
         ),
         "attribute_names": "GEOID_short",
-        "label_names": "Aggregation Label: Census Block",
+        "label_names": "aggregation_label:Census Block",
     },
 }
 
@@ -79,7 +79,7 @@ def test_setup_new_composite_areas_ground_elevation(case):
         percent_growth=10,
         geom_file=str(_cases[case]["composite_areas"]),
         ground_floor_height=2,
-        damage_types=["Structure", "Content"],
+        damage_types=["structure", "content"],
         vulnerability=fm.vulnerability,
         elevation_reference=_cases[case]["type"],
         path_ref=_cases[case]["path_ref"],

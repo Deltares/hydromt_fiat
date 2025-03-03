@@ -83,17 +83,17 @@ class ExposureViewModel:
                 crs=crs,
                 unit=Units.feet.value,
             )
-        
+
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
                 "centroid",
             )
             primary_object_types = (
-                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+                self.exposure.exposure_db["primary_object_type"].unique().tolist()
             )
             secondary_object_types = (
-                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                self.exposure.exposure_db["secondary_object_type"].unique().tolist()
             )
             gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
 
@@ -121,8 +121,8 @@ class ExposureViewModel:
                 region=region,
                 crs=crs,
                 unit=Units.meters.value,
-                )
-            
+            )
+
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations=source,
                 occupancy_source=source,
@@ -136,10 +136,10 @@ class ExposureViewModel:
                 keep_unclassified=keep_unclassified,
             )
             primary_object_types = (
-                self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+                self.exposure.exposure_db["primary_object_type"].unique().tolist()
             )
             secondary_object_types = (
-                self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                self.exposure.exposure_db["secondary_object_type"].unique().tolist()
             )
             gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
 
@@ -167,7 +167,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                unit=Units.feet.value, 
+                unit=Units.feet.value,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.dollar.value,
@@ -219,14 +219,14 @@ class ExposureViewModel:
             primary_object_types = []
             secondary_object_types = []
 
-            if "Primary Object Type" in self.exposure.exposure_db.columns:
+            if "primary_object_type" in self.exposure.exposure_db.columns:
                 primary_object_types = (
-                    self.exposure.exposure_db["Primary Object Type"].unique().tolist()
+                    self.exposure.exposure_db["primary_object_type"].unique().tolist()
                 )
 
-            if "Secondary Object Type" in self.exposure.exposure_db.columns:
+            if "secondary_object_type" in self.exposure.exposure_db.columns:
                 secondary_object_types = (
-                    self.exposure.exposure_db["Secondary Object Type"].unique().tolist()
+                    self.exposure.exposure_db["secondary_object_type"].unique().tolist()
                 )
 
             return (
@@ -337,7 +337,7 @@ class ExposureViewModel:
             road_types=road_types,
         )
         roads = self.exposure.exposure_db.loc[
-            self.exposure.exposure_db["Primary Object Type"] == "roads"
+            self.exposure.exposure_db["primary_object_type"] == "roads"
         ]
         gdf = self.exposure.get_full_gdf(roads)
 
@@ -399,6 +399,6 @@ class ExposureViewModel:
         damage_types : Union[List[str], str]
             "structure"or/and "content"
         remove_object_type: bool
-            True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-            E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).
+            True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+            E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).
         """

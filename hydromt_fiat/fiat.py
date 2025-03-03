@@ -14,8 +14,11 @@ import tomli
 import tomli_w
 from hydromt.models.model_grid import GridModel
 from pyproj.crs import CRS
+from shapely.geometry import box
 import shutil
+import tempfile
 
+from hydromt.raster import full_from_transform
 from hydromt_fiat.api.data_types import Units
 from hydromt_fiat.util import DATADIR
 from hydromt_fiat.spatial_joins import SpatialJoins
@@ -131,6 +134,7 @@ class FiatModel(GridModel):
         output_dir: str = "output",
         output_csv_name: str = "output.csv",
         output_vector_name: Union[str, List[str]] = "spatial.gpkg",
+        output_single_file: bool = False,
     ) -> None:
         """Setup Delft-FIAT output folder and files.
 
@@ -142,13 +146,18 @@ class FiatModel(GridModel):
             The name of the output csv file, by default "output.csv".
         output_vector_name : Union[str, List[str]], optional
             The name of the output vector file, by default "spatial.gpkg".
+        output_single_file: bool
+            If True the exposure data is written in a single spatial file. Default set to False
         """
+        self.output_single_file = False
         self.set_config("output.path", output_dir)
         self.set_config("output.csv.name", output_csv_name)
         if isinstance(output_vector_name, str):
             output_vector_name = [output_vector_name]
         for i, name in enumerate(output_vector_name):
             self.set_config(f"output.geom.name{str(i+1)}", name)
+        if output_single_file:
+            self.output_single_file = True
 
     def setup_region(
         self,
@@ -212,11 +221,11 @@ class FiatModel(GridModel):
             The unit of the vulnerability functions.
         functions_mean : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the mean hazard
-            value when using the area extraction method, by default "default" (this
+            value when using the area extract_method, by default "default" (this
             means that all vulnerability functions are using mean).
         functions_max : Union[str, List[str], None], optional
             The name(s) of the vulnerability functions that should use the maximum
-            hazard value when using the area extraction method, by default None (this
+            hazard value when using the area extract_method, by default None (this
             means that all vulnerability functions are using mean).
         """
 
@@ -253,7 +262,7 @@ class FiatModel(GridModel):
             continent=continent,
         )
 
-        # Set the area extraction method for the vulnerability curves
+        # Set the area extract_method for the vulnerability curves
         self.vulnerability.set_area_extraction_methods(
             functions_mean=functions_mean, functions_max=functions_max
         )
@@ -265,13 +274,26 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
-    def setup_vulnerability_from_csv(self, csv_fn: Union[str, Path], unit: str) -> None:
+    def setup_vulnerability_from_csv(self, vulnerability_curves: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
+            
+        Each vulnerability curve CSV file must contain the following columns:
+        - waterdepth: The inundation depth, which should be in the same unit (meters or feet) for all curves.
+        - factor: The factor of damage per water depth.
 
+        The linking file cv must contain the following columns:
+        - Fiat Damage Function Name: The name of the vulnerability curve file.  
+        - Exposure Link: The primary or secondary object type in the exposure data to link the vulnerability curve.  
+        - Damage Type: The type of damage. This can be structural, content or any other damage the user would like to assess.   
+        - Type: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification. 
+        
         Parameters
         ----------
-            csv_fn : str
-                The full path to the folder which holds the single vulnerability curves.
+            vulnerability_curves:str
+                The full path to either the directory which holds the single vulnerability curves or a single csv file with the aggregated vulnerability curves.
+            vulnerability_identifiers_and_linking_fn : Union[str, Path]
+                The (relative) path to the table that links the vulnerability functions and
+                exposure categories.
             unit : str
                 The unit of the water depth column for all vulnerability functions
                 (e.g. meter).
@@ -282,8 +304,31 @@ class FiatModel(GridModel):
                 unit,
                 self.logger,
             )
-        self.vulnerability.from_csv(csv_fn)
+        # Read and set the vulnerability linking table
+        if vulnerability_identifiers_and_linking_fn.endswith(".csv") or vulnerability_identifiers_and_linking_fn.endswith(
+                ".xlsx"):
+            vulnerability_linking = pd.read_csv(
+                vulnerability_identifiers_and_linking_fn
+            )
+        else:
+            vulnerability_linking = self.data_catalog.get_dataframe(vulnerability_identifiers_and_linking_fn)
+        self.vf_ids_and_linking_df = vulnerability_linking
+            
+        vf_names =  pd.DataFrame({"FIAT Damage Function Name": vulnerability_linking["FIAT Damage Function Name"], "new_name": vulnerability_linking["FIAT Damage Function Name"] + "_" + vulnerability_linking["Damage Type"]})
+        vf_names.set_index("FIAT Damage Function Name", inplace = True)
+        
+        
+        if os.path.exists(vulnerability_curves):
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
+        else:
+            vulnerability_curves = Path(self.data_catalog.get_source(vulnerability_curves).path)
+            self.vulnerability.from_csv(vulnerability_curves, vf_names)
+        
+        # Update config
+        self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
+        self.set_config("vulnerability.unit", unit)
 
+        
     def setup_road_vulnerability(
         self,
         vertical_unit: str,
@@ -305,6 +350,27 @@ class FiatModel(GridModel):
             step_hazard_value,
         )
 
+    def setup_population_vulnerability(
+        self,
+        vertical_unit: str,
+        threshold_value: float = 0.4,
+        min_hazard_value: float = 0,
+        max_hazard_value: float = 10,
+        step_hazard_value: float = 1.0,
+    ):
+        if not self.vulnerability:
+            self.vulnerability = Vulnerability(
+                vertical_unit,
+                self.logger,
+            )
+        self.vulnerability.create_step_function(
+            "population",
+            threshold_value,
+            min_hazard_value,
+            max_hazard_value,
+            step_hazard_value,
+        )
+
     def setup_exposure_buildings(
         self,
         asset_locations: Union[str, Path],
@@ -318,6 +384,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
+        linking_column: str = "primary_object_type",
         damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
@@ -325,7 +392,8 @@ class FiatModel(GridModel):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         dst_crs: Union[str, None] = None,
-        damage_translation_fn: Union[Path, str] = None
+        damage_translation_fn: Union[Path, str] = None,
+        eur_to_us_dollar: bool = False,
     ) -> None:
         """Setup building exposure (vector) data for Delft-FIAT.
 
@@ -348,7 +416,7 @@ class FiatModel(GridModel):
             The unit of the ground_floor_height
         gfh_attribute_name : str
             The attribute name to be used to set the ground_flht. If None, the
-            attribute name will be set to 'ground_floor_height'. 
+            attribute name will be set to 'ground_floor_height'.
         occupancy_attr : Union[str, None], optional
             The name of the field in the occupancy type data that contains the
             occupancy type, by default None (this means that the occupancy type data
@@ -360,6 +428,8 @@ class FiatModel(GridModel):
             The damage types that should be used for the exposure data, by default
             ["structure", "content"]. The damage types are used to link the
             vulnerability functions to the exposure data.
+        linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         damage_unit: Currency, optional
             The currency/unit of the Damage data, default in USD $
         country : Union[str, None], optional
@@ -378,6 +448,8 @@ class FiatModel(GridModel):
             it is taken from the region attribute of `FiatModel`. By default None
         damage_translation_fn: Union[Path, str], optional
             The path to the translation function that can be used to relate user damage curves with user damages.
+        eur_to_us_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
         """
         # In case the unit is passed as a pydantic value get the string
         if hasattr(unit, "value"):
@@ -399,11 +471,13 @@ class FiatModel(GridModel):
                 ground_floor_height,
                 extraction_method,
                 ground_elevation=ground_elevation,
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
         else:
             # The source for the asset locations, occupancy type and maximum potential
             # damage is different, use three sources to create the exposure data.
+            # Setup exposure buildings
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations,
                 occupancy_type,
@@ -412,14 +486,16 @@ class FiatModel(GridModel):
                 extraction_method,
                 occupancy_attr,
                 damage_types=damage_types,
+                linking_column=linking_column,
                 country=country,
                 gfh_unit=gfh_unit,
                 ground_elevation=ground_elevation,
                 grnd_elev_unit=grnd_elev_unit,
                 bf_conversion=bf_conversion,
                 keep_unclassified=keep_unclassified,
-                damage_translation_fn = damage_translation_fn,
-                gfh_attribute_name = gfh_attribute_name
+                damage_translation_fn=damage_translation_fn,
+                gfh_attribute_name=gfh_attribute_name,
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
         if (asset_locations != occupancy_type) and occupancy_object_type is not None:
@@ -439,7 +515,7 @@ class FiatModel(GridModel):
                 "the 'setup_exposure_buildings' function. Error message: {e}"
             )
         self.exposure.link_exposure_vulnerability(
-            self.vf_ids_and_linking_df, damage_types
+            self.vf_ids_and_linking_df, damage_types, linking_column
         )
 
         # Set building footprints
@@ -511,16 +587,39 @@ class FiatModel(GridModel):
 
         # Combine the exposure database with pre-existing exposure data if available
 
+    def setup_exposure_population(
+        self,
+        impacted_population_fn: Union[
+            int, float, str, Path, List[str], List[Path], pd.DataFrame
+        ] = None,
+        attribute_name: Union[str, List[str], None] = None,
+        method_impacted_pop: Union[str, List[str], None] = "intersection",
+        max_dist: float = 10,
+        unit: str = "meters",
+    ) -> None:
+        if not self.exposure:
+            self.exposure = ExposureVector(
+                self.data_catalog,
+                self.logger,
+                self.region,
+                unit=unit,
+            )
+        self.exposure.setup_impacted_population(
+            impacted_population_fn, attribute_name, method_impacted_pop, max_dist
+        )
+
+        self.set_config("exposure.types", ["damage", "affected"])
+
     def bf_spatial_joins(self):
         self.building_footprint = self.exposure.building_footprints
         self.building_footprint["BF_FID"] = [
             i for i in range(1, len(self.building_footprint) + 1)
         ]
         BF_exposure_gdf = self.exposure.get_full_gdf(self.exposure.exposure_db).merge(
-            self.building_footprint[["Object ID", "BF_FID"]], on="Object ID"
+            self.building_footprint[["object_id", "BF_FID"]], on="object_id"
         )
         del BF_exposure_gdf["geometry"]
-        del self.building_footprint["Object ID"]
+        del self.building_footprint["object_id"]
         self.exposure.exposure_db = BF_exposure_gdf
 
     def update_ground_floor_height(
@@ -546,6 +645,7 @@ class FiatModel(GridModel):
         attribute_name: Union[str, List[str], None] = None,
         method_damages: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
+        eur_to_us_dollar: bool = False,
     ):
         if self.exposure:
             self.exposure.setup_max_potential_damage(
@@ -555,6 +655,7 @@ class FiatModel(GridModel):
                 attribute_name=attribute_name,
                 method_damages=method_damages,
                 max_dist=max_dist,
+                eur_to_us_dollar=eur_to_us_dollar,
             )
 
     def update_ground_elevation(
@@ -581,7 +682,7 @@ class FiatModel(GridModel):
         hazard_type: str = "flooding",
         risk_output: bool = False,
         unit_conversion_factor: float = 1.0,
-        
+        clip_exposure: bool = False,
     ) -> None:
         """Set up hazard maps. This component integrates multiple checks for the hazard
         maps.
@@ -620,6 +721,8 @@ class FiatModel(GridModel):
             Type of hazard to be studied, by default "flooding"
         risk_output : bool, optional
             The parameter that defines if a risk analysis is required, by default False
+        clip_exposure : bool, optional
+            The parameter that defines if the exposure dataset should be clipped by the hazard extent, by default False
         """
         # create lists of maps and their parameters to be able to iterate over them
         params = create_lists(map_fn, map_type, rp, crs, nodata, var, chunks)
@@ -731,21 +834,25 @@ class FiatModel(GridModel):
 
         self.set_config(
             "hazard.file",
-            [
-                str(Path("hazard") / (hazard_map + ".nc"))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else [str(Path("hazard") / ("risk_map" + ".nc"))][0],
+            (
+                [
+                    str(Path("hazard") / (hazard_map + ".nc"))
+                    for hazard_map in self.maps.keys()
+                ][0]
+                if not risk_output
+                else [str(Path("hazard") / ("risk_map" + ".nc"))][0]
+            ),
         )
         self.set_config(
             "hazard.crs",
-            [
-                "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
-                for hazard_map in self.maps.keys()
-            ][0]
-            if not risk_output
-            else ["EPSG:" + str((self.crs.to_epsg()))][0],
+            (
+                [
+                    "EPSG:" + str((self.maps[hazard_map].raster.crs.to_epsg()))
+                    for hazard_map in self.maps.keys()
+                ][0]
+                if not risk_output
+                else ["EPSG:" + str((self.crs.to_epsg()))][0]
+            ),
         )
 
         self.set_config(
@@ -755,9 +862,11 @@ class FiatModel(GridModel):
         # Set the configurations for a multiband netcdf
         self.set_config(
             "hazard.settings.subset",
-            [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
-            if not risk_output
-            else sorted_names,
+            (
+                [(self.maps[hazard_map].name) for hazard_map in self.maps.keys()][0]
+                if not risk_output
+                else sorted_names
+            ),
         )
 
         self.set_config(
@@ -769,6 +878,124 @@ class FiatModel(GridModel):
             "hazard.risk",
             risk_output,
         )
+        # Clip exposure to hazard map
+        if clip_exposure:
+            self.clip_exposure_to_hazard_extent(da)
+
+    def clip_exposure_to_hazard_extent(self, floodmap: xr.DataArray = None):
+        """Clip the exposure data to the bounding box of the hazard data.
+
+        This method clips the exposure data to the bounding box of the hazard data. It creates a GeoDataFrame
+        from the hazard polygons, and then uses the `gpd.clip` function to clip the exposure geometries to the
+        bounding box of the hazard polygons. If the exposure data contains roads, it is split into two separate
+        GeoDataFrames: one for buildings and one for roads. The clipped exposure data is then saved back to the
+        `exposure_db` attribute of the `FiatModel` object.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+        gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+        crs = gdf.crs
+        floodmap = floodmap.rio.reproject(crs)
+        fm_bounds = floodmap.raster.bounds
+        fm_geom = box(*fm_bounds)
+
+        # Clip the fiat region
+        clipped_region = self.region.clip(fm_geom)
+        self.geoms["region"] = clipped_region
+
+        if not self.building_footprint.empty:
+            # Clip the building footprints
+            self.building_footprint = self.building_footprint[
+                self.building_footprint["geometry"].within(fm_geom)
+            ]
+            bf_fid = self.building_footprint["BF_FID"]
+            fieldname = "BF_FID"
+
+        # Clip the exposure geometries
+        # Filter buildings and roads
+        if gdf["primary_object_type"].str.contains("road").any():
+            gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
+            gdf_roads = gdf_roads[gdf_roads["geometry"].within(fm_geom)]
+            gdf_buildings = gdf[~gdf["primary_object_type"].str.contains("road")]
+            if not self.building_footprint.empty:
+                gdf_buildings = self.check_bf_complete(
+                    gdf_buildings, fieldname, clipped_region, bf_fid
+                )
+            else:
+                gdf_buildings = gdf_buildings[gdf_buildings["geometry"].within(fm_geom)]
+            idx_buildings = self.exposure.geom_names.index("buildings")
+            idx_roads = self.exposure.geom_names.index("roads")
+            self.exposure.exposure_geoms[idx_buildings] = gdf_buildings[
+                ["object_id", "geometry"]
+            ]
+            self.exposure.exposure_geoms[idx_roads] = gdf_roads[
+                ["object_id", "geometry"]
+            ]
+            gdf = pd.concat([gdf_buildings, gdf_roads])
+        else:
+            if not self.building_footprint.empty:
+                gdf = self.check_bf_complete(gdf, fieldname, clipped_region, bf_fid)
+            else:
+                gdf = gdf[gdf["geometry"].within(fm_geom)]
+            self.exposure.exposure_geoms[0] = gdf[["object_id", "geometry"]]
+
+        # Save exposure dataframe
+        del gdf["geometry"]
+        self.exposure.exposure_db = gdf
+
+    def check_bf_complete(
+        self,
+        gdf_exposure: gpd.GeoDataFrame,
+        fieldname: str,
+        clipped_region: gpd.GeoDataFrame,
+        bf_fid: gpd.GeoDataFrame,
+    ):
+        """Checks whether all building points have a building footprint.
+
+        This method checks if all points have a building footprint. If a point does not have a biulding footprint
+        it will be concenated with the exposure gdf anyhow and not be filtered out. By this it is assured
+        that even if a building footprint is not available on e.g. OSM, the exposure point does not get lost.
+
+        Parameters
+        ----------
+        gdf_exposure: gpd.GeoDataFrame
+            The GeoDataFrame that contains the full exposure (excl. roads).
+        fieldname: str
+            The fieldname of the building footprint.
+        clipped_region: gpd.GeoDataFrame
+            The clipped region.
+        bf_fid: gpd.GeoDataFrame
+            The GeoDataFrame of the building footprints.
+
+        Returns
+        -------
+        gdf_buildings: GeoDataFrame
+        """
+
+        if gdf_exposure[fieldname].isna().any():
+            gdf_building_points = gdf_exposure[gdf_exposure[fieldname].isna()]
+            gdf_building_footprints = gdf_exposure[~gdf_exposure[fieldname].isna()]
+            gdf_building_points_clipped = gdf_building_points[
+                gdf_building_points["geometry"].within(
+                    clipped_region["geometry"].union_all()
+                )
+            ]
+            gdf_building_footprints_clipped = gdf_building_footprints[
+                gdf_building_footprints[fieldname].isin(bf_fid)
+            ]
+            gdf_buildings = pd.concat(
+                [gdf_building_points_clipped, gdf_building_footprints_clipped]
+            )
+        else:
+            gdf_buildings = gdf_exposure[gdf_exposure[fieldname].isin(bf_fid)]
+
+        return gdf_buildings
 
     def setup_social_vulnerability_index(
         self,
@@ -848,7 +1075,7 @@ class FiatModel(GridModel):
 
             # Link the SVI score to the exposure data
             exposure_data = self.exposure.get_full_gdf(self.exposure.exposure_db)
-            exposure_data.sort_values("Object ID")
+            exposure_data.sort_values("object_id")
 
             if svi.svi_data_shp.crs != exposure_data.crs:
                 svi.svi_data_shp.to_crs(crs=exposure_data.crs, inplace=True)
@@ -865,7 +1092,7 @@ class FiatModel(GridModel):
                 cols_to_save = ["SVI_key_domain", "composite_svi_z", "geometry"]
 
             # Filter out the roads because they do not have an SVI score
-            filter_roads = exposure_data["Primary Object Type"] != "roads"
+            filter_roads = exposure_data["primary_object_type"] != "roads"
             svi_exp_joined = gpd.sjoin(
                 exposure_data.loc[filter_roads],
                 svi.svi_data_shp[cols_to_save],
@@ -876,8 +1103,8 @@ class FiatModel(GridModel):
             svi_exp_joined.rename(columns={"composite_svi_z": "SVI"}, inplace=True)
             del svi_exp_joined["index_right"]
             self.exposure.exposure_db = self.exposure.exposure_db.merge(
-                svi_exp_joined[["Object ID", "SVI_key_domain", "SVI"]],
-                on="Object ID",
+                svi_exp_joined[["object_id", "SVI_key_domain", "SVI"]],
+                on="object_id",
                 how="left",
             )
             # Define spatial join info
@@ -940,7 +1167,9 @@ class FiatModel(GridModel):
         try:
             equity.download_shp_geom(year_data, county_numbers)
         except:
-            self.logger.warning("The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!")
+            self.logger.warning(
+                "The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!"
+            )
             return
         equity.merge_equity_data_shp()
         equity.clean()
@@ -950,8 +1179,8 @@ class FiatModel(GridModel):
         # Save the census block aggregation area data
         block_groups = equity.get_block_groups()
 
-        # Update the aggregation label: Census Blockgroup
-        del self.exposure.exposure_db["Aggregation Label: Census Blockgroup"]
+        # Update the aggregation_label:Census Blockgroup
+        del self.exposure.exposure_db["aggregation_label:Census Blockgroup"]
         self.setup_aggregation_areas(
             aggregation_area_fn=block_groups,
             attribute_names="GEOID_short",
@@ -978,11 +1207,13 @@ class FiatModel(GridModel):
         self,
         aggregation_area_fn: Union[
             List[str], List[Path], List[gpd.GeoDataFrame], str, Path, gpd.GeoDataFrame
-        ],
-        attribute_names: Union[List[str], str],
-        label_names: Union[List[str], str],
+        ] = "default",
+        attribute_names: Union[List[str], str] = None,
+        label_names: Union[List[str], str] = None,
         new_composite_area: bool = False,
         file_names: Union[List[str], str] = None,
+        res_x: Union[int, float] = 1e3,
+        res_y: Union[int, float] = 1e3,
     ):
         """_summary_
 
@@ -999,14 +1230,25 @@ class FiatModel(GridModel):
         file_names : Union[List[str], str]
             The name of the spatial file(s) if saved in aggregation_areas/
             folder in the root directory (Default is None).
+        res_x, : Union[int, float]
+            The x resolution [m] of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default",  default set to 1 km
+        res_y : Union[int, float]
+            The y resolution [m] of the default aggregation area grid if no aggregation is provided and
+            aggregation_area_fn = "default", default set to 1 km
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
-        if not isinstance(aggregation_area_fn, list):
-            aggregation_area_fn = [aggregation_area_fn]
-            attribute_names = [attribute_names]
-            label_names = [label_names]
-            if file_names:
-                file_names = [file_names]
+        if aggregation_area_fn == "default":
+            aggregation_area_fn, attribute_names, label_names, file_names = (
+                self.create_default_aggregation(res_x, res_y)
+            )
+        else:
+            if not isinstance(aggregation_area_fn, list):
+                aggregation_area_fn = [aggregation_area_fn]
+                attribute_names = [attribute_names]
+                label_names = [label_names]
+                if file_names:
+                    file_names = [file_names]
 
         # Perform spatial join for each aggregation area provided
         # First get all exposure geometries
@@ -1016,7 +1258,7 @@ class FiatModel(GridModel):
             aggregation_area_fn,
             attribute_names,
             # Make sure that column name for aggregation areas includes the Aggregation Label part
-            ["Aggregation Label: " + name for name in label_names],
+            ["aggregation_label:" + name for name in label_names],
             new_composite_area,
             keep_all=False,
         )
@@ -1037,6 +1279,10 @@ class FiatModel(GridModel):
                 "field_name": attribute_name,
             }
             self.spatial_joins["aggregation_areas"].append(attrs)
+
+        # Clean up temp aggregation file
+        if attribute_names[0] == "default_aggregation":
+            os.remove(aggregation_area_fn[0])
 
     def setup_additional_attributes(
         self,
@@ -1075,12 +1321,13 @@ class FiatModel(GridModel):
         # Save metadata on spatial joins
         if not self.spatial_joins["additional_attributes"]:
             self.spatial_joins["additional_attributes"] = []
-    
+
         # Check if additional attributes already exist
-        add_attrs_existing = [
-            attr["name"]
-            for attr in self.spatial_joins["additional_attributes"]
-            ] if self.spatial_joins["additional_attributes"] is not None else []
+        add_attrs_existing = (
+            [attr["name"] for attr in self.spatial_joins["additional_attributes"]]
+            if self.spatial_joins["additional_attributes"] is not None
+            else []
+        )
 
         for label_name, file_name, attribute_name in zip(
             label_names, file_names, attribute_names
@@ -1093,9 +1340,6 @@ class FiatModel(GridModel):
             # If not exist, add to spatial joins
             if label_name not in add_attrs_existing:
                 self.spatial_joins["additional_attributes"].append(attrs)
-         
-            
-
 
     def setup_classification(
         self,
@@ -1126,8 +1370,8 @@ class FiatModel(GridModel):
          damage_types : Union[List[str], str]
              "structure"or/and "content"
          remove_object_type: bool
-             True if Primary/Secondary Object Type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
-             E.g. Primary Object Type holds old data (RES) and Secondary was updated with new data (COM2).
+             True if Primary/secondary_object_type from old gdf should be removed in case the object type category changed completely eg. from RES to COM.
+             E.g. primary_object_type holds old data (RES) and Secondary was updated with new data (COM2).
         """
 
         self.exposure.setup_occupancy_type(source, attribute, type_add)
@@ -1135,13 +1379,13 @@ class FiatModel(GridModel):
         # Drop Object Type that has not been updated.
 
         if remove_object_type:
-            if type_add == "Primary Object Type":
+            if type_add == "primary_object_type":
                 self.exposure.exposure_db.drop(
-                    "Secondary Object Type", axis=1, inplace=True
+                    "secondary_object_type", axis=1, inplace=True
                 )
             else:
                 self.exposure.exposure_db.drop(
-                    "Primary Object Type", axis=1, inplace=True
+                    "primary_object_type", axis=1, inplace=True
                 )
         linking_table_new = self.exposure.update_user_linking_table(
             old_values, new_values, self.vf_ids_and_linking_df
@@ -1179,6 +1423,94 @@ class FiatModel(GridModel):
 
         # Set the building_footprint_fn property to save the building footprints
         self.building_footprint_fn = building_footprint_fn
+        self.building_footprint = gpd.read_file(building_footprint_fn)
+
+    def create_default_aggregation(
+        self, res_x: Union[int, float] = 1e3, res_y: Union[int, float] = 1e3
+    ):
+        """
+        Creates a default aggregation grid based on the specified region and resolution.
+
+        This function generates a grid of polygon geometries over the given region with
+        specified resolutions in the x and y directions. The grid is saved as a vector
+        file, which can be used for aggregation purposes.
+
+        Parameters
+        ----------
+        res_x : Union[int, float], optional
+            The resolution in the x direction [m], by default 1 km.
+        res_y : Union[int, float], optional
+            The resolution in the y direction [m], by default 1 km.
+
+        Returns
+        -------
+        List
+            Lists of the file path to the saved aggregation grid vector file, the attribute name, label name and file name.
+        """
+        rotation = 0
+        bounds = self.region.bounds
+        crs: CRS = self.region.crs
+        if crs.is_geographic:
+            res_x = res_x / 111_111  # 1 degree is ~ 111_111 meters
+            res_y = res_y / 111_111
+
+        width = int((bounds["maxx"] - bounds["minx"]) / res_x)
+        height = int((bounds["maxy"] - bounds["miny"]) / res_y)
+
+        length_x = bounds["maxx"] - bounds["minx"]
+        length_y = bounds["maxy"] - bounds["miny"]
+
+        # Adjust resolution or length to ensure alignment
+        res_x = length_x / int(length_x / res_x)
+        res_y = length_y / int(length_y / res_y)
+
+        transform_affine = (
+            res_x[0],
+            rotation,
+            bounds["minx"][0],
+            rotation,
+            -res_y[0],
+            bounds["maxy"][0],
+        )
+        shape = (height, width)
+
+        # aggregation_areas is the vector file of the grid.
+        aggregation_areas = full_from_transform(transform_affine, shape, lazy=True)
+
+        # Create vector file
+        geometries = []
+        for j, y in enumerate(aggregation_areas["y"]):
+            for i, x in enumerate(aggregation_areas["x"]):
+                cell_geom = box(
+                    x.values - res_x / 2,
+                    y.values - res_y / 2,
+                    x.values + res_x / 2,
+                    y.values + res_y / 2,
+                )
+                geometries.append(
+                    {"geometry": cell_geom, "value": aggregation_areas[j, i]}
+                )
+
+        # Create a GeoDataFrame from the geometries
+        default_aggregation_gdf = gpd.GeoDataFrame(geometries, crs=crs)
+
+        # Create Aggregation Label Value
+        default_aggregation_gdf["value"] = [
+            f"Aggr:{i}" for i in range(1, len(default_aggregation_gdf["geometry"]) + 1)
+        ]
+        default_aggregation_gdf.rename(
+            columns={"value": "default_aggregation"}, inplace=True
+        )
+        fd, default_aggregation_fn = tempfile.mkstemp(suffix=".geojson")
+        os.close(fd)
+        default_aggregation_gdf.to_file(default_aggregation_fn, driver="GeoJSON")
+
+        return (
+            [default_aggregation_fn],
+            ["default_aggregation"],
+            ["default_aggregation"],
+            ["default_aggregation_grid"],
+        )
 
     # Update functions
     def update_all(self):
@@ -1228,8 +1560,6 @@ class FiatModel(GridModel):
         if sj_path.exists():
             sj = SpatialJoins.load_file(sj_path)
             self.spatial_joins = sj.attrs.model_dump()
-            
-            
 
         # TODO: determine if it is required to read the hazard files
         # hazard_maps = self.config["hazard"]["grid_file"]
@@ -1246,7 +1576,7 @@ class FiatModel(GridModel):
         # Read the fiat configuration toml file.
         with open(fn, mode="rb") as fp:
             config = tomli.load(fp)
-        return config 
+        return config
 
     def read_tables(self):
         """Read the model tables for vulnerability and exposure data."""
@@ -1294,26 +1624,27 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-        
         fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
         if self.spatial_joins["aggregation_areas"]:
             fns_aggregation = []
-            for i in self.spatial_joins['aggregation_areas']:
-                fn_aggregation = i['file']
+            for i in self.spatial_joins["aggregation_areas"]:
+                fn_aggregation = i["file"]
                 fn_aggregation = str(Path(self.root, fn_aggregation))
-                fns_aggregation.append(fn_aggregation)               
+                fns_aggregation.append(fn_aggregation)
             fns.extend(fns_aggregation)
         if self.spatial_joins["additional_attributes"]:
             fns_additional_attributes = []
-            for i in self.spatial_joins['additional_attributes']:
-                fn_additional_attributes = i['file']
-                fn_additional_attributes = str(Path(self.root, fn_additional_attributes))
-                if 'building_footprints' in fn_additional_attributes:
+            for i in self.spatial_joins["additional_attributes"]:
+                fn_additional_attributes = i["file"]
+                fn_additional_attributes = str(
+                    Path(self.root, fn_additional_attributes)
+                )
+                if "building_footprints" in fn_additional_attributes:
                     self.building_footprint = gpd.read_file(fn_additional_attributes)
                 else:
                     fns_additional_attributes.append(fn_additional_attributes)
                 fns.extend(fns_additional_attributes)
-                
+
         if len(fns) >= 1:
             self.logger.info("Reading static geometries")
         for fn in fns:
@@ -1321,8 +1652,8 @@ class FiatModel(GridModel):
                 name = f"aggregation_areas/{Path(fn).stem}"
             elif "additional_attributes" in fn:
                 name = f"additional_attributes/{Path(fn).stem}"
-            else: 
-                name = Path(fn).stem 
+            else:
+                name = Path(fn).stem
             self.set_geoms(gpd.read_file(fn), name=name)
 
     def write(self):
@@ -1385,27 +1716,34 @@ class FiatModel(GridModel):
             Path(folder).joinpath("building_footprints.geojson")
         )
 
-    def write_geoms(self):
+    def write_geoms(self, output_single_file: bool = False):
         """_summary_."""
+        if not hasattr(self, "output_single_file"):
+            self.output_single_file = False
         if self.exposure and "exposure" in self._tables:
             fn = "exposure/{name}.gpkg"
-            for i, (geom, name) in enumerate(
-                zip(self.exposure.exposure_geoms, self.exposure.geom_names)
-            ):
-                _fn = os.path.join(self.root, fn.format(name=name))
-                if not os.path.isdir(os.path.dirname(_fn)):
-                    os.makedirs(os.path.dirname(_fn))
+            if output_single_file:
+                gdf = self.exposure.get_full_gdf(self.exposure.exposure_db)
+                name = "exposure.gpkg"
+                _fn = os.path.join(self.root, "exposure", name)
+                gdf.to_file(os.path.join(self.root, _fn))
+            else:
+                for i, (geom, name) in enumerate(
+                    zip(self.exposure.exposure_geoms, self.exposure.geom_names)
+                ):
+                    _fn = os.path.join(self.root, fn.format(name=name))
+                    if not os.path.isdir(os.path.dirname(_fn)):
+                        os.makedirs(os.path.dirname(_fn))
 
-                # This whole ordeal is terrible,
-                # but it needs a refactor that is too much to fix this properly
-                self.set_config(
-                    f"exposure.geom.file{str(i+1)}",
-                    fn.format(name=name),
-                )
-                geom.to_file(_fn)
-
-        if self.geoms:
-            GridModel.write_geoms(self)
+                    # This whole ordeal is terrible,
+                    # but it needs a refactor that is too much to fix this properly
+                    self.set_config(
+                        f"exposure.geom.file{str(i+1)}",
+                        fn.format(name=name),
+                    )
+                    geom.to_file(_fn)
+            if self.geoms:
+                GridModel.write_geoms(self)
 
     def write_tables(self) -> None:
         if len(self._tables) == 0:
@@ -1431,6 +1769,8 @@ class FiatModel(GridModel):
                         writer.writerow([metadata])
             # Exposure
             elif name == "exposure":
+                if self.output_single_file:
+                    continue
                 # The default location and save settings of the exposure data
                 fn = "exposure/exposure.csv"
                 kwargs = {"index": False}
@@ -1465,7 +1805,7 @@ class FiatModel(GridModel):
         """Write config to Delft-FIAT configuration toml file."""
         # Save the configuration file.
         with open(fn, "wb") as f:
-            tomli_w.dump(self.config, f) 
+            tomli_w.dump(self.config, f)
 
     # FIAT specific attributes and methods
     @property
@@ -1503,4 +1843,3 @@ class FiatModel(GridModel):
             elif self._read:
                 self.logger.warning(f"Overwriting table: {name}")
         self._tables[name] = df
-

@@ -65,9 +65,9 @@ def test_raise_ground_floor_height(case):
     assert all(
         gfh1 + ge1 <= gfh2 + ge2
         for gfh1, ge1, gfh2, ge2 in zip(
-            exposure_original["Ground Floor Height"],
-            exposure_original["Ground Elevation"],
-            exposure_modified["Ground Floor Height"],
-            exposure_modified["Ground Elevation"],
+            exposure_original["ground_flht"],
+            exposure_original["ground_elevtn"],
+            exposure_modified["ground_flht"],
+            exposure_modified["ground_elevtn"],
         )
     )

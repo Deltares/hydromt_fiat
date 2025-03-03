@@ -32,14 +32,14 @@ def test_update_max_potential_damage(case):
     damage_cols = [
         fm.exposure.exposure_db.columns.get_loc(c)
         for c in fm.exposure.exposure_db.columns
-        if "Max Potential Damage:" in c
+        if "max_damage_" in c
     ]
 
     # Set the max potential damage to 0 for a few objects (buyout) and increase with 10% 'economic growth'
     updated_max_pot_damage = fm.exposure.exposure_db.copy()
     updated_max_pot_damage.iloc[:10, damage_cols] = 0
     print(
-        f"Setting max pot damage of assets with Object ID {list(updated_max_pot_damage.iloc[:10, 0])} to 0."
+        f"Setting max pot damage of assets with object_id {list(updated_max_pot_damage.iloc[:10, 0])} to 0."
     )
     updated_max_pot_damage.iloc[:, damage_cols] = (
         updated_max_pot_damage.iloc[:, damage_cols] * 1.01
@@ -62,13 +62,13 @@ def test_update_max_potential_damage(case):
 
     # check if the max potential damage is updated
     updated_max_pot_damage.reset_index(inplace=True, drop=True)
-    updated_max_pot_damage["Object Name"] = updated_max_pot_damage[
-        "Object Name"
+    updated_max_pot_damage["object_name"] = updated_max_pot_damage[
+        "object_name"
     ].astype(int)
 
-    # Add Object ID to df
-    updated_max_pot_damage["Object ID"] = updated_max_pot_damage["Object Name"]
-    cols = ["Object ID"] + [col for col in updated_max_pot_damage if col != "Object ID"]
+    # Add object_id to df
+    updated_max_pot_damage["object_id"] = updated_max_pot_damage["object_name"]
+    cols = ["object_id"] + [col for col in updated_max_pot_damage if col != "object_id"]
     updated_max_pot_damage = updated_max_pot_damage[cols]
 
     pd.testing.assert_frame_equal(
