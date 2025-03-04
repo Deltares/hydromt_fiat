@@ -1,0 +1,1090 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" data-theme="light">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>&lt;no title&gt; &#8212; HydroMT-FIAT  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "light";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_examples/local_Damages_and_damage_curves_Brasil';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.5.3" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="light">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+    
+    <img src="../_static/fiat_logo.svg" class="logo__image only-light" alt=""/>
+    <img src="../_static/fiat_logo.svg" class="logo__image only-dark pst-js-only" alt=""/>
+  
+  
+    <p class="title logo__title">HydroMT-FIAT</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/user_guide_overview.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data/data_sources.html">
+    Data Sources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/api_index.html">
+    API reference
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="../changelog.html">
+    What’s new
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../installation.html">
+    Installation
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../examples/index.html">
+    Examples
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../user_guide/user_guide_overview.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../data/data_sources.html">
+    Data Sources
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../api/api_index.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../changelog.html">
+    What’s new
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" class="icon-link-image" alt="GitHub"/></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="../_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">&lt;no title&gt;</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <dl>
+<dt>{</dt><dd><dl>
+<dt>“cells”: [</dt><dd><dl>
+<dt>{</dt><dd><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “eb3d1047”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“# Build a complete regional Delft-FIAT model in Brasil.n”,
+“n”,
+“This notebook demonstrates how to set up a regional Delft-FIAT model using local assets and occupations, damage values and damage curves. As an example we will create a model for the city of Rio de Janeiro, Brasil. The relevant data is obtained from regional partners and databases. Both the data sources and the region of interest (the model domain) can be changed according to the user’s wishes.n”,
+“n”,
+“<em>Disclaimer: The outcomes of this model are not validated</em>n”,
+“n”,
+“## <strong>Step 0</strong>: Import required packagesn”,
+“First we need to import the necessary python packages.”</p>
+</div></blockquote>
+<p>]</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “5e2c57cf”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# import required packagesn”,
+“import osn”,
+“from hydromt_fiat.fiat import FiatModeln”,
+“from hydromt.log import setuplogn”,
+“from pathlib import Pathn”,
+“import geopandas as gpdn”,
+“import matplotlib.pyplot as pltn”,
+“import shutiln”,
+“n”,
+“%matplotlib inline”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “fa3c91aa”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 1a</strong>: Configure - initializationn”,
+“The first step is to set up the configuration needed to initialize the FIAT model. Begin by specifying where to save the model with the following parameters:n”,
+“- <cite>model_root</cite>: the path to a folder where the model should be saved inn”,
+“- <cite>model_name</cite>: the name of the model”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “982daacd”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“model_root = &quot;FIAT_database&quot;  # where to save the FIAT modeln”,
+“model_name = &quot;example/rio&quot;  # name of the case study”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “cd8ab2d1”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“We need some additional utilities, such as a data catalog telling the model where to find the data and a logger keeping track of changes to the model. Specifying these, the parameters below don’t need to be altered.n”,
+“- <cite>model_folder</cite>: the full path to the to be created model folder (<cite>model_root</cite> + <cite>model_name</cite>)n”,
+“- <cite>data_catalog</cite>: the relative path to the HydroMT-FIAT global data catalog. Make sure the root specified in the catalog is correctn”,
+“- <cite>logger_name</cite>: the log-file name. A logger object is also initialized below”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “92741643”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“model_folder = Path(model_root) / model_name  # full path to model foldern”,
+“data_catalog = (n”,
+“    Path(os.path.abspath(&quot;&quot;)) / &quot;data&quot; / &quot;hydromt_fiat_catalog_Brasil.yml&quot;n”,
+“)  # path to data catalog relative to this notebookn”,
+“logger_name = &quot;hydromt_fiat&quot;  # name of the loggern”,
+“logger = setuplog(logger_name, log_level=10)  # setup logger”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “3a648358”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 1b</strong>: Configure - input files”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “aa3a8100”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“To assign the relevant <strong>maximum potential damages</strong> and <strong>vulnerability curves</strong>, HydroMT-FIAT must know the occupancy linking of the asset in the exposure data. For setting up the regional vulnerability we need to prepare <strong>three input files</strong>:  n”,
+“n”,
+“<strong>1. Vulnerability curves</strong>: A folder with a csv-file for each vulnerability curve or a single file with all vulnerability curves already aggregated. In this example notebook we use single files per vulnerability curve.n”,
+“n”,
+“- Each csv-file must contain the following columns in the right order, from left to right:n”,
+“    n”,
+“    <cite>waterdepth</cite>: The inundation depth which should be in the same unit (meters or feet) for all curves.  n”,
+“    <cite>factor</cite>:  The factor of damage per waterdepht. n”,
+“n”,
+“The file name should be the name of the damage curve.n”,
+“Here an example for one vulnerability curve in meters:n”,
+“n”,
+“<a href="#id3"><span class="problematic" id="id4">|wd[m]|factor|</span></a>n”,
+“<a href="#id5"><span class="problematic" id="id6">|---- |------|</span></a>n”,
+“<a href="#id7"><span class="problematic" id="id8">|0.5  | 0.3  |\n&quot;,
+&quot;|1.0  | 0.5  |\n&quot;,
+&quot;|1.5  | 0.7  |\n&quot;,
+&quot;|1.75 | 0.9  |\n&quot;,
+&quot;|2.0  | 1.0  |\n&quot;,
+&quot;\n&quot;,
+&quot;**2. Vulnerability curves linking**: A csv-file which links the vulnerability curves to the occupancy type of each asset. \n&quot;,
+&quot;\n&quot;,
+&quot;- The linking csv-file must contain the following columns in the right order, from left to right:\n&quot;,
+&quot;    \n&quot;,
+&quot;    `Fiat Damage Function Name`: The name of the vulnerability curve file.  \n&quot;,
+&quot;    `Exposure Link`: The primary or secondary object type in the exposure data to link the vulnerability curve.  \n&quot;,
+&quot;    `Damage Type`: The type of damage. This can be structural, content or any other damage the user would like to assess.   \n&quot;,
+&quot;    `Type`: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification. \n&quot;,
+&quot;\n&quot;,
+&quot;Here an example for three different vulnerability curves:\n&quot;,
+&quot;\n&quot;,
+&quot;|</span></a> FIAT Damage Function Name | Exposure Link | Damage Type | Type        <a href="#id9"><span class="problematic" id="id10">|\n&quot;,
+&quot;|</span></a>—————————<a href="#id11"><span class="problematic" id="id12">|---------------|</span></a>————-<a href="#id13"><span class="problematic" id="id14">|-------------|</span></a>n”,
+“| JRC_COMS                  | commercial    | structure   | commercial  <a href="#id15"><span class="problematic" id="id16">|\n&quot;,
+&quot;|</span></a> R1-BC                     | R1-B          | content     | residential <a href="#id17"><span class="problematic" id="id18">|\n&quot;,
+&quot;|</span></a> R1-BS                     | R1-B          | structure   | residential <a href="#id19"><span class="problematic" id="id20">|\n&quot;,
+&quot;\n&quot;,
+&quot;**3. Maximum potential damages and linking**: A csv-file with the max. potential damage values and the link to the occupancy of each asset.\n&quot;,
+&quot;    \n&quot;,
+&quot;- The max. potential damage csv-file must contain the following columns in the right order, from left to right:\n&quot;,
+&quot;    \n&quot;,
+&quot;    `Exposure Link`: The primary or secondary object type in the exposure data to link the max. potentia damage value.  \n&quot;,
+&quot;    `Value`: The damage value per square unit, in this example notebook in Brazilian Real (BRL).  \n&quot;,
+&quot;    `Damage Type`: The type of damage. This can be structural, content or any other damage the user would like to assess.\n&quot;,
+&quot;\n&quot;,
+&quot;Here an example for three different vulnerability curves:\n&quot;,
+&quot;\n&quot;,
+&quot;|</span></a> Exposure Link | Value   | Damage Type <a href="#id21"><span class="problematic" id="id22">|\n&quot;,
+&quot;|</span></a>—————<a href="#id23"><span class="problematic" id="id24">|---------|</span></a>————-<a href="#id25"><span class="problematic" id="id26">|\n&quot;,
+&quot;|</span></a> commercial    | 4026    | structure   <a href="#id27"><span class="problematic" id="id28">|\n&quot;,
+&quot;|</span></a> R1-B          | 2185.45 | structure   <a href="#id29"><span class="problematic" id="id30">|\n&quot;,
+&quot;|</span></a> R1-B          | 298.25 | content     <a href="#id1"><span class="problematic" id="id2">|</span></a>”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “9ac62208”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 1c</strong>: Configure - model setupn”,
+“Next we need to set up the sptial boundaries, or domain, of the model.n”,
+“n”,
+“A useful tool for this is <a class="reference external" href="http://geojson.io">http://geojson.io</a>. Here you can draw a polygon on the map and export it to a geojson file, or copy the GeoJSON description directly into the <cite>area_of_interest</cite> parameter. In this example, we load in a GeoJSON file with our model domain.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “d07d0b3b”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“domain_fn = Path(&quot;./data/region/Riodejaneiro.geojson&quot;)n”,
+“region = gpd.read_file(domain_fn)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “1935203e”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“Next, we need to specify properties of the various dataset. For the vulnerability and exposure data HydroMT-FIAT needs the names and unit of the datasets. The names should correspond to the names (keys) in the data catalog. Should you wish to use different data sources, <em>make sure to update the data catalog</em>. For the output data, we need to specify the output file names and where to store them. The parameter names below are parsed by the model builder, so they should not be changed. Instead of using a data catalog you can als parse a file path directly as input as we did for the assets and occupancy types in this example notebook. n”,
+“n”,
+“<strong>Vulnerability</strong>n”,
+“- <cite>vulnerability_curves</cite>: the source name of the vulnerability curve dataset as defined in the HydroMT-FIAT Brasil data catalog.n”,
+“- <cite>vulnerability_identifiers_and_linking_fn</cite>: the source name of the <em>occupancy type-vulnerability curves</em> linking table.n”,
+“- <cite>unit</cite>: the unit of the vulnerability curves. The regional curves are in meters.n”,
+“n”,
+“<strong>Exposure</strong>n”,
+“- <cite>asset_locations</cite>: the source name of the location and (optionally) geometry data of the assests for which damages will be calculated. In this example, regional footprints are used.n”,
+“- <cite>occupancy_type</cite>: the source name of the occupancy type data to classify the assets. In this example, the regional land use data is used.n”,
+“- <cite>max_potential_damage</cite>: the source name of the maximum potential damage values data. In this example, the regional maximum damage values are used.n”,
+“- <cite>ground_floor_height</cite>: the height of the ground floor of all assets, in the same <cite>unit</cite>n”,
+“- <cite>unit</cite>: the unit of the exposure datan”,
+“n”,
+“<strong>Output</strong>n”,
+“- <cite>output_dir</cite>: the name of the output directoryn”,
+“- <cite>output_csv_name</cite>: the name of the output CSVn”,
+“- <cite>output_vector_name</cite>: the name of the vector output file(s)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “7456626c”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“### Setup vulnerability parameters ###n”,
+“vulnerability_curves = &quot;vulnerability_curves&quot;n”,
+“vulnerability_identifiers_and_linking_fn = &quot;vulnerability_curves_linking&quot;n”,
+“unit = &quot;meters&quot;n”,
+“n”,
+“### Setup exposure parameters ###n”,
+“asset_locations = &quot;./data/assets/rio_exposure.geojson&quot;n”,
+“occupancy_type = &quot;./data/assets/rio_exposure.geojson&quot;n”,
+“max_potential_damage = &quot;damage_values&quot;n”,
+“linking_column = &quot;secondary_object_type&quot;n”,
+“ground_floor_height = 0n”,
+“damage_types = [&quot;structure&quot;, &quot;content&quot;]n”,
+“unit = &quot;meters&quot;n”,
+“n”,
+“### Setup output parameters ###n”,
+“output_dir = &quot;output&quot;n”,
+“output_csv_name = &quot;output.csv&quot;n”,
+“output_vector_name = &quot;spatial.gpkg&quot;”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “cf2f0ad5”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“The above parameters are collected in a dictonairy to be passed to HydroMT-FIAT.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “8c5d6e92”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“configuration = {n”,
+“    &quot;setup_output&quot;: {n”,
+“        &quot;output_dir&quot;: output_dir,n”,
+“        &quot;output_csv_name&quot;: output_csv_name,n”,
+“        &quot;output_vector_name&quot;: output_vector_name,n”,
+“    },n”,
+“    &quot;setup_vulnerability_from_csv&quot;: {n”,
+“        &quot;vulnerability_curves&quot;: vulnerability_curves,n”,
+“        &quot;vulnerability_identifiers_and_linking_fn&quot;: vulnerability_identifiers_and_linking_fn,n”,
+“        &quot;unit&quot;: unit,n”,
+“    },n”,
+“    &quot;setup_exposure_buildings&quot;: {n”,
+“        &quot;asset_locations&quot;: asset_locations,n”,
+“        &quot;occupancy_type&quot;: occupancy_type,n”,
+“        &quot;max_potential_damage&quot;: max_potential_damage,n”,
+“        &quot;linking_column&quot;: linking_column,n”,
+“        &quot;ground_floor_height&quot;: ground_floor_height,n”,
+“        &quot;unit&quot;: unit,n”,
+“        &quot;damage_types&quot;: damage_types,n”,
+“    },n”,
+“}”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “2e27fa80”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 2</strong>: Initializen”,
+“In this step we initialize HydroMT-FIAT with the <cite>model_folder</cite>, <cite>data_catalog</cite>, and <cite>logger</cite> that we defined above.n”,
+“n”,
+“<em>Note that if the `model_folder` already exists, it is deleted before initializing HydroMT-FIAT.</em>”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “c1ef7aac”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“if model_folder.exists():n”,
+“    shutil.rmtree(model_folder)n”,
+“fiat_model = FiatModel(n”,
+“    root=model_folder, mode=&quot;w&quot;, data_libs=[data_catalog], logger=loggern”,
+“)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “f330fb15”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 3</strong>: Buildn”,
+“In this step we build the Delft-FIAT model. Depending on the extent of the model it can take some time to. During the building of the model, log messages display what is happening.n”,
+“n”,
+“<em>Note that the model will not yet be written because of setting the write argument to False.</em>”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “c2180e0c”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“fiat_model.build(region={&quot;geom&quot;: region}, opt=configuration, write=False)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “3c18d888”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 4a</strong>: Inspect modeln”,
+“We now inspect the resulting exposure data and vulnerability curves that will be saved in the <cite>fiat_model</cite>.n”,
+“n”,
+“### Exposure datan”,
+“In the map below, the region and secondary_object_type of the exposure objects are plotted. You can zoom in and see whether the data makes sense, perhaps using Google maps and/or streetview to validate the occupancy types.n”,
+“n”,
+“<em>Note: In Delft-FIAT, exposure is defined with object footprints, lines or centroids.</em>”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “6df4fb1b”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Get the geodataframe with exposure datan”,
+“gdf = fiat_model.exposure.get_full_gdf(fiat_model.exposure.exposure_db)n”,
+“n”,
+“# Plot the region and the secondary_object_types of the exposure datan”,
+“m = region.explore(name=&quot;Region&quot;, style_kwds={&quot;color&quot;: &quot;black&quot;, &quot;fill&quot;: False})n”,
+“m = gdf.explore(m=m, column=&quot;secondary_object_type&quot;, name=&quot;Exposure types&quot;)n”,
+“m”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “e6ddda9d”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Maximum potential damage valuesn”,
+“The next thing we inspect are the maximum potential damage values. Each of these buildings has a maximum potential damage that can be inflicted by a flood, which is associated with structural damages (e.g., to the walls) or damage to contents (e.g., to the furniture).n”,
+“n”,
+“The maximum structural potential damage of a building is associated with the construction costs, the size of the building and the depreciated value of the building after the flood. For an accurate flood damage assessment this information is required at the building level. However, often this is not available. Therefore, the buildings are usually classified based on their material and usage type, and assigned a generalized maximum potential damage per m&lt;sup&gt;2&lt;/sup&gt; per class.n”,
+“n”,
+“In this example, the maximum potential damage values per m&lt;sup&gt;2&lt;/sup&gt; from a local entitiy. Vulnerability curves are taken from a regional study.n”,
+“n”,
+“In this case the maximum potential damage is in Brazilian Real 2024. By multiplying the maximum potential damage values per m&lt;sup&gt;2&lt;/sup&gt; with the area of the building footprints, we derive the maximum potential structure damage value for each of our exposure assets. You can see this in the map below.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “0ac56e14”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“gdf.explore(column=&quot;max_damage_content&quot;)”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “b7d618a6”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“### Vulnerability curvesn”,
+“A flooding typically does not cause maximum damage to a structure. This is accounted for by the damage fraction, quantifying the damage to a structure relative to the maximum potential damage. A damage cuvre, or vulnerability curve, then relates the water depth (quantifying the flood severity) to the damage fraction. The shape of the damage curve differs for each occupancy type. These two datasets are linked through the vulnerability linking table. If the ground floor of a building is raised (by an amount given by <cite>ground_floor_height</cite>), the water depth is reduced with the ground floor height.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “ca00eef7”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“# Get the range of (possible) water depthsn”,
+“water_depths = fiat_model.vulnerability.hazard_valuesn”,
+“# Plot damage curves for some occupancy typesn”,
+“line_styles = [&quot;–&quot;, &quot;-&quot;, &quot;:&quot;]n”,
+“for function_name, ls in zip(fiat_model.vulnerability.functions.keys(), line_styles):n”,
+“    dmg = [float(i) for i in fiat_model.vulnerability.functions[function_name]]n”,
+“    plt.plot(water_depths, dmg, label=function_name, ls=ls)n”,
+“plt.xlabel(&quot;depth (m)&quot;)n”,
+“plt.ylabel(&quot;damage fraction (-)&quot;)n”,
+“plt.legend(bbox_to_anchor=(1.04, 1), loc=&quot;upper left&quot;)n”,
+“plt.show()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“attachments”: {},
+“cell_type”: “markdown”,
+“id”: “0b37d263”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 5</strong>: Write a modeln”,
+“In this final step, the FIAT model is written to the <cite>model_folder</cite> in the folder structure that is required for Delft-FIAT.”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “32996f5d”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“fiat_model.write()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “markdown”,
+“id”: “e5dbcc76”,
+“metadata”: {},
+“source”: [</p>
+<blockquote>
+<div><p>“## <strong>Step 6</strong>: Read a modeln”,
+“First initialize a new model instance in read mode in the correct folder to read in an already configured model”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>},
+{</p>
+<blockquote>
+<div><p>“cell_type”: “code”,
+“execution_count”: null,
+“id”: “8bc253dc”,
+“metadata”: {},
+“outputs”: [],
+“source”: [</p>
+<blockquote>
+<div><p>“fiat_model_new = FiatModel(n”,
+“    root=model_folder, mode=&quot;r&quot;, data_libs=[data_catalog], logger=loggern”,
+“)n”,
+“fiat_model_new.read()”</p>
+</div></blockquote>
+<p>]</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>],
+“nbformat”: 4,
+“nbformat_minor”: 5</p>
+</dd>
+</dl>
+<p>}</p>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="simple visible nav section-nav flex-column">
+</ul>
+
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_examples/local_Damages_and_damage_curves_Brasil.ipynb">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/_examples/local_Damages_and_damage_curves_Brasil.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright Deltares.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
