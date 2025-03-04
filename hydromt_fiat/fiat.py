@@ -74,6 +74,9 @@ class FiatModel(GridModel):
         if not isinstance(data_libs, (list, tuple)):
             data_libs = [data_libs]
         data_libs += [Path(DATADIR, "hydromt_fiat_catalog_global.yml")]
+        # Set default config name if not defined
+        if config_fn is None:
+            config_fn = FiatModel._CONF
         super().__init__(
             root=root,
             mode=mode,
@@ -1502,7 +1505,7 @@ class FiatModel(GridModel):
         self.logger.info(f"Reading model data from {self.root}")
 
         # Read the configuration file
-        self.read_config(config_fn=str(Path(self.root).joinpath("settings.toml")))
+        self.read_config(config_fn=str(Path(self.root).joinpath(self._config_fn)))
 
         # Read spatial joins configurations
         sj_path = Path(self.root).joinpath("spatial_joins.toml")
