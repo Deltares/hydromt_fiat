@@ -15,7 +15,7 @@ authors = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "hydromt<1.0",
+    "hydromt>=0.10.1,<1.0",
     "geopandas",
     "geopy",
     "numpy",
@@ -33,7 +33,6 @@ dependencies = [
     "tqdm",
     "pycountry-convert",
     "pyarrow",
-    "dask<=2024.12.1",
     "pint"
 ]
 readme = "README.rst"
