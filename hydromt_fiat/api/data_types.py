@@ -13,9 +13,11 @@ class Units(str, Enum):
     meters = "meters"
     feet = "feet"
 
+
 class Conversion(float, Enum):
     meters_to_feet = 3.28084
     feet_to_meters = 0.3048
+    eur_to_us_dollars = 1.327  # Average exchange rate in 2010
 
 
 class Currency(str, Enum):

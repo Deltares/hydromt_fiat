@@ -26,8 +26,7 @@ _cases = {
         "type": "datum",
         "path_ref": None,
         "attr_ref": None,
-        "ground_elevation": DATADIRDEM
-        / "charleston_14m.tif",
+        "ground_elevation": DATADIRDEM / "charleston_14m.tif",
         "aggregation_area_fn": [
             AGGRDIR / "aggregation_zones" / "council.gpkg",
             AGGRDIR / "aggregation_zones" / "base_zones.gpkg",
@@ -87,7 +86,7 @@ def test_setup_new_composite_areas_ground_elevation_aggregation(case):
 
     # Check if max potentail damages are divided correctly
     exposure_new_composite = exposure_modified[
-        exposure_modified["primary_object_type"] == "New development area"
+        exposure_modified["primary_object_type"] == "new_development_area"
     ]
     assert round(sum([38142538.34, 13528445.7])) == round(
         sum(exposure_new_composite["max_damage_content"].values)

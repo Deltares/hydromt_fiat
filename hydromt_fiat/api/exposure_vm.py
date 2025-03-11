@@ -83,7 +83,7 @@ class ExposureViewModel:
                 crs=crs,
                 unit=Units.feet.value,
             )
-        
+
             self.exposure.setup_buildings_from_single_source(
                 source,
                 ground_floor_height,
@@ -121,8 +121,8 @@ class ExposureViewModel:
                 region=region,
                 crs=crs,
                 unit=Units.meters.value,
-                )
-            
+            )
+
             self.exposure.setup_buildings_from_multiple_sources(
                 asset_locations=source,
                 occupancy_source=source,
@@ -167,7 +167,7 @@ class ExposureViewModel:
                 occupancy_type=source,
                 max_potential_damage=source,
                 ground_floor_height=ground_floor_height,
-                unit=Units.feet.value, 
+                unit=Units.feet.value,
                 extraction_method=ExtractionMethod.centroid.value,
                 damage_types=["structure", "content"],
                 damage_unit=Currency.dollar.value,

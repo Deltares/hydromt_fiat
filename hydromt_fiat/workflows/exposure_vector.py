@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
+import re
 
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
 from hydromt_fiat.api.data_types import Units, Conversion, Currency
@@ -26,14 +27,13 @@ from hydromt_fiat.data_apis.open_street_maps import (
 from hydromt_fiat.workflows.damage_values import (
     preprocess_jrc_damage_values,
     preprocess_hazus_damage_values,
-    preprocess_damage_values
+    preprocess_damage_values,
 )
 from hydromt_fiat.workflows.exposure import Exposure
 from hydromt_fiat.workflows.utils import detect_delimiter
 from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
     get_area,
-    sjoin_largest_area,
     get_crs_str_from_gdf,
     join_spatial_data,
     ground_elevation_from_dem,
@@ -56,7 +56,7 @@ class ExposureVector(Exposure):
         "secondary_object_type",
         "ground_elevtn",
     ]
-    _OPTIONAL_VARIABLE_COLUMNS = ["Aggregation Label: {}", "Aggregation Variable: {}"]
+    _OPTIONAL_VARIABLE_COLUMNS = ["aggregation_label:{}", "Aggregation Variable: {}"]
 
     _CSV_COLUMN_DATATYPES = {
         "object_id": int,
@@ -64,10 +64,10 @@ class ExposureVector(Exposure):
         "primary_object_type": str,
         "secondary_object_type": str,
         "extract_method": str,
-        "Aggregation Label": str,
+        "aggregation_lable:": str,
         "fn_damage_structure": str,
         "fn_damage_content": str,
-        "Ground Flood Height": float,
+        "ground_flht": float,
         "ground_elevtn": float,
         "max_damage_structure": float,
         "max_damage_content": float,
@@ -150,6 +150,7 @@ class ExposureVector(Exposure):
         gfh_unit: Units = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
         grnd_elev_unit: Units = None,
+        eur_to_us_dollar: bool = False,
     ) -> None:
         """Set up asset locations and other available data from a single source.
 
@@ -165,6 +166,10 @@ class ExposureVector(Exposure):
             height to the assets.
         extraction_method : str
             The extract_method to be used for all of the assets.
+        extraction_method : str
+            The extract_method to be used for all of the assets.
+        eur_to_us_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
         """
         if str(source).upper() == "NSI":
             # The NSI data is selected, so get the assets from the NSI
@@ -236,10 +241,7 @@ class ExposureVector(Exposure):
         # Set the ground_flht if not yet set
         # TODO: Check a better way to access to to the geometries, self.empousure_geoms is a list an not a geodataframe
         if ground_elevation is not None:
-            self.setup_ground_elevation(
-                ground_elevation,
-                grnd_elev_unit
-            )
+            self.setup_ground_elevation(ground_elevation, grnd_elev_unit)
 
         # Remove the geometry column from the exposure_db
         if "geometry" in self.exposure_db:
@@ -311,14 +313,33 @@ class ExposureVector(Exposure):
                 crs = self.exposure_geoms[0].crs
                 roads = roads.to_crs(crs)
 
+        # recreate object_id for buildings and roads
+        full_exposure = pd.concat(
+            [self.get_full_gdf(self.exposure_db), roads]
+        ).reset_index(drop=True)
+        full_exposure["object_id"] = full_exposure["object_id"].index
+        roads = full_exposure[
+            full_exposure["primary_object_type"].str.contains(
+                "road", regex=False, na=False
+            )
+        ]
+        buildings = full_exposure[
+            ~full_exposure["primary_object_type"].str.contains(
+                "road", regex=False, na=False
+            )
+        ]
+
         # Set the exposure_geoms
         self.set_exposure_geoms(roads[["object_id", "geometry"]])
         self.set_geom_names("roads")
+        idx_buildings = self.geom_names.index("buildings")
+        self.exposure_geoms[idx_buildings] = buildings[["object_id", "geometry"]]
+        del full_exposure["geometry"]
 
-        del roads["geometry"]
+        assert not full_exposure["object_id"].duplicated().any()
 
         # Update the exposure_db
-        self.exposure_db = pd.concat([self.exposure_db, roads]).reset_index(drop=True)
+        self.exposure_db = full_exposure
 
     def setup_buildings_from_multiple_sources(
         self,
@@ -329,6 +350,7 @@ class ExposureVector(Exposure):
         extraction_method: str,
         occupancy_attr: Union[str, None] = None,
         damage_types: Union[List[str], None] = None,
+        linking_column :str = "primary_object_type",
         country: Union[str, None] = None,
         gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
@@ -339,6 +361,7 @@ class ExposureVector(Exposure):
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
         damage_translation_fn: Union[Path, str] = None,
+        eur_to_us_dollar: bool = False,
     ):
         """
         Set up the exposure data using multiple sources.
@@ -367,6 +390,8 @@ class ExposureVector(Exposure):
         damage_types : List[str], None
             The list of damage types to be used. If None, the default damage types
             will be used.
+        linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         country : str, None
             The country to be used to set the damage function. If None, the default
             damage function will be used.
@@ -395,6 +420,8 @@ class ExposureVector(Exposure):
         damage_translation_fn : Path, str
             The path to the file that contains the translation of the damage types to
             the damage values. If None, the default translation file will be used.
+        eur_to_us_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
 
         Returns
         -------
@@ -408,13 +435,20 @@ class ExposureVector(Exposure):
             occupancy_source, occupancy_attr, keep_unclassified=keep_unclassified
         )
         self.setup_max_potential_damage(
-            max_potential_damage, damage_types, country=country, damage_translation_fn = damage_translation_fn
+            max_potential_damage,
+            damage_types,
+            country=country,
+            damage_translation_fn=damage_translation_fn,
+            eur_to_us_dollar=eur_to_us_dollar,
+            linking_column= linking_column
         )
         if (
             any(
                 isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
-            ) or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"]
-                
+            )
+            or any(
+                isinstance(geom, MultiPolygon)
+                for geom in self.exposure_geoms[0]["geometry"]
             )
             and bf_conversion
         ):
@@ -439,7 +473,7 @@ class ExposureVector(Exposure):
             a point or polygon dataset.
         """
         self.logger.info("Setting up asset locations...")
-        #if isinstance(asset_locations, str):
+        # if isinstance(asset_locations, str):
         if str(asset_locations).upper() == "OSM":
             polygon = self.region.to_crs(4326).geometry.values[0]
             assets = get_assets_from_osm(polygon)
@@ -470,7 +504,7 @@ class ExposureVector(Exposure):
         # Set the asset locations to the geometry variable (self.exposure_geoms)
         # and set the geom name
         if len(assets.columns) > 2:
-            assets = assets[['object_id', 'geometry']]
+            assets = assets[["object_id", "geometry"]]
 
         self.set_exposure_geoms(assets)
         self.set_geom_names("buildings")
@@ -531,8 +565,13 @@ class ExposureVector(Exposure):
                 occupancy_source, geom=self.region
             )
             if occupancy_attr is not None:
-                occupancy_building.rename(columns={occupancy_attr: type_add}, inplace=True)
-            occupancy_types = [type_add]
+                occupancy_building.rename(
+                    columns={occupancy_attr: type_add}, inplace=True
+                )
+            if "primary_object_type" and "secondary_object_type" in occupancy_building.columns:
+                occupancy_types = ["primary_object_type", "secondary_object_type"]
+            else:
+                occupancy_types = [type_add]
 
         # Check if the CRS of the occupancy map is the same as the exposure data
         if occupancy_building.crs != self.crs:
@@ -555,14 +594,16 @@ class ExposureVector(Exposure):
             # occupancy_landuse. Only take the largest overlapping object from the
             # occupancy_landuse.
             gdf = gpd.sjoin(
-                self.exposure_geoms[0], occupancy_building[to_keep], how = "left", predicate="intersects"
+                self.exposure_geoms[0],
+                occupancy_building[to_keep],
+                how="left",
+                predicate="intersects",
             )
             gdf.drop(columns=["index_right"], inplace=True)
 
-            if occupancy_source == 'OSM':
-            
-            ## Landuse
-            # Replace values with landuse if applicable for Primary and Secondary Object Type
+            if occupancy_source == "OSM":
+                ## Landuse
+                # Replace values with landuse if applicable for Primary and Secondary Object Type
                 occupancy_landuse.rename(
                     columns={
                         "primary_object_type": "pot",
@@ -570,11 +611,13 @@ class ExposureVector(Exposure):
                     },
                     inplace=True,
                 )
-                
+
                 gdf_landuse = gdf.sjoin(
-                    occupancy_landuse[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
+                    occupancy_landuse[["geometry", "pot", "pot_2"]],
+                    how="left",
+                    predicate="intersects",
                 )
-                gdf_landuse.reset_index(inplace = True, drop=True)
+                gdf_landuse.reset_index(inplace=True, drop=True)
 
                 # Replace values with landuse
                 gdf_landuse.loc[gdf_landuse["pot"].notna(), "primary_object_type"] = (
@@ -585,7 +628,6 @@ class ExposureVector(Exposure):
                 )
                 gdf_landuse.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
-                
                 ## Amenity
                 # Fill nan values with values amenity for Primary and Secondary Object Type
                 occupancy_amenity.rename(
@@ -597,40 +639,53 @@ class ExposureVector(Exposure):
                 )
 
                 gdf_amenity = gdf_landuse.sjoin(
-                    occupancy_amenity[["geometry", "pot", "pot_2"]], how="left", predicate="intersects"
+                    occupancy_amenity[["geometry", "pot", "pot_2"]],
+                    how="left",
+                    predicate="intersects",
                 )
-                gdf_amenity.reset_index(inplace = True, drop=True)
+                gdf_amenity.reset_index(inplace=True, drop=True)
                 # Replace values with amenity
-                gdf_amenity.loc[gdf_amenity["pot"].notna(), "primary_object_type"] = gdf_amenity["pot"]
-                gdf_amenity.loc[gdf_amenity["pot_2"].notna(), "secondary_object_type"] = gdf_amenity["pot_2"]
-                
+                gdf_amenity.loc[gdf_amenity["pot"].notna(), "primary_object_type"] = (
+                    gdf_amenity["pot"]
+                )
+                gdf_amenity.loc[
+                    gdf_amenity["pot_2"].notna(), "secondary_object_type"
+                ] = gdf_amenity["pot_2"]
+
                 gdf_amenity.drop(columns=["index_right", "pot", "pot_2"], inplace=True)
 
                 # Rename some major catgegories
                 gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "yes", "secondary_object_type"
+                    gdf_amenity["secondary_object_type"] == "yes",
+                    "secondary_object_type",
                 ] = "residential"
                 gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "house", "secondary_object_type"
+                    gdf_amenity["secondary_object_type"] == "house",
+                    "secondary_object_type",
                 ] = "residential"
                 gdf_amenity.loc[
-                    gdf_amenity["secondary_object_type"] == "apartments", "secondary_object_type"
+                    gdf_amenity["secondary_object_type"] == "apartments",
+                    "secondary_object_type",
                 ] = "residential"
                 gdf = gdf_amenity
-                gdf.drop_duplicates(subset='geometry', inplace=True)
+                gdf.drop_duplicates(subset="geometry", inplace=True)
 
             # Remove the objects that do not have a primary_object_type, that were not
             # overlapping with the land use map, or that had a land use type of 'nan'.
             if "primary_object_type" in gdf.columns:
-                gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = np.nan
+                gdf.loc[gdf["primary_object_type"] == "", "primary_object_type"] = (
+                    np.nan
+                )
                 nr_without_primary_object = len(
                     gdf.loc[gdf["primary_object_type"].isna()].index
                 )
                 if keep_unclassified:
                     # merge assets with occupancy
                     if len(self.exposure_geoms[0]) > len(gdf):
-                        gdf = pd.concat([gdf, self.exposure_geoms[0]], ignore_index = True)
-                        gdf.drop_duplicates(subset = "object_id", inplace = True)	
+                        gdf = pd.concat(
+                            [gdf, self.exposure_geoms[0]], ignore_index=True
+                        )
+                        gdf.drop_duplicates(subset="object_id", inplace=True)
                     # assign residential if no primary object type
                     gdf.loc[
                         gdf["primary_object_type"].isna(), "secondary_object_type"
@@ -666,7 +721,7 @@ class ExposureVector(Exposure):
 
             # Add secondary Object Type if not in columns
             if "secondary_object_type" not in gdf.columns:
-                gdf["secondary_object_type"] =gdf["primary_object_type"]
+                gdf["secondary_object_type"] = gdf["primary_object_type"]
 
             # Update the exposure geoms
             self.exposure_geoms[0] = gdf[["object_id", "geometry"]]
@@ -819,7 +874,7 @@ class ExposureVector(Exposure):
         gfh_attribute_name: Union[str, List[str], None] = None,
         gfh_method: Union[str, List[str], None] = "nearest",
         max_dist: float = 10,
-        gfh_unit: Units = None
+        gfh_unit: Units = None,
     ) -> None:
         """Set the ground_flht of the exposure data. This function overwrites
         the existing ground_flht column if it already exists.
@@ -923,13 +978,16 @@ class ExposureVector(Exposure):
         max_dist: float = 10,
         country: Union[str, None] = None,
         damage_translation_fn: Union[str, Path] = None,
+        eur_to_us_dollar: bool = False,
+        linking_column = None, 
     ) -> None:
-        """Setup the max potential damage column of the exposure data in various ways.
+        """Setup the max potential damage column of the exposure data in various ways. 
 
         Parameters
         ----------
         max_potential_damage : Union[int, float, str, Path, List[str], List[Path], pd.DataFrame], optional
             _description_, by default None
+            The max_potential_damage values per square unit should be in the same unit as the length unit. That means if the length unit is for example in meters, the damage values should be in value per square meters.
         damage_types : Union[List[str], str, None], optional
             _description_, by default None
         country : Union[str, None], optional
@@ -942,6 +1000,10 @@ class ExposureVector(Exposure):
             _description_, by default 10
         damage_translation_fn: Union[Path, str], optional
             The path to the translation function that can be used to relate user damage curves with user damages.
+        eur_to_us_dollar: bool
+            Convert JRC Damage Values (Euro 2010) into US-Dollars (2025)
+        linking_column:str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         """
         if damage_types is None:
             damage_types = ["total"]
@@ -958,13 +1020,17 @@ class ExposureVector(Exposure):
         ):
             # Set the column(s) to a single value
             for damage_type in damage_types:
-                self.exposure_db[f"max_damage_{damage_type}"] = (
-                    max_potential_damage
-                )
+                self.exposure_db[f"max_damage_{damage_type}"] = max_potential_damage
 
         elif isinstance(max_potential_damage, list):
             # Multiple files are used to assign the ground_flht to the assets
-            for max_damage,attribute, method, max_dis,damage_type in zip(max_potential_damage,attribute_name,method_damages,max_dist,damage_types):
+            for max_damage, attribute, method, max_dis, damage_type in zip(
+                max_potential_damage,
+                attribute_name,
+                method_damages,
+                max_dist,
+                damage_types,
+            ):
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
                 # assign the ground_flht to the assets
@@ -1029,7 +1095,9 @@ class ExposureVector(Exposure):
                         f"No country specified, using the '{country}' JRC damage values."
                     )
 
-                damage_values = preprocess_jrc_damage_values(damage_source, country)
+                damage_values = preprocess_jrc_damage_values(
+                    damage_source, country, eur_to_us_dollar
+                )
 
             elif max_potential_damage == "hazus_max_potential_damages":
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
@@ -1039,32 +1107,41 @@ class ExposureVector(Exposure):
             gdf = self.get_full_gdf(self.exposure_db)[
                 ["primary_object_type", "geometry"]
             ]
-            gdf = get_area(gdf)
+            gdf = get_area(gdf,self.unit)
             gdf = gdf.dropna(subset="primary_object_type")
 
             # Set the damage values to the exposure data
-            self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
+            self.set_max_potential_damage_columns(
+                damage_types, damage_values, gdf, max_potential_damage
+            )
 
         elif isinstance(max_potential_damage, str) or isinstance(
             max_potential_damage, Path
         ):
             if isinstance(max_potential_damage, Path):
                 max_potential_damage = str(max_potential_damage)
-
+            else:
+                 file_path = bool(re.search(r"\.[a-zA-Z0-9]+$", max_potential_damage))
+            
             # Using a csv file with a translation table to assign damages to damage curves
-            if max_potential_damage.endswith(".csv") or max_potential_damage.endswith(".xlsx"):
+            if file_path is False or max_potential_damage.endswith(".csv") or max_potential_damage.endswith(
+                ".xlsx"
+            ):
                 damage_source = self.data_catalog.get_dataframe(max_potential_damage)
-                damage_values = preprocess_damage_values(damage_source, damage_translation_fn)
+                damage_values = preprocess_damage_values(
+                    damage_source, damage_translation_fn, damage_types
+                )
 
                 # Calculate the area of each object
                 gdf = self.get_full_gdf(self.exposure_db)[
-                    ["primary_object_type", "geometry"]
+                    [linking_column, "geometry"]
                 ]
-                gdf = get_area(gdf)
-                gdf = gdf.dropna(subset="primary_object_type")
+                gdf = get_area(gdf, self.unit)
 
                 # Set the damage values to the exposure data
-                self.set_max_potential_damage_columns(damage_types, damage_values,gdf, max_potential_damage)
+                self.set_max_potential_damage_columns(
+                    damage_types, damage_values, gdf, max_potential_damage, linking_column
+                )
             else:
                 # When the max_potential_damage is a string but not jrc_damage_values
                 # or hazus_max_potential_damages. Here, a single file is used to
@@ -1072,13 +1149,17 @@ class ExposureVector(Exposure):
                 mpd = self.data_catalog.get_geodataframe(max_potential_damage)
                 gdf = self.get_full_gdf(self.exposure_db)
 
-
                 # If roads in model filter out for spatial joint
                 if gdf["primary_object_type"].str.contains("road").any():
                     gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                     # Spatial joint exposure and updated damages
                     gdf = join_spatial_data(
-                        gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), mpd, attribute_name, method_damages, max_dist, self.logger
+                        gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
+                        mpd,
+                        attribute_name,
+                        method_damages,
+                        max_dist,
+                        self.logger,
                     )
                     gdf = pd.concat([gdf, gdf_roads])
                 else:
@@ -1090,7 +1171,7 @@ class ExposureVector(Exposure):
                     f"max_damage_{damage_types[0]}",
                     attribute_name,
                 )
-    
+
     def setup_ground_elevation(
         self, ground_elevation: Union[None, str, Path], grnd_elev_unit: Units = None
     ) -> None:
@@ -1112,10 +1193,10 @@ class ExposureVector(Exposure):
                 exposure_db=self.exposure_db,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
-            
+
             # Unit conversion
             if grnd_elev_unit:
-                self.unit_conversion(parameter = "grnd_elevtn", unit = grnd_elev_unit)
+                self.unit_conversion(parameter="grnd_elevtn", unit=grnd_elev_unit)
 
         else:
             self.logger.warning(
@@ -1123,7 +1204,7 @@ class ExposureVector(Exposure):
             )
             self.logger.warning("ground_elevtn will be set to 0")
             self.exposure_db["ground_elevtn"] = 0
-    
+
     def setup_impacted_population(
         self,
         impacted_population_fn: Union[
@@ -1156,35 +1237,45 @@ class ExposureVector(Exposure):
         # TODO: Add support for other methods
 
         if isinstance(impacted_population_fn, str) or isinstance(
-            impacted_population_fn, Path):
+            impacted_population_fn, Path
+        ):
             # When the max_potential_damage is a string but not jrc_damage_values
             # or hazus_max_potential_damages. Here, a single file is used to
             # assign the mpd to the assets
             pop_impacted = self.data_catalog.get_geodataframe(impacted_population_fn)
             gdf = self.get_full_gdf(self.exposure_db)
 
-
             # If roads in model filter out for spatial joint
             if gdf["primary_object_type"].str.contains("road").any():
                 gdf_roads = gdf[gdf["primary_object_type"].str.contains("road")]
                 # Spatial joint exposure and updated damages
                 gdf = join_spatial_data(
-                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]), pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
+                    gdf[~gdf.isin(gdf_roads)].dropna(subset=["geometry"]),
+                    pop_impacted,
+                    attribute_name,
+                    method_impacted_pop,
+                    max_dist,
+                    self.logger,
                 )
                 gdf = pd.concat([gdf, gdf_roads])
             else:
                 gdf = join_spatial_data(
-                    gdf, pop_impacted, attribute_name, method_impacted_pop, max_dist, self.logger
+                    gdf,
+                    pop_impacted,
+                    attribute_name,
+                    method_impacted_pop,
+                    max_dist,
+                    self.logger,
                 )
 
-            del gdf['geometry']
+            del gdf["geometry"]
             self.exposure_db = self._set_values_from_other_column(
                 gdf,
                 "max_affected_people",
                 attribute_name,
             )
             self.exposure_db["fn_affected_people"] = "population"
-        
+
     def update_max_potential_damage(
         self, updated_max_potential_damages: pd.DataFrame
     ) -> None:
@@ -1207,9 +1298,7 @@ class ExposureVector(Exposure):
             return
 
         damage_cols = [
-            c
-            for c in updated_max_potential_damages.columns
-            if "max_damage_" in c
+            c for c in updated_max_potential_damages.columns if "max_damage_" in c
         ]
         updated_max_potential_damages.set_index("object_id", inplace=True)
         self.exposure_db.set_index("object_id", inplace=True, drop=False)
@@ -1254,11 +1343,11 @@ class ExposureVector(Exposure):
             return
 
         # Get the index of the objects to raise the ground_flht.
-        idx = self.exposure_db.loc[self.exposure_db["object_id"].isin(objectids)].index
+        id_df = self.exposure_db.loc[self.exposure_db["object_id"].isin(objectids)].index
 
         # Log the number of objects that are being raised.
         self.logger.info(
-            f"Raising the ground_flht of {len(idx)} properties to {raise_by}."
+            f"Raising the ground_flht of {len(id_df)} properties to {raise_by}."
         )  # TODO: add the unit of the ground_flht
 
         if height_reference.lower() == "datum":
@@ -1268,15 +1357,13 @@ class ExposureVector(Exposure):
             )
             self.exposure_db.loc[
                 (
-                    self.exposure_db["ground_flht"]
-                    + self.exposure_db["ground_elevtn"]
+                    self.exposure_db["ground_flht"] + self.exposure_db["ground_elevtn"]
                     < raise_by
                 )
-                & self.exposure_db.index.isin(idx),
+                & self.exposure_db.index.isin(id_df),
                 "ground_flht",
             ] += raise_by - (
-                self.exposure_db["ground_flht"]
-                + self.exposure_db["ground_elevtn"]
+                self.exposure_db["ground_flht"] + self.exposure_db["ground_elevtn"]
             )
 
         elif height_reference.lower() in ["geom", "table"]:
@@ -1290,11 +1377,13 @@ class ExposureVector(Exposure):
             if len(self.exposure_geoms) == 0:
                 self.set_exposure_geoms_from_xy()
 
-            # TODO the way that indexing and geom indexing is working now is error prone!!!!
+            # Get geometries that are affected
+            gdf = self.get_full_gdf(self.exposure_db)[["object_id", "geometry"]]
+            id_gdf = gdf.loc[gdf["object_id"].isin(objectids)].index
 
             new_values = self.set_height_relative_to_reference(
-                self.exposure_db.loc[idx, :],
-                self.exposure_geoms[0].iloc[idx, :],
+                self.exposure_db.loc[id_df, :],
+                gdf.loc[id_gdf, :],
                 height_reference,
                 path_ref,
                 attr_ref,
@@ -1360,9 +1449,7 @@ class ExposureVector(Exposure):
             dfs_to_modify = [
                 d
                 for d in list(
-                    self.exposure_db.iloc[idx, :][
-                        f"fn_damage_{df_type}"
-                    ].unique()
+                    self.exposure_db.iloc[idx, :][f"fn_damage_{df_type}"].unique()
                 )
                 if d == d
             ]
@@ -1427,9 +1514,7 @@ class ExposureVector(Exposure):
         # Potential Structural/Content/Other Damage.
         for c in damages_cols:
             total_damages = sum(self.exposure_db[c].fillna(0))
-            new_damages[c.split("max_damage_")[-1]] = (
-                total_damages * percent_growth
-            )
+            new_damages[c.split("max_damage_")[-1]] = total_damages * percent_growth
 
         return new_damages
 
@@ -1447,6 +1532,7 @@ class ExposureVector(Exposure):
         aggregation_area_fn: Union[List[str], List[Path], str, Path] = None,
         attribute_names: Union[List[str], str] = None,
         label_names: Union[List[str], str] = None,
+        geom_name: str = "new_development_area"
     ) -> None:
         """Adds one or multiple (polygon) areas to the exposure database with
         a composite damage function and a percentage of the total damage.
@@ -1508,9 +1594,7 @@ class ExposureVector(Exposure):
             for damage_type in damage_types
         }
         df_value_counts_dict = {
-            damage_type: self.exposure_db[
-                "fn_damage_" + damage_type
-            ].value_counts()
+            damage_type: self.exposure_db["fn_damage_" + damage_type].value_counts()
             for damage_type in damage_types
         }
         new_damage_functions = vulnerability.calculate_weighted_damage_function(
@@ -1520,19 +1604,23 @@ class ExposureVector(Exposure):
         # Add the new development area as an object to the Exposure Modification file.
         new_area = gpd.read_file(geom_file, engine="pyogrio")
         # check_crs(new_area, geom_file)  #TODO implement again
-        
+
         # Check if the column "height" is in the provided spatial file, which indicates the individual heights above the reference
         # If not the provided value will be used uniformly
         if "height" not in new_area.columns:
             new_area["height"] = ground_floor_height
-            self.logger.info(f"Using uniform value of {ground_floor_height}" 
-                             f"to specify the elevation above {elevation_reference} of FFE of new composite area(s).")
+            self.logger.info(
+                f"Using uniform value of {ground_floor_height}"
+                f"to specify the elevation above {elevation_reference} of FFE of new composite area(s)."
+            )
         else:
-            self.logger.info(f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} "
-                             "for FFE of new composite area(s).")
+            self.logger.info(
+                f"Using 'height' column from {geom_file} to specify the elevation above {elevation_reference} "
+                "for FFE of new composite area(s)."
+            )
 
-        new_area["object_id"] = None # add object_id column to area file
-        
+        new_area["object_id"] = None  # add object_id column to area file
+
         new_objects = []
 
         # Calculate the total area to use for adding the damages relative to area
@@ -1555,25 +1643,23 @@ class ExposureVector(Exposure):
         for i in range(len(new_area.index)):
             new_geom = new_area.geometry.iloc[i]
             new_id = max_id + 1
-            new_area["object_id"].iloc[i] = new_id # assign object_id to polygons
+            new_area["object_id"].iloc[i] = new_id  # assign object_id to polygons
             perc_damages = new_geom.area / total_area
 
             # Idea: Reduction factor for the part of the area is not build-up?
 
             dict_new_objects_data = {
                 "object_id": [new_id],
-                "object_name": ["New development area: " + str(new_id)],
-                "primary_object_type": ["New development area"],
-                "secondary_object_type": ["New development area"],
+                "object_name": ["new_development_area:" + str(new_id)],
+                "primary_object_type": ["new_development_area:"],
+                "secondary_object_type": ["new_development_area:"],
                 "extract_method": ["area"],
                 "ground_flht": [0],
                 "ground_elevtn": [0],
             }
             dict_new_objects_data.update(
                 {
-                    f"fn_damage_{damage_type}": [
-                        new_damage_functions[damage_type]
-                    ]
+                    f"fn_damage_{damage_type}": [new_damage_functions[damage_type]]
                     for damage_type in damage_types
                 }
             )
@@ -1606,12 +1692,15 @@ class ExposureVector(Exposure):
                 exposure_db=new_objects,
                 exposure_geoms=_new_exposure_geoms,
             )
-        
+
         if elevation_reference == "datum":
             # Ensure that the new objects have a first floor height that elevates them above the requirement
             new_objects["ground_flht"] = new_objects.apply(
-                lambda row: max(row["ground_flht"], new_area.loc[row.name, "height"] - row["ground_elevtn"]),
-                axis=1
+                lambda row: max(
+                    row["ground_flht"],
+                    new_area.loc[row.name, "height"] - row["ground_elevtn"],
+                ),
+                axis=1,
             )
             self.logger.info(
                 f"The elevation of the new development area is {new_area['height'].values} {self.unit}"
@@ -1633,10 +1722,6 @@ class ExposureVector(Exposure):
                 self.crs,
             )
 
-        # Update the exposure_geoms
-        self.set_geom_names("new_development_area")
-        self.set_exposure_geoms(_new_exposure_geoms)
-
         # If the user supplied aggregation area data, assign that to the
         # new composite areas
         if aggregation_area_fn is not None:
@@ -1647,14 +1732,13 @@ class ExposureVector(Exposure):
                 label_names=label_names,
                 new_composite_area=True,
             )
-            # Update the exposure_geoms incl aggregation
-            self.set_geom_names("new_development_area_aggregated")
-            self.set_exposure_geoms(aggregated_objects_geoms)
+            
+            _new_exposure_geoms = aggregated_objects_geoms
+            
+        # Update the exposure_geoms incl aggregation
+        self.set_geom_names(geom_name)
+        self.set_exposure_geoms(_new_exposure_geoms)
 
-            # Remove initial composite areas
-            idx = self.geom_names.index("new_development_area")
-            self.geom_names.pop(idx)
-            self.exposure_geoms.pop(idx)
 
         # Update the exposure_db
         self.exposure_db = pd.concat([self.exposure_db, new_objects]).reset_index(
@@ -1665,6 +1749,7 @@ class ExposureVector(Exposure):
         self,
         exposure_linking_table: pd.DataFrame,
         damage_types: Optional[List[str]] = ["structure", "content"],
+        linking_column: str = None
     ):
         if "Damage function name" not in exposure_linking_table.columns:
             exposure_linking_table["Damage function name"] = [
@@ -1687,69 +1772,70 @@ class ExposureVector(Exposure):
                     linking_per_damage_type["Damage function name"],
                 )
             )
-            unique_linking_types = set(linking_dict.keys())
+            if linking_column is None:
+                unique_linking_types = set(linking_dict.keys())
 
-            # Find the column to link the exposure data to the vulnerability data
-            unique_types_primary = set()
+                # Find the column to link the exposure data to the vulnerability data
+                unique_types_primary = set()
 
-            # Set the variables below to large numbers to ensure when there is no
-            # primary_object_type or secondary_object_type column in the exposure data
-            # that the available column is used to link the exposure data to the
-            # vulnerability data.
-            len_diff_primary_linking_types = 100000
-            len_diff_secondary_linking_types = 100000
-            if "primary_object_type" in self.exposure_db.columns:
-                unique_types_primary = set(self.get_primary_object_type())
-                diff_primary_linking_types = unique_types_primary - unique_linking_types
-                len_diff_primary_linking_types = len(diff_primary_linking_types)
+                # Set the variables below to large numbers to ensure when there is no
+                # primary_object_type or secondary_object_type column in the exposure data
+                # that the available column is used to link the exposure data to the
+                # vulnerability data.
+                len_diff_primary_linking_types = 100000
+                len_diff_secondary_linking_types = 100000
+                if "primary_object_type" in self.exposure_db.columns:
+                    unique_types_primary = set(self.get_primary_object_type())
+                    diff_primary_linking_types = unique_types_primary - unique_linking_types
+                    len_diff_primary_linking_types = len(diff_primary_linking_types)
 
-            unique_types_secondary = set()
-            if "secondary_object_type" in self.exposure_db.columns:
-                unique_types_secondary = set(self.get_secondary_object_type())
-                diff_secondary_linking_types = (
-                    unique_types_secondary - unique_linking_types
-                )
-                len_diff_secondary_linking_types = len(diff_secondary_linking_types)
+                unique_types_secondary = set()
+                if "secondary_object_type" in self.exposure_db.columns:
+                    unique_types_secondary = set(self.get_secondary_object_type())
+                    diff_secondary_linking_types = (
+                        unique_types_secondary - unique_linking_types
+                    )
+                    len_diff_secondary_linking_types = len(diff_secondary_linking_types)
 
-            # Check if the linking column is the primary_object_type or the Secondary
-            # Object Type
-            if (len(unique_types_primary) > 0) and (
-                unique_types_primary.issubset(unique_linking_types)
-            ):
-                linking_column = "primary_object_type"
-            elif (len(unique_types_secondary) > 0) and (
-                unique_types_secondary.issubset(unique_linking_types)
-            ):
-                linking_column = "secondary_object_type"
-            else:
-                if (
-                    len_diff_primary_linking_types < len_diff_secondary_linking_types
-                ) and (len(unique_types_primary) > 0):
+                # Check if the linking column is the primary_object_type or the Secondary
+                # Object Type
+                if (len(unique_types_primary) > 0) and (
+                    unique_types_primary.issubset(unique_linking_types)
+                ):
                     linking_column = "primary_object_type"
-                    self.logger.warning(
-                        "There are "
-                        f"{str(len_diff_primary_linking_types)} primary"
-                        " object types that are not in the linking "
-                        "table and will not have a damage function "
-                        f"assigned for {damage_type} damages: "
-                        f"{str(list(diff_primary_linking_types))}"
-                    )
-                elif (
-                    len_diff_secondary_linking_types < len_diff_primary_linking_types
-                ) and (len(unique_types_secondary) > 0):
+                elif (len(unique_types_secondary) > 0) and (
+                    unique_types_secondary.issubset(unique_linking_types)
+                ):
                     linking_column = "secondary_object_type"
-                    self.logger.warning(
-                        "There are "
-                        f"{str(len(diff_secondary_linking_types))} "
-                        "secondary_object_types that are not in the "
-                        "linking table and will not have a damage "
-                        f"function assigned for {damage_type} damages: "
-                        f"{str(list(diff_secondary_linking_types))}"
-                    )
+                else:
+                    if (
+                        len_diff_primary_linking_types < len_diff_secondary_linking_types
+                    ) and (len(unique_types_primary) > 0):
+                        linking_column = "primary_object_type"
+                        self.logger.warning(
+                            "There are "
+                            f"{str(len_diff_primary_linking_types)} primary"
+                            " object types that are not in the linking "
+                            "table and will not have a damage function "
+                            f"assigned for {damage_type} damages: "
+                            f"{str(list(diff_primary_linking_types))}"
+                        )
+                    elif (
+                        len_diff_secondary_linking_types < len_diff_primary_linking_types
+                    ) and (len(unique_types_secondary) > 0):
+                        linking_column = "secondary_object_type"
+                        self.logger.warning(
+                            "There are "
+                            f"{str(len(diff_secondary_linking_types))} "
+                            "secondary_object_types that are not in the "
+                            "linking table and will not have a damage "
+                            f"function assigned for {damage_type} damages: "
+                            f"{str(list(diff_secondary_linking_types))}"
+                        )
 
-            self.exposure_db[f"fn_damage_{damage_type}"] = (
-                self.exposure_db[linking_column].map(linking_dict)
-            )
+            self.exposure_db[f"fn_damage_{damage_type}"] = self.exposure_db[
+                linking_column
+            ].map(linking_dict)
 
             self.logger.info(
                 f"The {linking_column} was used to link the exposure data to the "
@@ -1774,7 +1860,9 @@ class ExposureVector(Exposure):
         """
         return [c for c in self.exposure_db.columns if "max_damage_" in c]
 
-    def set_max_potential_damage_columns(self, damage_types, damage_values,gdf, max_potential_damage) -> None:
+    def set_max_potential_damage_columns(
+        self, damage_types, damage_values, gdf, max_potential_damage, linking_column = "primary_object_type"
+    ) -> None:
         """Calculate and set the maximum potential damage columns based on the provided damage types and values.
 
         Parameters
@@ -1787,27 +1875,27 @@ class ExposureVector(Exposure):
             GeoDataFrame containing the primary_object_type and area information.
         max_potential_damage : str
             The maximum potential damage value.
+        linking_column :str = "primary_object_type"
+            Defines whether the damage curve should be assigned to the secondary or primary object type.
         Returns
         -------
         None
         """
         for damage_type in damage_types:
-                    # Calculate the maximum potential damage for each object and per damage type
-                    try:
-                        self.exposure_db[
-                            f"max_damage_{damage_type}"
-                        ] = [
-                            damage_values[building_type][damage_type.lower()]
-                            * square_meters
-                            for building_type, square_meters in zip(
-                                gdf["primary_object_type"], gdf["area"]
-                            )
-                        ]
-                    except KeyError as e:
-                        self.logger.warning(
-                            f"Not found in the {max_potential_damage} damage "
-                            f"value data: {e}"
-                        )
+            # Calculate the maximum potential damage for each object and per damage type
+            try:
+                self.exposure_db[f"max_damage_{damage_type}"] = [
+                    damage_values[building_type][damage_type.lower()] * square_meters
+                    for building_type, square_meters in zip(
+                        gdf[linking_column], gdf["area"]
+                    )
+                ]
+            except KeyError as e:
+                self.logger.warning(
+                    f"Not found in the {max_potential_damage} damage "
+                    f"value data: {e}"
+                )
+
     def get_damage_function_columns(self) -> List[str]:
         """Returns the damage function columns in <exposure_db>
 
@@ -1908,7 +1996,7 @@ class ExposureVector(Exposure):
                 ids = buildings["object_id"]
             elif selection_type == "aggregation_area":
                 ids = buildings.loc[
-                    buildings[f"Aggregation Label: {aggregation}"]
+                    buildings[f"aggregation_label:{aggregation}"]
                     == aggregation_area_name,
                     "object_id",
                 ]
@@ -1954,7 +2042,7 @@ class ExposureVector(Exposure):
 
         # Check how many exposure geoms there are
         if len(self.exposure_geoms) == 1:
-            #NOTE: This is only used for the transition time from old to new models and for the translation script!
+            # NOTE: This is only used for the transition time from old to new models and for the translation script!
             if "Object ID" in self.exposure_geoms[0].columns:
                 assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
             else:
@@ -2082,7 +2170,7 @@ class ExposureVector(Exposure):
         # Ensure that the raise_by variable has the correct type
         if not isinstance(raise_by, pd.Series):
             raise_by = pd.Series(raise_by, index=exposure_to_modify.index)
-        
+
         # Find indices of properties that are below the required level
         properties_below_level = (
             exposure_to_modify.loc[:, "ground_flht"]
@@ -2177,18 +2265,20 @@ class ExposureVector(Exposure):
         }
         return continent_dict[continent_code]
 
-    def unit_conversion(self, parameter: str,unit: Union[str, Units]) -> Union[str, Units]:
-                    # Unit conversion
+    def unit_conversion(
+        self, parameter: str, unit: Union[str, Units]
+    ) -> Union[str, Units]:
+        # Unit conversion
         if unit != self.unit:
             if (unit == Units.meters.value) and (self.unit == Units.feet.value):
-                self.exposure_db[parameter] = self.exposure_db[
-                    parameter
-                ].apply(lambda x: x * Conversion.meters_to_feet.value)
+                self.exposure_db[parameter] = self.exposure_db[parameter].apply(
+                    lambda x: x * Conversion.meters_to_feet.value
+                )
 
             elif (unit == Units.feet.value) and (self.unit == Units.meters.value):
-                self.exposure_db[parameter] = self.exposure_db[
-                    parameter
-                ].apply(lambda x: x * Conversion.feet_to_meters.value)
+                self.exposure_db[parameter] = self.exposure_db[parameter].apply(
+                    lambda x: x * Conversion.feet_to_meters.value
+                )
             else:
                 self.logger.warning(
                     f"The {parameter} unit is not valid. Please provide the unit of your {parameter} in 'meters' or 'feet'"

@@ -25,7 +25,7 @@ corresponding NSI fields (right-hand side)::
     "ground_elevtn": "ground_el",
     "X Coordinate": "x",
     "Y Coordinate": "y",
-    "Aggregation Label: Census Block": "cbfips"
+    "aggregation_label:Census Block": "cbfips"
 
 HydroMT-FIAT obtains the NSI data of the area of interest through the `NSI API
 <https://www.hec.usace.army.mil/confluence/nsi/technicalreferences/latest/api-reference-guide>`_.

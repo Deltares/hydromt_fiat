@@ -1,0 +1,24 @@
+
+vulnerability_curves:
+    path: damage_functions/flooding/Rio_single_curves
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: Folder with regional depth-damage functions for flooding.
+
+vulnerability_curves_linking:
+    path: vulnerability_linking/Rio_damage_functions_linking.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: Default linking table for the damage functions (e.g., the residential damage function links to residential buildings).
+
+damage_values:
+    path: max_potential_damages/Rio_max_pot_damages.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: Base damage values, processed into a handy format for HydroMT-FIAT.

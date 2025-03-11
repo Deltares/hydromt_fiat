@@ -159,17 +159,19 @@ def spatial_joins(
 
         # Create new object_ids
         init_Object_ID = exposure_gdf_copy.loc[0, "object_name"]
-        init_Object_ID = int(init_Object_ID.split(": ", 1)[1])
+        init_Object_ID = int(init_Object_ID.split(":", 1)[1])
         exposure_gdf.loc[0:, "object_id"] = np.arange(
             init_Object_ID, init_Object_ID + int(len(exposure_gdf)), 1
         ).tolist()
         # Create new object_names
         exposure_gdf["object_name"] = exposure_gdf["object_id"].apply(
-            lambda x: f"New development area: {int(x)}"
+            lambda x: f"new_develpoment_area:{int(x)}"
         )
 
         # Split max potential damages into new composite areas
-        exposure_max_potential_damage = exposure_gdf_copy[["ca_ID", "max_damage_structure", "max_damage_content"]].set_index("ca_ID")
+        exposure_max_potential_damage = exposure_gdf_copy[
+            ["ca_ID", "max_damage_structure", "max_damage_content"]
+        ].set_index("ca_ID")
         exposure_gdf = split_max_damage_new_composite_area(
             exposure_gdf,
             exposure_max_potential_damage,
@@ -274,18 +276,22 @@ def split_max_damage_new_composite_area(
         .apply(lambda x: x.area.sum())
         .reset_index()
     ).set_index("ca_ID")
-    
+
     exposure_max_potential_damage = exposure_max_potential_damage.join(area_by_id)
 
     for index_ca, row_ca in exposure_max_potential_damage.iterrows():
         # Calculate relative Max Potential Damages for Structure and Content based on area
-        splitted_exposure_gdf = exposure_gdf[exposure_gdf["ca_ID"]== index_ca]
-        
+        splitted_exposure_gdf = exposure_gdf[exposure_gdf["ca_ID"] == index_ca]
+
         if len(splitted_exposure_gdf) > 1:
             for index, row in splitted_exposure_gdf.iterrows():
                 rel_area = row.geometry.area / row_ca["geometry"]
-                exposure_gdf.at[index, "max_damage_structure"] = rel_area * row_ca["max_damage_structure"]
-                exposure_gdf.at[index, "max_damage_content"] = rel_area * row_ca["max_damage_content"]
+                exposure_gdf.at[index, "max_damage_structure"] = (
+                    rel_area * row_ca["max_damage_structure"]
+                )
+                exposure_gdf.at[index, "max_damage_content"] = (
+                    rel_area * row_ca["max_damage_content"]
+                )
 
     del exposure_gdf["ca_ID"]
 
