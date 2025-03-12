@@ -1190,6 +1190,15 @@
             <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;_FillValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">gdal_compliant</span><span class="p">()</span>
 
+            <span class="c1"># ensure variable name is lowercase, since FIAT seems to be failing if not # TODO check with FIAT</span>
+            <span class="n">da_name</span> <span class="o">=</span> <span class="n">da_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">da_name</span><span class="p">)</span>
+            
+            <span class="c1"># Check if map is rotated and if yes, reproject to a non-rotated grid</span>
+            <span class="k">if</span> <span class="s2">&quot;xc&quot;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Hazard map is rotated. It will be reprojected to a none rotated grid using nearest neighbor interpolation&quot;</span><span class="p">)</span>
+                <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">reproject</span><span class="p">(</span><span class="n">dst_crs</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+
             <span class="c1"># check masp projection, null data, and grids</span>
             <span class="n">check_maps_metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">staticmaps</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
 
@@ -1279,7 +1288,7 @@
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span>
-            <span class="s2">&quot;hazard.elevation_reference&quot;</span><span class="p">,</span> <span class="s2">&quot;dem&quot;</span> <span class="k">if</span> <span class="n">da_type</span> <span class="o">==</span> <span class="s2">&quot;water_depth&quot;</span> <span class="k">else</span> <span class="s2">&quot;datum&quot;</span>
+            <span class="s2">&quot;hazard.elevation_reference&quot;</span><span class="p">,</span> <span class="s2">&quot;DEM&quot;</span> <span class="k">if</span> <span class="n">da_type</span> <span class="o">==</span> <span class="s2">&quot;water_depth&quot;</span> <span class="k">else</span> <span class="s2">&quot;datum&quot;</span>
         <span class="p">)</span>
 
         <span class="c1"># Set the configurations for a multiband netcdf</span>
