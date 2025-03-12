@@ -360,6 +360,7 @@ class ExposureVector(Exposure):
         grnd_elev_unit: Units = None,
         bf_conversion: bool = False,
         keep_unclassified: bool = True,
+        keep_columns: Union[list, None] = None,
         damage_translation_fn: Union[Path, str] = None,
         eur_to_us_dollar: bool = False,
     ):
@@ -428,7 +429,7 @@ class ExposureVector(Exposure):
         self.logger.info("Setting up exposure data from multiple sources...")
 
         # If asset location_fn != OSM and equals occupancy type, take the geometry from occupancy type
-        self.setup_asset_locations(asset_locations, occupancy_attr)
+        self.setup_asset_locations(asset_locations, occupancy_attr, keep_columns)
         self.setup_occupancy_type(
             occupancy_source,
             occupancy_attr,
@@ -459,6 +460,7 @@ class ExposureVector(Exposure):
             self, 
             asset_locations: str,
             occupancy_attr: Union[str, None] = None,
+            keep_columns: Union[list, None] = None,
         ) -> None:
         """Set up the asset locations (points or polygons).
 
@@ -504,6 +506,8 @@ class ExposureVector(Exposure):
             keep = ['object_id', 'geometry']
             if occupancy_attr is not None:
                 keep += [occupancy_attr]
+            if keep_columns is not None:
+                keep += keep_columns
             assets = assets[keep]
 
         self.set_exposure_geoms(assets)
