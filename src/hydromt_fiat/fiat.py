@@ -90,10 +90,6 @@ class FIATModel(Model):
         config = self.get_component("config")
 
         for i, hazard_file in enumerate(hazard_fname):
-            hazard_file = Path(hazard_file)
-            if not hazard_file.exists:
-                raise ValueError("Hazard file name must be a valid path")
-
             da = self.data_catalog.get_rasterdataset(hazard_file)
 
             # Convert to gdal compliant
