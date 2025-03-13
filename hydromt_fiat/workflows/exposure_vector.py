@@ -691,13 +691,13 @@ occupancy map the for multiple exposure geoms"
                 # assign residential if no primary object type
                 gdf.loc[
                     gdf["primary_object_type"].isna(), "secondary_object_type"
-                ] = "residential"
+                ] = "unknown"
                 gdf.loc[
                     gdf["primary_object_type"].isna(), "primary_object_type"
-                ] = "residential"
+                ] = "unknown"
                 self.logger.warning(
                     f"{nr_without_primary_object} objects were not overlapping with the "
-                    "land use data and will be classified as residential buildings."
+                    "land use data and will be classified as unknown."
                 )
             else:
                 self.logger.warning(
