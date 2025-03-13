@@ -4249,7 +4249,7 @@ packages:
 - pypi: .
   name: hydromt-fiat
   version: 1.0.0.dev0
-  sha256: 26dccbcb01b7c64db99b54f3bf0e7b4f01acb90ba57983c8ac38ddd038b19129
+  sha256: 94a4492f0e52e0af71f28de9c06037ce04a5c0ae40d7f0fec291f3031ea272d2
   requires_dist:
   - dask
   - geopandas
