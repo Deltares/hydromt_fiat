@@ -11,7 +11,6 @@ tmp/
 
 # pixi environments
 .pixi
-pixi.lock
 *.egg-info
 
 # Byte-compiled / optimized / DLL files
