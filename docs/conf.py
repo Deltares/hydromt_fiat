@@ -9,14 +9,15 @@ import shutil
 import sys
 from distutils.dir_util import copy_tree
 
-import hydromt
 import hydromt_fiat
 
 # -- Python functions --------------------------------------------------------
 pwd = os.path.dirname(__file__)
 sys.path.insert(0, os.path.abspath(os.path.join(pwd, "..")))
 
+
 def remove_dir_content(path: str) -> None:
+    """Remove directory content."""
     for root, dirs, files in os.walk(path):
         for f in files:
             os.unlink(os.path.join(root, f))
@@ -24,6 +25,7 @@ def remove_dir_content(path: str) -> None:
             shutil.rmtree(os.path.join(root, d))
     if os.path.isdir(path):
         shutil.rmtree(path)
+
 
 # Copy necessary example notebooks
 if os.path.isdir("_examples"):
@@ -34,9 +36,9 @@ copy_tree("../examples", "_examples")
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'hydromt_fiat'
-copyright = '2024, Deltares'
-author = 'Deltares'
+project = "hydromt_fiat"
+copyright = "2024, Deltares"
+author = "Deltares"
 version = hydromt_fiat.__version__
 
 # -- General configuration ---------------------------------------------------
@@ -59,9 +61,9 @@ extensions = [
 
 autosummary_generate = True
 source_suffix = ".rst"
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 language = "en"
 master_doc = "index"
 pygments_style = "sphinx"
@@ -88,7 +90,7 @@ html_context = {
 html_css_files = ["theme-deltares.css"]
 html_favicon = "_static/hydromt-icon.svg"
 html_logo = "_static/hydromt-icon.svg"
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
