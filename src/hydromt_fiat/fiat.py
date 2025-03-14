@@ -49,7 +49,7 @@ class FIATModel(Model):
     def __init__(
         self,
         root: str | None = None,
-        mode: str = "w",
+        mode: str = "r",
         data_libs: Union[List, str] | None = None,
         **catalog_keys,
     ):
@@ -100,6 +100,7 @@ class FIATModel(Model):
         """Write the FIAT model."""
         Model.write(self)
 
+    ## Setup methods
     @hydromt_step
     def setup_config(
         self,

@@ -29,13 +29,14 @@ description = "HydroMT plugin for Delft-FIAT."
 readme = "README.md"
 license = {text = "GPL-3.0"}
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
 "dask",
 "geopandas",
-"hydromt>=1.0.0a",
+"hydromt>=1.0.0",
 "numpy",
 "osmnx>=1,<2",
+"pooch",
 "requests",
 "tomli",
 "tomli-w",
@@ -71,7 +72,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
 ]
@@ -223,6 +223,9 @@ pip = "*"
 
 [tool.pixi.pypi-dependencies]
 hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.feature.test.dependencies]
+delft_fiat = ">=0.2.1"
 
 ## Define the environments
 [tool.pixi.environments]
