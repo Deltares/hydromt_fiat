@@ -29,13 +29,14 @@ description = "HydroMT plugin for Delft-FIAT."
 readme = "README.md"
 license = {text = "GPL-3.0"}
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
 "dask",
 "geopandas",
-"hydromt>=1.0.0a",
+"hydromt>=1.0.0",
 "numpy",
 "osmnx>=1,<2",
+"pooch",
 "requests",
 "tomli",
 "tomli-w",
@@ -71,7 +72,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.10',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
 ]
@@ -106,7 +106,7 @@ test = [
 ]
 
 [project.entry-points."hydromt.models"]
-fiat = "hydromt_fiat.fiat:FIATModel"
+fiat = "hydromt_fiat.fiat"
 
 [project.urls]
 "Homepage" = "https://github.com/Deltares/hydromt_fiat"
@@ -154,27 +154,22 @@ ignore_errors = true
 [tool.coverage.html]
 directory = ".cov"
 
-## Linting stuff
-[tool.black]
-line-length = 88
-target-version = ['py312']
-
 [tool.ruff]
 line-length = 88
 
 # enable pydocstyle (E), pyflake (F) and isort (I), pytest-style (PT)
+[tool.ruff.lint]
 select = ["E", "F", "I", "PT", "D"]
-ignore-init-module-imports = true
 ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
-exclude = ["docs"]
+exclude = ["docs/**"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D103", "D100", "D104"]
 "tests/conftest.py" = ["E402"]
 "src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
 "src/hydromt_fiat/workflows/__init__.py" = ["F403"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 ## Project related stuff
@@ -228,6 +223,9 @@ pip = "*"
 
 [tool.pixi.pypi-dependencies]
 hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.feature.test.dependencies]
+delft_fiat = ">=0.2.1"
 
 ## Define the environments
 [tool.pixi.environments]
