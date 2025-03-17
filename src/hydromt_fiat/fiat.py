@@ -159,11 +159,25 @@ class FIATModel(Model):
     def setup_hazard(
         self,
         hazard_fnames: str | list[str],
-        risk: bool = False,
         return_periods: list[int] | None = None,
         hazard_type: str | None = "flooding",
+        *,
+        risk: bool = False,
     ):
-        """Set up hazard maps."""
+        """_Set up hazard maps.
+
+        Args:
+            hazard_fnames (str | list[str]): name(s) of hazard file(s).
+            return_periods (list[int] | None, optional): list of return periods. Length
+                of list should match the number hazard files. Defaults to None.
+            hazard_type (str | None, optional): Type of hazard. Defaults to "flooding".
+            risk (bool, optional): Whether the hazard files are part of a risk analysis.
+                Defaults to False.
+
+        Returns
+        -------
+           None
+        """
         if not isinstance(hazard_fnames, list):
             hazard_fnames = [hazard_fnames]
         if risk and not return_periods:
