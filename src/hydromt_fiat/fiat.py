@@ -14,6 +14,7 @@ from hydromt.model.components import (
 )
 from hydromt.model.steps import hydromt_step
 
+import hydromt_fiat.workflows as workflows
 from hydromt_fiat.components import RegionComponent
 
 # Set some global variables
@@ -56,7 +57,9 @@ class FIATModel(Model):
         Model.__init__(
             self,
             root,
-            components={"region": RegionComponent(model=self)},
+            components={
+                "region": RegionComponent(model=self, filename="region.geojson")
+            },
             mode=mode,
             region_component="region",
             data_libs=data_libs,
@@ -71,7 +74,11 @@ class FIATModel(Model):
         self.add_component("exposure_data", TablesComponent(model=self))
         self.add_component(
             "exposure_geoms",
-            GeomsComponent(model=self, region_component="region"),
+            GeomsComponent(
+                model=self,
+                region_component="region",
+                filename="exposure/{name}.fgb",
+            ),
         )
         self.add_component(
             "exposure_grid",
@@ -81,13 +88,21 @@ class FIATModel(Model):
             "hazard_grid",
             GridComponent(model=self, region_component="region"),
         )
-        self.add_component("vulnerability_data", TablesComponent(model=self))
+        self.add_component(
+            "vulnerability_data",
+            TablesComponent(model=self, filename="vulnerability/{name}.csv"),
+        )
 
     ## Properties
     @property
-    def config(self):
+    def config(self) -> ConfigComponent:
         """Return the configurations component."""
         return self.components["config"]
+
+    @property
+    def vulnerability_data(self) -> TablesComponent:
+        """Return the vulnerability component containing the data."""
+        return self.components["vulnerability_data"]
 
     ## I/O
     @hydromt_step
@@ -161,9 +176,14 @@ class FIATModel(Model):
         """
         pass
 
+    @hydromt_step
     def setup_vulnerability(
         self,
         vuln_fname: Path | str,
+        vuln_link_fname: Path | str | None = None,
+        unit: str = "m",
+        index_name: str = "water depth",
+        **select,
     ):
         """Set up the vulnerability from a data source.
 
@@ -171,5 +191,34 @@ class FIATModel(Model):
         ----------
         vuln_fname : Path | str
             _description_
+        vuln_link_fname : Path | str | None, optional
+            _description_, by default None
+        unit : str, optional
+            _description_, by default "m"
+        index_name : str, optional
+            _description_, by default "water depth"
+        select : dict, optional
+            Keyword arguments to select data from the 'vuln_fname' data source.
         """
-        pass
+        # Get the data from the catalog
+        vuln_data = self.data_catalog.get_dataframe(vuln_fname)
+        vuln_linking = None
+        if vuln_link_fname is not None:
+            vuln_linking = self.data_catalog.get_dataframe(vuln_link_fname)
+
+        # Invoke the workflow method to create the curves from raw data
+        vuln_curves, vuln_id = workflows.vulnerability_curves(
+            vuln_data,
+            vuln_linking=vuln_linking,
+            unit=unit,
+            index_name=index_name,
+            **select,
+        )
+
+        self.vulnerability_data.set(vuln_curves, "vulnerability_curves")
+        self.vulnerability_data.set(vuln_id, "vulnerability_identifiers")
+
+        self.config.set(
+            "vulnerability.file",
+            self.vulnerability_data._filename.format(name="vulnerability_curves"),
+        )
