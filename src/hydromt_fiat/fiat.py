@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List, Union
 
 import geopandas as gpd
-import xarray as xr
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
@@ -16,6 +15,7 @@ from hydromt.model.components import (
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import RegionComponent
+from hydromt_fiat.workflows import parse_hazard_data
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -92,6 +92,11 @@ class FIATModel(Model):
         """Return the configurations component."""
         return self.components["config"]
 
+    @property
+    def hazard_grid(self):
+        """Return hazard grid component."""
+        return self.components["hazard_grid"]
+
     ## I/O
     @hydromt_step
     def read(self):
@@ -153,7 +158,7 @@ class FIATModel(Model):
     @hydromt_step
     def setup_hazard(
         self,
-        hazard_fnames: Path | str | list[Path | str],
+        hazard_fnames: str | list[str],
         risk: bool = False,
         return_periods: list[int] | None = None,
         hazard_type: str | None = "flooding",
@@ -166,69 +171,27 @@ class FIATModel(Model):
         if risk and len(return_periods) != len(hazard_fnames):
             raise ValueError("Return periods do not match the number of hazard files")
 
-        # Get components from model
-        grid = self.get_component("hazard_grid")
-
         # Check if there is already data set to this grid component. This will cause
         # problems with setting attrs
-        if not grid.data.sizes == {}:
+        if not self.hazard_grid.data.sizes == {}:
             raise ValueError("Cannot set hazard data on existing hazard grid data.")
 
-        hazard_dataarrays = []
-        for i, hazard_file in enumerate(hazard_fnames):
-            da = self.data_catalog.get_rasterdataset(hazard_file)
+        # Parse hazard files to an xarray dataset
+        ds = parse_hazard_data(
+            data_catalog=self.data_catalog,
+            hazard_fnames=hazard_fnames,
+            hazard_type=hazard_type,
+            return_periods=return_periods,
+            risk=risk,
+        )
 
-            # Convert to gdal compliant
-            da.encoding["_FillValue"] = None
-            da: xr.DataArray = da.raster.gdal_compliant()
-
-            # ensure variable name is lowercase
-            da_name = Path(hazard_file).stem.lower()
-            da = da.rename(da_name)
-
-            # Check if map is rotated and if yes, reproject to a non-rotated grid
-            if "xc" in da.coords:
-                self.logger.warning(
-                    "Hazard map is rotated. It will be reprojected"
-                    " to a none rotated grid using nearest neighbor"
-                    "interpolation"
-                )
-                da: xr.DataArray = da.raster.reproject(dst_crs=da.rio.crs)
-            if "grid_mapping" in da.encoding:
-                del da.encoding["grid_mapping"]
-
-            rp = f"(rp {return_periods[i]})" if risk else ""
-            logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
-
-            if not risk:
-                # Set the event data arrays to the hazard grid component
-                da = da.assign_attrs(
-                    {
-                        "name": da_name,
-                        "type": hazard_type,
-                        "analysis": "event",
-                    }
-                )
-                grid.set(da)
-
-            hazard_dataarrays.append(da)
+        self.hazard_grid.set(ds)
 
         if risk:
-            ds = xr.merge(hazard_dataarrays)
-            da_names = [d.name for d in hazard_dataarrays]
-            ds = ds.assign_attrs(
-                {
-                    "return_period": return_periods,
-                    "type": hazard_type,
-                    "name": da_names,
-                    "analysis": "risk",
-                }
-            )
             self.config.set("hazard.risk", risk)
             self.config.set("hazard.return_periods", return_periods)
-            grid.set(ds)
 
-        self.config.set("hazard.file", grid._filename)
+        self.config.set("hazard.file", self.hazard_grid._filename)
         self.config.set(
             "hazard.elevation_reference",
             "DEM" if hazard_type == "water_depth" else "datum",
