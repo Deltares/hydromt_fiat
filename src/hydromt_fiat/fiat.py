@@ -80,7 +80,9 @@ class FIATModel(Model):
         )
         self.add_component(
             "hazard_grid",
-            GridComponent(model=self, region_component="region"),
+            GridComponent(
+                model=self, region_component="region", filename="hazard_grid.nc"
+            ),
         )
         self.add_component("vulnerability_data", TablesComponent(model=self))
 
@@ -151,24 +153,29 @@ class FIATModel(Model):
     @hydromt_step
     def setup_hazard(
         self,
-        hazard_fname: Path | str | list[Path | str],
+        hazard_fnames: Path | str | list[Path | str],
         risk: bool = False,
         return_periods: list[int] | None = None,
         hazard_type: str | None = "flooding",
     ):
         """Set up hazard maps."""
-        if not isinstance(hazard_fname, list):
-            hazard_fname = [hazard_fname]
+        if not isinstance(hazard_fnames, list):
+            hazard_fnames = [hazard_fnames]
         if risk and not return_periods:
             raise ValueError("Cannot perform risk analysis without return periods")
-        if risk and len(return_periods) != len(hazard_fname):
+        if risk and len(return_periods) != len(hazard_fnames):
             raise ValueError("Return periods do not match the number of hazard files")
-        hazard_dataarrays = []
 
         # Get components from model
         grid = self.get_component("hazard_grid")
 
-        for i, hazard_file in enumerate(hazard_fname):
+        # Check if there is already data set to this grid component. This will cause
+        # problems with setting attrs
+        if not grid.data.sizes == {}:
+            raise ValueError("Cannot set hazard data on existing hazard grid data.")
+
+        hazard_dataarrays = []
+        for i, hazard_file in enumerate(hazard_fnames):
             da = self.data_catalog.get_rasterdataset(hazard_file)
 
             # Convert to gdal compliant
@@ -176,7 +183,7 @@ class FIATModel(Model):
             da: xr.DataArray = da.raster.gdal_compliant()
 
             # ensure variable name is lowercase
-            da_name = hazard_file.stem.lower()
+            da_name = Path(hazard_file).stem.lower()
             da = da.rename(da_name)
 
             # Check if map is rotated and if yes, reproject to a non-rotated grid
@@ -191,7 +198,7 @@ class FIATModel(Model):
                 del da.encoding["grid_mapping"]
 
             rp = f"(rp {return_periods[i]})" if risk else ""
-            self.logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
+            logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
 
             if not risk:
                 # Set the event data arrays to the hazard grid component
@@ -217,7 +224,7 @@ class FIATModel(Model):
                     "analysis": "risk",
                 }
             )
-            self.config.set("risk", risk)
+            self.config.set("hazard.risk", risk)
             self.config.set("hazard.return_periods", return_periods)
             grid.set(ds)
 
