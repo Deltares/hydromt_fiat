@@ -58,7 +58,7 @@ class FIATModel(Model):
             self,
             root,
             components={
-                "region": RegionComponent(model=self, filename="region.geojson")
+                "region": RegionComponent(model=self, filename="region/{name}.geojson")
             },
             mode=mode,
             region_component="region",

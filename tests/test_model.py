@@ -24,7 +24,7 @@ def test_basic_read_write(tmp_path, build_region):
     # Write the model
     model.write()
     model = None
-    assert Path(tmp_path, "region.geojson").is_file()
+    assert Path(tmp_path, "region/region.geojson").is_file()
 
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
