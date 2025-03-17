@@ -167,7 +167,6 @@ class FIATModel(Model):
 
         # Get components from model
         grid = self.get_component("hazard_grid")
-        config = self.get_component("config")
 
         for i, hazard_file in enumerate(hazard_fname):
             da = self.data_catalog.get_rasterdataset(hazard_file)
@@ -218,12 +217,12 @@ class FIATModel(Model):
                     "analysis": "risk",
                 }
             )
-            config.set("risk", risk)
-            config.set("hazard.return_periods", return_periods)
+            self.config.set("risk", risk)
+            self.config.set("hazard.return_periods", return_periods)
             grid.set(ds)
 
-        config.set("hazard.file", grid._filename)
-        config.set(
+        self.config.set("hazard.file", grid._filename)
+        self.config.set(
             "hazard.elevation_reference",
             "DEM" if hazard_type == "water_depth" else "datum",
         )
