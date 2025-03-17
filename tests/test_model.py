@@ -39,20 +39,6 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
     # Setup the model
     model = FIATModel(tmp_path, data_libs=[build_data_catalog])
 
-    with pytest.raises(
-        ValueError, match="Cannot perform risk analysis without return periods"
-    ):
-        model.setup_hazard(hazard_fnames="test.nc", risk=True)
-
-    with pytest.raises(
-        ValueError, match="Return periods do not match the number of hazard files"
-    ):
-        model.setup_hazard(
-            hazard_fnames=["test1.nc", "test2.nc"],
-            risk=True,
-            return_periods=[1, 2, 3],
-        )
-
     # Test hazard event
     caplog.set_level(logging.INFO)
     dc = DataCatalog(build_data_catalog)
@@ -85,3 +71,22 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
     assert grid_component2.data.return_period == [50000]
     assert model2.config.get_value("hazard.risk")
     assert model2.config.get_value("hazard.return_periods") == [50000]
+
+
+def test_setup_hazard_errors(tmp_path):
+    # Setup the model
+    model = FIATModel(tmp_path)
+
+    with pytest.raises(
+        ValueError, match="Cannot perform risk analysis without return periods"
+    ):
+        model.setup_hazard(hazard_fnames="test.nc", risk=True)
+
+    with pytest.raises(
+        ValueError, match="Return periods do not match the number of hazard files"
+    ):
+        model.setup_hazard(
+            hazard_fnames=["test1.nc", "test2.nc"],
+            risk=True,
+            return_periods=[1, 2, 3],
+        )
