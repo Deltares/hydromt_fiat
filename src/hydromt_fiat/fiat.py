@@ -163,15 +163,20 @@ class FIATModel(Model):
         hazard_type: str | None = "flooding",
         *,
         risk: bool = False,
-    ):
-        """_Set up hazard maps.
+    ) -> None:
+        """Set up hazard maps.
 
-        Args:
-            hazard_fnames (str | list[str]): name(s) of hazard file(s).
-            return_periods (list[int] | None, optional): list of return periods. Length
-                of list should match the number hazard files. Defaults to None.
-            hazard_type (str | None, optional): Type of hazard. Defaults to "flooding".
-            risk (bool, optional): Whether the hazard files are part of a risk analysis.
+        Parameters
+        ----------
+            hazard_fnames : str | list[str]
+                Name(s) of hazard file(s).
+            return_periods : list[int] | None, optional
+                List of return periods. Length of list should match the number hazard
+                files. Defaults to None.
+            hazard_type : str | None, optional
+                Type of hazard. Defaults to "flooding".
+            risk : bool, optional
+                Whether the hazard files are part of a risk analysis.
                 Defaults to False.
 
         Returns
