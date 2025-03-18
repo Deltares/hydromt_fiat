@@ -25,17 +25,17 @@ class OSMDriver(GeoDataFrameDriver):
         uris: list[str],
         region: gpd.GeoDataFrame,
         *,
-        tags: list[str],
+        tags: list[str] | None = None,
         geom_type: list[str] | None = None,
     ) -> gpd.GeoDataFrame:
         """Read OSM data with the OSMnx API."""
         if len(uris) > 1:
             raise ValueError("Cannot use multiple uris for reading OSM data.")
 
-        if not region:
+        if not isinstance(region, gpd.GeoDataFrame):
             raise ValueError("Missing region argument for reading OSM geometries")
         uri = uris[0]
-        polygon = region.geometry
+        polygon = region.geometry[0]
         if tags:
             tag = dict(uri=tags)
         else:

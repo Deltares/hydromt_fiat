@@ -47,3 +47,25 @@ def test_OSMDriver_get_osm_data_empty(mocker, build_region_gdf, caplog):
     )
     assert not osm_data
     assert "No building features found for polygon" in caplog.text
+
+
+def test_OSMDriver_read_raise_errors(build_region_gdf):
+    osm_driver = OSMDriver()
+    with pytest.raises(
+        ValueError, match="Cannot use multiple uris for reading OSM data."
+    ):
+        osm_driver.read(uris=["uri1", "uri2"], region=build_region_gdf)
+
+    with pytest.raises(
+        ValueError, match="Missing region argument for reading OSM geometries"
+    ):
+        osm_driver.read(uris=["uri"], region=None)
+
+
+def test_OSMDriver_read(build_region_gdf, mocker):
+    osm_driver = OSMDriver()
+    mock_method = mocker.patch.object(osm_driver, "_get_osm_data")
+    osm_driver.read(uris=["building"], region=build_region_gdf)
+    mock_method.assert_called_with(
+        polygon=build_region_gdf.geometry[0], tag={"building": True}, geom_type=None
+    )
