@@ -31,6 +31,7 @@ def get_osm_data(polygon: Polygon, tags: dict) -> dict[gpd.GeoDataFrame]:
 
         if footprints.empty:
             logger.warning(f"No {tag} features found for polygon")
+            continue
 
         logger.info(f"Total number of {tag} found from OSM: {len(footprints)}")
 
