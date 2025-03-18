@@ -134,7 +134,34 @@ class FIATModel(Model):
         self.components["region"].set(geom, "region")
 
     @hydromt_step
-    def setup_exposure(
+    def setup_exposure_geom(
+        self,
+        exposure_fname: Path | str,
+        *,
+        exposure_link_fname: Path | str | None = None,
+    ):
+        """Set up the exposure from a data source.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            _description_
+        """
+        # Get the data from the catalog
+        exposure_data = self.data_catalog.get_geodataframe(
+            data_like=exposure_fname,
+            geom=self.region,
+        )
+        exposure_link = None
+        if exposure_link_fname is not None:
+            exposure_link = self.data_catalog.get_dataframe(
+                data_like=exposure_link_fname,
+            )
+        pass
+        return exposure_data, exposure_link
+
+    @hydromt_step
+    def setup_exposure_grid(
         self,
         exposure_fname: Path | str,
     ):
