@@ -108,6 +108,9 @@ test = [
 [project.entry-points."hydromt.models"]
 fiat = "hydromt_fiat.fiat"
 
+[project.entry-points."hydromt.drivers"]
+fiat = "hydromt_fiat.drivers"
+
 [project.urls]
 "Homepage" = "https://github.com/Deltares/hydromt_fiat"
 "Bug Reports" = "https://github.com/Deltares/hydromt_fiat/issues"
