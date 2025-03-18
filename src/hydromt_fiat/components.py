@@ -26,15 +26,14 @@ class RegionComponent(SpatialModelComponent):
         HydroMT model instance
     filename: str
         The path to use for reading and writing of component data by default.
-        by default "geoms/{name}.geojson" i.e. one file
-        per geodataframe in the data dictionary.
+        by default "region.geojson" i.e. one file.
     region_component: str, optional
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
         the data dictionary.
     region_filename: str
         The path to use for writing the region data to a file. By default
-        "geoms/geoms_region.geojson".
+        "region.geojson".
     """
 
     def __init__(
@@ -66,7 +65,7 @@ class RegionComponent(SpatialModelComponent):
         return self._data
 
     def _initialize(self, skip_read=False) -> None:
-        """Initialize geoms."""
+        """Initialize region."""
         if self._data is None:
             self._data = dict()
             if self.root.is_reading_mode() and not skip_read:
@@ -88,8 +87,6 @@ class RegionComponent(SpatialModelComponent):
         ---------
         geom: geopandas.GeoDataFrame or geopandas.GeoSeries
             New geometry data to add
-        name: str
-            Geometry name.
         """
         self._initialize()
         assert self._data is not None
@@ -126,9 +123,8 @@ class RegionComponent(SpatialModelComponent):
         Parameters
         ----------
         filename : str, optional
-            filename relative to model root. should contain a {name} placeholder
-            which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used.
+            filename relative to model root.
+            If None, the path that was provided at init will be used.
         **kwargs:
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
@@ -156,9 +152,8 @@ class RegionComponent(SpatialModelComponent):
         Parameters
         ----------
         filename : str, optional
-            filename relative to model root. should contain a {name} placeholder
-            which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used.
+            filename relative to model root.
+            If None, the path that was provided at init will be used.
         to_wgs84: bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
             before they are written.
