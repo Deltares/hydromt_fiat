@@ -59,15 +59,20 @@ class OSMDriver(GeoDataFrameDriver):
     def _get_osm_data(
         polygon: Polygon, tag: dict, geom_type: list[str] | None
     ) -> gpd.GeoDataFrame:
+        if not isinstance(polygon, Polygon):
+            raise ValueError("Given polygon is not of shapely.geometry.Polygon type")
+
         footprints = ox.features.features_from_polygon(polygon, tag)
 
+        tag_key = list(tag.keys())[0]
+
         if footprints.empty:
-            logger.warning(f"No {tag} features found for polygon")
+            logger.warning(f"No {tag_key} features found for polygon")
             return None
 
-        logger.info(f"Total number of {tag} found from OSM: {len(footprints)}")
+        logger.info(f"Total number of {tag_key} found from OSM: {len(footprints)}")
 
         if geom_type:
-            footprints = footprints.loc[footprints.geometry.type in geom_type]
+            footprints = footprints.loc[footprints.geometry.type.isin(geom_type)]
             footprints = footprints.reset_index(drop=True)
-        return footprints
+        return footprints[["geometry", tag_key]]
