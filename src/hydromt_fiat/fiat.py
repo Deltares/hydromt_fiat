@@ -15,6 +15,7 @@ from hydromt.model.components import (
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import RegionComponent
+from hydromt_fiat.workflows import parse_hazard_data
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -79,7 +80,9 @@ class FIATModel(Model):
         )
         self.add_component(
             "hazard_grid",
-            GridComponent(model=self, region_component="region"),
+            GridComponent(
+                model=self, region_component="region", filename="hazard_grid.nc"
+            ),
         )
         self.add_component("vulnerability_data", TablesComponent(model=self))
 
@@ -88,6 +91,11 @@ class FIATModel(Model):
     def config(self):
         """Return the configurations component."""
         return self.components["config"]
+
+    @property
+    def hazard_grid(self):
+        """Return hazard grid component."""
+        return self.components["hazard_grid"]
 
     ## I/O
     @hydromt_step
@@ -150,16 +158,63 @@ class FIATModel(Model):
     @hydromt_step
     def setup_hazard(
         self,
-        hazard_fname: Path,
-    ):
-        """Set up hazard from a data source.
+        hazard_fnames: str | list[str],
+        return_periods: list[int] | None = None,
+        hazard_type: str | None = "flooding",
+        *,
+        risk: bool = False,
+    ) -> None:
+        """Set up hazard maps.
 
         Parameters
         ----------
-        hazard_fname : Path
-            _description_
+        hazard_fnames : str | list[str]
+            Name(s) of hazard file(s).
+        return_periods : list[int] | None, optional
+            List of return periods. Length of list should match the number hazard
+            files. Defaults to None.
+        hazard_type : str | None, optional
+            Type of hazard. Defaults to "flooding".
+        risk : bool, optional
+            Whether the hazard files are part of a risk analysis.
+            Defaults to False.
+
+        Returns
+        -------
+           None
         """
-        pass
+        if not isinstance(hazard_fnames, list):
+            hazard_fnames = [hazard_fnames]
+        if risk and not return_periods:
+            raise ValueError("Cannot perform risk analysis without return periods")
+        if risk and len(return_periods) != len(hazard_fnames):
+            raise ValueError("Return periods do not match the number of hazard files")
+
+        # Check if there is already data set to this grid component. This will cause
+        # problems with setting attrs
+        if not self.hazard_grid.data.sizes == {}:
+            raise ValueError("Cannot set hazard data on existing hazard grid data.")
+
+        # Parse hazard files to an xarray dataset
+        ds = parse_hazard_data(
+            data_catalog=self.data_catalog,
+            hazard_fnames=hazard_fnames,
+            hazard_type=hazard_type,
+            return_periods=return_periods,
+            risk=risk,
+        )
+
+        self.hazard_grid.set(ds)
+
+        if risk:
+            self.config.set("hazard.risk", risk)
+            self.config.set("hazard.return_periods", return_periods)
+
+        self.config.set("hazard.file", self.hazard_grid._filename)
+        self.config.set(
+            "hazard.elevation_reference",
+            "DEM" if hazard_type == "water_depth" else "datum",
+        )
 
     def setup_vulnerability(
         self,
