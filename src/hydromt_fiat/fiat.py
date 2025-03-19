@@ -14,8 +14,8 @@ from hydromt.model.components import (
 )
 from hydromt.model.steps import hydromt_step
 
+from hydromt_fiat import workflows
 from hydromt_fiat.components import RegionComponent
-from hydromt_fiat.workflows import parse_hazard_data
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -196,7 +196,7 @@ class FIATModel(Model):
             raise ValueError("Cannot set hazard data on existing hazard grid data.")
 
         # Parse hazard files to an xarray dataset
-        ds = parse_hazard_data(
+        ds = workflows.parse_hazard_data(
             data_catalog=self.data_catalog,
             hazard_fnames=hazard_fnames,
             hazard_type=hazard_type,
