@@ -52,7 +52,7 @@ class OSMDriver(GeoDataFrameDriver):
                 f"driver {self.name} has no support for extension {ext}"
                 "switching to .fgb."
             )
-            path = path.parent / path.stem / ".fgb"
+            path = path.parent / (path.stem + ".fgb")
         gdf.to_file(path, **kwargs)
         return path
 

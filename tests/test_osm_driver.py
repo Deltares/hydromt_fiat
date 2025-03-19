@@ -75,7 +75,7 @@ def test_OSMDriver_read(build_region_gdf, mocker):
 def test_OSMDriver_write(tmp_path, build_region_gdf, caplog):
     osm_driver = OSMDriver()
     # Test with supported extension
-    fp = tmp_path / "test_data.gpkg"
+    fp = tmp_path / "test_data.fgb"
     osm_driver.write(path=fp, gdf=build_region_gdf)
     assert fp.exists
     gdf = gpd.read_file(fp)
