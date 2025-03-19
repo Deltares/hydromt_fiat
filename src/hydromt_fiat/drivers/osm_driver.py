@@ -8,7 +8,12 @@ import geopandas as gpd
 import osmnx as ox
 from hydromt._typing import StrPath
 from hydromt.data_catalog.drivers import GeoDataFrameDriver
+from osmnx._errors import InsufficientResponseError
 from shapely.geometry import Polygon
+
+cache_path = Path.home() / ".cache" / "osmnx"
+cache_path.mkdir(exist_ok=True)
+ox.settings.cache_folder = cache_path
 
 logger = logging.getLogger(__name__)
 
@@ -23,21 +28,29 @@ class OSMDriver(GeoDataFrameDriver):
     def read(
         self,
         uris: list[str],
-        region: gpd.GeoDataFrame,
+        mask: gpd.GeoDataFrame | gpd.GeoSeries,
         *,
         tags: list[str] | None = None,
         geom_type: list[str] | None = None,
+        **kwargs,
     ) -> gpd.GeoDataFrame:
         """Read OSM data with the OSMnx API."""
         if len(uris) > 1:
             raise ValueError("Cannot use multiple uris for reading OSM data.")
 
-        if not isinstance(region, gpd.GeoDataFrame):
-            raise ValueError("Missing region argument for reading OSM geometries")
+        if not isinstance(mask, (gpd.GeoDataFrame, gpd.GeoSeries)):
+            raise ValueError("Missing mask argument for reading OSM geometries")
         uri = uris[0]
-        polygon = region.geometry[0]
+        polygon = mask.geometry[0]
+
+        # If tags and geom_types are none check if these are supplied as driver options
+        if self.options.get("geom_type") and not geom_type:
+            geom_type = self.options.get("geom_type")
+        if self.options.get("tags") and not tags:
+            tags = self.options.get("tags")
+
         if tags:
-            tag = dict(uri=tags)
+            tag = {uri: tags}
         else:
             tag = {uri: True}
         logger.info("Retrieving %s data from OSM API", uri)
@@ -63,7 +76,11 @@ class OSMDriver(GeoDataFrameDriver):
         if not isinstance(polygon, Polygon):
             raise TypeError("Given polygon is not of shapely.geometry.Polygon type")
 
-        footprints = ox.features.features_from_polygon(polygon, tag)
+        try:
+            footprints = ox.features.features_from_polygon(polygon, tag)
+        except InsufficientResponseError as err:
+            logger.error(f"No OSM data retrieved with the following tags: {tag}")
+            raise err
 
         tag_key = list(tag.keys())[0]
 
@@ -75,5 +92,7 @@ class OSMDriver(GeoDataFrameDriver):
 
         if geom_type:
             footprints = footprints.loc[footprints.geometry.type.isin(geom_type)]
-            footprints = footprints.reset_index(drop=True)
+
+        # Remove multi index
+        footprints = footprints.reset_index(drop=True)
         return footprints[["geometry", tag_key]]
