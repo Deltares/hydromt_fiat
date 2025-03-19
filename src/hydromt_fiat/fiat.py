@@ -146,7 +146,7 @@ class FIATModel(Model):
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components["region"].set(geom, "region")
+        self.components["region"].set(geom)
 
     @hydromt_step
     def setup_exposure(
