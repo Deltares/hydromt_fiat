@@ -4,7 +4,7 @@
    :titlesonly:
    :hidden:
 
-   setup_guide/index.rst
+   getting_started/index.rst
    user_guide/index.rst
    api.rst
    dev/index.rst
