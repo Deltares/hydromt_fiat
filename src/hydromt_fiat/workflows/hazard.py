@@ -16,7 +16,7 @@ def parse_hazard_data(
     data_catalog: DataCatalog,
     hazard_fnames: list[str],
     hazard_type: str | None,
-    return_periods: list[int],
+    return_periods: list[int] | None = None,
     *,
     risk: bool,
 ) -> xr.Dataset:
