@@ -40,8 +40,15 @@ def build_region_gdf(build_region) -> gpd.GeoDataFrame:
     return gdf
 
 
+@pytest.fixture(scope="session")
+def data_catalog(build_data_catalog) -> DataCatalog:
+    dc = DataCatalog(build_data_catalog)
+    assert "bag" in dc.sources
+    return dc
+
+
 @pytest.fixture
-def model(tmp_path, build_data_catalog):
+def model(tmp_path, build_data_catalog) -> FIATModel:
     model = FIATModel(tmp_path, data_libs=build_data_catalog)
     return model
 
