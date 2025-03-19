@@ -57,9 +57,7 @@ class FIATModel(Model):
         Model.__init__(
             self,
             root,
-            components={
-                "region": RegionComponent(model=self, filename="region/{name}.geojson")
-            },
+            components={"region": RegionComponent(model=self)},
             mode=mode,
             region_component="region",
             data_libs=data_libs,
