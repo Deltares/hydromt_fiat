@@ -25,15 +25,15 @@ def parse_hazard_data(
     Parameters
     ----------
     data_catalog : DataCatalog
-        model data catalog
+        Model data catalog
     hazard_fnames : list[str]
         Names or paths of hazard files
     hazard_type : str | None
-        type of hazard
+        Type of hazard
     risk : bool
         Designate hazard files for risk analysis
     return_periods : list[int] | None, optional
-        list of return periods, by default None
+        List of return periods, by default None
 
     Returns
     -------
