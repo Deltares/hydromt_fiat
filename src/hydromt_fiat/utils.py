@@ -5,13 +5,18 @@ __all__ = ["create_query"]
 
 def create_query(
     **kwargs: dict,
-):
+) -> str:
     """Generate a query for a pandas DataFrame.
 
     Parameters
     ----------
     kwargs : dict
         Keyword arguments that are processed to a query. N.b. these are additive.
+
+    Returns
+    -------
+    str
+        A string containing the pandas dataframe query
     """
     query = ""
     idx = 0
