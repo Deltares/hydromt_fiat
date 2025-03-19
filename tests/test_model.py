@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 import xarray as xr
-from hydromt import DataCatalog
 
 from hydromt_fiat import FIATModel
 
@@ -66,12 +65,11 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
 
     # Test hazard event
     caplog.set_level(logging.INFO)
-    dc = DataCatalog(build_data_catalog)
-    hazard_source = dc.get_source("flood_event")
-    model.setup_hazard(hazard_fnames=hazard_source.full_uri)
-    assert "Added flooding hazard map: event" in caplog.text
-    raster = dc.get_rasterdataset("flood_event")
-    assert raster.shape == model.hazard_grid.data.event.shape
+    model.setup_hazard(hazard_fnames="flood_event")
+
+    assert "Added flooding hazard map: flood_event" in caplog.text
+    raster = model.data_catalog.get_rasterdataset("flood_event")
+    assert raster.shape == model.hazard_grid.data.flood_event.shape
     assert model.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
     assert model.config.get_value("hazard.elevation_reference") == "datum"
 
@@ -83,8 +81,12 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
 
     # Test hazard with return period
     model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
-    fnames = ["flood_50000"]
-    model2.setup_hazard(hazard_fnames=fnames, risk=True, return_periods=[50000])
+    model2.setup_hazard(
+        hazard_fnames=["flood_50000"],
+        risk=True,
+        return_periods=[50000],
+    )
+
     assert isinstance(model2.hazard_grid.data, xr.Dataset)
     assert model2.config.get_value("hazard.risk")
     assert model2.config.get_value("hazard.return_periods") == [50000]
