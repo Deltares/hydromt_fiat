@@ -192,7 +192,7 @@ class FIATModel(Model):
 
         # Check if there is already data set to this grid component. This will cause
         # problems with setting attrs
-        if not self.hazard_grid.data.sizes == {}:
+        if self.hazard_grid.data.sizes != {}:
             raise ValueError("Cannot set hazard data on existing hazard grid data.")
 
         # Parse hazard files to an xarray dataset

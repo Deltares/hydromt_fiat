@@ -48,7 +48,7 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
     assert "Added flooding hazard map: event" in caplog.text
     raster = dc.get_rasterdataset("flood_event")
     assert raster.shape == model.hazard_grid.data.event.shape
-    assert model.config.get_value("hazard.file") == "hazard_grid.nc"
+    assert model.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
     assert model.config.get_value("hazard.elevation_reference") == "datum"
 
     # Test setting data to hazard grid with data
