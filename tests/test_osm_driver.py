@@ -73,7 +73,7 @@ def test_OSMDriver_read_raise_errors(build_region_gdf):
         osm_driver.read(uris=["uri1", "uri2"], mask=build_region_gdf)
 
     with pytest.raises(
-        ValueError, match="Missing region argument for reading OSM geometries"
+        ValueError, match="Missing mask argument for reading OSM geometries"
     ):
         osm_driver.read(uris=["uri"], mask=None)
 
