@@ -61,7 +61,8 @@ class RegionComponent(SpatialModelComponent):
         if self._data is None:
             self._initialize()
 
-        assert self._data is not None
+        if self.data is None:
+            raise AttributeError("The attribute 'data' can not be None.")
         return self._data
 
     def _initialize(self, skip_read=False) -> None:
