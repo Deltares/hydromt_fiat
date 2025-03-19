@@ -2045,10 +2045,10 @@ class ExposureVector(Exposure):
             # NOTE: This is only used for the transition time from old to new models and for the translation script!
             if "Object ID" in self.exposure_geoms[0].columns:
                 assert set(self.exposure_geoms[0]["Object ID"]) == set(df["Object ID"])
+                gdf = self.exposure_geoms[0].merge(df, on="Object ID", how="left")
             else:
                 assert set(self.exposure_geoms[0]["object_id"]) == set(df["object_id"])
-            df["geometry"] = self.exposure_geoms[0]["geometry"]
-            gdf = gpd.GeoDataFrame(df, crs=self.exposure_geoms[0].crs)
+                gdf = self.exposure_geoms[0].merge(df, on="object_id", how="left")
         elif len(self.exposure_geoms) > 1:
             gdf_list = []
             for i in range(len(self.exposure_geoms)):
