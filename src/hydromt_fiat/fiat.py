@@ -14,8 +14,8 @@ from hydromt.model.components import (
 )
 from hydromt.model.steps import hydromt_step
 
+from hydromt_fiat import workflows
 from hydromt_fiat.components import RegionComponent
-from hydromt_fiat.workflows import parse_hazard_data
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -81,7 +81,7 @@ class FIATModel(Model):
         self.add_component(
             "hazard_grid",
             GridComponent(
-                model=self, region_component="region", filename="hazard_grid.nc"
+                model=self, region_component="region", filename="hazard/hazard_grid.nc"
             ),
         )
         self.add_component("vulnerability_data", TablesComponent(model=self))
@@ -139,7 +139,7 @@ class FIATModel(Model):
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components["region"].set(geom, "region")
+        self.components["region"].set(geom)
 
     @hydromt_step
     def setup_exposure(
@@ -192,11 +192,11 @@ class FIATModel(Model):
 
         # Check if there is already data set to this grid component. This will cause
         # problems with setting attrs
-        if not self.hazard_grid.data.sizes == {}:
+        if self.hazard_grid.data.sizes != {}:
             raise ValueError("Cannot set hazard data on existing hazard grid data.")
 
         # Parse hazard files to an xarray dataset
-        ds = parse_hazard_data(
+        ds = workflows.parse_hazard_data(
             data_catalog=self.data_catalog,
             hazard_fnames=hazard_fnames,
             hazard_type=hazard_type,

@@ -16,11 +16,30 @@ def parse_hazard_data(
     data_catalog: DataCatalog,
     hazard_fnames: list[str],
     hazard_type: str | None,
-    return_periods: list[int],
+    return_periods: list[int] | None = None,
     *,
     risk: bool,
 ) -> xr.Dataset:
-    """Parse hazard data files to xarray dataset."""
+    """Parse hazard data files to xarray dataset.
+
+    Parameters
+    ----------
+    data_catalog : DataCatalog
+        Model data catalog
+    hazard_fnames : list[str]
+        Names or paths of hazard files
+    hazard_type : str | None
+        Type of hazard
+    risk : bool
+        Designate hazard files for risk analysis
+    return_periods : list[int] | None, optional
+        List of return periods, by default None
+
+    Returns
+    -------
+    xr.Dataset
+        Unified xarray dataset containing the hazard data
+    """
     hazard_dataarrays = []
     for i, hazard_file in enumerate(hazard_fnames):
         da = data_catalog.get_rasterdataset(hazard_file)
