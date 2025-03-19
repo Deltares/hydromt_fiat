@@ -54,13 +54,14 @@ class OSMDriver(GeoDataFrameDriver):
             )
             path = path.parent / path.stem / ".fgb"
         gdf.to_file(path, **kwargs)
+        return path
 
     @staticmethod
     def _get_osm_data(
         polygon: Polygon, tag: dict, geom_type: list[str] | None
     ) -> gpd.GeoDataFrame:
         if not isinstance(polygon, Polygon):
-            raise ValueError("Given polygon is not of shapely.geometry.Polygon type")
+            raise TypeError("Given polygon is not of shapely.geometry.Polygon type")
 
         footprints = ox.features.features_from_polygon(polygon, tag)
 

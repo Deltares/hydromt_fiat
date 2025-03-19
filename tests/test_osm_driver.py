@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import geopandas as gpd
 import pytest
@@ -29,7 +30,7 @@ def test_OMSDriver_get_osm_data_errors(build_region_gdf):
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     with pytest.raises(
-        ValueError, match="Given polygon is not of shapely.geometry.Polygon type"
+        TypeError, match="Given polygon is not of shapely.geometry.Polygon type"
     ):
         OSMDriver._get_osm_data(build_region_gdf, tag=tag, geom_type=geom_type)
 
@@ -69,3 +70,21 @@ def test_OSMDriver_read(build_region_gdf, mocker):
     mock_method.assert_called_with(
         polygon=build_region_gdf.geometry[0], tag={"building": True}, geom_type=None
     )
+
+
+def test_OSMDriver_write(tmp_path, build_region_gdf, caplog):
+    osm_driver = OSMDriver()
+    # Test with supported extension
+    fp = tmp_path / "test_data.gpkg"
+    osm_driver.write(path=fp, gdf=build_region_gdf)
+    assert fp.exists
+    gdf = gpd.read_file(fp)
+    assert gdf.equals(build_region_gdf)
+
+    # Test with unsupported extension
+    fp = tmp_path / "test_data.csv"
+    caplog.set_level(logging.WARNING)
+    p = osm_driver.write(path=fp, gdf=build_region_gdf)
+    assert "driver osm has no support for extension .csv"
+    assert Path(p).suffix == ".fgb"
+    assert Path(p).exists
