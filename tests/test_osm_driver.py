@@ -11,7 +11,7 @@ from hydromt_fiat.drivers import OSMDriver
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])
-def test_OMSDriver_get_osm_data(tag_name, build_region_gdf, caplog):
+def test_osm_driver_get_osm_data(tag_name, build_region_gdf, caplog):
     geom_type = (
         ["LineString", "MultiLineString"]
         if tag_name == "highway"
@@ -29,7 +29,7 @@ def test_OMSDriver_get_osm_data(tag_name, build_region_gdf, caplog):
     assert osm_data.intersects(polygon).all()
 
 
-def test_OMSDriver_get_osm_data_errors(build_region_gdf, caplog):
+def test_osm_driver_get_osm_data_errors(build_region_gdf, caplog):
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     with pytest.raises(
@@ -50,7 +50,7 @@ def test_OMSDriver_get_osm_data_errors(build_region_gdf, caplog):
     assert f"No OSM data retrieved with the following tags: {tag}" in caplog.text
 
 
-def test_OSMDriver_get_osm_data_empty(mocker, build_region_gdf, caplog):
+def test_osm_driver_get_osm_data_empty(mocker, build_region_gdf, caplog):
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     caplog.set_level(logging.WARNING)
@@ -65,7 +65,7 @@ def test_OSMDriver_get_osm_data_empty(mocker, build_region_gdf, caplog):
     assert "No building features found for polygon" in caplog.text
 
 
-def test_OSMDriver_read_raise_errors(build_region_gdf):
+def test_osm_driver_read_raise_errors(build_region_gdf):
     osm_driver = OSMDriver()
     with pytest.raises(
         ValueError, match="Cannot use multiple uris for reading OSM data."
@@ -78,7 +78,7 @@ def test_OSMDriver_read_raise_errors(build_region_gdf):
         osm_driver.read(uris=["uri"], mask=None)
 
 
-def test_OSMDriver_read(build_region_gdf, mocker):
+def test_osm_driver_read(build_region_gdf, mocker):
     osm_driver = OSMDriver()
     mock_method = mocker.patch.object(osm_driver, "_get_osm_data")
     osm_driver.read(uris=["building"], mask=build_region_gdf)
@@ -87,7 +87,7 @@ def test_OSMDriver_read(build_region_gdf, mocker):
     )
 
 
-def test_OSMDriver_write(tmp_path, build_region_gdf, caplog):
+def test_osm_driver_write(tmp_path, build_region_gdf, caplog):
     osm_driver = OSMDriver()
     # Test with supported extension
     fp = tmp_path / "test_data.fgb"
@@ -100,12 +100,12 @@ def test_OSMDriver_write(tmp_path, build_region_gdf, caplog):
     fp = tmp_path / "test_data.csv"
     caplog.set_level(logging.WARNING)
     p = osm_driver.write(path=fp, gdf=build_region_gdf)
-    assert "driver osm has no support for extension .csv"
+    assert "driver osm has no support for extension .csv" in caplog.text
     assert Path(p).suffix == ".fgb"
     assert Path(p).exists
 
 
-def test_OSMDriver_datacatalog(tmp_path, build_region_gdf, build_data_catalog):
+def test_osm_driver_datacatalog(tmp_path, build_region_gdf, build_data_catalog):
     dc = DataCatalog(build_data_catalog)
     # Create data catalog source for osm data and add to data catalog
     osm_source = GeoDataFrameSource(
