@@ -81,7 +81,7 @@ class FIATModel(Model):
         self.add_component(
             "hazard_grid",
             GridComponent(
-                model=self, region_component="region", filename="hazard_grid.nc"
+                model=self, region_component="region", filename="hazard/hazard_grid.nc"
             ),
         )
         self.add_component("vulnerability_data", TablesComponent(model=self))
