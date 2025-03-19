@@ -89,7 +89,8 @@ class RegionComponent(SpatialModelComponent):
             New geometry data to add
         """
         self._initialize()
-        assert self._data is not None
+        if self.data is None:
+            raise AttributeError("The attribute 'data' can not be None.")
         if len(self.data) != 0:
             logger.warning("Replacing/ updating region")
 
