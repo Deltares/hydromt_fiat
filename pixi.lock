@@ -4364,7 +4364,7 @@ packages:
 - pypi: .
   name: hydromt-fiat
   version: 1.0.0.dev0
-  sha256: df91f40596ccdf3acfec962a0218ca2cd06ad7f7e1a79c02143ea0b7a4810917
+  sha256: b94160f744b6486f1243da5ee6a4d7d5b872cbefb47e0f1ba3fb7f3e84830fe7
   requires_dist:
   - dask
   - geopandas
