@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import List, Union
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -34,7 +33,7 @@ class FIATModel(Model):
         Model root, by default None
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w"
-    data_libs : List[str], optional
+    data_libs : list[str] | str, optional
         List of data catalog configuration files, by default None
     logger:
         The logger to be used.
@@ -51,7 +50,7 @@ class FIATModel(Model):
         self,
         root: str | None = None,
         mode: str = "r",
-        data_libs: Union[List, str] | None = None,
+        data_libs: list[str] | str | None = None,
         **catalog_keys,
     ):
         Model.__init__(
@@ -170,7 +169,7 @@ class FIATModel(Model):
     @hydromt_step
     def setup_hazard(
         self,
-        hazard_fnames: str | list[str],
+        hazard_fnames: list[Path | str] | Path | str,
         return_periods: list[int] | None = None,
         hazard_type: str | None = "flooding",
         *,
@@ -180,20 +179,20 @@ class FIATModel(Model):
 
         Parameters
         ----------
-        hazard_fnames : str | list[str]
-            Name(s) of hazard file(s).
+        hazard_fnames : list[Path | str] | Path | str
+            Path(s) to the hazard file(s) or name(s) of the data catalog entries.
         return_periods : list[int] | None, optional
             List of return periods. Length of list should match the number hazard
-            files. Defaults to None.
+            files, by default None.
         hazard_type : str | None, optional
-            Type of hazard. Defaults to "flooding".
+            Type of hazard, by default "flooding".
         risk : bool, optional
-            Whether the hazard files are part of a risk analysis.
-            Defaults to False.
+            Whether the hazard files are part of a risk analysis,
+            by default False.
 
         Returns
         -------
-           None
+            None
         """
         if not isinstance(hazard_fnames, list):
             hazard_fnames = [hazard_fnames]
@@ -233,24 +232,36 @@ class FIATModel(Model):
         self,
         vuln_fname: Path | str,
         vuln_link_fname: Path | str | None = None,
+        *,
         unit: str = "m",
         index_name: str = "water depth",
         **select,
-    ):
+    ) -> None:
         """Set up the vulnerability from a data source.
+
+        Warning
+        -------
+        The datasets (vuln_fname and vuln_link_fname) need to have a 'type' column.
 
         Parameters
         ----------
         vuln_fname : Path | str
-            _description_
+            Path to vulnerability dataset file or an entry in the data catalog that
+            points to the vulnerability dataset file.
         vuln_link_fname : Path | str | None, optional
-            _description_, by default None
+            Path or data catalog entry of the vulnerability linking table.
+            If not provided, it is assumed that the 'type' in the vulnerability dataset
+            is correct, by default None
         unit : str, optional
-            _description_, by default "m"
+            The unit which the vulnerability index is in, by default "m"
         index_name : str, optional
-            _description_, by default "water depth"
+            The output name of the index column, by default "water depth"
         select : dict, optional
             Keyword arguments to select data from the 'vuln_fname' data source.
+
+        Returns
+        -------
+            None
         """
         # Get the data from the catalog
         vuln_data = self.data_catalog.get_dataframe(vuln_fname)
