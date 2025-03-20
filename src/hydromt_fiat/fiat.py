@@ -124,12 +124,18 @@ class FIATModel(Model):
     def setup_config(
         self,
         **settings: dict,
-    ):
+    ) -> None:
         """Set config file entries.
 
+        Parameters
+        ----------
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
+
+        Returns
+        -------
+            None
         """
         for key, value in settings.items():
             self.config.set(key, value)
@@ -138,13 +144,17 @@ class FIATModel(Model):
     def setup_region(
         self,
         region: Path | str,
-    ):
+    ) -> None:
         """Set the region of the FIAT model.
 
         Parameters
         ----------
         region : Path | str
             Path to the region vector file.
+
+        Returns
+        -------
+            None
         """
         region = Path(region)
         if not region.is_file():

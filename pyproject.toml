@@ -75,12 +75,13 @@ classifiers = [
 'Programming Language :: Python :: 3',
 'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
+'Programming Language :: Python :: 3.13',
 ]
 
 [project.optional-dependencies] # Optional
 dev = [
-    "ruff",
     "pre-commit",
+    "ruff",
     "hydromt_fiat[all, docs, examples, test]"
 ]
 docs = [
@@ -92,10 +93,11 @@ docs = [
     "hydromt_fiat[all, examples]",
 ]
 examples = [
-    "jupyterlab",
     "cartopy",
+    "jupyterlab",
     "nbconvert==7.13.1",
     "notebook",
+    "pandoc",
     "hydromt_fiat[all]",
 ]
 test = [
@@ -230,6 +232,9 @@ pip = "*"
 
 [tool.pixi.pypi-dependencies]
 hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.feature.examples.dependencies]
+pandoc = "*"
 
 [tool.pixi.feature.test.dependencies]
 delft_fiat = ">=0.2.1"
