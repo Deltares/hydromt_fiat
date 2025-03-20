@@ -4433,7 +4433,7 @@ packages:
 - pypi: .
   name: hydromt-fiat
   version: 1.0.0.dev0
-  sha256: 1c9363de6aeec60472afca5f1b07edcb2062c83304ed746449ec65d98e748d3c
+  sha256: 1c4e806f577023c50bfc4bec977c74b75ad7e3eb6b24c9cd5c12133401d3454e
   requires_dist:
   - barril
   - dask
