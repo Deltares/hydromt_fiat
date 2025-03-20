@@ -30,3 +30,7 @@ html[data-theme="light"] {
 img.icon-link-image {
     height: 2.5em !important;
 }
+
+.bd-page-width {
+    max-width: 90rem; /* default is 88rem */
+}
