@@ -1,4 +1,4 @@
-.. _index_getting_started:
+.. _index_overview:
 
 ===============
 Getting started
@@ -9,7 +9,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: installation_guide
+        :link: install_guide
         :link-type: ref
 
         :octicon:`gear;10em`
@@ -49,3 +49,6 @@ Getting started
    :caption: Table of Contents
    :maxdepth: 2
    :hidden:
+
+   install.rst
+   examples.rst
