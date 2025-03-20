@@ -57,7 +57,7 @@ jobs:
           echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       - name: Upload to GitHub Pages
-        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+        if: ${{ !github.event.act }}
         uses: peaceiris/actions-gh-pages@v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
