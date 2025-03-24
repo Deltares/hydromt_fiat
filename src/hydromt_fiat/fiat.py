@@ -224,6 +224,7 @@ class FIATModel(Model):
         if self.hazard_grid.data.sizes != {}:
             ds = grid_from_rasterdataset(grid_like=self.hazard_grid.data, ds=ds)
 
+        # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
 
         if risk:
