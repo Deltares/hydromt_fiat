@@ -11,9 +11,9 @@ from hydromt.data_catalog.drivers import GeoDataFrameDriver
 from osmnx._errors import InsufficientResponseError
 from shapely.geometry import Polygon
 
-CACHE_DIR= Path.home() / ".cache" / "osmnx"
+CACHE_DIR = Path.home() / ".cache" / "osmnx"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-ox.settings.cache_folder = cache_path
+ox.settings.cache_folder = CACHE_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +70,27 @@ class OSMDriver(GeoDataFrameDriver):
         return path
 
     @staticmethod
-    def _get_osm_data(
+    def get_osm_data(
         polygon: Polygon, tag: dict, geom_type: list[str] | None
     ) -> gpd.GeoDataFrame:
+        """Retrieve OSM data with the OSMnx api.
+
+        Parameters
+        ----------
+        polygon : Polygon
+            Area of interest.
+        tag : dict
+            OSM tag to filter data with, i.e. {'building': True}
+        geom_type : list[str] | None
+            list of geometry types to filter data with,
+            i.e. ['MultiPolygon', 'Polygon']
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            GeoDataFrame with OSM data.
+
+        """
         if not isinstance(polygon, Polygon):
             raise TypeError("Given polygon is not of shapely.geometry.Polygon type")
 
