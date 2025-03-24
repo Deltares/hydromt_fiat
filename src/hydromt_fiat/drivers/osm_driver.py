@@ -11,8 +11,8 @@ from hydromt.data_catalog.drivers import GeoDataFrameDriver
 from osmnx._errors import InsufficientResponseError
 from shapely.geometry import Polygon
 
-cache_path = Path.home() / ".cache" / "osmnx"
-cache_path.mkdir(exist_ok=True)
+CACHE_DIR= Path.home() / ".cache" / "osmnx"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 ox.settings.cache_folder = cache_path
 
 logger = logging.getLogger(__name__)
