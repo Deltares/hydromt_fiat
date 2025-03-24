@@ -211,11 +211,6 @@ class FIATModel(Model):
         if risk and len(return_periods) != len(hazard_fnames):
             raise ValueError("Return periods do not match the number of hazard files")
 
-        # Check if there is already data set to this grid component. This will cause
-        # problems with setting attrs
-        if self.hazard_grid.data.sizes != {}:
-            raise ValueError("Cannot set hazard data on existing hazard grid data.")
-
         # Parse hazard files to an xarray dataset
         ds = workflows.parse_hazard_data(
             data_catalog=self.data_catalog,
@@ -224,8 +219,11 @@ class FIATModel(Model):
             return_periods=return_periods,
             risk=risk,
         )
-
-        self.hazard_grid.set(ds)
+        # Check if there is already data set to this grid component.
+        if self.hazard_grid.data.sizes != {}:
+            self.hazard_grid.add_data_from_rasterdataset(raster_data=ds)
+        else:
+            self.hazard_grid.set(ds)
 
         if risk:
             self.config.set("hazard.risk", risk)
