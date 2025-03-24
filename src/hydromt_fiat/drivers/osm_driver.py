@@ -34,7 +34,32 @@ class OSMDriver(GeoDataFrameDriver):
         geom_type: list[str] | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
-        """Read OSM data with the OSMnx API."""
+        """Read OSM data with the OSMnx API.
+
+        Parameters
+        ----------
+        uris : list[str]
+            List containing single OSM asset type.
+        mask : gpd.GeoDataFrame | gpd.GeoSeries
+            GeoDataFrame containing the region of interest.
+        tags : list[str] | None, optional
+            Additional tags to filter the OSM data by, by default None
+        geom_type : list[str] | None, optional
+            List of geometry types to filter data with,
+            i.e. ['MultiPolygon', 'Polygon'], by default None
+
+        Returns
+        -------
+        gpd.GeoDataFrame
+            _description_
+
+        Raises
+        ------
+        ValueError
+            _description_
+        ValueError
+            _description_
+        """
         if len(uris) > 1:
             raise ValueError("Cannot use multiple uris for reading OSM data.")
 
@@ -56,8 +81,21 @@ class OSMDriver(GeoDataFrameDriver):
         logger.info("Retrieving %s data from OSM API", uri)
         return self._get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
 
-    def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs):
-        """Write OSMNx data to file."""
+    def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs) -> StrPath:
+        """Write OSMNx data to file.
+
+        Parameters
+        ----------
+        path : StrPath
+            Path to write osm data to.
+        gdf : gpd.GeoDataFrame
+            GeoDataFrame containing OSM data.
+
+        Returns
+        -------
+        StrPath
+            Path to file
+        """
         path = Path(path)
         ext = path.suffix
         if ext not in self._supported_extensions:
@@ -82,7 +120,7 @@ class OSMDriver(GeoDataFrameDriver):
         tag : dict
             OSM tag to filter data with, i.e. {'building': True}
         geom_type : list[str] | None
-            list of geometry types to filter data with,
+            List of geometry types to filter data with,
             i.e. ['MultiPolygon', 'Polygon']
 
         Returns
