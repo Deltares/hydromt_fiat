@@ -39,7 +39,7 @@ class OSMDriver(GeoDataFrameDriver):
             raise ValueError("Cannot use multiple uris for reading OSM data.")
 
         if not isinstance(mask, (gpd.GeoDataFrame, gpd.GeoSeries)):
-            raise ValueError("Missing mask argument for reading OSM geometries")
+            raise TypeError(f"Wrong type: {type(mask)} -> should be GeoDataFrame or GeoSeries")
         uri = uris[0]
         polygon = mask.geometry[0]
 
