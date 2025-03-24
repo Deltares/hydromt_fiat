@@ -36,7 +36,7 @@ dependencies = [
 "geopandas",
 "hydromt>=1.0.1",
 "numpy",
-"osmnx>=1,<2",
+"osmnx",
 "pooch",
 "requests",
 "tomli",
@@ -110,6 +110,12 @@ test = [
 
 [project.entry-points."hydromt.models"]
 fiat = "hydromt_fiat.fiat"
+
+[project.entry-points."hydromt.drivers"]
+fiat = "hydromt_fiat.drivers"
+
+[project.entry-points."hydromt.uri_resolvers"]
+fiat = "hydromt_fiat.drivers.resolvers"
 
 [project.urls]
 "Homepage" = "https://github.com/Deltares/hydromt_fiat"
