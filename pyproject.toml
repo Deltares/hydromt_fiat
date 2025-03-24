@@ -115,7 +115,7 @@ fiat = "hydromt_fiat.fiat"
 fiat = "hydromt_fiat.drivers"
 
 [project.entry-points."hydromt.uri_resolvers"]
-fiat = "hydromt_fiat.drivers.custom_resolver"
+fiat = "hydromt_fiat.drivers.resolvers"
 
 [project.urls]
 "Homepage" = "https://github.com/Deltares/hydromt_fiat"

@@ -4,6 +4,10 @@ from pathlib import Path
 
 from hydromt.data_catalog.uri_resolvers import URIResolver
 
+__all__ = ["OSMResolver"]
+
+__hydromt_eps__ = ["OSMResolver"]
+
 
 class OSMResolver(URIResolver):
     """Resolve uri argument for OSM data catalog sources."""
