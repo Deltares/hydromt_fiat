@@ -1,7 +1,6 @@
 """Driver to read OSM data with the OSMnx API."""
 
 import logging
-import os
 from pathlib import Path
 from typing import ClassVar, Set
 
@@ -15,9 +14,6 @@ from shapely.geometry import Polygon
 CACHE_DIR = Path.home() / ".cache" / "osmnx"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 ox.settings.cache_folder = CACHE_DIR
-
-if "PYTEST_CURRENT_TEST" in os.environ:
-    ox.settings.use_cache = False
 
 logger = logging.getLogger(__name__)
 
