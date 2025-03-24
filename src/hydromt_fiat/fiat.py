@@ -11,6 +11,7 @@ from hydromt.model.components import (
     GridComponent,
     TablesComponent,
 )
+from hydromt.model.processes.grid import grid_from_rasterdataset
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
@@ -221,9 +222,9 @@ class FIATModel(Model):
         )
         # Check if there is already data set to this grid component.
         if self.hazard_grid.data.sizes != {}:
-            self.hazard_grid.add_data_from_rasterdataset(raster_data=ds)
-        else:
-            self.hazard_grid.set(ds)
+            ds = grid_from_rasterdataset(grid_like=self.hazard_grid.data, ds=ds)
+
+        self.hazard_grid.set(ds)
 
         if risk:
             self.config.set("hazard.risk", risk)

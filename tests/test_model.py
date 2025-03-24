@@ -59,10 +59,10 @@ def test_setup_vulnerability(tmp_path, build_data_catalog):
     )
 
 
-def test_setup_hazard(tmp_path, build_data_catalog, caplog):
+def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
     # Setup the model
     model = FIATModel(tmp_path, data_libs=[build_data_catalog])
-
+    model.setup_region(region=build_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
     model.setup_hazard(hazard_fnames="flood_event")
@@ -74,10 +74,11 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog):
     assert model.config.get_value("hazard.elevation_reference") == "datum"
 
     # Test setting data to hazard grid with data
-    with pytest.raises(
-        ValueError, match="Cannot set hazard data on existing hazard grid data."
-    ):
-        model.setup_hazard(hazard_fnames="flood_event")
+    model.setup_hazard(hazard_fnames="flood_50000")
+
+    # Check if both ds are still there
+    assert "flood_event" in model.hazard_grid.data.data_vars.keys()
+    assert "flood_50000" in model.hazard_grid.data.data_vars.keys()
 
     # Test hazard with return period
     model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
