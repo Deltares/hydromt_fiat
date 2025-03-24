@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import pytest
 from hydromt import DataCatalog
 from hydromt.data_catalog.sources import GeoDataFrameSource
@@ -78,12 +79,21 @@ def test_osm_driver_read_raise_errors(build_region_gdf):
         osm_driver.read(uris=["uri"], mask=None)
 
 
-def test_osm_driver_read(build_region_gdf, mocker):
+def test_osm_driver_read(build_region_gdf, mocker, caplog):
     osm_driver = OSMDriver()
-    mock_method = mocker.patch.object(osm_driver, "_get_osm_data")
+    mock_method = mocker.patch.object(OSMDriver, "get_osm_data")
     osm_driver.read(uris=["building"], mask=build_region_gdf)
     mock_method.assert_called_with(
         polygon=build_region_gdf.geometry[0], tag={"building": True}, geom_type=None
+    )
+    # Test with a mask geodataframe containing two geometries
+    mask = build_region_gdf.copy()
+    mask = pd.concat([mask, build_region_gdf])
+    caplog.set_level(logging.WARNING)
+    osm_driver.read(uris=["building"], mask=mask)
+    assert (
+        "Received multiple geometries for mask, geometries will be dissolved into"
+        " single geometry." in caplog.text
     )
 
 

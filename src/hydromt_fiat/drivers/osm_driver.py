@@ -68,6 +68,12 @@ class OSMDriver(GeoDataFrameDriver):
                 f"Wrong type: {type(mask)} -> should be GeoDataFrame or GeoSeries"
             )
         uri = uris[0]
+        if len(mask) > 1:
+            logger.warning(
+                "Received multiple geometries for mask, geometries will "
+                "be dissolved into single geometry."
+            )
+            mask = mask.dissolve()
         polygon = mask.geometry[0]
 
         # If tags and geom_types are none check if these are supplied as driver options
@@ -81,7 +87,7 @@ class OSMDriver(GeoDataFrameDriver):
         else:
             tag = {uri: True}
         logger.info("Retrieving %s data from OSM API", uri)
-        return self._get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
+        return self.get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
 
     def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs) -> StrPath:
         """Write OSMNx data to file.
