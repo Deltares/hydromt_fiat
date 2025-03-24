@@ -36,7 +36,7 @@ dependencies = [
 "geopandas",
 "hydromt>=1.0.1",
 "numpy",
-"osmnx>=1,<2",
+"osmnx",
 "pooch",
 "requests",
 "tomli",
