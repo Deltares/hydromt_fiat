@@ -22,7 +22,7 @@ def test_osm_driver_get_osm_data(tag_name, build_region_gdf, caplog):
     polygon = build_region_gdf.geometry[0]
     caplog.set_level(logging.INFO)
 
-    osm_data = OSMDriver._get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
+    osm_data = OSMDriver.get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
     assert isinstance(osm_data, gpd.GeoDataFrame)
     assert f"Total number of {tag_name} found from OSM:" in caplog.text
     assert not osm_data.empty
@@ -36,7 +36,7 @@ def test_osm_driver_get_osm_data_errors(build_region_gdf, caplog):
     with pytest.raises(
         TypeError, match="Given polygon is not of shapely.geometry.Polygon type"
     ):
-        OSMDriver._get_osm_data(build_region_gdf, tag=tag, geom_type=geom_type)
+        OSMDriver.get_osm_data(build_region_gdf, tag=tag, geom_type=geom_type)
 
     caplog.set_level(logging.ERROR)
     tag = {"buildin": True}
@@ -44,7 +44,7 @@ def test_osm_driver_get_osm_data_errors(build_region_gdf, caplog):
         InsufficientResponseError,
         match="No data elements in server response. Check log and query location/tags.",
     ):
-        OSMDriver._get_osm_data(
+        OSMDriver.get_osm_data(
             polygon=build_region_gdf.geometry[0], tag=tag, geom_type=geom_type
         )
 
@@ -59,7 +59,7 @@ def test_osm_driver_get_osm_data_empty(mocker, build_region_gdf, caplog):
         "hydromt_fiat.drivers.osm_driver.ox.features.features_from_polygon",
         returns=gpd.GeoDataFrame(),
     )
-    osm_data = OSMDriver._get_osm_data(
+    osm_data = OSMDriver.get_osm_data(
         build_region_gdf.geometry[0], tag=tag, geom_type=geom_type
     )
     assert not osm_data
@@ -73,9 +73,8 @@ def test_osm_driver_read_raise_errors(build_region_gdf):
     ):
         osm_driver.read(uris=["uri1", "uri2"], mask=build_region_gdf)
 
-    with pytest.raises(
-        ValueError, match="Missing mask argument for reading OSM geometries"
-    ):
+    err_msg = f"Wrong type: {type(None)} -> should be GeoDataFrame or GeoSeries"
+    with pytest.raises(TypeError, match=err_msg):
         osm_driver.read(uris=["uri"], mask=None)
 
 
