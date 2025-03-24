@@ -34,7 +34,7 @@ dependencies = [
 "barril",
 "dask",
 "geopandas",
-"hydromt>=1.0.0",
+"hydromt>=1.0.1",
 "numpy",
 "osmnx>=1,<2",
 "pooch",
@@ -221,7 +221,7 @@ clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
 
 ## Dependencies
 [tool.pixi.dependencies]
-hydromt = ">=1.0.0"
+hydromt = ">=1.0.1"
 pip = "*"
 
 [tool.pixi.pypi-dependencies]
@@ -231,11 +231,23 @@ hydromt_fiat = { path = ".", editable = true }
 pandoc = "*"
 
 [tool.pixi.feature.test.dependencies]
-delft_fiat = ">=0.2.1"
+delft_fiat = ">=0.3.0"
+
+# Extra python environments
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
 default = { features = [] }
 dev = { features = ["dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
-test = {features = ["test"] }
+test-py313 = {features = ["py313", "test"]}
+test-py312 = {features = ["py312", "test"]}
+test-py311 = {features = ["py311", "test"]}
