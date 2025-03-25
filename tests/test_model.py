@@ -5,6 +5,7 @@ import pytest
 import xarray as xr
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.errors import MissingRegionError
 
 
 def test_empty_model(tmp_path):
@@ -68,8 +69,6 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
     model.setup_hazard(hazard_fnames="flood_event")
 
     assert "Added flooding hazard map: flood_event" in caplog.text
-    raster = model.data_catalog.get_rasterdataset("flood_event")
-    assert raster.shape == model.hazard_grid.data.flood_event.shape
     assert model.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
     assert model.config.get_value("hazard.elevation_reference") == "datum"
 
@@ -82,6 +81,7 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
 
     # Test hazard with return period
     model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
+    model2.setup_region(region=build_region)
     model2.setup_hazard(
         hazard_fnames=["flood_50000"],
         risk=True,
@@ -110,3 +110,9 @@ def test_setup_hazard_errors(tmp_path):
             risk=True,
             return_periods=[1, 2, 3],
         )
+
+    with pytest.raises(
+        MissingRegionError,
+        match=("Region component is missing for setting up hazard data."),
+    ):
+        model.setup_hazard(hazard_fnames=["flood_event"])

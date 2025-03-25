@@ -11,11 +11,11 @@ from hydromt.model.components import (
     GridComponent,
     TablesComponent,
 )
-from hydromt.model.processes.grid import grid_from_rasterdataset
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components import RegionComponent
+from hydromt_fiat.errors import MissingRegionError
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -212,17 +212,24 @@ class FIATModel(Model):
         if risk and len(return_periods) != len(hazard_fnames):
             raise ValueError("Return periods do not match the number of hazard files")
 
+        if self.region is None:
+            raise MissingRegionError(
+                "Region component is missing for setting up hazard data."
+            )
+
+        # Check if there is already data set to this grid component.
+        grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
+
         # Parse hazard files to an xarray dataset
-        ds = workflows.parse_hazard_data(
+        ds = workflows.hazard_data(
             data_catalog=self.data_catalog,
             hazard_fnames=hazard_fnames,
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
+            region=self.region,
+            grid_like=grid_like,
         )
-        # Check if there is already data set to this grid component.
-        if self.hazard_grid.data.sizes != {}:
-            ds = grid_from_rasterdataset(grid_like=self.hazard_grid.data, ds=ds)
 
         # Set the data to the hazard grid component
         self.hazard_grid.set(ds)

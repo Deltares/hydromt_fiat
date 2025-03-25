@@ -3,20 +3,24 @@
 import logging
 from pathlib import Path
 
+import geopandas as gpd
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.model.processes.grid import grid_from_rasterdataset
 
-__all__ = ["parse_hazard_data"]
+__all__ = ["hazard_data"]
 
 
 logger = logging.getLogger(__name__)
 
 
-def parse_hazard_data(
+def hazard_data(
     data_catalog: DataCatalog,
     hazard_fnames: list[str],
     hazard_type: str | None,
+    region: gpd.GeoDataFrame,
     return_periods: list[int] | None = None,
+    grid_like: None | xr.Dataset = None,
     *,
     risk: bool,
 ) -> xr.Dataset:
@@ -42,7 +46,7 @@ def parse_hazard_data(
     """
     hazard_dataarrays = []
     for i, hazard_file in enumerate(hazard_fnames):
-        da = data_catalog.get_rasterdataset(hazard_file)
+        da = data_catalog.get_rasterdataset(hazard_file, geom=region)
 
         # Convert to gdal compliant
         da.encoding["_FillValue"] = None
@@ -77,8 +81,13 @@ def parse_hazard_data(
             )
 
         hazard_dataarrays.append(da)
+    if not grid_like:
+        grid_like = hazard_dataarrays[0].to_dataset()
 
     ds = xr.merge(hazard_dataarrays)
+
+    # Reproject to gridlike
+    ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
     da_names = [d.name for d in hazard_dataarrays]
 
     if risk:
