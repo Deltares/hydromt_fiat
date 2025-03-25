@@ -163,7 +163,56 @@ class FIATModel(Model):
         self.components["region"].set(geom)
 
     @hydromt_step
-    def setup_exposure(
+    def setup_exposure_geoms(
+        self,
+        exposure_fname: Path | str,
+        exposure_type_column: str,
+        exposure_link_fname: Path | str | None,
+    ):
+        """Set up the exposure from a data source.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            _description_
+        """
+        # Check for region
+        if self.region is None:
+            # TODO Replace with custom error class
+            raise AttributeError(
+                "Region is None -> \
+use 'setup_region' before this method"
+            )
+        # Check for vulnerability
+        keys = ["vulnerability_curves", "vulnerability_identifiers"]
+        if not all([item in self.vulnerability_data.data for item in keys]):
+            # TODO Replace with custom error class
+            raise KeyError("Use setup_vulnerability before this method")
+
+        # Get ze data
+        exposure_data = self.data_catalog.get_geodataframe(
+            data_like=exposure_fname,
+            geom=self.region,
+        )
+        exposure_link_data = None
+        if exposure_link_fname is not None:
+            exposure_link_data = self.data_catalog.get_dataframe(
+                data_like=exposure_link_fname,
+            )
+
+        # Call the workflows method to manipulate the data
+        exposure_vector, exposure_table = workflows.exposure_geometries(
+            exposure_data=exposure_data,
+            exposure_type_column=exposure_type_column,
+            vulnerability=self.vulnerability_data.data["vulnerability_identifiers"],
+            exposure_link_data=exposure_link_data,
+        )
+
+        # Set the config file
+        pass
+
+    @hydromt_step
+    def setup_exposure_grid(
         self,
         exposure_fname: Path | str,
     ):
