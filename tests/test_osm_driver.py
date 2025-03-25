@@ -73,9 +73,13 @@ def test_osm_driver_read_raise_errors(build_region_gdf):
     ):
         osm_driver.read(uris=["uri1", "uri2"], mask=build_region_gdf)
 
-    err_msg = f"Wrong type: {type(None)} -> should be GeoDataFrame or GeoSeries"
+    with pytest.raises(ValueError, match="Mask is required to retrieve OSM data"):
+        osm_driver.read(uris=["building"], mask=None)
+
+    mask = [1, 2, 3, 4]
+    err_msg = f"Wrong type: {type(mask)} -> should be GeoDataFrame or GeoSeries"
     with pytest.raises(TypeError, match=err_msg):
-        osm_driver.read(uris=["uri"], mask=None)
+        osm_driver.read(uris=["uri"], mask=mask)
 
 
 def test_osm_driver_read(build_region_gdf, mocker, caplog):
