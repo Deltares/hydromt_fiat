@@ -80,5 +80,5 @@ def mock_model(tmp_path, mocker: MockerFixture) -> MagicMock:
 def osm_cached() -> Path:
     # Fetch the data
     p = fetch_data("osmnx")
-    assert list(p.iterdir()) != 0
+    assert len(list(p.iterdir())) != 0
     return p
