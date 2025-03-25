@@ -87,7 +87,6 @@ jrc_vulnerability_curves_linking:
     category: vulnerability
     notes: Default linking table for the JRC damage functions (e.g., the residential damage function links to residential buildings).
 
-
 osm_buildings:
   uri: building
   data_type: GeoDataFrame
