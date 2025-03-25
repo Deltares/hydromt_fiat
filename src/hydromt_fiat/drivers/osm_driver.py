@@ -63,6 +63,9 @@ class OSMDriver(GeoDataFrameDriver):
         if len(uris) > 1:
             raise ValueError("Cannot use multiple uris for reading OSM data.")
 
+        if mask is None:
+            raise ValueError("Mask is required to retrieve OSM data")
+
         if not isinstance(mask, (gpd.GeoDataFrame, gpd.GeoSeries)):
             raise TypeError(
                 f"Wrong type: {type(mask)} -> should be GeoDataFrame or GeoSeries"
