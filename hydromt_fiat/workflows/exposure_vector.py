@@ -691,13 +691,13 @@ occupancy map the for multiple exposure geoms"
                 # assign residential if no primary object type
                 gdf.loc[
                     gdf["primary_object_type"].isna(), "secondary_object_type"
-                ] = "unknown"
+                ] = "overig_inten"
                 gdf.loc[
                     gdf["primary_object_type"].isna(), "primary_object_type"
-                ] = "unknown"
+                ] = "overig_inten"
                 self.logger.warning(
                     f"{nr_without_primary_object} objects were not overlapping with the "
-                    "land use data and will be classified as unknown."
+                    "land use data and will be classified as overig_inten."
                 )
             else:
                 self.logger.warning(
@@ -862,9 +862,13 @@ occupancy map the for multiple exposure geoms"
             otype[new_str] = otype[new_str].map(
                 dict(zip(link_table["current"], link_table["new"]))
             )
+            link_table = link_table.drop(["current", "count"], axis=1)
+            link_table = link_table.rename({"new": new_str}, axis=1)
+            link_table = link_table.drop_duplicates(subset=new_str, keep="first")
+            otype = otype.merge(link_table, on=new_str, how="left")
+            otype["general_type"].fillna("unknown", inplace=True)
         
         return otype
-        
 
     def setup_extraction_method(self, extraction_method: str) -> None:
         self.exposure_db["extract_method"] = extraction_method
@@ -1127,10 +1131,10 @@ occupancy map the for multiple exposure geoms"
 
             # Calculate the area of each object
             gdf = self.get_full_gdf(self.exposure_db)[
-                ["primary_object_type", "geometry"]
+                ["general_type", "geometry"]
             ]
             gdf = get_area(gdf)
-            gdf = gdf.dropna(subset="primary_object_type")
+            gdf = gdf.dropna(subset="general_type")
 
             # Set the damage values to the exposure data
             self.set_max_potential_damage_columns(
@@ -1822,6 +1826,7 @@ occupancy map the for multiple exposure geoms"
 
             # Check if the linking column is the primary_object_type or the Secondary
             # Object Type
+            linking_column = "primary_object_type"
             if (len(unique_types_primary) > 0) and (
                 unique_types_primary.issubset(unique_linking_types)
             ):
@@ -1908,7 +1913,7 @@ occupancy map the for multiple exposure geoms"
                 self.exposure_db[f"max_damage_{damage_type}"] = [
                     damage_values[building_type][damage_type.lower()] * square_meters
                     for building_type, square_meters in zip(
-                        gdf["primary_object_type"], gdf["area"]
+                        gdf["general_type"], gdf["area"]
                     )
                 ]
             except KeyError as e:
