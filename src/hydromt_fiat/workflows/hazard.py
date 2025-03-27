@@ -11,7 +11,7 @@ from hydromt.model.processes.grid import grid_from_rasterdataset
 __all__ = ["hazard_data"]
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def hazard_data(

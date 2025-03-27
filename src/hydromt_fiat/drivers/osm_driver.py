@@ -9,13 +9,14 @@ import osmnx as ox
 from hydromt._typing import StrPath
 from hydromt.data_catalog.drivers import GeoDataFrameDriver
 from osmnx._errors import InsufficientResponseError
+from pyproj.crs import CRS
 from shapely.geometry import Polygon
 
-CACHE_DIR = Path.home() / ".cache" / "osmnx"
+CACHE_DIR = Path.home() / ".cache" / "hydromt_fiat" / "osmnx"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 ox.settings.cache_folder = CACHE_DIR
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class OSMDriver(GeoDataFrameDriver):
@@ -77,6 +78,11 @@ class OSMDriver(GeoDataFrameDriver):
                 "be dissolved into single geometry."
             )
             mask = mask.dissolve()
+
+        # Quick check on the crs. If not in WGS84, reproject
+        crs = CRS.from_epsg(4326)
+        if not mask.crs.equals(crs):
+            mask = mask.to_crs(crs)  # WGS84
         polygon = mask.geometry[0]
 
         # If tags and geom_types are none check if these are supplied as driver options

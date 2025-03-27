@@ -83,7 +83,7 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
     model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
     model2.setup_region(region=build_region)
     model2.setup_hazard(
-        hazard_fnames=["flood_50000"],
+        hazard_fnames=["flood_event_highres"],
         risk=True,
         return_periods=[50000],
     )

@@ -14,7 +14,7 @@ from hydromt.model.steps import hydromt_step
 if TYPE_CHECKING:
     from hydromt.model.model import Model
 
-logger: Logger = getLogger(__name__)
+logger: Logger = getLogger(f"hydromt.{__name__}")
 
 
 class RegionComponent(SpatialModelComponent):
