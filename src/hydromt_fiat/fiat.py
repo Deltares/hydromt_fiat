@@ -15,13 +15,14 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components import RegionComponent
+from hydromt_fiat.errors import MissingRegionError
 
 # Set some global variables
 __all__ = ["FIATModel"]
 __hydromt_eps__ = ["FIATModel"]  # core entrypoints
 
 # Create a logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class FIATModel(Model):
@@ -137,6 +138,7 @@ class FIATModel(Model):
         -------
             None
         """
+        logger.info("Setting config entries from user input")
         for key, value in settings.items():
             self.config.set(key, value)
 
@@ -157,6 +159,7 @@ class FIATModel(Model):
             None
         """
         region = Path(region)
+        logger.info(f"Setting region from '{region.as_posix()}'")
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
@@ -204,6 +207,7 @@ class FIATModel(Model):
         -------
             None
         """
+        logger.info("Setting up hazard raster data")
         if not isinstance(hazard_fnames, list):
             hazard_fnames = [hazard_fnames]
         if risk and not return_periods:
@@ -211,13 +215,18 @@ class FIATModel(Model):
         if risk and len(return_periods) != len(hazard_fnames):
             raise ValueError("Return periods do not match the number of hazard files")
 
-        # Check if there is already data set to this grid component. This will cause
-        # problems with setting attrs
-        if self.hazard_grid.data.sizes != {}:
-            raise ValueError("Cannot set hazard data on existing hazard grid data.")
+        if self.region is None:
+            raise MissingRegionError(
+                "Region component is missing for setting up hazard data."
+            )
+
+        # Check if there is already data set to this grid component.
+        grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.parse_hazard_data(
+        ds = workflows.hazard_data(
+            grid_like=grid_like,
+            region=self.region,
             data_catalog=self.data_catalog,
             hazard_fnames=hazard_fnames,
             hazard_type=hazard_type,
@@ -225,6 +234,7 @@ class FIATModel(Model):
             risk=risk,
         )
 
+        # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
 
         if risk:
@@ -273,6 +283,7 @@ class FIATModel(Model):
         -------
             None
         """
+        logger.info("Setting up the vulnerability curves")
         # Get the data from the catalog
         vuln_data = self.data_catalog.get_dataframe(vuln_fname)
         vuln_linking = None

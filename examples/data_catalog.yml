@@ -1,0 +1,137 @@
+meta:
+  version: v2024.4
+  name: hydromt-fiat_test-data
+
+bag:
+  data_type: GeoDataFrame
+  uri: buildings/bag.fgb
+  driver:
+    name: pyogrio
+    filesystem: local
+  metadata:
+    crs: 28992
+    url: https://service.pdok.nl/lv/bag/atom/bag.xml
+
+bag_link:
+  data_type: DataFrame
+  uri: buildings/bag-jrc_map.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    notes: Made by dalmijn
+
+flood_event:
+  data_type: RasterDataset
+  uri: floodmaps/event.tif
+  driver:
+    name: rasterio
+    filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
+  metadata:
+    category: flood maps
+    crs: 28992
+    notes: Made by Rijkswaterstaat/ Deltares
+
+flood_50000:
+  data_type: RasterDataset
+  uri: floodmaps/rp_50000.tif
+  driver:
+    name: rasterio
+    filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
+  metadata:
+    category: flood maps
+    crs: 28992
+    notes: Made by Rijkswaterstaat/ Deltares
+
+jrc_damage_values:
+  data_type: DataFrame
+  uri: vulnerability/jrc_base_damage_values.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: Base damage values from the JRC publicated Excel from the tab "MaxDamage-Data", processed into a handy format for HydroMT-FIAT.
+    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+    paper_doi: https://dx.doi.org/10.2760/16510
+
+jrc_vulnerability_curves:
+  data_type: DataFrame
+  uri: vulnerability/jrc_damage_functions.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: JRC depth-damage functions for flooding, processed into a handy format for HydroMT-FIAT.
+    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+    paper_doi: https://dx.doi.org/10.2760/16510
+
+jrc_vulnerability_curves_linking:
+  data_type: DataFrame
+  uri: vulnerability/jrc_damage_functions_linking.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: Default linking table for the JRC damage functions (e.g., the residential damage function links to residential buildings).
+
+osm_buildings:
+  uri: building
+  data_type: GeoDataFrame
+  uri_resolver: osm_resolver
+  driver:
+    name: osm
+    options:
+      geom_type:
+        - MultiPolygon
+        - Polygon
+
+osm_roads:
+  uri: highway
+  data_type: GeoDataFrame
+  uri_resolver: osm_resolver
+  driver:
+    name: osm
+    options:
+      geom_type:
+      - LineString
+      - MultiLineString
+      tags:
+      - motorway
+      - primary
+      - secondary
+      - tertiary
+
+osm_landuse:
+  uri: landuse
+  data_type: GeoDataFrame
+  uri_resolver: osm_resolver
+  driver:
+    name: osm
+    options:
+      geom_type:
+        - MultiPolygon
+        - Polygon
+
+osm_amenity:
+  uri: amenity
+  data_type: GeoDataFrame
+  uri_resolver: osm_resolver
+  driver:
+    name: osm
+    options:
+      geom_type:
+        - MultiPolygon
+        - Polygon

@@ -38,13 +38,13 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: checkout code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@v0.8.3
         with:
-          pixi-version: "v0.42.1"
+          pixi-version: "v0.43.0"
           environments: docs
           locked: false
           cache: true
