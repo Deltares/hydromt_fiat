@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 
 def hazard_data(
+    grid_like: xr.Dataset | None,
+    region: gpd.GeoDataFrame,
     data_catalog: DataCatalog,
     hazard_fnames: list[str],
     hazard_type: str | None,
-    region: gpd.GeoDataFrame,
     return_periods: list[int] | None = None,
-    grid_like: None | xr.Dataset = None,
     *,
     risk: bool,
 ) -> xr.Dataset:
@@ -28,6 +28,10 @@ def hazard_data(
 
     Parameters
     ----------
+    grid_like: xr.Dataset | None
+        Grid dataset that serves as an example dataset for transforming the input data
+    region: gpd.GeoDataFrame
+        Region geometry used for reading data from data catalog
     data_catalog : DataCatalog
         Model data catalog
     hazard_fnames : list[str]

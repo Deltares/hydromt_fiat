@@ -222,13 +222,13 @@ class FIATModel(Model):
 
         # Parse hazard files to an xarray dataset
         ds = workflows.hazard_data(
+            grid_like=grid_like,
+            region=self.region,
             data_catalog=self.data_catalog,
             hazard_fnames=hazard_fnames,
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
-            region=self.region,
-            grid_like=grid_like,
         )
 
         # Set the data to the hazard grid component
