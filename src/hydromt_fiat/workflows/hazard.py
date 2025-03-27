@@ -9,7 +9,7 @@ from hydromt import DataCatalog
 __all__ = ["parse_hazard_data"]
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def parse_hazard_data(

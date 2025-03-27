@@ -6,7 +6,7 @@ from hydromt_fiat.workflows import parse_hazard_data
 
 def test_parse_hazard_data(build_data_catalog):
     # test hazard risk
-    hazard_files = ["flood_50000"]
+    hazard_files = ["flood_event_highres"]
     datacatalog = DataCatalog(build_data_catalog)
     ds = parse_hazard_data(
         data_catalog=datacatalog,
@@ -17,7 +17,7 @@ def test_parse_hazard_data(build_data_catalog):
     )
     assert isinstance(ds, xr.Dataset)
     assert ds.analysis == "risk"
-    assert ds.name == ["flood_50000"]
+    assert ds.name == ["flood_event_highres"]
     assert ds.return_period == [50000]
 
     # Test hazard event
