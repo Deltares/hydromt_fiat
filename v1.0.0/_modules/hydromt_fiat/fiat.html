@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css?v=8403b9d2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css?v=967bc55a" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -449,13 +449,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegionComponent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
 
 <span class="c1"># Set some global variables</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FIATModel&quot;</span><span class="p">]</span>
 <span class="n">__hydromt_eps__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FIATModel&quot;</span><span class="p">]</span>  <span class="c1"># core entrypoints</span>
 
 <span class="c1"># Create a logger</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="FIATModel">
@@ -581,6 +582,7 @@
 <span class="sd">        -------</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting config entries from user input&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
@@ -604,6 +606,7 @@
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">region</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting region from &#39;</span><span class="si">{</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
         <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
@@ -654,6 +657,7 @@
 <span class="sd">        -------</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up hazard raster data&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_fnames</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">hazard_fnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">hazard_fnames</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">risk</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_periods</span><span class="p">:</span>
@@ -661,13 +665,18 @@
         <span class="k">if</span> <span class="n">risk</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">return_periods</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hazard_fnames</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Return periods do not match the number of hazard files&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Check if there is already data set to this grid component. This will cause</span>
-        <span class="c1"># problems with setting attrs</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span> <span class="o">!=</span> <span class="p">{}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot set hazard data on existing hazard grid data.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">MissingRegionError</span><span class="p">(</span>
+                <span class="s2">&quot;Region component is missing for setting up hazard data.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Check if there is already data set to this grid component.</span>
+        <span class="n">grid_like</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span> <span class="o">!=</span> <span class="p">{}</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Parse hazard files to an xarray dataset</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">parse_hazard_data</span><span class="p">(</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">hazard_data</span><span class="p">(</span>
+            <span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span>
+            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
             <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
             <span class="n">hazard_fnames</span><span class="o">=</span><span class="n">hazard_fnames</span><span class="p">,</span>
             <span class="n">hazard_type</span><span class="o">=</span><span class="n">hazard_type</span><span class="p">,</span>
@@ -675,6 +684,7 @@
             <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># Set the data to the hazard grid component</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
@@ -726,6 +736,7 @@
 <span class="sd">        -------</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up the vulnerability curves&quot;</span><span class="p">)</span>
         <span class="c1"># Get the data from the catalog</span>
         <span class="n">vuln_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">vuln_fname</span><span class="p">)</span>
         <span class="n">vuln_linking</span> <span class="o">=</span> <span class="kc">None</span>

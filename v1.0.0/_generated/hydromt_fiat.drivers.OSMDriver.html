@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>hydromt_fiat.FIATModel.region &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.drivers.OSMDriver &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.FIATModel.region';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.drivers.OSMDriver';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.FIATModel.hazard_grid" href="hydromt_fiat.FIATModel.hazard_grid.html" />
-    <link rel="prev" title="hydromt_fiat.FIATModel.config" href="hydromt_fiat.FIATModel.config.html" />
+    <link rel="next" title="hydromt_fiat.drivers.OSMDriver.get_osm_data" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html" />
+    <link rel="prev" title="hydromt_fiat.workflows.vulnerability_curves" href="hydromt_fiat.workflows.vulnerability_curves.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -399,9 +399,9 @@
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.read.html">hydromt_fiat.FIATModel.read</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 </ul>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.FIATModel.region</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard_grid.html">hydromt_fiat.FIATModel.hazard_grid</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
 </ul>
@@ -409,8 +409,8 @@
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.hazard_data.html">hydromt_fiat.workflows.hazard_data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
 </ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.drivers.OSMDriver</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
@@ -459,7 +459,7 @@
     
     <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API reference</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.FIATModel.region</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.drivers.OSMDriver</span></li>
   </ul>
 </nav>
 </div>
@@ -476,12 +476,54 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="hydromt-fiat-fiatmodel-region">
-<h1>hydromt_fiat.FIATModel.region<a class="headerlink" href="#hydromt-fiat-fiatmodel-region" title="Link to this heading">#</a></h1>
-<dl class="py property">
-<dt class="sig sig-object py" id="hydromt_fiat.FIATModel.region">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FIATModel.</span></span><span class="sig-name descname"><span class="pre">region</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.0.1)"><span class="pre">GeoDataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#hydromt_fiat.FIATModel.region" title="Link to this definition">#</a></dt>
-<dd><p>Return the model’s region component.</p>
+  <section id="hydromt-fiat-drivers-osmdriver">
+<h1>hydromt_fiat.drivers.OSMDriver<a class="headerlink" href="#hydromt-fiat-drivers-osmdriver" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="hydromt_fiat.drivers.OSMDriver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.drivers.</span></span><span class="sig-name descname"><span class="pre">OSMDriver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filesystem:</span> <span class="pre">~typing.Annotated[~fsspec.spec.AbstractFileSystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~pydantic.functional_validators.PlainValidator(func=~hydromt._typing.fsspec_types.validate_filesystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_schema_input_type=~typing.Any)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~pydantic.functional_serializers.PlainSerializer(func=~hydromt._typing.fsspec_types.serialize_filesystem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type=PydanticUndefined</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">when_used=always)]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options:</span> <span class="pre">~typing.Dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/drivers/osm_driver.html#OSMDriver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.drivers.OSMDriver" title="Link to this definition">#</a></dt>
+<dd><p>Driver to read OSM data with the OSMnx API.</p>
+<p class="rubric">Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_computed_fields</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_config</span></code></p></td>
+<td><p>Configuration for the model, should be a dictionary conforming to [<cite>ConfigDict</cite>][pydantic.config.ConfigDict].</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_extra</span></code></p></td>
+<td><p>Get extra fields set during validation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_fields</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_fields_set</span></code></p></td>
+<td><p>Returns the set of fields that have been explicitly set on this model instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_writing</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data" title="hydromt_fiat.drivers.OSMDriver.get_osm_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_osm_data</span></code></a>(polygon, tag, geom_type)</p></td>
+<td><p>Retrieve OSM data with the OSMnx api.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.read.html#hydromt_fiat.drivers.OSMDriver.read" title="hydromt_fiat.drivers.OSMDriver.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(uris, mask, *[, tags, geom_type])</p></td>
+<td><p>Read OSM data with the OSMnx API.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.write.html#hydromt_fiat.drivers.OSMDriver.write" title="hydromt_fiat.drivers.OSMDriver.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(path, gdf, **kwargs)</p></td>
+<td><p>Write OSMNx data to file.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </dd></dl>
 
 </section>
@@ -497,20 +539,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.FIATModel.config.html"
+       href="hydromt_fiat.workflows.vulnerability_curves.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.config</p>
+        <p class="prev-next-title">hydromt_fiat.workflows.vulnerability_curves</p>
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.FIATModel.hazard_grid.html"
+       href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.hazard_grid</p>
+        <p class="prev-next-title">hydromt_fiat.drivers.OSMDriver.get_osm_data</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -533,7 +575,7 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.FIATModel.region"><code class="docutils literal notranslate"><span class="pre">FIATModel.region</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.drivers.OSMDriver"><code class="docutils literal notranslate"><span class="pre">OSMDriver</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -541,7 +583,7 @@
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.FIATModel.region.rst">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.drivers.OSMDriver.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -557,7 +599,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_generated/hydromt_fiat.FIATModel.region.rst.txt"
+      <li><a href="../_sources/_generated/hydromt_fiat.drivers.OSMDriver.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

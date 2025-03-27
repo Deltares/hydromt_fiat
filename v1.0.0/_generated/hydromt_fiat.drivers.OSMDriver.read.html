@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>hydromt_fiat.FIATModel.region &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.drivers.OSMDriver.read &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.FIATModel.region';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.drivers.OSMDriver.read';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.FIATModel.hazard_grid" href="hydromt_fiat.FIATModel.hazard_grid.html" />
-    <link rel="prev" title="hydromt_fiat.FIATModel.config" href="hydromt_fiat.FIATModel.config.html" />
+    <link rel="next" title="hydromt_fiat.drivers.OSMDriver.write" href="hydromt_fiat.drivers.OSMDriver.write.html" />
+    <link rel="prev" title="hydromt_fiat.drivers.OSMDriver.get_osm_data" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -399,9 +399,9 @@
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.read.html">hydromt_fiat.FIATModel.read</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 </ul>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.FIATModel.region</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard_grid.html">hydromt_fiat.FIATModel.hazard_grid</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
 </ul>
@@ -412,9 +412,9 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
 </ul>
-<ul class="nav bd-sidenav">
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.read.html">hydromt_fiat.drivers.OSMDriver.read</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.drivers.OSMDriver.read</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.write.html">hydromt_fiat.drivers.OSMDriver.write</a></li>
 </ul>
 </div>
@@ -459,7 +459,7 @@
     
     <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API reference</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.FIATModel.region</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.drivers.OSMDriver.read</span></li>
   </ul>
 </nav>
 </div>
@@ -476,12 +476,35 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="hydromt-fiat-fiatmodel-region">
-<h1>hydromt_fiat.FIATModel.region<a class="headerlink" href="#hydromt-fiat-fiatmodel-region" title="Link to this heading">#</a></h1>
-<dl class="py property">
-<dt class="sig sig-object py" id="hydromt_fiat.FIATModel.region">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">FIATModel.</span></span><span class="sig-name descname"><span class="pre">region</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.0.1)"><span class="pre">GeoDataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#hydromt_fiat.FIATModel.region" title="Link to this definition">#</a></dt>
-<dd><p>Return the model’s region component.</p>
+  <section id="hydromt-fiat-drivers-osmdriver-read">
+<h1>hydromt_fiat.drivers.OSMDriver.read<a class="headerlink" href="#hydromt-fiat-drivers-osmdriver-read" title="Link to this heading">#</a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="hydromt_fiat.drivers.OSMDriver.read">
+<span class="sig-prename descclassname"><span class="pre">OSMDriver.</span></span><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uris</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.0.1)"><span class="pre">GeoDataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoSeries.html#geopandas.GeoSeries" title="(in GeoPandas v1.0.1)"><span class="pre">GeoSeries</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geom_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.0.1)"><span class="pre">GeoDataFrame</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/drivers/osm_driver.html#OSMDriver.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.drivers.OSMDriver.read" title="Link to this definition">#</a></dt>
+<dd><p>Read OSM data with the OSMnx API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>uris</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – List containing single OSM asset type.</p></li>
+<li><p><strong>mask</strong> (<em>gpd.GeoDataFrame</em><em> | </em><em>gpd.GeoSeries</em>) – GeoDataFrame containing the region of interest.</p></li>
+<li><p><strong>tags</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Additional tags to filter the OSM data by, by default None</p></li>
+<li><p><strong>geom_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – List of geometry types to filter data with,
+i.e. [‘MultiPolygon’, ‘Polygon’], by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>gpd.GeoDataFrame</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – _description_</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – _description_</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -497,20 +520,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.FIATModel.config.html"
+       href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.config</p>
+        <p class="prev-next-title">hydromt_fiat.drivers.OSMDriver.get_osm_data</p>
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.FIATModel.hazard_grid.html"
+       href="hydromt_fiat.drivers.OSMDriver.write.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.hazard_grid</p>
+        <p class="prev-next-title">hydromt_fiat.drivers.OSMDriver.write</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -533,7 +556,7 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.FIATModel.region"><code class="docutils literal notranslate"><span class="pre">FIATModel.region</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.drivers.OSMDriver.read"><code class="docutils literal notranslate"><span class="pre">OSMDriver.read()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -541,7 +564,7 @@
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.FIATModel.region.rst">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.drivers.OSMDriver.read.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -557,7 +580,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_generated/hydromt_fiat.FIATModel.region.rst.txt"
+      <li><a href="../_sources/_generated/hydromt_fiat.drivers.OSMDriver.read.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

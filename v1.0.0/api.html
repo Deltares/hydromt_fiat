@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css?v=8403b9d2" />
+    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css?v=967bc55a" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -406,7 +406,16 @@
 <li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
 </ul>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.workflows.hazard_data.html">hydromt_fiat.workflows.hazard_data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.read.html">hydromt_fiat.drivers.OSMDriver.read</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.write.html">hydromt_fiat.drivers.OSMDriver.write</a></li>
 </ul>
 </div>
 </nav></div>
@@ -464,7 +473,11 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="api-reference">
+  <style>
+    h2 {
+        border-bottom: 1px solid #000;
+    }
+</style><section id="api-reference">
 <span id="id1"></span><h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
 <section id="fiat-model-class">
 <span id="api-model"></span><h2>FIAT model class<a class="headerlink" href="#fiat-model-class" title="Link to this heading">#</a></h2>
@@ -540,12 +553,44 @@
 <p>The underlying workflow methods of the FIATModel.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves" title="hydromt_fiat.workflows.vulnerability_curves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.vulnerability_curves</span></code></a>(vuln_data[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="_generated/hydromt_fiat.workflows.hazard_data.html#hydromt_fiat.workflows.hazard_data" title="hydromt_fiat.workflows.hazard_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.hazard_data</span></code></a>(grid_like, region, ...)</p></td>
+<td><p>Parse hazard data files to xarray dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves" title="hydromt_fiat.workflows.vulnerability_curves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.vulnerability_curves</span></code></a>(vuln_data[, ...])</p></td>
 <td><p>Create vulnerability curves from raw data.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+</section>
+<section id="drivers">
+<h2>Drivers<a class="headerlink" href="#drivers" title="Link to this heading">#</a></h2>
+<p>Added drivers specifically for HydroMT-FIAT</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.html#hydromt_fiat.drivers.OSMDriver" title="hydromt_fiat.drivers.OSMDriver"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drivers.OSMDriver</span></code></a>(*, filesystem, ...)</p></td>
+<td><p>Driver to read OSM data with the OSMnx API.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="osmdriver-methods">
+<span id="id3"></span><h3>OSMDriver methods<a class="headerlink" href="#osmdriver-methods" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data" title="hydromt_fiat.drivers.OSMDriver.get_osm_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drivers.OSMDriver.get_osm_data</span></code></a>(polygon, tag, ...)</p></td>
+<td><p>Retrieve OSM data with the OSMnx api.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.read.html#hydromt_fiat.drivers.OSMDriver.read" title="hydromt_fiat.drivers.OSMDriver.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drivers.OSMDriver.read</span></code></a>(uris, mask, *[, ...])</p></td>
+<td><p>Read OSM data with the OSMnx API.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_generated/hydromt_fiat.drivers.OSMDriver.write.html#hydromt_fiat.drivers.OSMDriver.write" title="hydromt_fiat.drivers.OSMDriver.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">drivers.OSMDriver.write</span></code></a>(path, gdf, **kwargs)</p></td>
+<td><p>Write OSMNx data to file.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 </section>
 </section>
 
@@ -604,6 +649,10 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#workflow-functions">Workflow functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#drivers">Drivers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#osmdriver-methods">OSMDriver methods</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
