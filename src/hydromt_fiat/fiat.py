@@ -109,6 +109,11 @@ class FIATModel(Model):
         """Return the vulnerability component containing the data."""
         return self.components["vulnerability_data"]
 
+    @property
+    def exposure_grid(self) -> GridComponent:
+        """Return exposure grid component."""
+        return self.components["exposure_grid"]
+
     ## I/O
     @hydromt_step
     def read(self):
@@ -309,7 +314,7 @@ class FIATModel(Model):
 
     @hydromt_step
     def setup_exposure_grid(
-        exposure_files: str | Path | list[str | Path], linking_table: str | Path
+        self, exposure_files: str | Path | list[str | Path], linking_table: str | Path
     ) -> None:
         """Set up an exposure grid.
 
@@ -324,3 +329,6 @@ class FIATModel(Model):
         exposure_files = (
             [exposure_files] if not isinstance(exposure_files, list) else exposure_files
         )
+        ds = workflows.exposure_grid_data(exposure_files, linking_table)
+
+        self.exposure_grid.set(ds)
