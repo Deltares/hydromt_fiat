@@ -299,3 +299,21 @@ class FIATModel(Model):
             "vulnerability.file",
             self.vulnerability_data._filename.format(name="vulnerability_curves"),
         )
+
+    @hydromt_step
+    def setup_exposure_grid(
+        exposure_files: str | Path | list[str | Path], linking_table: str | Path
+    ) -> None:
+        """Set up an exposure grid.
+
+        Parameters
+        ----------
+        exposure_files : str | Path | list[str  |  Path]
+            _description_
+        linking_table : str | Path
+            _description_
+        """
+        logger.info("Setting up exposure grid")
+        exposure_files = (
+            [exposure_files] if not isinstance(exposure_files, list) else exposure_files
+        )
