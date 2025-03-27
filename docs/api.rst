@@ -1,5 +1,13 @@
 .. currentmodule:: hydromt_fiat
 
+.. raw:: html
+
+    <style>
+        h2 {
+            border-bottom: 1px solid #000;
+        }
+    </style>
+
 .. _api_reference:
 
 #############
@@ -67,4 +75,28 @@ The underlying workflow methods of the FIATModel.
 .. autosummary::
     :toctree: _generated
 
+    workflows.hazard_data
     workflows.vulnerability_curves
+
+Drivers
+=======
+
+Added drivers specifically for HydroMT-FIAT
+
+.. autosummary::
+    :toctree: _generated
+    :template: autosummary/class_noinherit.rst
+
+    drivers.OSMDriver
+
+.. _drivers:
+
+OSMDriver methods
+-----------------
+
+.. autosummary::
+    :toctree: _generated
+
+    drivers.OSMDriver.get_osm_data
+    drivers.OSMDriver.read
+    drivers.OSMDriver.write

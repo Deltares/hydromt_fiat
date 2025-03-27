@@ -45,6 +45,7 @@ version = hydromt_fiat.__version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "nbsphinx",
     "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
@@ -56,7 +57,6 @@ extensions = [
     "sphinx_autosummary_accessors",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "nbsphinx",
 ]
 
 autosummary_generate = True

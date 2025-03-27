@@ -18,7 +18,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: intro_user_guide
+        :link: index_user_guide
         :link-type: ref
 
         :octicon:`book;10em`
