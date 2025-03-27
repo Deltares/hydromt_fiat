@@ -1,7 +1,8 @@
 {
     "data": {
-        "build-data.tar.gz": "055f7981f661be1de1e72d0b69d4d5124aa24f9fc157091adb4de8ecf734a6dc"
+        "build-data.tar.gz": "9f53383596ece992c9cb6dbd4199597b1abb1ba1772743c60ccfc78174a50d90",
+        "osmnx.tar.gz": "3baee58a4ccaea5f1a523806b9f629d5f54a146ff475eb3514efd06531c54712"
     },
-    "url": "doi:10.5281/zenodo.15038613",
-    "version": "v0.1.1"
+    "url": "doi:10.5281/zenodo.15084240",
+    "version": "v0.1.2"
 }
