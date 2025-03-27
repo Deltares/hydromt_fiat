@@ -4,11 +4,12 @@ from hydromt import DataCatalog
 from hydromt_fiat.workflows import hazard_data
 
 
-def test_parse_hazard_data(build_data_catalog, build_region_gdf):
+def test_hazard_data(build_data_catalog, build_region_gdf):
     # test hazard risk
     hazard_files = ["flood_event_highres"]
     datacatalog = DataCatalog(build_data_catalog)
     ds = hazard_data(
+        grid_like=None,
         data_catalog=datacatalog,
         hazard_fnames=hazard_files,
         hazard_type="flooding",
@@ -24,6 +25,7 @@ def test_parse_hazard_data(build_data_catalog, build_region_gdf):
     # Test hazard event
     hazard_files = ["flood_event"]
     ds = hazard_data(
+        grid_like=None,
         data_catalog=datacatalog,
         hazard_fnames=hazard_files,
         hazard_type="flooding",

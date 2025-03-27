@@ -73,11 +73,11 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
     assert model.config.get_value("hazard.elevation_reference") == "datum"
 
     # Test setting data to hazard grid with data
-    model.setup_hazard(hazard_fnames="flood_50000")
+    model.setup_hazard(hazard_fnames="flood_event_highres")
 
     # Check if both ds are still there
     assert "flood_event" in model.hazard_grid.data.data_vars.keys()
-    assert "flood_50000" in model.hazard_grid.data.data_vars.keys()
+    assert "flood_event_highres" in model.hazard_grid.data.data_vars.keys()
 
     # Test hazard with return period
     model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
