@@ -1,4 +1,4 @@
-"""Define custom components."""
+"""Custom region components."""
 
 import os
 from logging import Logger, getLogger
@@ -61,8 +61,6 @@ class RegionComponent(SpatialModelComponent):
         if self._data is None:
             self._initialize()
 
-        if self._data is None:
-            raise AttributeError("The attribute 'data' can not be None.")
         return self._data
 
     def _initialize(self, skip_read=False) -> None:
@@ -90,8 +88,6 @@ class RegionComponent(SpatialModelComponent):
             New geometry data to add
         """
         self._initialize()
-        if self.data is None:
-            raise AttributeError("The attribute 'data' can not be None.")
         if len(self.data) != 0:
             logger.warning("Replacing/ updating region")
 
@@ -104,10 +100,7 @@ class RegionComponent(SpatialModelComponent):
             geom.to_crs(model_crs.to_epsg(), inplace=True)
 
         # Get rid of columns that aren't geometry
-        cols = geom.columns.to_list()
-        cols.remove("geometry")
-        geom.drop(cols, axis=1, inplace=True)
-        geom = geom.dissolve()
+        geom = geom["geometry"].to_frame()
 
         # Make a union with the current region geodataframe
         cur = self._data.get("region")

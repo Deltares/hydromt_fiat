@@ -10,13 +10,6 @@ __all__ = ["fetch_data"]
 
 logger = logging.getLogger(__name__)
 
-# update the base URL and registry with new versions of the data
-# use create_artifact.py script to create the build-data/ test-data archives
-with open(Path(__file__).parent / "registry.json", "r") as f:
-    DATABASE = json.load(f)
-    BASE_URL: str = DATABASE["url"]
-    REGISTRY: dict[str:str] = DATABASE["data"]
-CACHE_DIR = Path("~", ".cache", "hydromt_fiat").expanduser()
 PROCESSORS = {
     "tar.gz": pooch.Untar,
     "zip": pooch.Unzip,
@@ -58,15 +51,24 @@ def fetch_data(
     Path
         The output directory where the data is stored
     """
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    # Open the registry
+    # update the base URL and registry with new versions of the data
+    # use create_artifact.py script to create the build-data/ test-data archives
+    with open(Path(__file__).parent / "registry.json", "r") as f:
+        database = json.load(f)
+        base_url: str = database["url"]
+        registry: dict[str:str] = database["data"]
+    cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
     if output_dir is None:
-        output_dir = CACHE_DIR
+        output_dir = cache_dir
     else:
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
     # Quick check whether the data can be found
-    choices_raw = list(REGISTRY.keys())
+    choices_raw = list(registry.keys())
     choices = [item.split(".", 1)[0] for item in choices_raw]
     if data not in choices:
         raise ValueError(f"Choose one of the following: {choices}")
@@ -74,9 +76,9 @@ def fetch_data(
 
     # Setup Pooch
     retriever = pooch.create(
-        path=CACHE_DIR,  # store archive to cache
-        base_url=BASE_URL,
-        registry=REGISTRY,
+        path=cache_dir,  # store archive to cache
+        base_url=base_url,
+        registry=registry,
     )
 
     # Set the way of unpacking it
