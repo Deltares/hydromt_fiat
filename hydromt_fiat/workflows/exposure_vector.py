@@ -1194,7 +1194,7 @@ class ExposureVector(Exposure):
 
             # Unit conversion
             if grnd_elev_unit:
-                self.unit_conversion(parameter="grnd_elevtn", unit=grnd_elev_unit)
+                self.unit_conversion(parameter="ground_elevtn", unit=grnd_elev_unit)
 
         else:
             self.logger.warning(
