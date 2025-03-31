@@ -90,7 +90,7 @@ def vuln_linking(data_catalog) -> pd.DataFrame:
 ## Models and mocked objects
 @pytest.fixture
 def model(tmp_path, build_data_catalog) -> FIATModel:
-    model = FIATModel(tmp_path, data_libs=build_data_catalog)
+    model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog)
     return model
 
 

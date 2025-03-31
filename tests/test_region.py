@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from unittest.mock import PropertyMock
 
@@ -82,11 +83,25 @@ def test_region_component_write(
     build_region_gdf,
     build_region_small_gdf,
     mock_model,
+    caplog,
 ):
+    caplog.set_level(logging.DEBUG)
+
     # Setup component and a region
     component = RegionComponent(model=mock_model)
-    component.set(build_region_gdf)
 
+    # Empty write
+    component.write()
+    assert "No geoms data found, skip writing." in caplog.text
+
+    # Write empty region GeoDataFrame
+    component._data = {"region": gpd.GeoDataFrame()}
+    component.write()
+    assert "region is empty. Skipping..." in caplog.text
+    component._data = {}
+
+    # Set something in the component
+    component.set(build_region_gdf)
     # Write the data
     component.write()
     assert Path(tmp_path, "region.geojson").is_file()
