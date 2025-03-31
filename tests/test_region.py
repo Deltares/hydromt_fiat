@@ -94,7 +94,7 @@ def test_region_component_write(
     # Write to separate directory
     component.write(filename="geom/region.geojson")
     assert Path(tmp_path, "geom").is_dir()
-    component is None
+    component = None
 
     # Create new component
     # Adjust the model crs to test the write capabilities
