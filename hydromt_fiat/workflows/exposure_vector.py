@@ -260,10 +260,8 @@ class ExposureVector(Exposure):
             polygon = region["geometry"].values[0]  # TODO check if this works each time
             roads = get_roads_from_osm(polygon, road_types)
 
-            if roads.empty:
-                self.logger.warning(
-                    "No roads found in the selected region from source " f"{source}."
-                )
+            if roads is None:
+                raise ValueError(f"No roads found in the selected region from source {source}.")
 
             # Rename the columns to FIAT names
             roads.rename(
