@@ -384,7 +384,7 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
-        linking_column: str = "primary_object_type",
+        linking_column: str = None,
         damage_unit: Currency = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
