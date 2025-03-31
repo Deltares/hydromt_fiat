@@ -1229,7 +1229,9 @@ class FiatModel(GridModel):
             aggregation_area_fn = "default", default set to 1 km
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
-        if aggregation_area_fn == "default":
+        if isinstance(aggregation_area_fn, pd.DataFrame):
+            pass
+        elif aggregation_area_fn == "default":
             aggregation_area_fn, attribute_names, label_names, file_names = (
                 self.create_default_aggregation(res_x, res_y)
             )
