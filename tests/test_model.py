@@ -201,3 +201,35 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path):
             exposure_col="exposure",
             vulnerability_col="vulnerability",
         )
+
+
+def test_setup_exposure_grid_errors(model, build_region, mocker):
+    err_msg = "setup_vulnerability step is required before setting up exposure grid."
+    with pytest.raises(RuntimeError, match=err_msg):
+        model.setup_exposure_grid(
+            exposure_files="flood_event",
+            linking_table="test.csv",
+            exposure_col="exposure",
+            vulnerability_col="vulnerability",
+        )
+
+    mocker.patch.object(FIATModel, "vulnerability_data")
+    with pytest.raises(
+        MissingRegionError, match="Region is required for setting up exposure grid."
+    ):
+        model.setup_exposure_grid(
+            exposure_files="flood_event",
+            linking_table="test.csv",
+            exposure_col="exposure",
+            vulnerability_col="vulnerability",
+        )
+
+    # check raise value error if linking table does not exist
+    model.setup_region(build_region)
+    with pytest.raises(ValueError, match="Given path to linking table does not exist."):
+        model.setup_exposure_grid(
+            exposure_files=["flood_event"],
+            linking_table="not/a/file/path",
+            exposure_col="exposure",
+            vulnerability_col="vulnerability",
+        )

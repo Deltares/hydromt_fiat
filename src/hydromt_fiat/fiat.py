@@ -337,6 +337,13 @@ class FIATModel(Model):
         """
         logger.info("Setting up exposure grid")
 
+        if self.vulnerability_data.data == {}:
+            raise RuntimeError(
+                "setup_vulnerability step is required before setting up exposure grid."
+            )
+        if self.region is None:
+            raise MissingRegionError("Region is required for setting up exposure grid.")
+
         # Check if linking_table exists
         if not Path(linking_table).exists():
             raise ValueError("Given path to linking table does not exist.")
@@ -357,7 +364,7 @@ class FIATModel(Model):
             vulnerability_col=vulnerability_col,
         )
 
-        if self.exposure_grid.data != {}:
+        if not self.exposure_grid.data != {}:
             self.config.set("exposure.grid.settings.var_as_band", True)
 
         self.exposure_grid.set(ds)
