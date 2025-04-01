@@ -1,1 +1,1 @@
-"""Data submodule for fetching and/ or api."""
+"""Data submodule for fetching and storing data."""

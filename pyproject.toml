@@ -157,6 +157,7 @@ exclude_also = [
     # Don't complain about abstract methods, they aren't run:
     "@(abc\\.)?abstractmethod",
     ]
+omit = ["src/hydromt_fiat/data/fetch.py"]
 
 ignore_errors = true
 

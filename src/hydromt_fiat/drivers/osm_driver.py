@@ -52,14 +52,7 @@ class OSMDriver(GeoDataFrameDriver):
         Returns
         -------
         gpd.GeoDataFrame
-            _description_
-
-        Raises
-        ------
-        ValueError
-            _description_
-        ValueError
-            _description_
+            The resulting data.
         """
         if len(uris) > 1:
             raise ValueError("Cannot use multiple uris for reading OSM data.")
