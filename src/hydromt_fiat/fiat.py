@@ -100,6 +100,11 @@ class FIATModel(Model):
         return self.components["config"]
 
     @property
+    def exposure_geoms(self) -> GeomsComponent:
+        """Return the exposure geoms component."""
+        return self.components["exposure_geoms"]
+
+    @property
     def hazard_grid(self) -> GridComponent:
         """Return hazard grid component."""
         return self.components["hazard_grid"]

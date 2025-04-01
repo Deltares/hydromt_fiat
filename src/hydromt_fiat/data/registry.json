@@ -1,8 +1,8 @@
 {
     "data": {
-        "build-data.tar.gz": "9f53383596ece992c9cb6dbd4199597b1abb1ba1772743c60ccfc78174a50d90",
+        "build-data.tar.gz": "cdfbf7a43d970d8671a1dac0899ae52fec16d61a6cf825f475d824a742c52154",
         "osmnx.tar.gz": "3baee58a4ccaea5f1a523806b9f629d5f54a146ff475eb3514efd06531c54712"
     },
-    "url": "doi:10.5281/zenodo.15084240",
+    "url": "http://localhost:8001",
     "version": "v0.1.2"
 }
