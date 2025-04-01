@@ -23,7 +23,7 @@ def test_exposure_grid_data(build_data_catalog, build_region_gdf, tmp_path, capl
         linking_table=linking_table_fp,
     )
     assert isinstance(ds, xr.Dataset)
-    assert ds.attrs.get("damage_function") == "damage_function_file"
+    assert ds.attrs.get("fn_damage") == "damage_function_file"
 
     # Test without matching exposure file name in linking table
     caplog.set_level(logging.WARNING)
