@@ -1,18 +1,16 @@
-"""Define custom components."""
+"""Custom region components."""
 
 import os
 from logging import Logger, getLogger
 from os.path import dirname, isdir, join
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, Optional, Union, cast
+from typing import Dict, Optional, Union, cast
 
 import geopandas as gpd
 from geopandas import GeoDataFrame, GeoSeries
+from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
-
-if TYPE_CHECKING:
-    from hydromt.model.model import Model
 
 logger: Logger = getLogger(f"hydromt.{__name__}")
 
@@ -22,23 +20,23 @@ class RegionComponent(SpatialModelComponent):
 
     Parameters
     ----------
-    model: Model
+    model : Model
         HydroMT model instance
-    filename: str
+    filename : str
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
-    region_component: str, optional
+    region_component : str, optional
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
         the data dictionary.
-    region_filename: str
+    region_filename : str, optional
         The path to use for writing the region data to a file. By default
         "region.geojson".
     """
 
     def __init__(
         self,
-        model: "Model",
+        model: Model,
         *,
         filename: str = "region.geojson",
         region_component: Optional[str] = None,
@@ -61,8 +59,6 @@ class RegionComponent(SpatialModelComponent):
         if self._data is None:
             self._initialize()
 
-        if self._data is None:
-            raise AttributeError("The attribute 'data' can not be None.")
         return self._data
 
     def _initialize(self, skip_read=False) -> None:
@@ -82,16 +78,14 @@ class RegionComponent(SpatialModelComponent):
     def set(self, geom: Union[GeoDataFrame, GeoSeries]):
         """Add data to the region component.
 
-        If a rregion is already present
+        If a region is already present
 
-        Arguments
-        ---------
-        geom: geopandas.GeoDataFrame or geopandas.GeoSeries
+        Parameters
+        ----------
+        geom : geopandas.GeoDataFrame or geopandas.GeoSeries
             New geometry data to add
         """
         self._initialize()
-        if self.data is None:
-            raise AttributeError("The attribute 'data' can not be None.")
         if len(self.data) != 0:
             logger.warning("Replacing/ updating region")
 
@@ -104,10 +98,7 @@ class RegionComponent(SpatialModelComponent):
             geom.to_crs(model_crs.to_epsg(), inplace=True)
 
         # Get rid of columns that aren't geometry
-        cols = geom.columns.to_list()
-        cols.remove("geometry")
-        geom.drop(cols, axis=1, inplace=True)
-        geom = geom.dissolve()
+        geom = geom["geometry"].to_frame()
 
         # Make a union with the current region geodataframe
         cur = self._data.get("region")
@@ -127,7 +118,7 @@ class RegionComponent(SpatialModelComponent):
         filename : str, optional
             filename relative to model root.
             If None, the path that was provided at init will be used.
-        **kwargs:
+        **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
@@ -156,10 +147,10 @@ class RegionComponent(SpatialModelComponent):
         filename : str, optional
             filename relative to model root.
             If None, the path that was provided at init will be used.
-        to_wgs84: bool, optional
+        to_wgs84 : bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
             before they are written.
-        **kwargs:
+        **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
         """

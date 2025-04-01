@@ -14,8 +14,8 @@ from hydromt.model.components import (
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components import RegionComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.region import RegionComponent
 
 # Set some global variables
 __all__ = ["FIATModel"]
