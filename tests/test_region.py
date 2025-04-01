@@ -78,13 +78,7 @@ def test_region_component_read(tmp_path, build_region_gdf, mock_model):
     assert component.region is not None
 
 
-def test_region_component_write(
-    tmp_path,
-    build_region_gdf,
-    build_region_small_gdf,
-    mock_model,
-    caplog,
-):
+def test_region_component_write_empty(mock_model, caplog):
     caplog.set_level(logging.DEBUG)
 
     # Setup component and a region
@@ -98,7 +92,11 @@ def test_region_component_write(
     component._data = {"region": gpd.GeoDataFrame()}
     component.write()
     assert "region is empty. Skipping..." in caplog.text
-    component._data = {}
+
+
+def test_region_component_write_default(tmp_path, build_region_gdf, mock_model):
+    # Setup the component
+    component = RegionComponent(model=mock_model)
 
     # Set something in the component
     component.set(build_region_gdf)
@@ -111,6 +109,8 @@ def test_region_component_write(
     assert Path(tmp_path, "geom").is_dir()
     component = None
 
+
+def test_region_component_write_crs(tmp_path, build_region_small_gdf, mock_model):
     # Create new component
     # Adjust the model crs to test the write capabilities
     type(mock_model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(28992))
