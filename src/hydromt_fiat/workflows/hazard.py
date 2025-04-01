@@ -6,9 +6,8 @@ from pathlib import Path
 import geopandas as gpd
 import xarray as xr
 from hydromt import DataCatalog
-from hydromt.model.processes.grid import grid_from_rasterdataset
 
-from hydromt_fiat.workflows.utils import _process_grid
+from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["hazard_data"]
 
@@ -55,7 +54,7 @@ def hazard_data(
         da = data_catalog.get_rasterdataset(hazard_file, geom=region)
 
         da_name = Path(hazard_file).stem.lower()
-        da = _process_grid(da=da, da_name=da_name)
+        da = _process_dataarray(da=da, da_name=da_name)
 
         rp = f"(rp {return_periods[i]})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
@@ -71,13 +70,10 @@ def hazard_data(
             )
 
         hazard_dataarrays.append(da)
-    if not grid_like:
-        grid_like = hazard_dataarrays[0].to_dataset()
-
-    ds = xr.merge(hazard_dataarrays)
 
     # Reproject to gridlike
-    ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
+    ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
+
     da_names = [d.name for d in hazard_dataarrays]
 
     if risk:

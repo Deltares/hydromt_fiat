@@ -1,5 +1,6 @@
 """Exposure workflows."""
 
+import logging
 from pathlib import Path
 
 import geopandas as gpd
@@ -7,9 +8,11 @@ import pandas as pd
 import xarray as xr
 from hydromt import DataCatalog
 
-from hydromt_fiat.workflows.utils import _process_grid
+from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["exposure_grid_data"]
+
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def exposure_grid_data(
@@ -36,18 +39,22 @@ def exposure_grid_data(
         Transformed and unified exposure grid
     """
     linking_table = pd.read_csv(linking_table)
-
+    exposure_dataarrays = []
     for exposure_file in exposure_files:
-        exposure_file = Path(exposure_file)
-
-        if exposure_file.name not in linking_table[exposure_col]:
-            raise ValueError(
-                f"{exposure_file.name} exposure grid file name missing in linking table"
+        exposure_fn = Path(exposure_file).stem
+        if exposure_fn not in linking_table[exposure_col].values:
+            damage_fn = exposure_fn
+            logger.warning(
+                f"Exposure file name, '{exposure_fn}', not found in linking table."
+                f" Setting damage curve file name attribute to '{exposure_fn}'."
             )
+        else:
+            damage_fn = linking_table.loc[
+                linking_table[exposure_col] == exposure_fn, vulnerability_col
+            ].values[0]
         da = data_catalog.get_rasterdataset(exposure_file, geom=region)
-        da_name = exposure_file.stem.lower()
-        da = _process_grid(da=da, da_name=da_name)
-        damage_fn = linking_table.loc[
-            linking_table[exposure_col] == exposure_file.stem, vulnerability_col
-        ]
-        damage_fn
+        da = _process_dataarray(da=da, da_name=exposure_fn)
+        da = da.assign_attrs({"damage_function": damage_fn})
+        exposure_dataarrays.append(da)
+
+    return _merge_dataarrays(grid_like=grid_like, dataarrays=exposure_dataarrays)
