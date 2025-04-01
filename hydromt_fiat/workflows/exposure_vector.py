@@ -440,15 +440,9 @@ class ExposureVector(Exposure):
             eur_to_us_dollar=eur_to_us_dollar,
             linking_column= linking_column
         )
-        if (
-            any(
-                isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
-            )
-            or any(
-                isinstance(geom, MultiPolygon)
-                for geom in self.exposure_geoms[0]["geometry"]
-            )
-            and bf_conversion
+        if bf_conversion and (
+            any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]) 
+            or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"])
         ):
             self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
