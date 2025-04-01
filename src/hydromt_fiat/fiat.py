@@ -236,6 +236,8 @@ class FIATModel(Model):
 
         # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
+        if len(self.hazard_grid.data.data_vars) > 1:
+            self.config.set("hazard.settings.var_as_band", True)
 
         if risk:
             self.config.set("hazard.risk", risk)
