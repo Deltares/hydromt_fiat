@@ -161,7 +161,7 @@ def test_setup_hazard_errors(tmp_path):
         model.setup_hazard(hazard_fnames=["flood_event"])
 
 
-def test_setup_exposure_grid(model, build_region, caplog, tmp_path):
+def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     model.setup_region(region=build_region)
 
     # create linking table
@@ -171,6 +171,8 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path):
     linking_table_fp = tmp_path / "linking_table.csv"
     linking_table.to_csv(linking_table_fp)
 
+    # Mock vulnerability_data attribute to pass check
+    mocker.patch.object(FIATModel, "vulnerability_data")
     caplog.set_level(logging.INFO)
     model.setup_exposure_grid(
         exposure_files=["flood_event"],
