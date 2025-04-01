@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -158,3 +159,34 @@ def test_setup_hazard_errors(tmp_path):
         match=("Region component is missing for setting up hazard data."),
     ):
         model.setup_hazard(hazard_fnames=["flood_event"])
+
+
+def test_setup_exposure_grid(model, build_region, caplog, tmp_path):
+    model.setup_region(region=build_region)
+
+    # create linking table
+    linking_table = pd.DataFrame(
+        data=[{"exposure": "flood_event", "vulnerability": "vulnerability_curve"}]
+    )
+    linking_table_fp = tmp_path / "linking_table.csv"
+    linking_table.to_csv(linking_table_fp)
+
+    caplog.set_level(logging.INFO)
+    model.setup_exposure_grid(
+        exposure_files=["flood_event"],
+        linking_table=linking_table_fp,
+        exposure_col="exposure",
+        vulnerability_col="vulnerability",
+    )
+    assert isinstance(model.exposure_grid.data, xr.Dataset)
+    assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
+    assert "Setting up exposure grid" in caplog.text
+
+    # check raise value error if linking table does not exist
+    with pytest.raises(ValueError, match="Given path to linking table does not exist."):
+        model.setup_exposure_grid(
+            exposure_files=["flood_event"],
+            linking_table="not/a/file/path",
+            exposure_col="exposure",
+            vulnerability_col="vulnerability",
+        )

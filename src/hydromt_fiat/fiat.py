@@ -314,7 +314,11 @@ class FIATModel(Model):
 
     @hydromt_step
     def setup_exposure_grid(
-        self, exposure_files: str | Path | list[str | Path], linking_table: str | Path
+        self,
+        exposure_files: str | Path | list[str | Path],
+        linking_table: str | Path,
+        exposure_col: str,
+        vulnerability_col: str,
     ) -> None:
         """Set up an exposure grid.
 
@@ -324,11 +328,32 @@ class FIATModel(Model):
             _description_
         linking_table : str | Path
             _description_
+        exposure_col : str
+            Name of column in linking table containing exposure file names
+            corresponding to the exposure files.
+        vulnerability_col : str
+            Name of column in linking table containing vulnerability file names
+            corresponding to vulnerability files.
         """
         logger.info("Setting up exposure grid")
+
+        # Check if linking_table exists
+        if not Path(linking_table).exists():
+            raise ValueError("Given path to linking table does not exist.")
+
         exposure_files = (
             [exposure_files] if not isinstance(exposure_files, list) else exposure_files
         )
-        ds = workflows.exposure_grid_data(exposure_files, linking_table)
+        # Get grid like from existing exposure data if there is any
+        grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
+        ds = workflows.exposure_grid_data(
+            grid_like=grid_like,
+            region=self.region,
+            data_catalog=self.data_catalog,
+            exposure_files=exposure_files,
+            linking_table=linking_table,
+            exposure_col=exposure_col,
+            vulnerability_col=vulnerability_col,
+        )
 
         self.exposure_grid.set(ds)

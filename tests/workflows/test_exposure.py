@@ -46,4 +46,4 @@ def test_exposure_grid_data(build_data_catalog, build_region_gdf, tmp_path, capl
     assert log_msg in caplog.text
 
     # Check if damage function defaults to exposure file name
-    assert ds.attrs.get("damage_function") == "flood_event"
+    assert ds.attrs.get("fn_damage") == "flood_event"
