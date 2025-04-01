@@ -364,7 +364,7 @@ class FIATModel(Model):
             vulnerability_col=vulnerability_col,
         )
 
-        if not self.exposure_grid.data != {}:
+        if self.exposure_grid.data == {}:
             self.config.set("exposure.grid.settings.var_as_band", True)
 
         self.exposure_grid.set(ds)
