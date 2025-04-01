@@ -40,6 +40,10 @@ def exposure_grid_data(
     """
     linking_table = pd.read_csv(linking_table)
     exposure_dataarrays = []
+    exposure_files = (
+        [exposure_files] if isinstance(exposure_files, str) else exposure_files
+    )
+
     for exposure_file in exposure_files:
         exposure_fn = Path(exposure_file).stem
         if exposure_fn not in linking_table[exposure_col].values:

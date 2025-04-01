@@ -19,7 +19,7 @@ def test_exposure_grid_data(build_data_catalog, build_region_gdf, tmp_path, capl
         grid_like=None,
         region=build_region_gdf,
         data_catalog=dc,
-        exposure_files=["flood_event"],
+        exposure_files="flood_event",
         linking_table=linking_table_fp,
     )
     assert isinstance(ds, xr.Dataset)

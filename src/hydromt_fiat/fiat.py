@@ -346,6 +346,7 @@ class FIATModel(Model):
         )
         # Get grid like from existing exposure data if there is any
         grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
+
         ds = workflows.exposure_grid_data(
             grid_like=grid_like,
             region=self.region,
@@ -356,4 +357,8 @@ class FIATModel(Model):
             vulnerability_col=vulnerability_col,
         )
 
+        if self.exposure_grid.data != {}:
+            self.config.set("exposure.grid.settings.var_as_band", True)
+
         self.exposure_grid.set(ds)
+        self.config.set("exposure.grid.file", self.exposure_grid._filename)

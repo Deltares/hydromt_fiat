@@ -181,6 +181,17 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path):
     assert isinstance(model.exposure_grid.data, xr.Dataset)
     assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
     assert "Setting up exposure grid" in caplog.text
+    assert model.config.get_value("exposure.grid.file") == model.exposure_grid._filename
+
+    # Check if config is set properly when data is added to existing grid
+    model.setup_exposure_grid(
+        exposure_files=["flood_event_highres"],
+        linking_table=linking_table_fp,
+        exposure_col="exposure",
+        vulnerability_col="vulnerability",
+    )
+
+    assert model.config.get_value("exposure.grid.settings.var_as_band")
 
     # check raise value error if linking table does not exist
     with pytest.raises(ValueError, match="Given path to linking table does not exist."):
