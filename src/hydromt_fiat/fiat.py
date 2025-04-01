@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
-import xarray as xr
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
@@ -365,8 +364,7 @@ class FIATModel(Model):
             vulnerability_col=vulnerability_col,
         )
 
-        if isinstance(self.exposure_grid.data, xr.Dataset):
-            self.config.set("exposure.grid.settings.var_as_band", True)
-
         self.exposure_grid.set(ds)
+        if len(self.exposure_grid.data.data_vars) > 1:
+            self.config.set("exposure.grid.settings.var_as_band", True)
         self.config.set("exposure.grid.file", self.exposure_grid._filename)
