@@ -74,14 +74,14 @@ def osm_cached() -> Path:
 
 
 @pytest.fixture
-def vuln_data(data_catalog) -> pd.DataFrame:
+def vulnerability_data(data_catalog) -> pd.DataFrame:
     df = data_catalog.get_dataframe("jrc_vulnerability_curves")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vuln_linking(data_catalog) -> pd.DataFrame:
+def vulnerability_linking(data_catalog) -> pd.DataFrame:
     df = data_catalog.get_dataframe("jrc_vulnerability_curves_linking")
     assert len(df) != 0
     return df
