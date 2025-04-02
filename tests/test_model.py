@@ -88,8 +88,8 @@ def test_setup_vulnerability(tmp_path, build_data_catalog):
 
     # Setup the vulnerability
     model.setup_vulnerability(
-        vuln_fname="jrc_vulnerability_curves",
-        vuln_link_fname="jrc_vulnerability_curves_linking",
+        vulnerability_fname="jrc_vulnerability_curves",
+        vulnerability_linking_fname="jrc_vulnerability_curves_linking",
         continent="europe",
     )
 
