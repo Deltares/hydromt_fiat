@@ -384,8 +384,8 @@ class FiatModel(GridModel):
         occupancy_object_type: Union[str, List[str]] = None,
         extraction_method: str = "centroid",
         damage_types: List[str] = ["structure", "content"],
-        linking_column: str = "primary_object_type",
-        damage_unit: Currency = Currency.dollar.value,
+        linking_column: str = None,
+        damage_unit: Union[Currency, str] = Currency.dollar.value,
         country: Union[str, None] = None,
         ground_elevation: Union[int, float, str, Path, None] = None,
         grnd_elev_unit: Units = None,
@@ -1238,7 +1238,14 @@ class FiatModel(GridModel):
             aggregation_area_fn = "default", default set to 1 km
         """
         # Assuming that all inputs are given in the same format check if one is not a list, and if not, transform everything to lists
-        if aggregation_area_fn == "default":
+        if isinstance(aggregation_area_fn, pd.DataFrame):
+            if not isinstance(label_names, list):
+                attribute_names = [attribute_names]
+                label_names = [label_names]
+                if file_names:
+                    file_names = [file_names]
+
+        elif aggregation_area_fn == "default":
             aggregation_area_fn, attribute_names, label_names, file_names = (
                 self.create_default_aggregation(res_x, res_y)
             )
