@@ -88,7 +88,7 @@ reference to data defined in a HydroMT [DataCatalog](https://deltares.github.io/
 The rest of the (keyword) arguments are meant to be kept to a minimum to avoid\
 overcomplication of the methods.
 
-A Simple example of the a setup methods should do is shown down below:\
+A Simple example of what a setup methods should do, is shown down below:\
 [![](https://mermaid.ink/img/pako:eNpVkUlrwzAQhf-KmZMNTvAiL9Kh0DjQS3tpD4Wii7DGC7GkoMh0CfnvVey0pYKBmaf3zTvMGVojERh0k3lvB2Fd8PjMdeDffdgM2B5OUbDZ3AW7kMMDukAKJ9b_cO_bxtdk-ohDtKq7xd1496uxh-vWVVfoBiPD080WKqHH4zwJh39ss7AyfLnl_JNxkVuju7GPIIbejhKYszPGoNAqcR3hfEU4uAEVcmC-lcIeOHB98cxR6Ddj1A9mzdwPwDoxnfw0H30m7kfRW6F-VYtaom3MrB0wQpYdwM7wASyl9TYnpK5oWiQ5Tcoshk9gGcm3tCAFIUlZ5XVWX2L4WlKTbZVXtKBJXSZVmqUljQHl6Ix9Wo-w3OLyDRRrdtM?type=png)](https://mermaid.live/edit#pako:eNpVkUlrwzAQhf-KmZMNTvAiL9Kh0DjQS3tpD4Wii7DGC7GkoMh0CfnvVey0pYKBmaf3zTvMGVojERh0k3lvB2Fd8PjMdeDffdgM2B5OUbDZ3AW7kMMDukAKJ9b_cO_bxtdk-ohDtKq7xd1496uxh-vWVVfoBiPD080WKqHH4zwJh39ss7AyfLnl_JNxkVuju7GPIIbejhKYszPGoNAqcR3hfEU4uAEVcmC-lcIeOHB98cxR6Ddj1A9mzdwPwDoxnfw0H30m7kfRW6F-VYtaom3MrB0wQpYdwM7wASyl9TYnpK5oWiQ5Tcoshk9gGcm3tCAFIUlZ5XVWX2L4WlKTbZVXtKBJXSZVmqUljQHl6Ix9Wo-w3OLyDRRrdtM)
 
 ### 3. Update methods
