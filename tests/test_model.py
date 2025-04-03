@@ -175,8 +175,8 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     mocker.patch.object(FIATModel, "vulnerability_data")
     caplog.set_level(logging.INFO)
     model.setup_exposure_grid(
-        exposure_files=["flood_event"],
-        linking_table=linking_table_fp,
+        exposure_grid_fnames=["flood_event"],
+        exposure_grid_link_fname=linking_table_fp,
     )
     assert isinstance(model.exposure_grid.data, xr.Dataset)
     assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
@@ -185,8 +185,8 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
 
     # Check if config is set properly when data is added to existing grid
     model.setup_exposure_grid(
-        exposure_files=["flood_event_highres"],
-        linking_table=linking_table_fp,
+        exposure_grid_fnames=["flood_event_highres"],
+        exposure_grid_link_fname=linking_table_fp,
     )
 
     assert model.config.get_value("exposure.grid.settings.var_as_band")
@@ -196,8 +196,8 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
     err_msg = "setup_vulnerability step is required before setting up exposure grid."
     with pytest.raises(RuntimeError, match=err_msg):
         model.setup_exposure_grid(
-            exposure_files="flood_event",
-            linking_table="test.csv",
+            exposure_grid_fnames="flood_event",
+            exposure_grid_link_fname="test.csv",
         )
 
     mocker.patch.object(FIATModel, "vulnerability_data")
@@ -205,16 +205,16 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
         MissingRegionError, match="Region is required for setting up exposure grid."
     ):
         model.setup_exposure_grid(
-            exposure_files="flood_event",
-            linking_table="test.csv",
+            exposure_grid_fnames="flood_event",
+            exposure_grid_link_fname="test.csv",
         )
 
     # check raise value error if linking table does not exist
     model.setup_region(build_region)
     with pytest.raises(ValueError, match="Given path to linking table does not exist."):
         model.setup_exposure_grid(
-            exposure_files=["flood_event"],
-            linking_table="not/a/file/path",
+            exposure_grid_fnames=["flood_event"],
+            exposure_grid_link_fname="not/a/file/path",
         )
     linking_table = pd.DataFrame(
         data=[{"exposure": "flood_event", "curve_id": "damage_fn"}]
@@ -226,7 +226,8 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
         ValueError, match="Missing column, 'type' in exposure grid linking table"
     ):
         model.setup_exposure_grid(
-            exposure_files=["flood_event"], linking_table=linking_table_fp
+            exposure_grid_fnames=["flood_event"],
+            exposure_grid_link_fname=linking_table_fp,
         )
 
     linking_table = pd.DataFrame(
@@ -239,5 +240,6 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
         ValueError, match="Missing column, 'curve_id' in exposure grid linking table"
     ):
         model.setup_exposure_grid(
-            exposure_files=["flood_event"], linking_table=linking_table_fp
+            exposure_grid_fnames=["flood_event"],
+            exposure_grid_link_fname=linking_table_fp,
         )

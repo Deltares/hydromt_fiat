@@ -316,16 +316,16 @@ class FIATModel(Model):
     @hydromt_step
     def setup_exposure_grid(
         self,
-        exposure_grid_fname: str | Path | list[str | Path],
+        exposure_grid_fnames: str | Path | list[str | Path],
         exposure_grid_link_fname: str | Path,
     ) -> None:
         """Set up an exposure grid.
 
         Parameters
         ----------
-        exposure_files : str | Path | list[str  |  Path]
+        exposure_grid_fnames : str | Path | list[str  |  Path]
             name of or path to exposure file(s)
-        linking_table : str | Path
+        exposure_grid_link_fname : str | Path
             table containing the names of the exposure files and corresponding
             vulnerability curves.
         """
@@ -339,10 +339,10 @@ class FIATModel(Model):
             raise MissingRegionError("Region is required for setting up exposure grid.")
 
         # Check if linking_table exists
-        if not Path(linking_table).exists():
+        if not Path(exposure_grid_link_fname).exists():
             raise ValueError("Given path to linking table does not exist.")
         # Read linking table
-        linking_table_df = pd.read_csv(linking_table)
+        linking_table_df = pd.read_csv(exposure_grid_link_fname)
 
         # Check if linking table columns are named according to convention
         for col_name in ["type", "curve_id"]:
@@ -352,7 +352,9 @@ class FIATModel(Model):
                 )
 
         exposure_files = (
-            [exposure_files] if not isinstance(exposure_files, list) else exposure_files
+            [exposure_grid_fnames]
+            if not isinstance(exposure_grid_fnames, list)
+            else exposure_grid_fnames
         )
 
         # Read exposure data files from data catalog
