@@ -6,7 +6,8 @@ from pathlib import Path
 import geopandas as gpd
 import xarray as xr
 from hydromt import DataCatalog
-from hydromt.model.processes.grid import grid_from_rasterdataset
+
+from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["hazard_data"]
 
@@ -52,24 +53,8 @@ def hazard_data(
     for i, hazard_file in enumerate(hazard_fnames):
         da = data_catalog.get_rasterdataset(hazard_file, geom=region)
 
-        # Convert to gdal compliant
-        da.encoding["_FillValue"] = None
-        da: xr.DataArray = da.raster.gdal_compliant()
-
-        # ensure variable name is lowercase
         da_name = Path(hazard_file).stem.lower()
-        da = da.rename(da_name)
-
-        # Check if map is rotated and if yes, reproject to a non-rotated grid
-        if "xc" in da.coords:
-            logger.warning(
-                "Hazard map is rotated. It will be reprojected"
-                " to a none rotated grid using nearest neighbor"
-                "interpolation"
-            )
-            da: xr.DataArray = da.raster.reproject(dst_crs=da.rio.crs)
-        if "grid_mapping" in da.encoding:
-            _ = da.encoding.pop("grid_mapping")
+        da = _process_dataarray(da=da, da_name=da_name)
 
         rp = f"(rp {return_periods[i]})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
@@ -85,13 +70,10 @@ def hazard_data(
             )
 
         hazard_dataarrays.append(da)
-    if not grid_like:
-        grid_like = hazard_dataarrays[0].to_dataset()
-
-    ds = xr.merge(hazard_dataarrays)
 
     # Reproject to gridlike
-    ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
+    ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
+
     da_names = [d.name for d in hazard_dataarrays]
 
     if risk:

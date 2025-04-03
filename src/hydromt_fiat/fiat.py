@@ -109,6 +109,11 @@ class FIATModel(Model):
         """Return the vulnerability component containing the data."""
         return self.components["vulnerability_data"]
 
+    @property
+    def exposure_grid(self) -> GridComponent:
+        """Return the exposure grid component."""
+        return self.components["exposure_grid"]
+
     ## I/O
     @hydromt_step
     def read(self):
@@ -311,3 +316,68 @@ need to have a 'type' column.
             "vulnerability.file",
             self.vulnerability_data._filename.format(name="vulnerability_curves"),
         )
+
+    @hydromt_step
+    def setup_exposure_grid(
+        self,
+        exposure_grid_fnames: str | Path | list[str | Path],
+        exposure_grid_link_fname: str | Path,
+    ) -> None:
+        """Set up an exposure grid.
+
+        Parameters
+        ----------
+        exposure_grid_fnames : str | Path | list[str  |  Path]
+            name of or path to exposure file(s)
+        exposure_grid_link_fname : str | Path
+            table containing the names of the exposure files and corresponding
+            vulnerability curves.
+        """
+        logger.info("Setting up exposure grid")
+
+        if self.vulnerability_data.data == {}:
+            raise RuntimeError(
+                "setup_vulnerability step is required before setting up exposure grid."
+            )
+        if self.region is None:
+            raise MissingRegionError("Region is required for setting up exposure grid.")
+
+        # Check if linking_table exists
+        if not Path(exposure_grid_link_fname).exists():
+            raise ValueError("Given path to linking table does not exist.")
+        # Read linking table
+        linking_table_df = self.data_catalog.get_dataframe(exposure_grid_link_fname)
+
+        # Check if linking table columns are named according to convention
+        for col_name in ["type", "curve_id"]:
+            if col_name not in linking_table_df.columns:
+                raise ValueError(
+                    f"Missing column, '{col_name}' in exposure grid linking table"
+                )
+
+        exposure_files = (
+            [exposure_grid_fnames]
+            if not isinstance(exposure_grid_fnames, list)
+            else exposure_grid_fnames
+        )
+
+        # Read exposure data files from data catalog
+        exposure_dataarrays = {}
+        for exposure_file in exposure_files:
+            exposure_fn = Path(exposure_file).stem
+            da = self.data_catalog.get_rasterdataset(exposure_file, geom=self.region)
+            exposure_dataarrays[exposure_fn] = da
+
+        # Get grid like from existing exposure data if there is any
+        grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
+
+        ds = workflows.exposure_grid_data(
+            grid_like=grid_like,
+            exposure_files=exposure_dataarrays,
+            linking_table=linking_table_df,
+        )
+
+        self.exposure_grid.set(ds)
+        if len(self.exposure_grid.data.data_vars) > 1:
+            self.config.set("exposure.grid.settings.var_as_band", True)
+        self.config.set("exposure.grid.file", self.exposure_grid._filename)
