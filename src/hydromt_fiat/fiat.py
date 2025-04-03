@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
-import pandas as pd
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
@@ -347,7 +346,7 @@ need to have a 'type' column.
         if not Path(exposure_grid_link_fname).exists():
             raise ValueError("Given path to linking table does not exist.")
         # Read linking table
-        linking_table_df = pd.read_csv(exposure_grid_link_fname)
+        linking_table_df = self.data_catalog.get_dataframe(exposure_grid_link_fname)
 
         # Check if linking table columns are named according to convention
         for col_name in ["type", "curve_id"]:

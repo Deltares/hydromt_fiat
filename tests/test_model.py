@@ -173,7 +173,7 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     caplog.set_level(logging.INFO)
     model.setup_exposure_grid(
         exposure_grid_fnames=["flood_event"],
-        exposure_grid_link_fname=linking_table_fp,
+        exposure_grid_link_fname=linking_table_fp.as_posix(),
     )
     assert isinstance(model.exposure_grid.data, xr.Dataset)
     assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
@@ -183,7 +183,7 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     # Check if config is set properly when data is added to existing grid
     model.setup_exposure_grid(
         exposure_grid_fnames=["flood_event_highres"],
-        exposure_grid_link_fname=linking_table_fp,
+        exposure_grid_link_fname=linking_table_fp.as_posix(),
     )
 
     assert model.config.get_value("exposure.grid.settings.var_as_band")
@@ -224,7 +224,7 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
     ):
         model.setup_exposure_grid(
             exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp,
+            exposure_grid_link_fname=linking_table_fp.as_posix(),
         )
 
     linking_table = pd.DataFrame(
@@ -238,5 +238,5 @@ def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
     ):
         model.setup_exposure_grid(
             exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp,
+            exposure_grid_link_fname=linking_table_fp.as_posix(),
         )
