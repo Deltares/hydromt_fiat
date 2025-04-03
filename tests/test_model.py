@@ -166,7 +166,7 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
 
     # create linking table
     linking_table = pd.DataFrame(
-        data=[{"exposure": "flood_event", "vulnerability": "vulnerability_curve"}]
+        data=[{"type": "flood_event", "curve_id": "vulnerability_curve"}]
     )
     linking_table_fp = tmp_path / "linking_table.csv"
     linking_table.to_csv(linking_table_fp)
@@ -177,8 +177,6 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     model.setup_exposure_grid(
         exposure_files=["flood_event"],
         linking_table=linking_table_fp,
-        exposure_col="exposure",
-        vulnerability_col="vulnerability",
     )
     assert isinstance(model.exposure_grid.data, xr.Dataset)
     assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
@@ -189,30 +187,17 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
     model.setup_exposure_grid(
         exposure_files=["flood_event_highres"],
         linking_table=linking_table_fp,
-        exposure_col="exposure",
-        vulnerability_col="vulnerability",
     )
 
     assert model.config.get_value("exposure.grid.settings.var_as_band")
 
-    # check raise value error if linking table does not exist
-    with pytest.raises(ValueError, match="Given path to linking table does not exist."):
-        model.setup_exposure_grid(
-            exposure_files=["flood_event"],
-            linking_table="not/a/file/path",
-            exposure_col="exposure",
-            vulnerability_col="vulnerability",
-        )
 
-
-def test_setup_exposure_grid_errors(model, build_region, mocker):
+def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
     err_msg = "setup_vulnerability step is required before setting up exposure grid."
     with pytest.raises(RuntimeError, match=err_msg):
         model.setup_exposure_grid(
             exposure_files="flood_event",
             linking_table="test.csv",
-            exposure_col="exposure",
-            vulnerability_col="vulnerability",
         )
 
     mocker.patch.object(FIATModel, "vulnerability_data")
@@ -222,8 +207,6 @@ def test_setup_exposure_grid_errors(model, build_region, mocker):
         model.setup_exposure_grid(
             exposure_files="flood_event",
             linking_table="test.csv",
-            exposure_col="exposure",
-            vulnerability_col="vulnerability",
         )
 
     # check raise value error if linking table does not exist
@@ -232,6 +215,29 @@ def test_setup_exposure_grid_errors(model, build_region, mocker):
         model.setup_exposure_grid(
             exposure_files=["flood_event"],
             linking_table="not/a/file/path",
-            exposure_col="exposure",
-            vulnerability_col="vulnerability",
+        )
+    linking_table = pd.DataFrame(
+        data=[{"exposure": "flood_event", "curve_id": "damage_fn"}]
+    )
+    linking_table_fp = tmp_path / "test_linking_table.csv"
+    linking_table.to_csv(linking_table_fp, index=False)
+
+    with pytest.raises(
+        ValueError, match="Missing column, 'type' in exposure grid linking table"
+    ):
+        model.setup_exposure_grid(
+            exposure_files=["flood_event"], linking_table=linking_table_fp
+        )
+
+    linking_table = pd.DataFrame(
+        data=[{"type": "flood_event", "curve_name": "damage_fn"}]
+    )
+    linking_table_fp = tmp_path / "test_linking_table.csv"
+    linking_table.to_csv(linking_table_fp, index=False)
+
+    with pytest.raises(
+        ValueError, match="Missing column, 'curve_id' in exposure grid linking table"
+    ):
+        model.setup_exposure_grid(
+            exposure_files=["flood_event"], linking_table=linking_table_fp
         )

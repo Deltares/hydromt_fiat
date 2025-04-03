@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
@@ -317,23 +318,16 @@ class FIATModel(Model):
         self,
         exposure_files: str | Path | list[str | Path],
         linking_table: str | Path,
-        exposure_col: str,
-        vulnerability_col: str,
     ) -> None:
         """Set up an exposure grid.
 
         Parameters
         ----------
         exposure_files : str | Path | list[str  |  Path]
-            _description_
+            name of or path to exposure file(s)
         linking_table : str | Path
-            _description_
-        exposure_col : str
-            Name of column in linking table containing exposure file names
-            corresponding to the exposure files.
-        vulnerability_col : str
-            Name of column in linking table containing vulnerability file names
-            corresponding to vulnerability files.
+            table containing the names of the exposure files and corresponding
+            vulnerability curves.
         """
         logger.info("Setting up exposure grid")
 
@@ -347,21 +341,34 @@ class FIATModel(Model):
         # Check if linking_table exists
         if not Path(linking_table).exists():
             raise ValueError("Given path to linking table does not exist.")
+        # Read linking table
+        linking_table_df = pd.read_csv(linking_table)
+
+        # Check if linking table columns are named according to convention
+        for col_name in ["type", "curve_id"]:
+            if col_name not in linking_table_df.columns:
+                raise ValueError(
+                    f"Missing column, '{col_name}' in exposure grid linking table"
+                )
 
         exposure_files = (
             [exposure_files] if not isinstance(exposure_files, list) else exposure_files
         )
+
+        # Read exposure data files from data catalog
+        exposure_dataarrays = {}
+        for exposure_file in exposure_files:
+            exposure_fn = Path(exposure_file).stem
+            da = self.data_catalog.get_rasterdataset(exposure_file, geom=self.region)
+            exposure_dataarrays[exposure_fn] = da
+
         # Get grid like from existing exposure data if there is any
         grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
 
         ds = workflows.exposure_grid_data(
             grid_like=grid_like,
-            region=self.region,
-            data_catalog=self.data_catalog,
-            exposure_files=exposure_files,
-            linking_table=linking_table,
-            exposure_col=exposure_col,
-            vulnerability_col=vulnerability_col,
+            exposure_files=exposure_dataarrays,
+            linking_table=linking_table_df,
         )
 
         self.exposure_grid.set(ds)
