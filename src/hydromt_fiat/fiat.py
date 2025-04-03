@@ -242,6 +242,8 @@ class FIATModel(Model):
 
         # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
+        if len(self.hazard_grid.data.data_vars) > 1:
+            self.config.set("hazard.settings.var_as_band", True)
 
         if risk:
             self.config.set("hazard.risk", risk)
@@ -256,8 +258,8 @@ class FIATModel(Model):
     @hydromt_step
     def setup_vulnerability(
         self,
-        vuln_fname: Path | str,
-        vuln_link_fname: Path | str | None = None,
+        vulnerability_fname: Path | str,
+        vulnerability_linking_fname: Path | str | None = None,
         *,
         unit: str = "m",
         index_name: str = "water depth",
@@ -267,14 +269,15 @@ class FIATModel(Model):
 
         Warning
         -------
-        The datasets (vuln_fname and vuln_link_fname) need to have a 'type' column.
+        The datasets (vulnerability_fname and vulnerability_linking_fname) \
+need to have a 'type' column.
 
         Parameters
         ----------
-        vuln_fname : Path | str
+        vulnerability_fname : Path | str
             Path to vulnerability dataset file or an entry in the data catalog that
             points to the vulnerability dataset file.
-        vuln_link_fname : Path | str | None, optional
+        vulnerability_linking_fname : Path | str | None, optional
             Path or data catalog entry of the vulnerability linking table.
             If not provided, it is assumed that the 'type' in the vulnerability dataset
             is correct, by default None
@@ -283,7 +286,7 @@ class FIATModel(Model):
         index_name : str, optional
             The output name of the index column, by default "water depth"
         select : dict, optional
-            Keyword arguments to select data from the 'vuln_fname' data source.
+            Keyword arguments to select data from the 'vulnerability_fname' data source.
 
         Returns
         -------
@@ -291,15 +294,17 @@ class FIATModel(Model):
         """
         logger.info("Setting up the vulnerability curves")
         # Get the data from the catalog
-        vuln_data = self.data_catalog.get_dataframe(vuln_fname)
-        vuln_linking = None
-        if vuln_link_fname is not None:
-            vuln_linking = self.data_catalog.get_dataframe(vuln_link_fname)
+        vulnerability_data = self.data_catalog.get_dataframe(vulnerability_fname)
+        vulnerability_linking = None
+        if vulnerability_linking_fname is not None:
+            vulnerability_linking = self.data_catalog.get_dataframe(
+                vulnerability_linking_fname
+            )
 
         # Invoke the workflow method to create the curves from raw data
         vuln_curves, vuln_id = workflows.vulnerability_curves(
-            vuln_data,
-            vuln_linking=vuln_linking,
+            vulnerability_data,
+            vulnerability_linking=vulnerability_linking,
             unit=unit,
             index_name=index_name,
             **select,

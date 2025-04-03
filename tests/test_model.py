@@ -89,8 +89,8 @@ def test_setup_vulnerability(tmp_path, build_data_catalog):
 
     # Setup the vulnerability
     model.setup_vulnerability(
-        vuln_fname="jrc_vulnerability_curves",
-        vuln_link_fname="jrc_vulnerability_curves_linking",
+        vulnerability_fname="jrc_vulnerability_curves",
+        vulnerability_linking_fname="jrc_vulnerability_curves_linking",
         continent="europe",
     )
 
@@ -103,9 +103,8 @@ def test_setup_vulnerability(tmp_path, build_data_catalog):
     )
 
 
-def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
+def test_setup_hazard(model, tmp_path, build_data_catalog, caplog, build_region):
     # Setup the model
-    model = FIATModel(tmp_path, data_libs=[build_data_catalog])
     model.setup_region(region=build_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
@@ -117,6 +116,7 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
 
     # Test setting data to hazard grid with data
     model.setup_hazard(hazard_fnames="flood_event_highres")
+    assert model.config.get_value("hazard.settings.var_as_band")
 
     # Check if both ds are still there
     assert "flood_event" in model.hazard_grid.data.data_vars.keys()
@@ -136,10 +136,7 @@ def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
     assert model2.config.get_value("hazard.return_periods") == [50000]
 
 
-def test_setup_hazard_errors(tmp_path):
-    # Setup the model
-    model = FIATModel(tmp_path)
-
+def test_setup_hazard_errors(model):
     with pytest.raises(
         ValueError, match="Cannot perform risk analysis without return periods"
     ):
