@@ -111,7 +111,7 @@ class FIATModel(Model):
 
     @property
     def exposure_grid(self) -> GridComponent:
-        """Return exposure grid component."""
+        """Return the exposure grid component."""
         return self.components["exposure_grid"]
 
     ## I/O
