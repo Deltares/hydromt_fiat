@@ -316,8 +316,8 @@ class FIATModel(Model):
     @hydromt_step
     def setup_exposure_grid(
         self,
-        exposure_files: str | Path | list[str | Path],
-        linking_table: str | Path,
+        exposure_grid_fname: str | Path | list[str | Path],
+        exposure_grid_link_fname: str | Path,
     ) -> None:
         """Set up an exposure grid.
 
