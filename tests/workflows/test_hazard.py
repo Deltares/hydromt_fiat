@@ -36,3 +36,37 @@ def test_hazard_data_event(build_region_gdf, data_catalog):
     assert ds.analysis == "event"
     assert ds.name == ["flood_event"]
     assert "return_period" not in ds.attrs.keys()
+
+
+def test_hazard_data_unit(
+    build_region_gdf,
+    data_catalog,
+    caplog,
+):
+    hazard_files = ["flood_event"]
+    ds = hazard_data(
+        grid_like=None,
+        data_catalog=data_catalog,
+        hazard_fnames=hazard_files,
+        hazard_type="flooding",
+        region=build_region_gdf,
+    )
+
+    avg_level = ds.flood_event.mean().values
+    assert int(avg_level * 100) == 120
+
+    # Suppose it's in a different unit
+    ds = hazard_data(
+        grid_like=None,
+        data_catalog=data_catalog,
+        hazard_fnames=hazard_files,
+        hazard_type="flooding",
+        region=build_region_gdf,
+        unit="ft",
+    )
+
+    avg_level_ft = ds.flood_event.mean().values
+    assert (
+        "Given unit (ft) does not match the standard unit (m) for length" in caplog.text
+    )
+    assert 3 < (avg_level / avg_level_ft) < 4
