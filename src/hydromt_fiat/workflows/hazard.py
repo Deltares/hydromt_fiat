@@ -1,47 +1,38 @@
 """Hazard workflows."""
 
 import logging
-from pathlib import Path
 
-import geopandas as gpd
 import xarray as xr
-from hydromt import DataCatalog
 from hydromt.model.processes.grid import grid_from_rasterdataset
 
-__all__ = ["hazard_data"]
+__all__ = ["hazard_grid"]
 
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def hazard_data(
+def hazard_grid(
     grid_like: xr.Dataset | None,
-    region: gpd.GeoDataFrame,
-    data_catalog: DataCatalog,
-    hazard_fnames: list[str],
-    hazard_type: str | None,
-    return_periods: list[int] | None = None,
+    hazard_data: dict[str : xr.DataArray],
+    hazard_type: str,
     *,
+    return_periods: list[int] | None = None,
     risk: bool,
 ) -> xr.Dataset:
     """Parse hazard data files to xarray dataset.
 
     Parameters
     ----------
-    grid_like: xr.Dataset | None
+    grid_like : xr.Dataset | None
         Grid dataset that serves as an example dataset for transforming the input data
-    region: gpd.GeoDataFrame
-        Region geometry used for reading data from data catalog
-    data_catalog : DataCatalog
-        Model data catalog
-    hazard_fnames : list[str]
-        Names or paths of hazard files
-    hazard_type : str | None
+    hazard_data : dict[str:xr.DataArray]
+        The hazard data in a dictionary with the names of the datasets as keys.
+    hazard_type : str
         Type of hazard
-    risk : bool
-        Designate hazard files for risk analysis
     return_periods : list[int] | None, optional
         List of return periods, by default None
+    risk : bool
+        Designate hazard files for risk analysis
 
     Returns
     -------
@@ -49,15 +40,12 @@ def hazard_data(
         Unified xarray dataset containing the hazard data
     """
     hazard_dataarrays = []
-    for i, hazard_file in enumerate(hazard_fnames):
-        da = data_catalog.get_rasterdataset(hazard_file, geom=region)
-
+    for idx, (da_name, da) in enumerate(hazard_data.items()):
         # Convert to gdal compliant
         da.encoding["_FillValue"] = None
         da: xr.DataArray = da.raster.gdal_compliant()
 
         # ensure variable name is lowercase
-        da_name = Path(hazard_file).stem.lower()
         da = da.rename(da_name)
 
         # Check if map is rotated and if yes, reproject to a non-rotated grid
@@ -71,7 +59,7 @@ def hazard_data(
         if "grid_mapping" in da.encoding:
             _ = da.encoding.pop("grid_mapping")
 
-        rp = f"(rp {return_periods[i]})" if risk else ""
+        rp = f"(rp {return_periods[idx]})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
 
         if not risk:
@@ -85,12 +73,14 @@ def hazard_data(
             )
 
         hazard_dataarrays.append(da)
-    if not grid_like:
-        grid_like = hazard_dataarrays[0].to_dataset()
+    if grid_like is None:
+        grid_like = hazard_dataarrays[0]
 
     ds = xr.merge(hazard_dataarrays)
 
     # Reproject to gridlike
+    if isinstance(grid_like, xr.DataArray):
+        grid_like = grid_like.to_dataset()
     ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
     da_names = [d.name for d in hazard_dataarrays]
 

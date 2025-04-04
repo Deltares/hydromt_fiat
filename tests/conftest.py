@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 import geopandas as gpd
 import pandas as pd
 import pytest
+import xarray as xr
 from hydromt import DataCatalog
 from hydromt.model.root import ModelRoot
 from pyproj.crs import CRS
@@ -71,6 +72,18 @@ def osm_cached() -> Path:
     p = fetch_data("osmnx")
     assert len(list(p.iterdir())) != 0
     return p
+
+
+@pytest.fixture
+def hazard_event_data(data_catalog, build_region_gdf) -> xr.DataArray:
+    ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_gdf)
+    return ds
+
+
+@pytest.fixture
+def hazard_event_data_highres(data_catalog, build_region_gdf) -> xr.DataArray:
+    ds = data_catalog.get_rasterdataset("flood_event_highres", geom=build_region_gdf)
+    return ds
 
 
 @pytest.fixture
