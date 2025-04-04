@@ -183,9 +183,9 @@ class FIATModel(Model):
     def setup_hazard(
         self,
         hazard_fnames: list[Path | str] | Path | str,
-        return_periods: list[int] | None = None,
-        hazard_type: str | None = "flooding",
+        hazard_type: str = "flooding",
         *,
+        return_periods: list[int] | None = None,
         risk: bool = False,
     ) -> None:
         """Set up hazard maps.
@@ -194,11 +194,11 @@ class FIATModel(Model):
         ----------
         hazard_fnames : list[Path | str] | Path | str
             Path(s) to the hazard file(s) or name(s) of the data catalog entries.
+        hazard_type : str, optional
+            Type of hazard, by default "flooding".
         return_periods : list[int] | None, optional
             List of return periods. Length of list should match the number hazard
             files, by default None.
-        hazard_type : str | None, optional
-            Type of hazard, by default "flooding".
         risk : bool, optional
             Whether the hazard files are part of a risk analysis,
             by default False.
@@ -220,15 +220,18 @@ class FIATModel(Model):
                 "Region component is missing for setting up hazard data."
             )
 
+        hazard_data = {}
+        for entry in hazard_fnames:
+            da = self.data_catalog.get_rasterdataset(entry, geom=self.region)
+            hazard_data[Path(entry).stem] = da
+
         # Check if there is already data set to this grid component.
         grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_data(
+        ds = workflows.hazard_grid(
             grid_like=grid_like,
-            region=self.region,
-            data_catalog=self.data_catalog,
-            hazard_fnames=hazard_fnames,
+            hazard_data=hazard_data,
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
@@ -236,6 +239,8 @@ class FIATModel(Model):
 
         # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
+
+        # Set the config entries
         if len(self.hazard_grid.data.data_vars) > 1:
             self.config.set("hazard.settings.var_as_band", True)
 
