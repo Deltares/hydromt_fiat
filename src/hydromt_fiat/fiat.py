@@ -183,10 +183,11 @@ class FIATModel(Model):
     def setup_hazard(
         self,
         hazard_fnames: list[Path | str] | Path | str,
-        return_periods: list[int] | None = None,
-        hazard_type: str | None = "flooding",
+        hazard_type: str = "flooding",
         *,
+        return_periods: list[int] | None = None,
         risk: bool = False,
+        unit: str = "m",
     ) -> None:
         """Set up hazard maps.
 
@@ -194,14 +195,16 @@ class FIATModel(Model):
         ----------
         hazard_fnames : list[Path | str] | Path | str
             Path(s) to the hazard file(s) or name(s) of the data catalog entries.
+        hazard_type : str, optional
+            Type of hazard, by default "flooding".
         return_periods : list[int] | None, optional
             List of return periods. Length of list should match the number hazard
             files, by default None.
-        hazard_type : str | None, optional
-            Type of hazard, by default "flooding".
         risk : bool, optional
             Whether the hazard files are part of a risk analysis,
             by default False.
+        unit : str, optional
+            The unit which the hazard data is in, by default 'm' (meters)
 
         Returns
         -------
@@ -232,6 +235,7 @@ class FIATModel(Model):
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
+            unit=unit,
         )
 
         # Set the data to the hazard grid component
