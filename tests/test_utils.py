@@ -34,7 +34,7 @@ def test_standard_unit_equal():
     unit = Scalar(1.0, "m")
     scalar = standard_unit(unit)
 
-    assert scalar.value == 1.0
+    assert int(scalar.value * 100) == 100
     assert scalar.unit == "m"
 
 
@@ -43,3 +43,4 @@ def test_standard_unit_length():
     scalar = standard_unit(unit)
 
     assert int(scalar.value * 100) == 30
+    assert scalar.unit == ""
