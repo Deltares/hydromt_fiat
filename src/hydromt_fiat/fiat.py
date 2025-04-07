@@ -223,15 +223,18 @@ class FIATModel(Model):
                 "Region component is missing for setting up hazard data."
             )
 
+        hazard_data = {}
+        for entry in hazard_fnames:
+            da = self.data_catalog.get_rasterdataset(entry, geom=self.region)
+            hazard_data[Path(entry).stem] = da
+
         # Check if there is already data set to this grid component.
         grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_data(
+        ds = workflows.hazard_grid(
             grid_like=grid_like,
-            region=self.region,
-            data_catalog=self.data_catalog,
-            hazard_fnames=hazard_fnames,
+            hazard_data=hazard_data,
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
@@ -240,6 +243,8 @@ class FIATModel(Model):
 
         # Set the data to the hazard grid component
         self.hazard_grid.set(ds)
+
+        # Set the config entries
         if len(self.hazard_grid.data.data_vars) > 1:
             self.config.set("hazard.settings.var_as_band", True)
 
