@@ -1,48 +1,43 @@
 """Hazard workflows."""
 
 import logging
-from pathlib import Path
 
-import geopandas as gpd
 import xarray as xr
-from hydromt import DataCatalog
+from barril.units import Scalar
 
+from hydromt_fiat.utils import standard_unit
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
-__all__ = ["hazard_data"]
-
+__all__ = ["hazard_grid"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def hazard_data(
+def hazard_grid(
     grid_like: xr.Dataset | None,
-    region: gpd.GeoDataFrame,
-    data_catalog: DataCatalog,
-    hazard_fnames: list[str],
-    hazard_type: str | None,
-    return_periods: list[int] | None = None,
+    hazard_data: dict[str : xr.DataArray],
+    hazard_type: str,
     *,
-    risk: bool,
+    return_periods: list[int] | None = None,
+    risk: bool = False,
+    unit: str = "m",
 ) -> xr.Dataset:
     """Parse hazard data files to xarray dataset.
 
     Parameters
     ----------
-    grid_like: xr.Dataset | None
+    grid_like : xr.Dataset | None
         Grid dataset that serves as an example dataset for transforming the input data
-    region: gpd.GeoDataFrame
-        Region geometry used for reading data from data catalog
-    data_catalog : DataCatalog
-        Model data catalog
-    hazard_fnames : list[str]
-        Names or paths of hazard files
-    hazard_type : str | None
+    hazard_data : dict[str:xr.DataArray]
+        The hazard data in a dictionary with the names of the datasets as keys.
+    hazard_type : str
         Type of hazard
-    risk : bool
-        Designate hazard files for risk analysis
     return_periods : list[int] | None, optional
         List of return periods, by default None
+    risk : bool
+        Designate hazard files for risk analysis, by default False
+    unit : str
+        The unit which the hazard data is in, by default 'm'
 
     Returns
     -------
@@ -50,44 +45,37 @@ def hazard_data(
         Unified xarray dataset containing the hazard data
     """
     hazard_dataarrays = []
-    for i, hazard_file in enumerate(hazard_fnames):
-        da = data_catalog.get_rasterdataset(hazard_file, geom=region)
-
-        da_name = Path(hazard_file).stem.lower()
+    if return_periods is None and not risk:
+        return_periods = [""] * len(hazard_data)
+    for return_period, (da_name, da) in zip(return_periods, hazard_data.items()):
         da = _process_dataarray(da=da, da_name=da_name)
 
-        rp = f"(rp {return_periods[i]})" if risk else ""
+        # Check for unit
+        conversion = standard_unit(Scalar(1.0, unit))
+        da *= conversion.value
+
+        rp = f"(rp {return_period})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
 
-        if not risk:
-            # Set the event data arrays to the hazard grid component
-            da = da.assign_attrs(
-                {
-                    "name": da_name,
-                    "type": hazard_type,
-                    "analysis": "event",
-                }
-            )
+        attrs = {
+            "name": da_name,
+        }
+        if risk:
+            attrs["return_period"] = return_period
+        # Set the event data arrays to the hazard grid component
+        da = da.assign_attrs(attrs)
 
         hazard_dataarrays.append(da)
 
     # Reproject to gridlike
     ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
 
-    da_names = [d.name for d in hazard_dataarrays]
-
+    attrs = {
+        "type": hazard_type,
+        "analysis": "event",
+    }
     if risk:
-        ds = ds.assign_attrs(
-            {
-                "return_period": return_periods,
-                "type": hazard_type,
-                "name": da_names,
-                "analysis": "risk",
-            }
-        )
+        attrs["analysis"] = "risk"
+    ds = ds.assign_attrs(attrs)
 
-    else:
-        ds = ds.assign_attrs(
-            {"analysis": "event", "type": hazard_type, "name": da_names}
-        )
     return ds
