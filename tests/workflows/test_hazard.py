@@ -1,3 +1,4 @@
+import numpy as np
 import xarray as xr
 
 from hydromt_fiat.workflows import hazard_data
@@ -38,10 +39,9 @@ def test_hazard_data_event(build_region_gdf, data_catalog):
     assert "return_period" not in ds.attrs.keys()
 
 
-def test_hazard_data_unit(
+def test_hazard_data_unit_default(
     build_region_gdf,
     data_catalog,
-    caplog,
 ):
     hazard_files = ["flood_event"]
     ds = hazard_data(
@@ -53,8 +53,11 @@ def test_hazard_data_unit(
     )
 
     avg_level = ds.flood_event.mean().values
-    assert int(avg_level * 100) == 120
+    assert np.isclose(avg_level, 1.2019)
 
+
+def test_hazard_data_unit_differ(build_region_gdf, data_catalog, caplog):
+    hazard_files = ["flood_event"]
     # Suppose it's in a different unit
     ds = hazard_data(
         grid_like=None,
@@ -69,4 +72,4 @@ def test_hazard_data_unit(
     assert (
         "Given unit (ft) does not match the standard unit (m) for length" in caplog.text
     )
-    assert 3 < (avg_level / avg_level_ft) < 4
+    assert np.isclose(avg_level_ft, 0.366337)

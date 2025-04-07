@@ -44,6 +44,9 @@ def create_query(
 def standard_unit(unit: Scalar) -> Scalar:
     """Translate unit to standard unit for category.
 
+    Accepted units are listed on the website of barril:
+    https://barril.readthedocs.io/en/latest/units.html
+
     Parameters
     ----------
     unit : Scalar

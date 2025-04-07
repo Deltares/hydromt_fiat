@@ -1,3 +1,4 @@
+import numpy as np
 from barril.units import Scalar
 
 from hydromt_fiat.utils import create_query, standard_unit
@@ -34,7 +35,7 @@ def test_standard_unit_equal():
     unit = Scalar(1.0, "m")
     scalar = standard_unit(unit)
 
-    assert int(scalar.value * 100) == 100
+    assert np.isclose(scalar.value, 1.0)
     assert scalar.unit == "m"
 
 
@@ -42,5 +43,5 @@ def test_standard_unit_length():
     unit = Scalar(1.0, "ft")
     scalar = standard_unit(unit)
 
-    assert int(scalar.value * 100) == 30
+    assert np.isclose(scalar.value, 0.3048)
     assert scalar.unit == ""
