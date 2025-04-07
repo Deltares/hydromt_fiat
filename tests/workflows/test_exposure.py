@@ -23,7 +23,15 @@ def test_exposure_grid_data(build_data_catalog, build_region_gdf, caplog):
     assert isinstance(ds, xr.Dataset)
     assert ds.attrs.get("fn_damage") == "damage_function_file"
 
+
+def test_exposure_grid_data_no_linking_table_match(
+    build_data_catalog, build_region_gdf, caplog
+):
     # Test without matching exposure file name in linking table
+    dc = DataCatalog(build_data_catalog)
+    exposure_files = {
+        "flood_event": dc.get_rasterdataset("flood_event", geom=build_region_gdf)
+    }
     caplog.set_level(logging.WARNING)
     linking_table = pd.DataFrame(
         data=[{"type": "event", "curve_id": "damage_function_file"}]
