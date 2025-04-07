@@ -21,10 +21,13 @@ def exposure_grid_data(
 
     Parameters
     ----------
-    exposure_files : str | Path | list[str  |  Path]
-        name of or path to exposure file(s)
-    linking_table : str | Path
-        table containing the names of the exposure files and corresponding
+    grid_like : xr.Dataset | None
+        Xarray dataset that is used to transform exposure data with. If set to None,
+            the first data array in exposure_files is used to transform the data.
+    exposure_files : dict[str, xr.DataArray]
+        Dictionary containing name of exposure file and associated data
+    linking_table : pd.DataFrame
+        Table containing the names of the exposure files and corresponding
         vulnerability curves.
 
     Returns
