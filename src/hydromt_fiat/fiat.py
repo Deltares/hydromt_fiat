@@ -92,6 +92,12 @@ class FIATModel(Model):
             "vulnerability_data",
             TablesComponent(model=self, filename="vulnerability/{name}.csv"),
         )
+        self.add_component(
+            "social_vulnerability_scores",
+            TablesComponent(
+                model=self, filename="social_vulnerability_scores/{name}.csv"
+            ),
+        )
 
     ## Properties
     @property
@@ -113,6 +119,16 @@ class FIATModel(Model):
     def exposure_grid(self) -> GridComponent:
         """Return the exposure grid component."""
         return self.components["exposure_grid"]
+
+    @property
+    def exposure_geoms(self) -> GeomsComponent:
+        """Return the exposure geoms component."""
+        return self.components["exposure_geoms"]
+
+    @property
+    def social_vulnerability_data(self) -> TablesComponent:
+        """Return social vulnerability tables component."""
+        return self.components["social_vulnerability_scores"]
 
     ## I/O
     @hydromt_step
@@ -394,3 +410,37 @@ need to have a 'type' column.
             "vulnerability.file",
             self.vulnerability_data._filename.format(name="vulnerability_curves"),
         )
+
+    def setup_social_vulnerability_index(self, svi_fname: str | Path):
+        """Set up social vulnerability index for exposure geometries.
+
+        Parameters
+        ----------
+        svi_fname : str | Path
+            _description_
+
+        Raises
+        ------
+        RuntimeError
+            _description_
+        """
+        if self.exposure_geoms.data == {}:
+            raise RuntimeError(
+                "Exposure geometries need to be set before setting up "
+                "the social vulnerability index"
+            )
+
+        svi_data = self.data_catalog.get_geodataframe(svi_fname)
+
+        # Process SVI data
+        svi_data = workflows.process_svi_data(svi_data=svi_data)
+
+        # Set dataframe to social vulnerability index table component
+        self.social_vulnerability_data.set(
+            tables=svi_data.drop(columns="geometry"), name="social_vulnerability_scores"
+        )
+
+        exposure_svi_data = workflows.link_exposure_svi(
+            expsure_geoms=self.exposure_geoms.data, svi_data=svi_data
+        )
+        self.exposure_geoms.set(exposure_svi_data, name="SVI")
