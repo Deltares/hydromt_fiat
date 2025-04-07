@@ -4,9 +4,9 @@ import logging
 
 import xarray as xr
 from barril.units import Scalar
-from hydromt.model.processes.grid import grid_from_rasterdataset
 
 from hydromt_fiat.utils import standard_unit
+from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["hazard_grid"]
 
@@ -48,23 +48,7 @@ def hazard_grid(
     if return_periods is None and not risk:
         return_periods = [""] * len(hazard_data)
     for return_period, (da_name, da) in zip(return_periods, hazard_data.items()):
-        # Convert to gdal compliant
-        da.encoding["_FillValue"] = None
-        da: xr.DataArray = da.raster.gdal_compliant()
-
-        # ensure variable name is lowercase
-        da = da.rename(da_name)
-
-        # Check if map is rotated and if yes, reproject to a non-rotated grid
-        if "xc" in da.coords:
-            logger.warning(
-                "Hazard map is rotated. It will be reprojected"
-                " to a none rotated grid using nearest neighbor"
-                "interpolation"
-            )
-            da: xr.DataArray = da.raster.reproject(dst_crs=da.rio.crs)
-        if "grid_mapping" in da.encoding:
-            _ = da.encoding.pop("grid_mapping")
+        da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
         conversion = standard_unit(Scalar(1.0, unit))
@@ -83,16 +67,8 @@ def hazard_grid(
 
         hazard_dataarrays.append(da)
 
-    if grid_like is None:
-        grid_like = hazard_dataarrays[0]
-
-    ds = xr.merge(hazard_dataarrays)
-    ds.attrs = {}
-
     # Reproject to gridlike
-    if isinstance(grid_like, xr.DataArray):
-        grid_like = grid_like.to_dataset()
-    ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
+    ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
 
     attrs = {
         "type": hazard_type,
