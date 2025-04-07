@@ -40,7 +40,9 @@ def hazard_grid(
         Unified xarray dataset containing the hazard data
     """
     hazard_dataarrays = []
-    for idx, (da_name, da) in enumerate(hazard_data.items()):
+    if return_periods is None and not risk:
+        return_periods = [""] * len(hazard_data)
+    for return_period, (da_name, da) in zip(return_periods, hazard_data.items()):
         # Convert to gdal compliant
         da.encoding["_FillValue"] = None
         da: xr.DataArray = da.raster.gdal_compliant()
@@ -59,43 +61,36 @@ def hazard_grid(
         if "grid_mapping" in da.encoding:
             _ = da.encoding.pop("grid_mapping")
 
-        rp = f"(rp {return_periods[idx]})" if risk else ""
+        rp = f"(rp {return_period})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
 
-        if not risk:
-            # Set the event data arrays to the hazard grid component
-            da = da.assign_attrs(
-                {
-                    "name": da_name,
-                    "type": hazard_type,
-                    "analysis": "event",
-                }
-            )
+        attrs = {
+            "name": da_name,
+        }
+        if risk:
+            attrs["return_period"] = return_period
+        # Set the event data arrays to the hazard grid component
+        da = da.assign_attrs(attrs)
 
         hazard_dataarrays.append(da)
+
     if grid_like is None:
         grid_like = hazard_dataarrays[0]
 
     ds = xr.merge(hazard_dataarrays)
+    ds.attrs = {}
 
     # Reproject to gridlike
     if isinstance(grid_like, xr.DataArray):
         grid_like = grid_like.to_dataset()
     ds = grid_from_rasterdataset(grid_like=grid_like, ds=ds)
-    da_names = [d.name for d in hazard_dataarrays]
 
+    attrs = {
+        "type": hazard_type,
+        "analysis": "event",
+    }
     if risk:
-        ds = ds.assign_attrs(
-            {
-                "return_period": return_periods,
-                "type": hazard_type,
-                "name": da_names,
-                "analysis": "risk",
-            }
-        )
+        attrs["analysis"] = "risk"
+    ds = ds.assign_attrs(attrs)
 
-    else:
-        ds = ds.assign_attrs(
-            {"analysis": "event", "type": hazard_type, "name": da_names}
-        )
     return ds

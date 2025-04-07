@@ -14,9 +14,11 @@ def test_hazard_grid_risk(hazard_event_data_highres):
         risk=True,
     )
     assert isinstance(ds, xr.Dataset)
+    assert "flood_event_highres" in ds.data_vars
+    da = ds.flood_event_highres
     assert ds.analysis == "risk"
-    assert ds.name == ["flood_event_highres"]
-    assert ds.return_period == [50000]
+    assert da.name == "flood_event_highres"
+    assert da.return_period == 50000
 
 
 def test_hazard_grid_event(hazard_event_data):
@@ -29,9 +31,11 @@ def test_hazard_grid_event(hazard_event_data):
         risk=False,
     )
     assert isinstance(ds, xr.Dataset)
+    assert "flood_event" in ds.data_vars
+    da = ds.flood_event
     assert ds.analysis == "event"
-    assert ds.name == ["flood_event"]
-    assert "return_period" not in ds.attrs.keys()
+    assert da.name == "flood_event"
+    assert "return_period" not in da.attrs.keys()
 
 
 def test_hazard_grid_reproj(hazard_event_data, hazard_event_data_highres):
@@ -48,6 +52,6 @@ def test_hazard_grid_reproj(hazard_event_data, hazard_event_data_highres):
         risk=False,
     )
 
-    assert ds.name == ["event"]
+    assert ds.event.name == "event"
     # More importantly, check the shape
     assert ds.event.shape == (34, 25)  # Should be the same as the hazard event data
