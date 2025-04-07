@@ -88,6 +88,9 @@ defaulting to exposure data object type"
         # And merge the data
         exposure_data = exposure_data.merge(link, on="object_type")
 
+    # Reset the index as default for object_id
+    exposure_data.reset_index(names="object_id", inplace=True)
+
     return exposure_data
 
 

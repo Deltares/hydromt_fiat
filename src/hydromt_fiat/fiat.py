@@ -182,7 +182,6 @@ class FIATModel(Model):
         exposure_type_column: str,
         *,
         exposure_link_fname: Path | str | None,
-        exposure_type: str = "damage",
     ) -> None:
         """Set up the exposure from a data source.
 
@@ -194,13 +193,12 @@ class FIATModel(Model):
             _description_
         exposure_link_fname : Path | str | None
             _description_
-        exposure_type : str, optional
-            _description_, by default "damage"
         """
+        logger.info("Setting up exposure geometries")
         # Check for region
         if self.region is None:
             # TODO Replace with custom error class
-            raise AttributeError(
+            raise MissingRegionError(
                 "Region is None -> \
 use 'setup_region' before this method"
             )
@@ -208,7 +206,7 @@ use 'setup_region' before this method"
         keys = ["vulnerability_curves", "vulnerability_identifiers"]
         if not all([item in self.vulnerability_data.data for item in keys]):
             # TODO Replace with custom error class
-            raise KeyError("Use setup_vulnerability before this method")
+            raise RuntimeError("Use setup_vulnerability before this method")
 
         # Guarantee typing
         exposure_fname = Path(exposure_fname)
@@ -237,9 +235,54 @@ use 'setup_region' before this method"
 
         # Set the config file
         n = len(self.exposure_geoms.data)
-        self.config.set(
-            f"exposure.geom.file{n + 1}", f"exposure/{exposure_fname.stem}.fgb"
+        self.config.set(f"exposure.geom.file{n}", f"exposure/{exposure_fname.stem}.fgb")
+
+    @hydromt_step
+    def setup_exposure_max_damage(
+        self,
+        exposure_name: str,
+        exposure_type: str,
+        exposure_cost_table_fname: Path | str | None = None,
+        **select: dict,
+    ) -> None:
+        """_summary_.
+
+        Parameters
+        ----------
+        exposure_type : str
+            _description_
+        exposure_cost_table : Path | str, optional
+            _description_
+
+        Returns
+        -------
+        None
+        """
+        logger.info(f"Setting up maximum potential damage for {exposure_name}")
+        # Some checks on the input
+        if exposure_name not in self.exposure_geoms.data:
+            raise RuntimeError(
+                f"Run `setup_exposure_geoms` before this methods \
+with '{exposure_name}' as input or chose from already present geometries: \
+{list(self.exposure_geoms.data.keys())}"
+            )
+        exposure_cost_table = None
+        if exposure_cost_table_fname is not None:
+            exposure_cost_table = self.data_catalog.get_dataframe(
+                exposure_cost_table_fname,
+            )
+
+        # Call the workflows function to add the max damage
+        exposure_vector = workflows.max_monetary_damage(
+            self.exposure_geoms.data[exposure_name],
+            exposure_cost_table=exposure_cost_table,
+            exposure_type=exposure_type,
+            vulnerability=self.vulnerability_data.data["vulnerability_identifiers"],
+            **select,
         )
+
+        # Set the data back, its a bit symbolic as the dataframe is mutable...
+        self.exposure_geoms.set(exposure_vector, exposure_name)
 
     @hydromt_step
     def setup_exposure_grid(
@@ -296,14 +339,14 @@ use 'setup_region' before this method"
         grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
 
         # Execute the workflow function
-        ds = workflows.exposure_grid_data(
+        exposure_grid = workflows.exposure_grid_data(
             grid_like=grid_like,
             exposure_data=exposure_data,
             exposure_linking=exposure_linking,
         )
 
         # Set the dataset
-        self.exposure_grid.set(ds)
+        self.exposure_grid.set(exposure_grid)
 
         # Set the config entries
         if len(self.exposure_grid.data.data_vars) > 1:
