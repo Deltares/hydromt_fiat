@@ -18,7 +18,7 @@ def exposure_geom_linking(
     exposure_type_column: str,
     vulnerability: pd.DataFrame,
     *,
-    exposure_link_data: pd.DataFrame | None,
+    exposure_linking: pd.DataFrame | None,
 ) -> gpd.GeoDataFrame:
     """_summary_.
 
@@ -41,32 +41,32 @@ def exposure_geom_linking(
     # Some checks
     if exposure_type_column not in exposure_data:
         raise KeyError(f"{exposure_type_column} not found in the exposure data")
-    if exposure_link_data is None:
+    if exposure_linking is None:
         logger.warning(
             "No exposure link table provided, \
 defaulting to exposure data object type"
         )
-        exposure_link_data = pd.DataFrame(
+        exposure_linking = pd.DataFrame(
             {
                 exposure_type_column: exposure_data[exposure_type_column].values,
                 "object_type": exposure_data[exposure_type_column].values,
             }
         )
-    if exposure_type_column not in exposure_link_data:
+    if exposure_type_column not in exposure_linking:
         raise KeyError(f"{exposure_type_column} not found in the provided linking data")
 
     # Make sure that there are no duplicated in the linking
-    exposure_link_data = exposure_link_data.drop_duplicates(
+    exposure_linking = exposure_linking.drop_duplicates(
         exposure_type_column,
         keep="first",
     )
     # Also drop the remaining unused columns
-    exposure_link_data = exposure_link_data[[exposure_type_column, "object_type"]]
+    exposure_linking = exposure_linking[[exposure_type_column, "object_type"]]
 
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
-        exposure_link_data,
+        exposure_linking,
         on=exposure_type_column,
         how="inner",
         validate="many_to_many",

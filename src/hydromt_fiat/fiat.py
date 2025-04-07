@@ -218,18 +218,18 @@ use 'setup_region' before this method"
             data_like=exposure_fname,
             geom=self.region,
         )
-        exposure_link_data = None
+        exposure_linking = None
         if exposure_link_fname is not None:
-            exposure_link_data = self.data_catalog.get_dataframe(
+            exposure_linking = self.data_catalog.get_dataframe(
                 data_like=exposure_link_fname,
             )
 
-        # Call the workflows method to manipulate the data
+        # Call the workflows function(s) to manipulate the data
         exposure_vector = workflows.exposure_geom_linking(
             exposure_data=exposure_data,
             exposure_type_column=exposure_type_column,
             vulnerability=self.vulnerability_data.data["vulnerability_identifiers"],
-            exposure_link_data=exposure_link_data,
+            exposure_linking=exposure_linking,
         )
 
         # Set the data in the component
