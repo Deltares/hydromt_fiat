@@ -30,12 +30,16 @@ def _process_dataarray(da: xr.DataArray, da_name: str) -> xr.DataArray:
 def _merge_dataarrays(
     grid_like: xr.Dataset | None, dataarrays: list[xr.DataArray]
 ) -> xr.Dataset:
-    if not grid_like:
+    if grid_like is None:
         logger.warning(
             "grid_like argument not given, defaulting to first grid file in the list"
             " of grids"
         )
-        grid_like = dataarrays[0].to_dataset()
+        grid_like = dataarrays[0]
+
+    # Reproject to gridlike
+    if isinstance(grid_like, xr.DataArray):
+        grid_like = grid_like.to_dataset()
 
     ds = xr.merge(dataarrays)
 
