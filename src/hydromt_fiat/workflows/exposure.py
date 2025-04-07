@@ -14,8 +14,8 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 def exposure_grid_data(
     grid_like: xr.Dataset | None,
-    exposure_files: dict[str, xr.DataArray],
-    linking_table: pd.DataFrame,
+    exposure_data: dict[str, xr.DataArray],
+    exposure_linking: pd.DataFrame,
 ) -> xr.Dataset:
     """Read and transform exposure grid data.
 
@@ -23,7 +23,7 @@ def exposure_grid_data(
     ----------
     grid_like : xr.Dataset | None
         Xarray dataset that is used to transform exposure data with. If set to None,
-            the first data array in exposure_files is used to transform the data.
+        the first data array in exposure_files is used to transform the data.
     exposure_files : dict[str, xr.DataArray]
         Dictionary containing name of exposure file and associated data
     linking_table : pd.DataFrame
@@ -39,18 +39,18 @@ def exposure_grid_data(
     exposure_col = "type"
     vulnerability_col = "curve_id"
 
-    for exposure_fn, da in exposure_files.items():
-        if exposure_fn not in linking_table[exposure_col].values:
-            fn_damage = exposure_fn
+    for da_name, da in exposure_data.items():
+        if da_name not in exposure_linking[exposure_col].values:
+            fn_damage = da_name
             logger.warning(
-                f"Exposure file name, '{exposure_fn}', not found in linking table."
-                f" Setting damage curve name attribute to '{exposure_fn}'."
+                f"Exposure file name, '{da_name}', not found in linking table."
+                f" Setting damage curve name attribute to '{da_name}'."
             )
         else:
-            fn_damage = linking_table.loc[
-                linking_table[exposure_col] == exposure_fn, vulnerability_col
+            fn_damage = exposure_linking.loc[
+                exposure_linking[exposure_col] == da_name, vulnerability_col
             ].values[0]
-        da = _process_dataarray(da=da, da_name=exposure_fn)
+        da = _process_dataarray(da=da, da_name=da_name)
         da = da.assign_attrs({"fn_damage": fn_damage})
         exposure_dataarrays.append(da)
 

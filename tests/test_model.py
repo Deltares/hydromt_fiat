@@ -176,7 +176,8 @@ def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
         exposure_grid_link_fname=linking_table_fp.as_posix(),
     )
     assert isinstance(model.exposure_grid.data, xr.Dataset)
-    assert model.exposure_grid.data.attrs.get("fn_damage") == "vulnerability_curve"
+    flood_event_da = model.exposure_grid.data.flood_event
+    assert flood_event_da.attrs.get("fn_damage") == "vulnerability_curve"
     assert "Setting up exposure grid" in caplog.text
     assert model.config.get_value("exposure.grid.file") == model.exposure_grid._filename
 

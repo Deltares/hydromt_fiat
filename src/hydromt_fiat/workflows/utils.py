@@ -42,6 +42,8 @@ def _merge_dataarrays(
         grid_like = grid_like.to_dataset()
 
     ds = xr.merge(dataarrays)
+    ds.attrs = {}  # Ensure that the dataset doesnt copy a merged instance of
+    # the data variables' attributes
 
     # Reproject to gridlike
     return grid_from_rasterdataset(grid_like=grid_like, ds=ds)
