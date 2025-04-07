@@ -1,3 +1,4 @@
+import numpy as np
 import xarray as xr
 
 from hydromt_fiat.workflows import hazard_grid
@@ -55,3 +56,33 @@ def test_hazard_grid_reproj(hazard_event_data, hazard_event_data_highres):
     assert ds.event.name == "event"
     # More importantly, check the shape
     assert ds.event.shape == (34, 25)  # Should be the same as the hazard event data
+
+
+def test_hazard_grid_unit_default(hazard_event_data):
+    # Call the workflow function
+    hazard_data = {"event": hazard_event_data}
+    ds = hazard_grid(
+        grid_like=None,
+        hazard_data=hazard_data,
+        hazard_type="flooding",
+    )
+
+    avg_level = ds.event.mean().values
+    assert np.isclose(avg_level, 1.2019)
+
+
+def test_hazard_grid_unit_differ(hazard_event_data, caplog):
+    hazard_data = {"event": hazard_event_data}
+    # Suppose it's in a different unit
+    ds = hazard_grid(
+        grid_like=None,
+        hazard_data=hazard_data,
+        hazard_type="flooding",
+        unit="ft",
+    )
+
+    avg_level_ft = ds.event.mean().values
+    assert (
+        "Given unit (ft) does not match the standard unit (m) for length" in caplog.text
+    )
+    assert np.isclose(avg_level_ft, 0.366337)

@@ -187,6 +187,7 @@ class FIATModel(Model):
         *,
         return_periods: list[int] | None = None,
         risk: bool = False,
+        unit: str = "m",
     ) -> None:
         """Set up hazard maps.
 
@@ -202,6 +203,8 @@ class FIATModel(Model):
         risk : bool, optional
             Whether the hazard files are part of a risk analysis,
             by default False.
+        unit : str, optional
+            The unit which the hazard data is in, by default 'm' (meters)
 
         Returns
         -------
@@ -235,6 +238,7 @@ class FIATModel(Model):
             hazard_type=hazard_type,
             return_periods=return_periods,
             risk=risk,
+            unit=unit,
         )
 
         # Set the data to the hazard grid component

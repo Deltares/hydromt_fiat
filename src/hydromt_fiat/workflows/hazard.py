@@ -3,10 +3,12 @@
 import logging
 
 import xarray as xr
+from barril.units import Scalar
 from hydromt.model.processes.grid import grid_from_rasterdataset
 
-__all__ = ["hazard_grid"]
+from hydromt_fiat.utils import standard_unit
 
+__all__ = ["hazard_grid"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
@@ -17,7 +19,8 @@ def hazard_grid(
     hazard_type: str,
     *,
     return_periods: list[int] | None = None,
-    risk: bool,
+    risk: bool = False,
+    unit: str = "m",
 ) -> xr.Dataset:
     """Parse hazard data files to xarray dataset.
 
@@ -32,7 +35,9 @@ def hazard_grid(
     return_periods : list[int] | None, optional
         List of return periods, by default None
     risk : bool
-        Designate hazard files for risk analysis
+        Designate hazard files for risk analysis, by default False
+    unit : str
+        The unit which the hazard data is in, by default 'm'
 
     Returns
     -------
@@ -60,6 +65,10 @@ def hazard_grid(
             da: xr.DataArray = da.raster.reproject(dst_crs=da.rio.crs)
         if "grid_mapping" in da.encoding:
             _ = da.encoding.pop("grid_mapping")
+
+        # Check for unit
+        conversion = standard_unit(Scalar(1.0, unit))
+        da *= conversion.value
 
         rp = f"(rp {return_period})" if risk else ""
         logger.info(f"Added {hazard_type} hazard map: {da_name} {rp}")
