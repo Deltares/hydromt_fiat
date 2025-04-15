@@ -260,10 +260,8 @@ class ExposureVector(Exposure):
             polygon = region["geometry"].values[0]  # TODO check if this works each time
             roads = get_roads_from_osm(polygon, road_types)
 
-            if roads.empty:
-                self.logger.warning(
-                    "No roads found in the selected region from source " f"{source}."
-                )
+            if roads is None:
+                raise ValueError(f"No roads found in the selected region from source {source}.")
 
             # Rename the columns to FIAT names
             roads.rename(
@@ -442,15 +440,9 @@ class ExposureVector(Exposure):
             eur_to_us_dollar=eur_to_us_dollar,
             linking_column= linking_column
         )
-        if (
-            any(
-                isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]
-            )
-            or any(
-                isinstance(geom, MultiPolygon)
-                for geom in self.exposure_geoms[0]["geometry"]
-            )
-            and bf_conversion
+        if bf_conversion and (
+            any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]) 
+            or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"])
         ):
             self.building_footprints = self.exposure_geoms[0]
             self.convert_bf_into_centroids(
@@ -1196,7 +1188,7 @@ class ExposureVector(Exposure):
 
             # Unit conversion
             if grnd_elev_unit:
-                self.unit_conversion(parameter="grnd_elevtn", unit=grnd_elev_unit)
+                self.unit_conversion(parameter="ground_elevtn", unit=grnd_elev_unit)
 
         else:
             self.logger.warning(
