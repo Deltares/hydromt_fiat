@@ -12,6 +12,8 @@ from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 
+__all__ = ["RegionComponent"]
+
 logger: Logger = getLogger(f"hydromt.{__name__}")
 
 

@@ -7,7 +7,7 @@ from hydromt.model import ModelRoot
 from pyproj.crs import CRS
 from shapely.geometry import MultiPolygon, Polygon
 
-from hydromt_fiat.region import RegionComponent
+from hydromt_fiat.components import RegionComponent
 
 
 def test_region_component_empty(mock_model):

@@ -14,8 +14,12 @@ from hydromt.model.components import (
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components import (
+    HazardGridComponent,
+    RegionComponent,
+    VulnerabilityComponent,
+)
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.region import RegionComponent
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -69,7 +73,10 @@ class FIATModel(Model):
             "config",
             ConfigComponent(model=self, filename="settings.toml"),
         )
-        self.add_component("exposure_data", TablesComponent(model=self))
+        self.add_component(
+            "exposure_data",
+            TablesComponent(model=self),
+        )
         self.add_component(
             "exposure_geoms",
             GeomsComponent(
@@ -84,13 +91,11 @@ class FIATModel(Model):
         )
         self.add_component(
             "hazard_grid",
-            GridComponent(
-                model=self, region_component="region", filename="hazard/hazard_grid.nc"
-            ),
+            HazardGridComponent(model=self, region_component="region"),
         )
         self.add_component(
             "vulnerability_data",
-            TablesComponent(model=self, filename="vulnerability/{name}.csv"),
+            VulnerabilityComponent(model=self),
         )
 
     ## Properties
@@ -100,12 +105,12 @@ class FIATModel(Model):
         return self.components["config"]
 
     @property
-    def hazard_grid(self) -> GridComponent:
+    def hazard_grid(self) -> HazardGridComponent:
         """Return hazard grid component."""
         return self.components["hazard_grid"]
 
     @property
-    def vulnerability_data(self) -> TablesComponent:
+    def vulnerability_data(self) -> VulnerabilityComponent:
         """Return the vulnerability component containing the data."""
         return self.components["vulnerability_data"]
 
@@ -252,145 +257,3 @@ class FIATModel(Model):
         if len(self.exposure_grid.data.data_vars) > 1:
             self.config.set("exposure.grid.settings.var_as_band", True)
         self.config.set("exposure.grid.file", self.exposure_grid._filename)
-
-    @hydromt_step
-    def setup_hazard(
-        self,
-        hazard_fnames: list[Path | str] | Path | str,
-        hazard_type: str = "flooding",
-        *,
-        return_periods: list[int] | None = None,
-        risk: bool = False,
-        unit: str = "m",
-    ) -> None:
-        """Set up hazard maps.
-
-        Parameters
-        ----------
-        hazard_fnames : list[Path | str] | Path | str
-            Path(s) to the hazard file(s) or name(s) of the data catalog entries.
-        hazard_type : str, optional
-            Type of hazard, by default "flooding".
-        return_periods : list[int] | None, optional
-            List of return periods. Length of list should match the number hazard
-            files, by default None.
-        risk : bool, optional
-            Whether the hazard files are part of a risk analysis,
-            by default False.
-        unit : str, optional
-            The unit which the hazard data is in, by default 'm' (meters)
-
-        Returns
-        -------
-            None
-        """
-        logger.info("Setting up hazard raster data")
-        if not isinstance(hazard_fnames, list):
-            hazard_fnames = [hazard_fnames]
-        if risk and not return_periods:
-            raise ValueError("Cannot perform risk analysis without return periods")
-        if risk and len(return_periods) != len(hazard_fnames):
-            raise ValueError("Return periods do not match the number of hazard files")
-
-        if self.region is None:
-            raise MissingRegionError(
-                "Region component is missing for setting up hazard data."
-            )
-
-        hazard_data = {}
-        for entry in hazard_fnames:
-            da = self.data_catalog.get_rasterdataset(entry, geom=self.region)
-            hazard_data[Path(entry).stem] = da
-
-        # Check if there is already data set to this grid component.
-        grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
-
-        # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_grid(
-            grid_like=grid_like,
-            hazard_data=hazard_data,
-            hazard_type=hazard_type,
-            return_periods=return_periods,
-            risk=risk,
-            unit=unit,
-        )
-
-        # Set the data to the hazard grid component
-        self.hazard_grid.set(ds)
-
-        # Set the config entries
-        if len(self.hazard_grid.data.data_vars) > 1:
-            self.config.set("hazard.settings.var_as_band", True)
-
-        if risk:
-            self.config.set("hazard.risk", risk)
-            self.config.set("hazard.return_periods", return_periods)
-
-        self.config.set("hazard.file", self.hazard_grid._filename)
-        self.config.set(
-            "hazard.elevation_reference",
-            "DEM" if hazard_type == "water_depth" else "datum",
-        )
-
-    @hydromt_step
-    def setup_vulnerability(
-        self,
-        vulnerability_fname: Path | str,
-        vulnerability_linking_fname: Path | str | None = None,
-        *,
-        unit: str = "m",
-        index_name: str = "water depth",
-        **select,
-    ) -> None:
-        """Set up the vulnerability from a data source.
-
-        Warning
-        -------
-        The datasets (vulnerability_fname and vulnerability_linking_fname) \
-need to have a 'type' column.
-
-        Parameters
-        ----------
-        vulnerability_fname : Path | str
-            Path to vulnerability dataset file or an entry in the data catalog that
-            points to the vulnerability dataset file.
-        vulnerability_linking_fname : Path | str | None, optional
-            Path or data catalog entry of the vulnerability linking table.
-            If not provided, it is assumed that the 'type' in the vulnerability dataset
-            is correct, by default None
-        unit : str, optional
-            The unit which the vulnerability index is in, by default "m"
-        index_name : str, optional
-            The output name of the index column, by default "water depth"
-        select : dict, optional
-            Keyword arguments to select data from the 'vulnerability_fname' data source.
-
-        Returns
-        -------
-            None
-        """
-        logger.info("Setting up the vulnerability curves")
-        # Get the data from the catalog
-        vulnerability_data = self.data_catalog.get_dataframe(vulnerability_fname)
-        vulnerability_linking = None
-        if vulnerability_linking_fname is not None:
-            vulnerability_linking = self.data_catalog.get_dataframe(
-                vulnerability_linking_fname
-            )
-
-        # Invoke the workflow method to create the curves from raw data
-        vuln_curves, vuln_id = workflows.vulnerability_curves(
-            vulnerability_data,
-            vulnerability_linking=vulnerability_linking,
-            unit=unit,
-            index_name=index_name,
-            **select,
-        )
-
-        self.vulnerability_data.set(vuln_curves, "vulnerability_curves")
-        self.vulnerability_data.set(vuln_id, "vulnerability_identifiers")
-
-        self.config.set(
-            "vulnerability.file",
-            self.vulnerability_data._filename.format(name="vulnerability_curves"),
-        )
