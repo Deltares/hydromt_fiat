@@ -21,6 +21,7 @@ authors = [
     {name = "L. Blom", email = "luuk.blom@deltares.nl"}
 ]
 maintainers = [
+    {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
     {name = "T.C. de Jong", email = "tjalling.dejong@deltares.nl"},
     {name = "L. Blom", email = "luuk.blom@deltares.nl"}
 ]
@@ -252,9 +253,9 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = [] }
-dev = { features = ["dev", "docs", "examples", "test"] }
+default = { features = ["dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
+slim = { features = [] }
 test-py313 = {features = ["py313", "test"]}
 test-py312 = {features = ["py312", "test"]}
 test-py311 = {features = ["py311", "test"]}

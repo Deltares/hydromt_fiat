@@ -42,7 +42,7 @@ def test_osm_driver_get_osm_data_errors(build_region_gdf, osm_cached, caplog):
     tag = {"buildin": True}
     with pytest.raises(
         InsufficientResponseError,
-        match="No data elements in server response. Check log and query location/tags.",
+        match="No matching features. Check query location, tags, and log.",
     ):
         OSMDriver.get_osm_data(
             polygon=build_region_gdf.geometry[0], tag=tag, geom_type=geom_type
