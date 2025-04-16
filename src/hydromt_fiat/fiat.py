@@ -8,18 +8,16 @@ from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
     GeomsComponent,
-    GridComponent,
     TablesComponent,
 )
 from hydromt.model.steps import hydromt_step
 
-from hydromt_fiat import workflows
 from hydromt_fiat.components import (
+    ExposureGridComponent,
     HazardGridComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
-from hydromt_fiat.errors import MissingRegionError
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -36,6 +34,8 @@ class FIATModel(Model):
     ----------
     root : str, optional
         Model root, by default None
+    config_fname : str, optional
+        Name of the configurations file, by default 'settings.toml'
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w"
     data_libs : list[str] | str, optional
@@ -54,6 +54,8 @@ class FIATModel(Model):
     def __init__(
         self,
         root: str | None = None,
+        config_fname: str = "settings.toml",
+        *,
         mode: str = "r",
         data_libs: list[str] | str | None = None,
         **catalog_keys,
@@ -71,7 +73,7 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            ConfigComponent(model=self, filename="settings.toml"),
+            ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
             "exposure_data",
@@ -79,15 +81,11 @@ class FIATModel(Model):
         )
         self.add_component(
             "exposure_geoms",
-            GeomsComponent(
-                model=self,
-                region_component="region",
-                filename="exposure/{name}.fgb",
-            ),
+            GeomsComponent(model=self, region_component="region"),
         )
         self.add_component(
             "exposure_grid",
-            GridComponent(model=self, region_component="region"),
+            ExposureGridComponent(model=self, region_component="region"),
         )
         self.add_component(
             "hazard_grid",
@@ -115,7 +113,7 @@ class FIATModel(Model):
         return self.components["vulnerability_data"]
 
     @property
-    def exposure_grid(self) -> GridComponent:
+    def exposure_grid(self) -> ExposureGridComponent:
         """Return the exposure grid component."""
         return self.components["exposure_grid"]
 
@@ -188,72 +186,3 @@ class FIATModel(Model):
             _description_
         """
         pass
-
-    @hydromt_step
-    def setup_exposure_grid(
-        self,
-        exposure_grid_fnames: str | Path | list[str | Path],
-        exposure_grid_link_fname: str | Path,
-    ) -> None:
-        """Set up an exposure grid.
-
-        Parameters
-        ----------
-        exposure_grid_fnames : str | Path | list[str  |  Path]
-            Name of or path to exposure file(s)
-        exposure_grid_link_fname : str | Path
-            Table containing the names of the exposure files and corresponding
-            vulnerability curves.
-        """
-        logger.info("Setting up exposure grid")
-
-        if self.vulnerability_data.data == {}:
-            raise RuntimeError(
-                "setup_vulnerability step is required before setting up exposure grid."
-            )
-        if self.region is None:
-            raise MissingRegionError("Region is required for setting up exposure grid.")
-
-        # Check if linking_table exists
-        if not Path(exposure_grid_link_fname).exists():
-            raise ValueError("Given path to linking table does not exist.")
-        # Read linking table
-        exposure_linking = self.data_catalog.get_dataframe(exposure_grid_link_fname)
-
-        # Check if linking table columns are named according to convention
-        for col_name in ["type", "curve_id"]:
-            if col_name not in exposure_linking.columns:
-                raise ValueError(
-                    f"Missing column, '{col_name}' in exposure grid linking table"
-                )
-
-        exposure_files = (
-            [exposure_grid_fnames]
-            if not isinstance(exposure_grid_fnames, list)
-            else exposure_grid_fnames
-        )
-
-        # Read exposure data files from data catalog
-        exposure_data = {}
-        for exposure_file in exposure_files:
-            exposure_fn = Path(exposure_file).stem
-            da = self.data_catalog.get_rasterdataset(exposure_file, geom=self.region)
-            exposure_data[exposure_fn] = da
-
-        # Get grid like from existing exposure data if there is any
-        grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
-
-        # Execute the workflow function
-        ds = workflows.exposure_grid_data(
-            grid_like=grid_like,
-            exposure_data=exposure_data,
-            exposure_linking=exposure_linking,
-        )
-
-        # Set the dataset
-        self.exposure_grid.set(ds)
-
-        # Set the config entries
-        if len(self.exposure_grid.data.data_vars) > 1:
-            self.config.set("exposure.grid.settings.var_as_band", True)
-        self.config.set("exposure.grid.file", self.exposure_grid._filename)

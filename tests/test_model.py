@@ -1,13 +1,9 @@
-import logging
 from pathlib import Path
 
 import geopandas as gpd
-import pandas as pd
 import pytest
-import xarray as xr
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.errors import MissingRegionError
 
 
 def test_empty_model(tmp_path):
@@ -81,86 +77,11 @@ def test_setup_region_error(tmp_path):
         model.setup_region(region=region_no)
 
 
-def test_setup_exposure_grid(model, build_region, caplog, tmp_path, mocker):
-    model.setup_region(region=build_region)
-
-    # create linking table
-    linking_table = pd.DataFrame(
-        data=[{"type": "flood_event", "curve_id": "vulnerability_curve"}]
-    )
-    linking_table_fp = tmp_path / "linking_table.csv"
-    linking_table.to_csv(linking_table_fp)
-
-    # Mock vulnerability_data attribute to pass check
-    mocker.patch.object(FIATModel, "vulnerability_data")
-    caplog.set_level(logging.INFO)
-    model.setup_exposure_grid(
-        exposure_grid_fnames=["flood_event"],
-        exposure_grid_link_fname=linking_table_fp.as_posix(),
-    )
-    assert isinstance(model.exposure_grid.data, xr.Dataset)
-    flood_event_da = model.exposure_grid.data.flood_event
-    assert flood_event_da.attrs.get("fn_damage") == "vulnerability_curve"
-    assert "Setting up exposure grid" in caplog.text
-    assert model.config.get_value("exposure.grid.file") == model.exposure_grid._filename
-
-    # Check if config is set properly when data is added to existing grid
-    model.setup_exposure_grid(
-        exposure_grid_fnames=["flood_event_highres"],
-        exposure_grid_link_fname=linking_table_fp.as_posix(),
-    )
-
-    assert model.config.get_value("exposure.grid.settings.var_as_band")
+## Bloody integration tests
+# TODO fill these in when the functionality is fully there
+def test_fiatmodel_geom():
+    pass
 
 
-def test_setup_exposure_grid_errors(model, build_region, mocker, tmp_path):
-    err_msg = "setup_vulnerability step is required before setting up exposure grid."
-    with pytest.raises(RuntimeError, match=err_msg):
-        model.setup_exposure_grid(
-            exposure_grid_fnames="flood_event",
-            exposure_grid_link_fname="test.csv",
-        )
-
-    mocker.patch.object(FIATModel, "vulnerability_data")
-    with pytest.raises(
-        MissingRegionError, match="Region is required for setting up exposure grid."
-    ):
-        model.setup_exposure_grid(
-            exposure_grid_fnames="flood_event",
-            exposure_grid_link_fname="test.csv",
-        )
-
-    # check raise value error if linking table does not exist
-    model.setup_region(build_region)
-    with pytest.raises(ValueError, match="Given path to linking table does not exist."):
-        model.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname="not/a/file/path",
-        )
-    linking_table = pd.DataFrame(
-        data=[{"exposure": "flood_event", "curve_id": "damage_fn"}]
-    )
-    linking_table_fp = tmp_path / "test_linking_table.csv"
-    linking_table.to_csv(linking_table_fp, index=False)
-
-    with pytest.raises(
-        ValueError, match="Missing column, 'type' in exposure grid linking table"
-    ):
-        model.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp.as_posix(),
-        )
-
-    linking_table = pd.DataFrame(
-        data=[{"type": "flood_event", "curve_name": "damage_fn"}]
-    )
-    linking_table_fp = tmp_path / "test_linking_table.csv"
-    linking_table.to_csv(linking_table_fp, index=False)
-
-    with pytest.raises(
-        ValueError, match="Missing column, 'curve_id' in exposure grid linking table"
-    ):
-        model.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp.as_posix(),
-        )
+def test_fiatmodel_grid():
+    pass
