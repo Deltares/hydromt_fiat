@@ -46,8 +46,7 @@ class HazardGridComponent(GridComponent):
         region_component: str | None = None,
         region_filename: str = "region.geojson",
     ):
-        GridComponent.__init__(
-            self,
+        super().__init__(
             model,
             filename=filename,
             region_component=region_component,

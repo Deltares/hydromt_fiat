@@ -60,8 +60,7 @@ class FIATModel(Model):
         data_libs: list[str] | str | None = None,
         **catalog_keys,
     ):
-        Model.__init__(
-            self,
+        super().__init__(
             root,
             components={"region": RegionComponent(model=self)},
             mode=mode,
