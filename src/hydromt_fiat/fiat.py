@@ -8,14 +8,18 @@ from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
     GeomsComponent,
-    GridComponent,
     TablesComponent,
 )
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components import (
+    ExposureGridComponent,
+    HazardGridComponent,
+    RegionComponent,
+    VulnerabilityComponent,
+)
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.region import RegionComponent
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -32,6 +36,8 @@ class FIATModel(Model):
     ----------
     root : str, optional
         Model root, by default None
+    config_fname : str, optional
+        Name of the configurations file, by default 'settings.toml'
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w"
     data_libs : list[str] | str, optional
@@ -50,12 +56,13 @@ class FIATModel(Model):
     def __init__(
         self,
         root: str | None = None,
+        config_fname: str = "settings.toml",
+        *,
         mode: str = "r",
         data_libs: list[str] | str | None = None,
         **catalog_keys,
     ):
-        Model.__init__(
-            self,
+        super().__init__(
             root,
             components={"region": RegionComponent(model=self)},
             mode=mode,
@@ -67,30 +74,27 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            ConfigComponent(model=self, filename="settings.toml"),
+            ConfigComponent(model=self, filename=config_fname),
         )
-        self.add_component("exposure_data", TablesComponent(model=self))
+        self.add_component(
+            "exposure_data",
+            TablesComponent(model=self),
+        )
         self.add_component(
             "exposure_geoms",
-            GeomsComponent(
-                model=self,
-                region_component="region",
-                filename="exposure/{name}.fgb",
-            ),
+            GeomsComponent(model=self, region_component="region"),
         )
         self.add_component(
             "exposure_grid",
-            GridComponent(model=self, region_component="region"),
+            ExposureGridComponent(model=self, region_component="region"),
         )
         self.add_component(
             "hazard_grid",
-            GridComponent(
-                model=self, region_component="region", filename="hazard/hazard_grid.nc"
-            ),
+            HazardGridComponent(model=self, region_component="region"),
         )
         self.add_component(
             "vulnerability_data",
-            TablesComponent(model=self, filename="vulnerability/{name}.csv"),
+            VulnerabilityComponent(model=self),
         )
 
     ## Properties
@@ -105,19 +109,19 @@ class FIATModel(Model):
         return self.components["exposure_geoms"]
 
     @property
-    def hazard_grid(self) -> GridComponent:
+    def exposure_grid(self) -> ExposureGridComponent:
+        """Return the exposure grid component."""
+        return self.components["exposure_grid"]
+
+    @property
+    def hazard_grid(self) -> HazardGridComponent:
         """Return hazard grid component."""
         return self.components["hazard_grid"]
 
     @property
-    def vulnerability_data(self) -> TablesComponent:
+    def vulnerability_data(self) -> VulnerabilityComponent:
         """Return the vulnerability component containing the data."""
         return self.components["vulnerability_data"]
-
-    @property
-    def exposure_grid(self) -> GridComponent:
-        """Return the exposure grid component."""
-        return self.components["exposure_grid"]
 
     ## I/O
     @hydromt_step
@@ -283,214 +287,3 @@ with '{exposure_name}' as input or chose from already present geometries: \
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
         self.exposure_geoms.set(exposure_vector, exposure_name)
-
-    @hydromt_step
-    def setup_exposure_grid(
-        self,
-        exposure_grid_fnames: str | Path | list[str | Path],
-        exposure_grid_link_fname: str | Path,
-    ) -> None:
-        """Set up an exposure grid.
-
-        Parameters
-        ----------
-        exposure_grid_fnames : str | Path | list[str  |  Path]
-            Name of or path to exposure file(s)
-        exposure_grid_link_fname : str | Path
-            Table containing the names of the exposure files and corresponding
-            vulnerability curves.
-        """
-        logger.info("Setting up exposure grid")
-
-        if self.vulnerability_data.data == {}:
-            raise RuntimeError(
-                "setup_vulnerability step is required before setting up exposure grid."
-            )
-        if self.region is None:
-            raise MissingRegionError("Region is required for setting up exposure grid.")
-
-        # Check if linking_table exists
-        if not Path(exposure_grid_link_fname).exists():
-            raise ValueError("Given path to linking table does not exist.")
-        # Read linking table
-        exposure_linking = self.data_catalog.get_dataframe(exposure_grid_link_fname)
-
-        # Check if linking table columns are named according to convention
-        for col_name in ["type", "curve_id"]:
-            if col_name not in exposure_linking.columns:
-                raise ValueError(
-                    f"Missing column, '{col_name}' in exposure grid linking table"
-                )
-
-        exposure_files = (
-            [exposure_grid_fnames]
-            if not isinstance(exposure_grid_fnames, list)
-            else exposure_grid_fnames
-        )
-
-        # Read exposure data files from data catalog
-        exposure_data = {}
-        for exposure_file in exposure_files:
-            exposure_fn = Path(exposure_file).stem
-            da = self.data_catalog.get_rasterdataset(exposure_file, geom=self.region)
-            exposure_data[exposure_fn] = da
-
-        # Get grid like from existing exposure data if there is any
-        grid_like = self.exposure_grid.data if self.exposure_grid.data != {} else None
-
-        # Execute the workflow function
-        exposure_grid = workflows.exposure_grid_data(
-            grid_like=grid_like,
-            exposure_data=exposure_data,
-            exposure_linking=exposure_linking,
-        )
-
-        # Set the dataset
-        self.exposure_grid.set(exposure_grid)
-
-        # Set the config entries
-        if len(self.exposure_grid.data.data_vars) > 1:
-            self.config.set("exposure.grid.settings.var_as_band", True)
-        self.config.set("exposure.grid.file", self.exposure_grid._filename)
-
-    @hydromt_step
-    def setup_hazard(
-        self,
-        hazard_fnames: list[Path | str] | Path | str,
-        hazard_type: str = "flooding",
-        *,
-        return_periods: list[int] | None = None,
-        risk: bool = False,
-        unit: str = "m",
-    ) -> None:
-        """Set up hazard maps.
-
-        Parameters
-        ----------
-        hazard_fnames : list[Path | str] | Path | str
-            Path(s) to the hazard file(s) or name(s) of the data catalog entries.
-        hazard_type : str, optional
-            Type of hazard, by default "flooding".
-        return_periods : list[int] | None, optional
-            List of return periods. Length of list should match the number hazard
-            files, by default None.
-        risk : bool, optional
-            Whether the hazard files are part of a risk analysis,
-            by default False.
-        unit : str, optional
-            The unit which the hazard data is in, by default 'm' (meters)
-
-        Returns
-        -------
-            None
-        """
-        logger.info("Setting up hazard raster data")
-        if not isinstance(hazard_fnames, list):
-            hazard_fnames = [hazard_fnames]
-        if risk and not return_periods:
-            raise ValueError("Cannot perform risk analysis without return periods")
-        if risk and len(return_periods) != len(hazard_fnames):
-            raise ValueError("Return periods do not match the number of hazard files")
-
-        if self.region is None:
-            raise MissingRegionError(
-                "Region component is missing for setting up hazard data."
-            )
-
-        hazard_data = {}
-        for entry in hazard_fnames:
-            da = self.data_catalog.get_rasterdataset(entry, geom=self.region)
-            hazard_data[Path(entry).stem] = da
-
-        # Check if there is already data set to this grid component.
-        grid_like = self.hazard_grid.data if self.hazard_grid.data.sizes != {} else None
-
-        # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_grid(
-            grid_like=grid_like,
-            hazard_data=hazard_data,
-            hazard_type=hazard_type,
-            return_periods=return_periods,
-            risk=risk,
-            unit=unit,
-        )
-
-        # Set the data to the hazard grid component
-        self.hazard_grid.set(ds)
-
-        # Set the config entries
-        if len(self.hazard_grid.data.data_vars) > 1:
-            self.config.set("hazard.settings.var_as_band", True)
-
-        if risk:
-            self.config.set("hazard.risk", risk)
-            self.config.set("hazard.return_periods", return_periods)
-
-        self.config.set("hazard.file", self.hazard_grid._filename)
-        self.config.set(
-            "hazard.elevation_reference",
-            "DEM" if hazard_type == "water_depth" else "datum",
-        )
-
-    @hydromt_step
-    def setup_vulnerability(
-        self,
-        vulnerability_fname: Path | str,
-        vulnerability_linking_fname: Path | str | None = None,
-        *,
-        unit: str = "m",
-        index_name: str = "water depth",
-        **select,
-    ) -> None:
-        """Set up the vulnerability from a data source.
-
-        Warning
-        -------
-        The datasets (vulnerability_fname and vulnerability_linking_fname) \
-need to have a 'type' column.
-
-        Parameters
-        ----------
-        vulnerability_fname : Path | str
-            Path to vulnerability dataset file or an entry in the data catalog that
-            points to the vulnerability dataset file.
-        vulnerability_linking_fname : Path | str | None, optional
-            Path or data catalog entry of the vulnerability linking table.
-            If not provided, it is assumed that the 'type' in the vulnerability dataset
-            is correct, by default None
-        unit : str, optional
-            The unit which the vulnerability index is in, by default "m"
-        index_name : str, optional
-            The output name of the index column, by default "water depth"
-        select : dict, optional
-            Keyword arguments to select data from the 'vulnerability_fname' data source.
-
-        Returns
-        -------
-            None
-        """
-        logger.info("Setting up the vulnerability curves")
-        # Get the data from the catalog
-        vulnerability_data = self.data_catalog.get_dataframe(vulnerability_fname)
-        vulnerability_linking = None
-        if vulnerability_linking_fname is not None:
-            vulnerability_linking = self.data_catalog.get_dataframe(
-                vulnerability_linking_fname
-            )
-
-        # Invoke the workflow method to create the curves from raw data
-        vuln_curves, vuln_id = workflows.vulnerability_curves(
-            vulnerability_data,
-            vulnerability_linking=vulnerability_linking,
-            unit=unit,
-            index_name=index_name,
-            **select,
-        )
-
-        self.vulnerability_data.set(vuln_curves, "vulnerability_curves")
-        self.vulnerability_data.set(vuln_id, "vulnerability_identifiers")
-
-        self.config.set(
-            "vulnerability.file",
-            self.vulnerability_data._filename.format(name="vulnerability_curves"),
-        )
