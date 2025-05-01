@@ -1,14 +1,10 @@
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
 import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
-from hydromt.model.root import ModelRoot
-from pyproj.crs import CRS
-from pytest_mock import MockerFixture
 from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
@@ -104,18 +100,6 @@ def vulnerability_linking(data_catalog) -> pd.DataFrame:
 @pytest.fixture
 def model(tmp_path, build_data_catalog) -> FIATModel:
     model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog)
-    return model
-
-
-@pytest.fixture
-def mock_model(tmp_path, mocker: MockerFixture) -> MagicMock:
-    model = mocker.create_autospec(FIATModel)
-    model.root = mocker.create_autospec(ModelRoot(tmp_path), instance=True)
-    model.root.path.return_value = tmp_path
-    model.data_catalog = mocker.create_autospec(DataCatalog)
-    # Set attributes for practical use
-    type(model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(4326))
-    type(model).root = PropertyMock(side_effect=lambda: ModelRoot(tmp_path))
     return model
 
 

@@ -178,6 +178,7 @@ exclude = ["docs/**"]
 "tests/**" = ["D103", "D100", "D104"]
 "tests/conftest.py" = ["E402"]
 "src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
+"src/hydromt_fiat/components/__init__.py" = ["F403"]
 "src/hydromt_fiat/workflows/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
