@@ -7,19 +7,17 @@ import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
-    GeomsComponent,
     TablesComponent,
 )
 from hydromt.model.steps import hydromt_step
 
-from hydromt_fiat import workflows
 from hydromt_fiat.components import (
+    ExposureGeomsComponent,
     ExposureGridComponent,
     HazardGridComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
-from hydromt_fiat.errors import MissingRegionError
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -82,7 +80,7 @@ class FIATModel(Model):
         )
         self.add_component(
             "exposure_geoms",
-            GeomsComponent(model=self, region_component="region"),
+            ExposureGeomsComponent(model=self, region_component="region"),
         )
         self.add_component(
             "exposure_grid",
@@ -104,7 +102,7 @@ class FIATModel(Model):
         return self.components["config"]
 
     @property
-    def exposure_geoms(self) -> GeomsComponent:
+    def exposure_geoms(self) -> ExposureGeomsComponent:
         """Return the exposure geoms component."""
         return self.components["exposure_geoms"]
 
@@ -132,7 +130,15 @@ class FIATModel(Model):
     @hydromt_step
     def write(self):
         """Write the FIAT model."""
-        Model.write(self)
+        components = list(self.components.keys())
+        cfg = None
+        for c in [self.components[name] for name in components]:
+            if isinstance(c, ConfigComponent):
+                cfg = c
+                continue
+            c.write()
+        if cfg is not None:
+            cfg.write()
 
     ## Setup methods
     @hydromt_step
@@ -178,112 +184,3 @@ class FIATModel(Model):
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
         self.components["region"].set(geom)
-
-    @hydromt_step
-    def setup_exposure_geoms(
-        self,
-        exposure_fname: Path | str,
-        exposure_type_column: str,
-        *,
-        exposure_link_fname: Path | str | None,
-    ) -> None:
-        """Set up the exposure from a data source.
-
-        Parameters
-        ----------
-        exposure_fname : Path | str
-            _description_
-        exposure_type_column : str
-            _description_
-        exposure_link_fname : Path | str | None
-            _description_
-        """
-        logger.info("Setting up exposure geometries")
-        # Check for region
-        if self.region is None:
-            # TODO Replace with custom error class
-            raise MissingRegionError(
-                "Region is None -> \
-use 'setup_region' before this method"
-            )
-        # Check for vulnerability
-        keys = ["vulnerability_curves", "vulnerability_identifiers"]
-        if not all([item in self.vulnerability_data.data for item in keys]):
-            # TODO Replace with custom error class
-            raise RuntimeError("Use setup_vulnerability before this method")
-
-        # Guarantee typing
-        exposure_fname = Path(exposure_fname)
-
-        # Get ze data
-        exposure_data = self.data_catalog.get_geodataframe(
-            data_like=exposure_fname,
-            geom=self.region,
-        )
-        exposure_linking = None
-        if exposure_link_fname is not None:
-            exposure_linking = self.data_catalog.get_dataframe(
-                data_like=exposure_link_fname,
-            )
-
-        # Call the workflows function(s) to manipulate the data
-        exposure_vector = workflows.exposure_geom_linking(
-            exposure_data=exposure_data,
-            exposure_type_column=exposure_type_column,
-            vulnerability=self.vulnerability_data.data["vulnerability_identifiers"],
-            exposure_linking=exposure_linking,
-        )
-
-        # Set the data in the component
-        self.exposure_geoms.set(exposure_vector, name=exposure_fname.stem)
-
-        # Set the config file
-        n = len(self.exposure_geoms.data)
-        self.config.set(f"exposure.geom.file{n}", f"exposure/{exposure_fname.stem}.fgb")
-
-    @hydromt_step
-    def setup_exposure_max_damage(
-        self,
-        exposure_name: str,
-        exposure_type: str,
-        exposure_cost_table_fname: Path | str | None = None,
-        **select: dict,
-    ) -> None:
-        """_summary_.
-
-        Parameters
-        ----------
-        exposure_type : str
-            _description_
-        exposure_cost_table : Path | str, optional
-            _description_
-
-        Returns
-        -------
-        None
-        """
-        logger.info(f"Setting up maximum potential damage for {exposure_name}")
-        # Some checks on the input
-        if exposure_name not in self.exposure_geoms.data:
-            raise RuntimeError(
-                f"Run `setup_exposure_geoms` before this methods \
-with '{exposure_name}' as input or chose from already present geometries: \
-{list(self.exposure_geoms.data.keys())}"
-            )
-        exposure_cost_table = None
-        if exposure_cost_table_fname is not None:
-            exposure_cost_table = self.data_catalog.get_dataframe(
-                exposure_cost_table_fname,
-            )
-
-        # Call the workflows function to add the max damage
-        exposure_vector = workflows.max_monetary_damage(
-            self.exposure_geoms.data[exposure_name],
-            exposure_cost_table=exposure_cost_table,
-            exposure_type=exposure_type,
-            vulnerability=self.vulnerability_data.data["vulnerability_identifiers"],
-            **select,
-        )
-
-        # Set the data back, its a bit symbolic as the dataframe is mutable...
-        self.exposure_geoms.set(exposure_vector, exposure_name)
