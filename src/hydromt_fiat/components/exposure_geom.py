@@ -94,7 +94,11 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
     ## I/O
     @hydromt_step
-    def read(self, filename: str | None = None, **kwargs) -> None:
+    def read(
+        self,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
         r"""Read exposure geometry files.
 
         Key-word arguments are passed to :py:func:`geopandas.read_file`
@@ -210,7 +214,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         """
         self._initialize()
         assert self._data is not None
-        if name in self._data:
+        if name in self._data and id(self._data.get(name)) != id(geom):
             logger.warning(f"Replacing geom: {name}")
 
         if isinstance(geom, gpd.GeoSeries):
@@ -341,7 +345,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
         self.set(exposure_vector, exposure_name)
 
     @hydromt_step
-    def setup_exposure_column(
+    def update_exposure_column(
         self,
         exposure_name: str,
         columns: list[str],
@@ -366,8 +370,10 @@ with '{exposure_name}' as input or chose from already present geometries: \
 {list(self.data.keys())}"
             )
 
-        if len(columns) != len(values):
-            raise ValueError(
-                f"Length of the columns ({len(columns)}) is not the same as the length \
-of the values ({len(values)})."
-            )
+        # Call the workflow function
+        exposure_vector = workflows.exposure_add_columns(
+            self.data[exposure_name], columns=columns, values=values
+        )
+
+        # Symbolically set back the data
+        self.set(exposure_vector, name=exposure_name)

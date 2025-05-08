@@ -1,14 +1,12 @@
-"""Exposure workflows."""
+"""Exposure geometry workflows."""
 
 import logging
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
-import xarray as xr
 
-from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
-
-__all__ = ["exposure_geom_linking", "exposure_grid_data"]
+__all__ = ["exposure_add_columns", "exposure_geom_linking"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
@@ -94,46 +92,41 @@ defaulting to exposure data object type"
     return exposure_data
 
 
-def exposure_grid_data(
-    grid_like: xr.Dataset | None,
-    exposure_data: dict[str, xr.DataArray],
-    exposure_linking: pd.DataFrame,
-) -> xr.Dataset:
-    """Read and transform exposure grid data.
+def exposure_add_columns(
+    exposure_data: pd.DataFrame,
+    columns: list[str],
+    values: int | float | np.ndarray,
+) -> gpd.GeoDataFrame:
+    """_summary_.
 
     Parameters
     ----------
-    grid_like : xr.Dataset | None
-        Xarray dataset that is used to transform exposure data with. If set to None,
-        the first data array in exposure_files is used to transform the data.
-    exposure_files : dict[str, xr.DataArray]
-        Dictionary containing name of exposure file and associated data
-    linking_table : pd.DataFrame
-        Table containing the names of the exposure files and corresponding
-        vulnerability curves.
+    exposure_data : pd.DataFrame
+        _description_
+    columns : list[str]
+        _description_
+    values : int | float | list | np.ndarray
+        _description_
 
     Returns
     -------
-    xr.Dataset
-        Transformed and unified exposure grid
+    gpd.GeoDataFrame
+        _description_
     """
-    exposure_dataarrays = []
-    exposure_col = "type"
-    vulnerability_col = "curve_id"
+    if isinstance(values, (int, float, str, list)):
+        if not isinstance(values, list):
+            values = [values] * len(columns)
+        for column, value in zip(columns, values):
+            exposure_data[column] = value
+        return exposure_data
 
-    for da_name, da in exposure_data.items():
-        if da_name not in exposure_linking[exposure_col].values:
-            fn_damage = da_name
-            logger.warning(
-                f"Exposure file name, '{da_name}', not found in linking table."
-                f" Setting damage curve name attribute to '{da_name}'."
-            )
-        else:
-            fn_damage = exposure_linking.loc[
-                exposure_linking[exposure_col] == da_name, vulnerability_col
-            ].values[0]
-        da = _process_dataarray(da=da, da_name=da_name)
-        da = da.assign_attrs({"fn_damage": fn_damage})
-        exposure_dataarrays.append(da)
+    if len(columns) != values.shape[1]:
+        raise ValueError(
+            f"Length of the columns ({len(columns)}) is not the same as the length \
+of the values ({len(values)})."
+        )
 
-    return _merge_dataarrays(grid_like=grid_like, dataarrays=exposure_dataarrays)
+    # Set the values directly from the ndarray
+    exposure_data[columns] = values
+
+    return exposure_data
