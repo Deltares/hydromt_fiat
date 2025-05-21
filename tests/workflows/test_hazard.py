@@ -1,10 +1,11 @@
 import numpy as np
+import pytest
 import xarray as xr
 
 from hydromt_fiat.workflows import hazard_grid
 
 
-def test_hazard_grid_risk(hazard_event_data_highres):
+def test_hazard_grid_risk(hazard_event_data_highres: xr.DataArray):
     # test hazard risk
     hazard_data = {"flood_event_highres": hazard_event_data_highres}
     ds = hazard_grid(
@@ -22,7 +23,7 @@ def test_hazard_grid_risk(hazard_event_data_highres):
     assert da.return_period == 50000
 
 
-def test_hazard_grid_event(hazard_event_data):
+def test_hazard_grid_event(hazard_event_data: xr.DataArray):
     # Test hazard event
     hazard_data = {"flood_event": hazard_event_data}
     ds = hazard_grid(
@@ -39,7 +40,10 @@ def test_hazard_grid_event(hazard_event_data):
     assert "return_period" not in da.attrs.keys()
 
 
-def test_hazard_grid_reproj(hazard_event_data, hazard_event_data_highres):
+def test_hazard_grid_reproj(
+    hazard_event_data: xr.DataArray,
+    hazard_event_data_highres: xr.DataArray,
+):
     # assert the shapes at the start
     assert hazard_event_data.shape == (34, 25)
     assert hazard_event_data_highres.shape == (675, 503)
@@ -58,7 +62,7 @@ def test_hazard_grid_reproj(hazard_event_data, hazard_event_data_highres):
     assert ds.event.shape == (34, 25)  # Should be the same as the hazard event data
 
 
-def test_hazard_grid_unit_default(hazard_event_data):
+def test_hazard_grid_unit_default(hazard_event_data: xr.DataArray):
     # Call the workflow function
     hazard_data = {"event": hazard_event_data}
     ds = hazard_grid(
@@ -71,7 +75,10 @@ def test_hazard_grid_unit_default(hazard_event_data):
     assert np.isclose(avg_level, 1.2019)
 
 
-def test_hazard_grid_unit_differ(hazard_event_data, caplog):
+def test_hazard_grid_unit_differ(
+    caplog: pytest.LogCaptureFixture,
+    hazard_event_data: xr.DataArray,
+):
     hazard_data = {"event": hazard_event_data}
     # Suppose it's in a different unit
     ds = hazard_grid(

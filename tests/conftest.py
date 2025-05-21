@@ -28,35 +28,35 @@ def build_data_catalog(build_data_cached: Path) -> Path:
 
 
 @pytest.fixture(scope="session")
-def build_region(build_data_cached) -> Path:
+def build_region(build_data_cached: Path) -> Path:
     p = Path(build_data_cached, "region.geojson")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
-def build_region_small(build_data_cached) -> Path:
+def build_region_small(build_data_cached: Path) -> Path:
     p = Path(build_data_cached, "region_small.geojson")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
-def build_region_gdf(build_region) -> gpd.GeoDataFrame:
+def build_region_gdf(build_region: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(build_region)
     assert len(gdf) == 1
     return gdf
 
 
 @pytest.fixture(scope="session")
-def build_region_small_gdf(build_region_small) -> gpd.GeoDataFrame:
+def build_region_small_gdf(build_region_small: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(build_region_small)
     assert len(gdf) == 1
     return gdf
 
 
 @pytest.fixture(scope="session")
-def data_catalog(build_data_catalog) -> DataCatalog:
+def data_catalog(build_data_catalog: Path) -> DataCatalog:
     dc = DataCatalog(build_data_catalog)
     assert "bag" in dc.sources
     return dc
@@ -71,26 +71,31 @@ def osm_cached() -> Path:
 
 
 @pytest.fixture
-def hazard_event_data(data_catalog, build_region_gdf) -> xr.DataArray:
+def hazard_event_data(
+    data_catalog: DataCatalog, build_region_gdf: gpd.GeoDataFrame
+) -> xr.DataArray:
     ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_gdf)
     return ds
 
 
 @pytest.fixture
-def hazard_event_data_highres(data_catalog, build_region_gdf) -> xr.DataArray:
+def hazard_event_data_highres(
+    data_catalog: DataCatalog,
+    build_region_gdf: gpd.GeoDataFrame,
+) -> xr.DataArray:
     ds = data_catalog.get_rasterdataset("flood_event_highres", geom=build_region_gdf)
     return ds
 
 
 @pytest.fixture
-def vulnerability_data(data_catalog) -> pd.DataFrame:
+def vulnerability_data(data_catalog: DataCatalog) -> pd.DataFrame:
     df = data_catalog.get_dataframe("jrc_vulnerability_curves")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking(data_catalog) -> pd.DataFrame:
+def vulnerability_linking(data_catalog: DataCatalog) -> pd.DataFrame:
     df = data_catalog.get_dataframe("jrc_vulnerability_curves_linking")
     assert len(df) != 0
     return df
@@ -98,7 +103,7 @@ def vulnerability_linking(data_catalog) -> pd.DataFrame:
 
 ## Models and mocked objects
 @pytest.fixture
-def model(tmp_path, build_data_catalog) -> FIATModel:
+def model(tmp_path: Path, build_data_catalog: Path) -> FIATModel:
     model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog)
     return model
 

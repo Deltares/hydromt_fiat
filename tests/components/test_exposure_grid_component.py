@@ -1,15 +1,20 @@
 import logging
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
 import xarray as xr
+from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
 
 
-def test_exposure_grid_component_empty(mock_model):
+def test_exposure_grid_component_empty(
+    mock_model: MagicMock,
+):
     # Setup the component
     component = ExposureGridComponent(model=mock_model)
 
@@ -19,7 +24,13 @@ def test_exposure_grid_component_empty(mock_model):
     assert isinstance(component.data, xr.Dataset)
 
 
-def test_setup_exposure_grid(tmp_path, caplog, model, build_region, mocker):
+def test_setup_exposure_grid(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    model: FIATModel,
+    build_region: Path,
+):
     caplog.set_level(logging.INFO)
     # Setup the component
     model.setup_region(region=build_region)
@@ -53,7 +64,12 @@ def test_setup_exposure_grid(tmp_path, caplog, model, build_region, mocker):
     assert model.config.get_value("exposure.grid.settings.var_as_band")
 
 
-def test_setup_exposure_grid_errors(tmp_path, model, build_region, mocker):
+def test_setup_exposure_grid_errors(
+    tmp_path: Path,
+    mocker: MockerFixture,
+    model: FIATModel,
+    build_region: Path,
+):
     # Setup the component
     component = ExposureGridComponent(model=model)
 

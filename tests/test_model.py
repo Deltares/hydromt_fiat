@@ -6,7 +6,7 @@ import pytest
 from hydromt_fiat import FIATModel
 
 
-def test_empty_model(tmp_path):
+def test_empty_model(tmp_path: Path):
     # Setup an empty fiat model
     model = FIATModel(tmp_path)
 
@@ -17,7 +17,7 @@ def test_empty_model(tmp_path):
     assert len(model.components) == 7
 
 
-def test_basic_read_write(tmp_path):
+def test_basic_read_write(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -35,7 +35,7 @@ def test_basic_read_write(tmp_path):
     assert len(model.config.data) != 0
 
 
-def test_setup_config(tmp_path):
+def test_setup_config(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -55,7 +55,7 @@ def test_setup_config(tmp_path):
     assert model.config.get_value("global.srs") == {"value": "EPSG:4326"}
 
 
-def test_setup_region(tmp_path, build_region):
+def test_setup_region(tmp_path: Path, build_region: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
     assert model.region is None
@@ -67,7 +67,7 @@ def test_setup_region(tmp_path, build_region):
     assert len(model.region) == 1
 
 
-def test_setup_region_error(tmp_path):
+def test_setup_region_error(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 

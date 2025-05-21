@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
@@ -11,7 +12,7 @@ from hydromt_fiat import FIATModel
 
 ## Mocked objects
 @pytest.fixture
-def mock_model(tmp_path, mocker: MockerFixture) -> MagicMock:
+def mock_model(tmp_path: Path, mocker: MockerFixture) -> MagicMock:
     model = mocker.create_autospec(FIATModel)
     model.root = mocker.create_autospec(ModelRoot(tmp_path), instance=True)
     model.root.path.return_value = tmp_path

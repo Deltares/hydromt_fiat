@@ -1,13 +1,18 @@
 import logging
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 import xarray as xr
 
+from hydromt_fiat import FIATModel
 from hydromt_fiat.components import HazardGridComponent
 from hydromt_fiat.errors import MissingRegionError
 
 
-def test_hazard_component_empty(mock_model):
+def test_hazard_component_empty(
+    mock_model: MagicMock,
+):
     # Set up the component
     component = HazardGridComponent(model=mock_model)
 
@@ -18,9 +23,9 @@ def test_hazard_component_empty(mock_model):
 
 
 def test_hazard_component_setup_event(
-    caplog,
-    model,
-    build_region,
+    caplog: pytest.LogCaptureFixture,
+    model: FIATModel,
+    build_region: Path,
 ):
     # Setup the component
     model.setup_region(build_region)
@@ -43,8 +48,8 @@ def test_hazard_component_setup_event(
 
 
 def test_hazard_component_setup_risk(
-    model,
-    build_region,
+    model: FIATModel,
+    build_region: Path,
 ):
     # Setup the compoentn
     model.setup_region(build_region)
@@ -62,7 +67,7 @@ def test_hazard_component_setup_risk(
     assert model.config.get_value("hazard.return_periods") == [50000]
 
 
-def test_hazard_component_setup_errors(model):
+def test_hazard_component_setup_errors(model: FIATModel):
     # Setup the component
     component = HazardGridComponent(model=model)
 
