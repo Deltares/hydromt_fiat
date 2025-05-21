@@ -1748,6 +1748,10 @@ class FiatModel(GridModel):
                         f"exposure.geom.file{str(i+1)}",
                         fn.format(name=name),
                     )
+                    self.set_config(
+                        f"output.geom.name{str(i+1)}",
+                        f"{name}.gpkg",
+                    )
                     geom.to_file(_fn)
             if self.geoms:
                 GridModel.write_geoms(self)
