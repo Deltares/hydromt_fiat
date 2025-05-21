@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -24,23 +23,21 @@ def test_hazard_component_empty(
 
 def test_hazard_component_setup_event(
     caplog: pytest.LogCaptureFixture,
-    model: FIATModel,
-    build_region: Path,
+    model_with_region: FIATModel,
 ):
     # Setup the component
-    model.setup_region(build_region)
-    component = HazardGridComponent(model=model)
+    component = HazardGridComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
     component.setup_hazard(hazard_fnames="flood_event")
 
     assert "Added flooding hazard map: flood_event" in caplog.text
-    assert model.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
-    assert model.config.get_value("hazard.elevation_reference") == "datum"
+    assert model_with_region.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
+    assert model_with_region.config.get_value("hazard.elevation_reference") == "datum"
 
     # Test setting data to hazard grid with data
     component.setup_hazard(hazard_fnames="flood_event_highres")
-    assert model.config.get_value("hazard.settings.var_as_band")
+    assert model_with_region.config.get_value("hazard.settings.var_as_band")
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars.keys()
@@ -48,12 +45,10 @@ def test_hazard_component_setup_event(
 
 
 def test_hazard_component_setup_risk(
-    model: FIATModel,
-    build_region: Path,
+    model_with_region: FIATModel,
 ):
     # Setup the compoentn
-    model.setup_region(build_region)
-    component = HazardGridComponent(model=model)
+    component = HazardGridComponent(model=model_with_region)
 
     # Test hazard with return period
     component.setup_hazard(
@@ -63,8 +58,8 @@ def test_hazard_component_setup_risk(
     )
 
     assert isinstance(component.data, xr.Dataset)
-    assert model.config.get_value("hazard.risk")
-    assert model.config.get_value("hazard.return_periods") == [50000]
+    assert model_with_region.config.get_value("hazard.risk")
+    assert model_with_region.config.get_value("hazard.return_periods") == [50000]
 
 
 def test_hazard_component_setup_errors(model: FIATModel):

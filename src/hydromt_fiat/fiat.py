@@ -117,6 +117,11 @@ class FIATModel(Model):
         return self.components["hazard_grid"]
 
     @property
+    def region_data(self) -> RegionComponent:
+        """Return the region component."""
+        return self.components["region"]
+
+    @property
     def vulnerability_data(self) -> VulnerabilityComponent:
         """Return the vulnerability component containing the data."""
         return self.components["vulnerability_data"]

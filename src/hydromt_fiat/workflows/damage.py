@@ -35,6 +35,9 @@ def max_monetary_damage(
     query = create_query(**select)
     exposure_cost_table = exposure_cost_table.query(query)
 
+    if len(exposure_cost_table) == 0:
+        raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
+
     # Get unique linking names
     unique_link = vulnerability.link.unique().tolist()
     # Transpose the cost table

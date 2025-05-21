@@ -69,12 +69,12 @@ class ExposureGeomsComponent(SpatialModelComponent):
         # Use the total bounds of all geometries as region
         if len(self.data) == 0:
             return None
-        bounds = np.column_stack([geom.bounds for geom in self.data.values()])
+        bounds = np.column_stack([geom.total_bounds for geom in self.data.values()])
         total_bounds = (
-            bounds[:, 0].min(),
-            bounds[:, 1].min(),
-            bounds[:, 2].max(),
-            bounds[:, 3].max(),
+            bounds[0, :].min(),
+            bounds[1, :].min(),
+            bounds[2, :].max(),
+            bounds[3, :].max(),
         )
         region = gpd.GeoDataFrame(geometry=[sg.box(*total_bounds)], crs=self.model.crs)
 
@@ -150,7 +150,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self.root._assert_write_mode()
 
         if len(self.data) == 0:
-            logger.debug("No geoms data found, skip writing.")
+            logger.info("No geoms data found, skip writing.")
             return
 
         idx = 1
@@ -200,16 +200,16 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ## Other methods
     def set(
         self,
-        geom: gpd.GeoDataFrame | gpd.GeoSeries,
+        geom: gpd.GeoDataFrame,
         name: str,
     ):
         """Add data to the geom component.
 
         Arguments
         ---------
-        geom: geopandas.GeoDataFrame or geopandas.GeoSeries
+        geom : gpd.GeoDataFrame
             New geometry data to add
-        name: str
+        name : str
             Geometry name.
         """
         self._initialize()
@@ -217,13 +217,13 @@ class ExposureGeomsComponent(SpatialModelComponent):
         if name in self._data and id(self._data.get(name)) != id(geom):
             logger.warning(f"Replacing geom: {name}")
 
-        if isinstance(geom, gpd.GeoSeries):
-            geom = cast(gpd.GeoDataFrame, geom.to_frame())
-
         # Verify if a geom is set to model crs and if not sets geom to model crs
-        model_crs = self.model.crs
-        if model_crs and model_crs != geom.crs:
-            geom.to_crs(model_crs.to_epsg(), inplace=True)
+        try:
+            model_crs = self.model.crs
+            if model_crs and model_crs != geom.crs:
+                geom.to_crs(model_crs.to_epsg(), inplace=True)
+        except AttributeError:
+            pass
         self._data[name] = geom
 
     ## Setup methods
@@ -233,18 +233,20 @@ class ExposureGeomsComponent(SpatialModelComponent):
         exposure_fname: Path | str,
         exposure_type_column: str,
         *,
-        exposure_link_fname: Path | str | None,
+        exposure_link_fname: Path | str | None = None,
     ) -> None:
         """Set up the exposure from a data source.
 
         Parameters
         ----------
         exposure_fname : Path | str
-            _description_
+            The name of/ path to the raw exposure dataset.
         exposure_type_column : str
-            _description_
-        exposure_link_fname : Path | str | None
-            _description_
+            The name of column in the raw dataset that specifies the object type,
+            e.g. the occupancy type.
+        exposure_link_fname : Path | str | None, optional
+            The name of/ path to the dataset containing the mapping of the exposure
+            types to the vulnerability data, by default None
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -300,7 +302,7 @@ use 'setup_region' before this method"
         self,
         exposure_name: str,
         exposure_type: str,
-        exposure_cost_table_fname: Path | str | None = None,
+        exposure_cost_table_fname: Path | str,
         **select: dict,
     ) -> None:
         """_summary_.
@@ -324,11 +326,10 @@ use 'setup_region' before this method"
 with '{exposure_name}' as input or chose from already present geometries: \
 {list(self.data.keys())}"
             )
-        exposure_cost_table = None
-        if exposure_cost_table_fname is not None:
-            exposure_cost_table = self.model.data_catalog.get_dataframe(
-                exposure_cost_table_fname,
-            )
+        # Get the exposure costs table from the data catalog
+        exposure_cost_table = self.model.data_catalog.get_dataframe(
+            exposure_cost_table_fname,
+        )
 
         # Call the workflows function to add the max damage
         exposure_vector = workflows.max_monetary_damage(

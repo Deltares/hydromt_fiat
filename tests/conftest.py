@@ -11,7 +11,7 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.data.fetch import fetch_data
 
 
-## Cached and build data
+## Cached build data
 @pytest.fixture(scope="session")
 def build_data_cached() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
@@ -62,14 +62,6 @@ def data_catalog(build_data_catalog: Path) -> DataCatalog:
     return dc
 
 
-@pytest.fixture(scope="session")
-def osm_cached() -> Path:
-    # Fetch the data
-    p = fetch_data("osmnx")
-    assert len(list(p.iterdir())) != 0
-    return p
-
-
 @pytest.fixture
 def hazard_event_data(
     data_catalog: DataCatalog, build_region_gdf: gpd.GeoDataFrame
@@ -101,10 +93,64 @@ def vulnerability_linking(data_catalog: DataCatalog) -> pd.DataFrame:
     return df
 
 
+## Cached model data
+@pytest.fixture(scope="session")
+def model_cached() -> Path:
+    # Fetch the data
+    p = fetch_data("fiat-model")
+    assert len(list(p.iterdir())) != 0
+    return p
+
+
+@pytest.fixture
+def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
+    p = Path(model_cached, "exposure", "bag.fgb")
+    assert p.is_file()
+    gdf = gpd.read_file(p)
+    assert len(gdf) != 0
+    return gdf
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curves(model_cached: Path) -> pd.DataFrame:
+    p = Path(model_cached, "vulnerability", "vulnerability_curves.csv")
+    assert p.is_file()
+    df = pd.read_csv(p)
+    assert len(df) != 0
+    return df
+
+
+@pytest.fixture(scope="session")
+def vulnerability_identifiers(model_cached: Path) -> pd.DataFrame:
+    p = Path(model_cached, "vulnerability", "vulnerability_identifiers.csv")
+    assert p.is_file()
+    df = pd.read_csv(p)
+    assert len(df) != 0
+    return df
+
+
+## Cached OSM data
+@pytest.fixture(scope="session")
+def osm_cached() -> Path:
+    # Fetch the data
+    p = fetch_data("osmnx")
+    assert len(list(p.iterdir())) != 0
+    return p
+
+
 ## Models and mocked objects
 @pytest.fixture
 def model(tmp_path: Path, build_data_catalog: Path) -> FIATModel:
     model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog)
+    return model
+
+
+@pytest.fixture
+def model_with_region(
+    model: FIATModel,
+    build_region: Path,
+) -> FIATModel:
+    model.setup_region(build_region)
     return model
 
 

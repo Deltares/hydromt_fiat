@@ -159,7 +159,7 @@ class RegionComponent(SpatialModelComponent):
         self.root._assert_write_mode()
 
         if len(self.data) == 0:
-            logger.debug("No geoms data found, skip writing.")
+            logger.info("No geoms data found, skip writing.")
             return
 
         for name, gdf in self.data.items():
