@@ -9,14 +9,14 @@ def config_file_entry(
     cfg: ConfigComponent,
     entry: str,
 ):
-    """.
+    """Get file entry from config.
 
     Parameters
     ----------
     cfg : ConfigComponent
-        _description_
+        The config component of the model.
     entry : str
-        _description_
+        Requested value paired with this entry.
     """
     # Return None if None
     if cfg is None:
@@ -26,6 +26,10 @@ def config_file_entry(
     if value is None:
         return
     # File check
-    if Path(cfg.model.root, value).is_file():
+    value = Path(value)
+    root = Path(cfg.model.root.path, cfg._filename).parent
+    if not value.is_absolute():
+        value = Path(root, value)
+    if value.is_file():
         return value
     return
