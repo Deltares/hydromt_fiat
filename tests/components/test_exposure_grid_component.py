@@ -24,7 +24,7 @@ def test_exposure_grid_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
-def test_setup_exposure_grid(
+def test_exposure_grid_component_setup(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
     mocker: MockerFixture,
@@ -64,7 +64,7 @@ def test_setup_exposure_grid(
     assert model.config.get_value("exposure.grid.settings.var_as_band")
 
 
-def test_setup_exposure_grid_errors(
+def test_exposure_grid_component_setup_errors(
     tmp_path: Path,
     mocker: MockerFixture,
     model: FIATModel,

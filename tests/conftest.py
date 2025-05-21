@@ -41,14 +41,14 @@ def build_region_small(build_data_cached: Path) -> Path:
     return p
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def build_region_gdf(build_region: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(build_region)
     assert len(gdf) == 1
     return gdf
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def build_region_small_gdf(build_region_small: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(build_region_small)
     assert len(gdf) == 1
