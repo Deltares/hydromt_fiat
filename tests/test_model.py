@@ -97,13 +97,3 @@ def test_model_properties(model_with_region: FIATModel):
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert isinstance(model.region_data, RegionComponent)
     assert isinstance(model.vulnerability_data, VulnerabilityComponent)
-
-
-## Bloody integration tests
-# TODO fill these in when the functionality is fully there
-def test_fiatmodel_geom():
-    pass
-
-
-def test_fiatmodel_grid():
-    pass

@@ -217,6 +217,13 @@ class ExposureGeomsComponent(SpatialModelComponent):
         if name in self._data and id(self._data.get(name)) != id(geom):
             logger.warning(f"Replacing geom: {name}")
 
+        if "fid" in geom.columns:
+            logger.warning(
+                f"'fid' column encountered in {name}, \
+column will be removed"
+            )
+            geom.drop("fid", axis=1, inplace=True)
+
         # Verify if a geom is set to model crs and if not sets geom to model crs
         try:
             model_crs = self.model.crs
@@ -236,6 +243,9 @@ class ExposureGeomsComponent(SpatialModelComponent):
         exposure_link_fname: Path | str | None = None,
     ) -> None:
         """Set up the exposure from a data source.
+
+        Will link with the vulnerability data to set a curve for each
+        exposure type.
 
         Warning
         -------

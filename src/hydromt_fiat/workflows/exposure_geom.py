@@ -16,9 +16,11 @@ def exposure_geom_linking(
     exposure_type_column: str,
     vulnerability: pd.DataFrame,
     *,
-    exposure_linking: pd.DataFrame | None,
+    exposure_linking: pd.DataFrame | None = None,
 ) -> gpd.GeoDataFrame:
     """Link the raw exposure data to the vulnerability curves.
+
+    I.e. link the curve id's of the vulnerability to the exposure types.
 
     Parameters
     ----------
@@ -28,9 +30,10 @@ def exposure_geom_linking(
         The name of column that specifies the exposure type, e.g. occupancy type.
     vulnerability : pd.DataFrame
         The vulnerability identifier table to link up with.
-    exposure_linking : pd.DataFrame | None
+    exposure_linking : pd.DataFrame, optional
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
+        By default None
 
     Returns
     -------
@@ -94,7 +97,7 @@ defaulting to exposure data object type"
 
 
 def exposure_add_columns(
-    exposure_data: gpd.geodataframe,
+    exposure_data: gpd.GeoDataFrame,
     columns: list[str],
     values: int | float | list | np.ndarray,
 ) -> gpd.GeoDataFrame:
@@ -102,7 +105,7 @@ def exposure_add_columns(
 
     Parameters
     ----------
-    exposure_data : gpd.geodataframe
+    exposure_data : gpd.GeoDataFrame
         The exposure dataset.
     columns : list[str]
         List of names to be added as columns.
@@ -124,7 +127,7 @@ def exposure_add_columns(
     if len(columns) != values.shape[1]:
         raise ValueError(
             f"Length of the columns ({len(columns)}) is not the same as the length \
-of the values ({len(values)})."
+of the values ({values.shape[1]})."
         )
 
     # Set the values directly from the ndarray

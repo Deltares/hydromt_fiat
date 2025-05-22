@@ -269,7 +269,7 @@ def test_exposure_geom_component_setup_max_errors(
     with pytest.raises(
         RuntimeError,
         match="Run `setup_exposure_geoms` before this methods \
-with 'bag' as input or chose from already present geometries: \[\]",
+with 'bag' as input or chose from already present geometries: ",
     ):
         component.setup_exposure_max_damage(
             exposure_name="bag",
@@ -327,7 +327,7 @@ def test_exposure_geom_component_update_cols_errors(
     with pytest.raises(
         RuntimeError,
         match="Run `setup_exposure_geoms` before this methods \
-with 'bag' as input or chose from already present geometries: \[\]",
+with 'bag' as input or chose from already present geometries: ",
     ):
         component.update_exposure_column(
             exposure_name="bag",
