@@ -52,6 +52,14 @@ class RegionComponent(SpatialModelComponent):
             region_filename=region_filename,
         )
 
+    def _initialize(self, skip_read=False) -> None:
+        """Initialize region."""
+        if self._data is None:
+            self._data = dict()
+            if self.root.is_reading_mode() and not skip_read:
+                self.read()
+
+    ## Properties
     @property
     def data(self) -> Dict[str, Union[GeoDataFrame, GeoSeries]]:
         """Model geometries.
@@ -63,13 +71,6 @@ class RegionComponent(SpatialModelComponent):
 
         return self._data
 
-    def _initialize(self, skip_read=False) -> None:
-        """Initialize region."""
-        if self._data is None:
-            self._data = dict()
-            if self.root.is_reading_mode() and not skip_read:
-                self.read()
-
     @property
     def _region_data(self) -> Optional[GeoDataFrame]:
         # Use the total bounds of all geometries as region
@@ -77,38 +78,7 @@ class RegionComponent(SpatialModelComponent):
             return None
         return self.data["region"]
 
-    def set(self, geom: Union[GeoDataFrame, GeoSeries]):
-        """Add data to the region component.
-
-        If a region is already present
-
-        Parameters
-        ----------
-        geom : geopandas.GeoDataFrame or geopandas.GeoSeries
-            New geometry data to add
-        """
-        self._initialize()
-        if len(self.data) != 0:
-            logger.warning("Replacing/ updating region")
-
-        if isinstance(geom, GeoSeries):
-            geom = cast(GeoDataFrame, geom.to_frame())
-
-        # Verify if a geom is set to model crs and if not sets geom to model crs
-        model_crs = self.model.crs
-        if model_crs and model_crs != geom.crs:
-            geom.to_crs(model_crs.to_epsg(), inplace=True)
-
-        # Get rid of columns that aren't geometry
-        geom = geom["geometry"].to_frame()
-
-        # Make a union with the current region geodataframe
-        cur = self._data.get("region")
-        if cur is not None and not geom.equals(cur):
-            geom = geom.union(cur)
-
-        self._data["region"] = geom
-
+    ## I/O methods
     @hydromt_step
     def read(self, filename: Optional[str] = None, **kwargs) -> None:
         r"""Read model geometries files at <root>/<filename>.
@@ -189,3 +159,36 @@ class RegionComponent(SpatialModelComponent):
                 gdf.to_crs(epsg=4326, inplace=True)
 
             gdf.to_file(write_path, **kwargs)
+
+    ## Set(up) methods
+    def set(self, geom: Union[GeoDataFrame, GeoSeries]):
+        """Add data to the region component.
+
+        If a region is already present
+
+        Parameters
+        ----------
+        geom : geopandas.GeoDataFrame or geopandas.GeoSeries
+            New geometry data to add
+        """
+        self._initialize()
+        if len(self.data) != 0:
+            logger.warning("Replacing/ updating region")
+
+        if isinstance(geom, GeoSeries):
+            geom = cast(GeoDataFrame, geom.to_frame())
+
+        # Verify if a geom is set to model crs and if not sets geom to model crs
+        model_crs = self.model.crs
+        if model_crs and model_crs != geom.crs:
+            geom.to_crs(model_crs.to_epsg(), inplace=True)
+
+        # Get rid of columns that aren't geometry
+        geom = geom["geometry"].to_frame()
+
+        # Make a union with the current region geodataframe
+        cur = self._data.get("region")
+        if cur is not None and not geom.equals(cur):
+            geom = geom.union(cur)
+
+        self._data["region"] = geom

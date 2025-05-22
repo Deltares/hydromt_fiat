@@ -18,23 +18,24 @@ def exposure_geom_linking(
     *,
     exposure_linking: pd.DataFrame | None,
 ) -> gpd.GeoDataFrame:
-    """_summary_.
+    """Link the raw exposure data to the vulnerability curves.
 
     Parameters
     ----------
     exposure_data : gpd.GeoDataFrame
-        _description_
+        The raw exposure data.
     exposure_type_column : str
-        _description_
+        The name of column that specifies the exposure type, e.g. occupancy type.
     vulnerability : pd.DataFrame
-        _description_
-    exposure_link_data : pd.DataFrame | None
-        _description_
+        The vulnerability identifier table to link up with.
+    exposure_linking : pd.DataFrame | None
+        A custom mapping to table to first translate the exposure types in order to
+        better link with the vulnerability data. A translation layer really.
 
     Returns
     -------
     gpd.GeoDataFrame
-        _description_
+        The resulting exposure data with links to the vulnerability curves.
     """
     # Some checks
     if exposure_type_column not in exposure_data:
@@ -93,25 +94,25 @@ defaulting to exposure data object type"
 
 
 def exposure_add_columns(
-    exposure_data: pd.DataFrame,
+    exposure_data: gpd.geodataframe,
     columns: list[str],
-    values: int | float | np.ndarray,
+    values: int | float | list | np.ndarray,
 ) -> gpd.GeoDataFrame:
-    """_summary_.
+    """Add columms to an existing exposure dataset.
 
     Parameters
     ----------
-    exposure_data : pd.DataFrame
-        _description_
+    exposure_data : gpd.geodataframe
+        The exposure dataset.
     columns : list[str]
-        _description_
-    values : int | float | list | np.ndarray
-        _description_
+        List of names to be added as columns.
+    values : int | float | list| np.ndarray
+        The value(s) be set.
 
     Returns
     -------
     gpd.GeoDataFrame
-        _description_
+        The exposure data with the added columns.
     """
     if isinstance(values, (int, float, str, list)):
         if not isinstance(values, list):

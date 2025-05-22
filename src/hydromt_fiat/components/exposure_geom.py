@@ -57,7 +57,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         )
 
     def _initialize(self, skip_read=False) -> None:
-        """Initialize geoms."""
+        """Initialize exposure geoms data structure (dict)."""
         if self._data is None:
             self._data = dict()
             if self.root.is_reading_mode() and not skip_read:
@@ -92,7 +92,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         assert self._data is not None
         return self._data
 
-    ## I/O
+    ## I/O methods
     @hydromt_step
     def read(
         self,
@@ -197,7 +197,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
             )
             idx += 1
 
-    ## Other methods
+    ## Set(up) methods
     def set(
         self,
         geom: gpd.GeoDataFrame,
@@ -236,6 +236,10 @@ class ExposureGeomsComponent(SpatialModelComponent):
         exposure_link_fname: Path | str | None = None,
     ) -> None:
         """Set up the exposure from a data source.
+
+        Warning
+        -------
+        Run `setup_vulnerability` beforehand (see vulnerability component).
 
         Parameters
         ----------
@@ -305,18 +309,21 @@ use 'setup_region' before this method"
         exposure_cost_table_fname: Path | str,
         **select: dict,
     ) -> None:
-        """_summary_.
+        """Set up the maximum potential damage per object in an existing dataset.
+
+        Warning
+        -------
+        Run `setup_vulnerability` beforehand (see vulnerability component).
 
         Parameters
         ----------
+        exposure_name : str
+            The name of the existing dataset.
         exposure_type : str
-            _description_
-        exposure_cost_table : Path | str, optional
-            _description_
-
-        Returns
-        -------
-        None
+            Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
+        exposure_cost_table_fname : Path | str
+            The name of/ path to the mapping of the costs per subtype of the
+            exposure type, e.g. 'residential_structure' or 'residential_content'
         """
         logger.info(f"Setting up maximum potential damage for {exposure_name}")
         # Some checks on the input
@@ -351,17 +358,19 @@ with '{exposure_name}' as input or chose from already present geometries: \
         exposure_name: str,
         columns: list[str],
         values: int | float | list | np.ndarray,
-    ):
-        """_summary_.
+    ) -> None:
+        """Update an existing dataset by adding columns with values.
 
         Parameters
         ----------
         exposure_name : str
-            _description_
+            The name of the existing dataset.
         columns : list[str]
-            _description_
-        value : int | float | list | np.ndarray
-            _description_
+            A list of the names of the columns.
+        values : int | float | list | np.ndarray
+            The correspoding values of the columns. Either a single value set for
+            all columns, a list of values corresponding to the number of columns or
+            a 2d array.
         """
         # Some checks on the input
         if exposure_name not in self.data:

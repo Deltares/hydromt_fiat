@@ -2,8 +2,16 @@ from pathlib import Path
 
 import geopandas as gpd
 import pytest
+from hydromt.model.components import ConfigComponent
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.components import (
+    ExposureGeomsComponent,
+    ExposureGridComponent,
+    HazardGridComponent,
+    RegionComponent,
+    VulnerabilityComponent,
+)
 
 
 def test_empty_model(tmp_path: Path):
@@ -75,6 +83,20 @@ def test_setup_region_error(tmp_path: Path):
     region_no = Path(tmp_path, "region.geojson")
     with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
         model.setup_region(region=region_no)
+
+
+def test_model_properties(model_with_region: FIATModel):
+    # Setup an empty fiat model
+    model = model_with_region
+
+    # Assert the types of model properties
+    assert isinstance(model.config, ConfigComponent)
+    assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
+    assert isinstance(model.exposure_grid, ExposureGridComponent)
+    assert isinstance(model.hazard_grid, HazardGridComponent)
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert isinstance(model.region_data, RegionComponent)
+    assert isinstance(model.vulnerability_data, VulnerabilityComponent)
 
 
 ## Bloody integration tests

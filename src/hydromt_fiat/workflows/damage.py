@@ -14,19 +14,26 @@ def max_monetary_damage(
     vulnerability: pd.DataFrame,
     **select: dict,
 ) -> gpd.GeoDataFrame:
-    """_summary_.
+    """Determine maximum monetary damage per object.
 
     Parameters
     ----------
     exposure_data : gpd.GeoDataFrame
-        _description_
-    table_of_costs : pd.DataFrame
-        _description_
+        The existing exposure data.
+    exposure_cost_table : pd.DataFrame
+        The cost table.
+    exposure_type : str
+        Type of exposure data, e.g. 'damage'.
+    vulnerability : pd.DataFrame
+        The vulnerability identifier table.
+    select : dict, optional
+        Keyword arguments to select data from the cost table.
+        The key corresponds to the column and the value to value in that column.
 
     Returns
     -------
     gpd.GeoDataFrame
-        _description_
+        The resulting exposure data with the maximum damage included.
     """
     if exposure_cost_table is None:
         raise ValueError("Exposure costs table cannot be None.")
