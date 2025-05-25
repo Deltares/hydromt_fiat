@@ -1,10 +1,14 @@
 """Calculate max potential damage based on exposure type."""
 
+import logging
+
 import geopandas as gpd
 import pandas as pd
 from hydromt.gis import utm_crs
 
 from hydromt_fiat.utils import create_query
+
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def max_monetary_damage(
@@ -36,7 +40,7 @@ def max_monetary_damage(
         The resulting exposure data with the maximum damage included.
     """
     if exposure_cost_table is None:
-        raise ValueError("Exposure costs table cannot be None.")
+        raise ValueError("Exposure costs table cannot be None")
 
     # Create a query from the kwargs
     query = create_query(**select)
@@ -44,6 +48,16 @@ def max_monetary_damage(
 
     if len(exposure_cost_table) == 0:
         raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
+
+    # Get the unique headers corresponding to the 'exposure_type'
+    headers = vulnerability[vulnerability["exposure_type"] == exposure_type]
+    headers = headers["subtype"].unique().tolist()
+
+    # If not headers were found, log and return
+    if len(headers) == 0:
+        raise ValueError(
+            f"Exposure type ({exposure_type}) not found in vulnerability data"
+        )
 
     # Get unique linking names
     unique_link = vulnerability.link.unique().tolist()
@@ -60,9 +74,6 @@ def max_monetary_damage(
         crs = utm_crs(exposure_data.total_bounds)
         exposure_data.to_crs(crs, inplace=True)
     area = exposure_data.area
-
-    headers = vulnerability[vulnerability["exposure_type"] == exposure_type]
-    headers = headers["subtype"].unique().tolist()
 
     for header in headers:
         # Get the costs per object

@@ -111,6 +111,24 @@ def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
     return gdf
 
 
+@pytest.fixture
+def exposure_geom_data_reduced(
+    exposure_geom_data: gpd.GeoDataFrame,
+) -> gpd.GeoDataFrame:
+    exposure_geom_data.drop(
+        [
+            "max_damage_structure",
+            "max_damage_content",
+            "ground_flht",
+            "ground_elevtn",
+            "extract_method",
+        ],
+        axis=1,
+        inplace=True,
+    )
+    return exposure_geom_data
+
+
 @pytest.fixture(scope="session")
 def vulnerability_curves(model_cached: Path) -> pd.DataFrame:
     p = Path(model_cached, "vulnerability", "vulnerability_curves.csv")

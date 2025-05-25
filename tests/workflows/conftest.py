@@ -17,3 +17,9 @@ def exposure_geom_raw_data(
 def exposure_geom_link_table(data_catalog: DataCatalog) -> pd.DataFrame:
     df = data_catalog.get_dataframe("bag_link")
     return df
+
+
+@pytest.fixture(scope="session")
+def exposure_geom_cost_table(data_catalog: DataCatalog) -> pd.DataFrame:
+    df = data_catalog.get_dataframe("jrc_damage_values")
+    return df
