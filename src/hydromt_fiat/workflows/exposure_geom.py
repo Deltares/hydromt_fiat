@@ -81,9 +81,9 @@ defaulting to exposure data object type"
 
     # Go through the unique new headers
     for header in headers.unique().tolist():
-        link = vulnerability[headers == header][["link", "curve_id"]]
+        link = vulnerability[headers == header][["exposure_link", "curve_id"]]
         link.rename(
-            {"link": "object_type", "curve_id": f"fn_{header}"},
+            {"exposure_link": "object_type", "curve_id": f"fn_{header}"},
             axis=1,
             inplace=True,
         )

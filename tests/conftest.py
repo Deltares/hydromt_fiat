@@ -16,7 +16,7 @@ from hydromt_fiat.data.fetch import fetch_data
 def build_data_cached() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
     p = fetch_data("build-data")
-    assert Path(p, "buildings", "bag.fgb").is_file()
+    assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
 
@@ -58,7 +58,7 @@ def build_region_small_gdf(build_region_small: Path) -> gpd.GeoDataFrame:
 @pytest.fixture(scope="session")
 def data_catalog(build_data_catalog: Path) -> DataCatalog:
     dc = DataCatalog(build_data_catalog)
-    assert "bag" in dc.sources
+    assert "buildings" in dc.sources
     return dc
 
 
@@ -81,14 +81,14 @@ def hazard_event_data_highres(
 
 @pytest.fixture
 def vulnerability_data(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("jrc_vulnerability_curves")
+    df = data_catalog.get_dataframe("vulnerability_curves")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
 def vulnerability_linking(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("jrc_vulnerability_curves_linking")
+    df = data_catalog.get_dataframe("vulnerability_curves_linking")
     assert len(df) != 0
     return df
 
@@ -104,7 +104,7 @@ def model_cached() -> Path:
 
 @pytest.fixture
 def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
-    p = Path(model_cached, "exposure", "bag.fgb")
+    p = Path(model_cached, "exposure", "buildings.fgb")
     assert p.is_file()
     gdf = gpd.read_file(p)
     assert len(gdf) != 0

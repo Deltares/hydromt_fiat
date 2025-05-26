@@ -31,7 +31,7 @@ def test_max_monetary_damage(
 
     # Assert the content
     assert "max_damage_structure" in exposure_geom_data_reduced
-    assert int(exposure_vector["max_damage_structure"].mean()) == 510956
+    assert int(exposure_vector["max_damage_structure"].mean()) == 371274
 
 
 def test_max_monetary_damage_errors(

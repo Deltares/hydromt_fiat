@@ -26,8 +26,8 @@ def test_model_geom_integration(
 
     # Setup the vulnerability
     model.vulnerability_data.setup_vulnerability(
-        "jrc_vulnerability_curves",
-        "jrc_vulnerability_curves_linking",
+        "vulnerability_curves",
+        "vulnerability_curves_linking",
         unit="m",
         continent="europe",
     )
@@ -39,19 +39,19 @@ def test_model_geom_integration(
 
     # Setup the exposure geometry data
     model.exposure_geoms.setup_exposure_geoms(
-        exposure_fname="bag",
+        exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
-        exposure_link_fname="bag_link",
+        exposure_link_fname="buildings_link",
     )
     model.exposure_geoms.setup_exposure_max_damage(
-        exposure_name="bag",
+        exposure_name="buildings",
         exposure_type="damage",
-        exposure_cost_table_fname="jrc_damage_values",
+        exposure_cost_table_fname="damage_values",
         country="Netherlands",  # Select the correct row from the data
     )
     # Needed for flood calculations
     model.exposure_geoms.update_exposure_column(
-        "bag",
+        exposure_name="buildings",
         columns=["ground_flht", "ground_elevtn", "extract_method"],
         values=[0, 0, "centroid"],
     )

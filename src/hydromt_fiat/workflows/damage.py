@@ -60,7 +60,7 @@ def max_monetary_damage(
         )
 
     # Get unique linking names
-    unique_link = vulnerability.link.unique().tolist()
+    unique_link = vulnerability["exposure_link"].unique().tolist()
     # Transpose the cost table
     exposure_cost_table = exposure_cost_table.T.reset_index(names="object_type")
     # Index the cost table

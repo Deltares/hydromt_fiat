@@ -97,8 +97,8 @@ def test_exposure_geom_component_read(
 
     # Assert that the data is a dictionary with two elements
     assert isinstance(component._data, dict)
-    assert len(component._data) == 2
-    assert "bag" in component.data
+    assert len(component._data) == 3
+    assert "buildings" in component.data
 
 
 def test_exposure_geom_component_write(
@@ -122,8 +122,8 @@ def test_exposure_geom_component_write(
     component.write()
 
     # Assert the files
-    assert Path(tmp_path, component._filename.format(name="bag")).is_file()
-    assert Path(tmp_path, component._filename.format(name="bag_split")).is_file()
+    assert Path(tmp_path, component._filename.format(name="buildings")).is_file()
+    assert Path(tmp_path, component._filename.format(name="buildings_split")).is_file()
 
 
 def test_exposure_geom_component_write_split(
@@ -147,9 +147,9 @@ def test_exposure_geom_component_write_split(
     component.write(split=True)
 
     # Assert the files
-    assert Path(tmp_path, component._filename.format(name="bag")).is_file()
+    assert Path(tmp_path, component._filename.format(name="buildings")).is_file()
     assert (
-        Path(tmp_path, component._filename.format(name="bag"))
+        Path(tmp_path, component._filename.format(name="buildings"))
         .with_suffix(".csv")
         .is_file()
     )
@@ -191,14 +191,14 @@ def test_exposure_geom_component_setup(
 
     # Setup the data
     component.setup_exposure_geoms(
-        exposure_fname="bag",
+        exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
-        exposure_link_fname="bag_link",
+        exposure_link_fname="buildings_link",
     )
 
     assert len(component.data) == 1
-    assert "bag" in component.data
-    assert len(component.data["bag"]) != 0
+    assert "buildings" in component.data
+    assert len(component.data["buildings"]) != 0
     assert "exposure" in component.model.config.data
 
 
@@ -242,21 +242,21 @@ def test_exposure_geom_component_setup_max(
     # Setup the component
     component = ExposureGeomsComponent(model=model_exposure_setup)
     # Added the exposure to the data to expand upon
-    component.set(exposure_geom_data_reduced, name="bag")
+    component.set(exposure_geom_data_reduced, name="buildings")
 
     # Assert max damage column is not present
-    assert "max_damage_structure" not in component.data["bag"].columns
+    assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
     component.setup_exposure_max_damage(
-        exposure_name="bag",
+        exposure_name="buildings",
         exposure_type="damage",
-        exposure_cost_table_fname="jrc_damage_values",
+        exposure_cost_table_fname="damage_values",
         country="World",
     )
 
     # Assert that the data is there
-    assert "max_damage_structure" in component.data["bag"].columns
+    assert "max_damage_structure" in component.data["buildings"].columns
 
 
 def test_exposure_geom_component_setup_max_errors(
