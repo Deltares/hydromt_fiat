@@ -1,12 +1,15 @@
 """Calculate max potential damage based on exposure type."""
 
 import logging
+from itertools import product
 
 import geopandas as gpd
 import pandas as pd
 from hydromt.gis import utm_crs
 
 from hydromt_fiat.utils import create_query
+
+__all__ = ["max_monetary_damage"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
@@ -50,8 +53,11 @@ def max_monetary_damage(
         raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
 
     # Get the unique headers corresponding to the 'exposure_type'
-    headers = vulnerability[vulnerability["exposure_type"] == exposure_type]
-    headers = headers["subtype"].unique().tolist()
+    if "subtype" not in vulnerability.columns:
+        headers = [""]
+    else:
+        headers = vulnerability[vulnerability["exposure_type"] == exposure_type]
+        headers = ["_" + str(item) for item in headers["subtype"].unique()]
 
     # If not headers were found, log and return
     if len(headers) == 0:
@@ -61,7 +67,9 @@ def max_monetary_damage(
 
     # Get unique linking names
     unique_link = vulnerability["exposure_link"].unique().tolist()
-    # Transpose the cost table
+    unique_link = [f"{x}{y}" for x, y in product(unique_link, headers)]
+    # Transpose the cost table, rename index to object_type to easily merge
+    # This is not the object type, but the specific max costs of that element
     exposure_cost_table = exposure_cost_table.T.reset_index(names="object_type")
     # Index the cost table
     exposure_cost_table = exposure_cost_table[
@@ -75,21 +83,16 @@ def max_monetary_damage(
         exposure_data.to_crs(crs, inplace=True)
     area = exposure_data.area
 
+    # Loop through the headers to set the max damage per subtype (or not)
     for header in headers:
+        data = exposure_data["object_type"] + header
         # Get the costs per object
-        costs_per = (
-            exposure_data["object_type"]
-            .to_frame()
-            .merge(
-                exposure_cost_table,
-                on="object_type",
-            )
-        )
+        costs_per = data.to_frame().merge(exposure_cost_table, on="object_type")
         costs_per.drop("object_type", axis=1, inplace=True)
         costs_per = costs_per.squeeze()
         # Multiply by the area
         costs_per *= area
 
-        exposure_data[f"max_{exposure_type}_{header}"] = costs_per.astype(float)
+        exposure_data[f"max_{exposure_type}{header}"] = costs_per.astype(float)
 
     return exposure_data

@@ -3,7 +3,6 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 import pytest
-import xarray as xr
 from hydromt import DataCatalog
 from shapely.geometry import box
 
@@ -60,37 +59,6 @@ def data_catalog(build_data_catalog: Path) -> DataCatalog:
     dc = DataCatalog(build_data_catalog)
     assert "buildings" in dc.sources
     return dc
-
-
-@pytest.fixture
-def hazard_event_data(
-    data_catalog: DataCatalog, build_region_gdf: gpd.GeoDataFrame
-) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_gdf)
-    return ds
-
-
-@pytest.fixture
-def hazard_event_data_highres(
-    data_catalog: DataCatalog,
-    build_region_gdf: gpd.GeoDataFrame,
-) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset("flood_event_highres", geom=build_region_gdf)
-    return ds
-
-
-@pytest.fixture
-def vulnerability_data(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("vulnerability_curves")
-    assert len(df) != 0
-    return df
-
-
-@pytest.fixture
-def vulnerability_linking(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("vulnerability_curves_linking")
-    assert len(df) != 0
-    return df
 
 
 ## Cached model data

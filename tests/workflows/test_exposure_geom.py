@@ -9,22 +9,22 @@ from hydromt_fiat.workflows import exposure_add_columns, exposure_geom_linking
 
 
 def test_exposure_geom_linking(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
-    exposure_geom_link_table: pd.DataFrame,
+    buildings_link_table: pd.DataFrame,
 ):
     # Assert amount of columns in the exposure data
-    assert len(exposure_geom_raw_data.columns) == 11
+    assert len(buildings_data.columns) == 11
     # Assert that these columns are absent
-    assert "object_id" not in exposure_geom_raw_data.columns
-    assert "fn_damage_structure" not in exposure_geom_raw_data.columns
+    assert "object_id" not in buildings_data.columns
+    assert "fn_damage_structure" not in buildings_data.columns
 
     # Call the workflow function
     exposure_vector = exposure_geom_linking(
-        exposure_data=exposure_geom_raw_data,
+        exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
         vulnerability=vulnerability_identifiers,
-        exposure_linking=exposure_geom_link_table,
+        exposure_linking=buildings_link_table,
     )
 
     # Assert the output
@@ -38,14 +38,37 @@ def test_exposure_geom_linking(
         assert value in vulnerability_identifiers["curve_id"].values
 
 
+def test_exposure_geom_linking_no_subtype(
+    buildings_data: gpd.GeoDataFrame,
+    vulnerability_identifiers_alt: pd.DataFrame,
+):
+    # Assert amount of columns in the exposure data
+    assert len(buildings_data.columns) == 11
+    # Assert that these columns are absent
+    assert "object_id" not in buildings_data.columns
+    assert "fn_damage" not in buildings_data.columns
+
+    # Calling the workflow function wihtout subtyping
+    exposure_vector = exposure_geom_linking(
+        exposure_data=buildings_data,
+        exposure_type_column="gebruiksdoel",
+        vulnerability=vulnerability_identifiers_alt,
+    )
+
+    # Assert the output
+    assert len(exposure_vector.columns) == 14  # One column less
+    assert "object_id" in exposure_vector.columns
+    assert "fn_damage" in exposure_vector.columns  # Not fn_damage_*, but just base
+
+
 def test_exposure_geom_linking_no_table(
     caplog: pytest.LogCaptureFixture,
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Calling the workflow function without an exposure link table
     exposure_vector = exposure_geom_linking(
-        exposure_data=exposure_geom_raw_data,
+        exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
         vulnerability=vulnerability_identifiers,
     )
@@ -63,9 +86,9 @@ defaulting to exposure data object type"
 
 
 def test_exposure_geom_linking_errors(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
-    exposure_geom_link_table: pd.DataFrame,
+    buildings_link_table: pd.DataFrame,
 ):
     # Supply a exposure type column that is not in the raw exposure data
     with pytest.raises(
@@ -73,14 +96,14 @@ def test_exposure_geom_linking_errors(
         match="unknown_col not found in the exposure data",
     ):
         _ = exposure_geom_linking(
-            exposure_data=exposure_geom_raw_data,
+            exposure_data=buildings_data,
             exposure_type_column="unknown_col",
             vulnerability=vulnerability_identifiers,
         )
 
     # The exposure type column is not found in the link table
     # Pop the correct column
-    exposure_geom_link_table.drop("gebruiksdoel", axis=1, inplace=True)
+    buildings_link_table.drop("gebruiksdoel", axis=1, inplace=True)
 
     # Call the methods to produce the error
     with pytest.raises(
@@ -88,25 +111,25 @@ def test_exposure_geom_linking_errors(
         match="gebruiksdoel not found in the provided linking data",
     ):
         _ = exposure_geom_linking(
-            exposure_data=exposure_geom_raw_data,
+            exposure_data=buildings_data,
             exposure_type_column="gebruiksdoel",
             vulnerability=vulnerability_identifiers,
-            exposure_linking=exposure_geom_link_table,
+            exposure_linking=buildings_link_table,
         )
 
 
 def test_exposure_add_columns(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
 ):
     # Assert that the columns are not there
-    assert "col1" not in exposure_geom_raw_data
-    assert "col2" not in exposure_geom_raw_data
+    assert "col1" not in buildings_data
+    assert "col2" not in buildings_data
     # Should be in situ, so same id before == id after
-    id_before = id(exposure_geom_raw_data)
+    id_before = id(buildings_data)
 
     # Call the workflow function
     exposure_vector = exposure_add_columns(
-        exposure_geom_raw_data,
+        buildings_data,
         columns=["col1", "col2"],
         values=10,
     )
@@ -124,11 +147,11 @@ def test_exposure_add_columns(
 
 
 def test_exposure_add_columns_list(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
 ):
     # Call the workflow function
     exposure_vector = exposure_add_columns(
-        exposure_geom_raw_data,
+        buildings_data,
         columns=["col1", "col2"],
         values=[10, 20],
     )
@@ -139,7 +162,7 @@ def test_exposure_add_columns_list(
 
 
 def test_exposure_add_columns_array(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
 ):
     # Create the data
     data = np.column_stack(
@@ -150,7 +173,7 @@ def test_exposure_add_columns_array(
     )
     # Call the workflow function
     exposure_vector = exposure_add_columns(
-        exposure_geom_raw_data,
+        buildings_data,
         columns=["col1", "col2"],
         values=data,
     )
@@ -161,7 +184,7 @@ def test_exposure_add_columns_array(
 
 
 def test_exposure_add_columns_errors(
-    exposure_geom_raw_data: gpd.GeoDataFrame,
+    buildings_data: gpd.GeoDataFrame,
 ):
     # Create the data
     data = np.column_stack(
@@ -179,7 +202,7 @@ def test_exposure_add_columns_errors(
         ),
     ):
         _ = exposure_add_columns(
-            exposure_geom_raw_data,
+            buildings_data,
             columns=["col1", "col2"],
             values=data,
         )
