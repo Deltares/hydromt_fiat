@@ -216,7 +216,7 @@ test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = [
     "pytest",
     "-m",
-    '"not integration"',
+    "not integration",
     "--verbose",
     "--cov=hydromt_fiat",
     "--cov-report",

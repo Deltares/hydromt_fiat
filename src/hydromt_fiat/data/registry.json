@@ -4,6 +4,6 @@
         "fiat-model.tar.gz": "26a83d92d27a8ff275f2ef83ea5ea628f157bcf07f34268a106e89552f28e578",
         "osmnx.tar.gz": "3baee58a4ccaea5f1a523806b9f629d5f54a146ff475eb3514efd06531c54712"
     },
-    "url": "http://localhost:8001",
-    "version": "v0.1.4"
+    "url": "doi:10.5281/zenodo.15524435",
+    "version": "v0.1.5"
 }
