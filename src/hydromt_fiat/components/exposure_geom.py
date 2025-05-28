@@ -241,6 +241,7 @@ column will be removed"
         exposure_type_column: str,
         *,
         exposure_link_fname: Path | str | None = None,
+        exposure_type_fill: str | None = None,
     ) -> None:
         """Set up the exposure from a data source.
 
@@ -261,6 +262,9 @@ column will be removed"
         exposure_link_fname : Path | str | None, optional
             The name of/ path to the dataset containing the mapping of the exposure
             types to the vulnerability data, by default None
+        exposure_type_fill : str, optional
+            Value to which missing entries in the exposure type column will be mapped
+            to, if provided. By default None
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -299,6 +303,7 @@ use 'setup_region' before this method"
                 "vulnerability_identifiers"
             ],
             exposure_linking=exposure_linking,
+            exposure_type_fill=exposure_type_fill,
         )
 
         # Set the data in the component

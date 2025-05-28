@@ -17,6 +17,7 @@ def exposure_geom_linking(
     vulnerability: pd.DataFrame,
     *,
     exposure_linking: pd.DataFrame | None = None,
+    exposure_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
     """Link the raw exposure data to the vulnerability curves.
 
@@ -34,6 +35,9 @@ def exposure_geom_linking(
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
         By default None
+    exposure_type_fill : str, optional
+        Value to which missing entries in the exposure type column will be mapped to,
+        if provided. By default None
 
     Returns
     -------
@@ -62,8 +66,17 @@ defaulting to exposure data object type"
         exposure_type_column,
         keep="first",
     )
+    # Drop the row with None as key, prevents duplicates later
+    exposure_linking = exposure_linking.dropna(subset=exposure_type_column)
     # Also drop the remaining unused columns
     exposure_linking = exposure_linking[[exposure_type_column, "object_type"]]
+
+    # Set the nodata fill
+    if exposure_type_fill is not None:
+        exposure_linking.loc[len(exposure_linking), :] = [None, exposure_type_fill]
+
+    # Store the length of the data
+    data_or_size = len(exposure_data)
 
     # Link the data into a new column
     exposure_data = pd.merge(
@@ -73,6 +86,13 @@ defaulting to exposure data object type"
         how="inner",
         validate="many_to_many",
     )
+    data_m_size = len(exposure_data)
+
+    if data_m_size != data_or_size:
+        logger.warning(
+            f"{data_or_size - data_m_size} features could not be linked, \
+these features are removed"
+        )
 
     # Get the unique exposure types
     headers = vulnerability["exposure_type"]
@@ -89,6 +109,14 @@ defaulting to exposure data object type"
         )
         # And merge the data
         exposure_data = exposure_data.merge(link, on="object_type")
+
+    # Check the length after vulerability merging
+    data_v_size = len(exposure_data)
+    if data_v_size != data_m_size:
+        logger.warning(
+            f"{data_m_size - data_v_size} features could not be linked to \
+vulnerability data, these were removed"
+        )
 
     # Reset the index as default for object_id
     exposure_data.reset_index(names="object_id", inplace=True)

@@ -85,6 +85,50 @@ defaulting to exposure data object type"
     assert len(exposure_vector) == 0
 
 
+def test_exposure_geom_linking_fill_nodata(
+    caplog: pytest.LogCaptureFixture,
+    buildings_data: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+    buildings_link_table: pd.DataFrame,
+):
+    # Produce the warning by default
+    exposure_vector = exposure_geom_linking(
+        exposure_data=buildings_data,
+        exposure_type_column="gebruiksdoel",
+        vulnerability=vulnerability_identifiers,
+        exposure_linking=buildings_link_table,
+    )
+
+    # Assert the output
+    assert "3 features could not be linked" in caplog.text
+    assert len(exposure_vector) == 9
+
+    # Fill the nodata in the linking with a known (irony) value
+    exposure_vector = exposure_geom_linking(
+        exposure_data=buildings_data,
+        exposure_type_column="gebruiksdoel",
+        vulnerability=vulnerability_identifiers,
+        exposure_linking=buildings_link_table,
+        exposure_type_fill="unknown",
+    )
+
+    # Assert the output
+    assert len(exposure_vector) == 12
+
+    # Fill the nodata in the linking with an unknown (more irony) value
+    exposure_vector = exposure_geom_linking(
+        exposure_data=buildings_data,
+        exposure_type_column="gebruiksdoel",
+        vulnerability=vulnerability_identifiers,
+        exposure_linking=buildings_link_table,
+        exposure_type_fill="known",
+    )
+
+    # Assert the output
+    assert "3 features could not be linked to vulnerability data" in caplog.text
+    assert len(exposure_vector) == 9
+
+
 def test_exposure_geom_linking_errors(
     buildings_data: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
