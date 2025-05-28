@@ -7,12 +7,12 @@ import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components import (
     ConfigComponent,
-    GeomsComponent,
     TablesComponent,
 )
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
+    ExposureGeomsComponent,
     ExposureGridComponent,
     HazardGridComponent,
     RegionComponent,
@@ -80,7 +80,7 @@ class FIATModel(Model):
         )
         self.add_component(
             "exposure_geoms",
-            GeomsComponent(model=self, region_component="region"),
+            ExposureGeomsComponent(model=self, region_component="region"),
         )
         self.add_component(
             "exposure_grid",
@@ -102,19 +102,29 @@ class FIATModel(Model):
         return self.components["config"]
 
     @property
-    def hazard_grid(self) -> HazardGridComponent:
-        """Return hazard grid component."""
-        return self.components["hazard_grid"]
-
-    @property
-    def vulnerability_data(self) -> VulnerabilityComponent:
-        """Return the vulnerability component containing the data."""
-        return self.components["vulnerability_data"]
+    def exposure_geoms(self) -> ExposureGeomsComponent:
+        """Return the exposure geoms component."""
+        return self.components["exposure_geoms"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
         """Return the exposure grid component."""
         return self.components["exposure_grid"]
+
+    @property
+    def hazard_grid(self) -> HazardGridComponent:
+        """Return hazard grid component."""
+        return self.components["hazard_grid"]
+
+    @property
+    def region_data(self) -> RegionComponent:
+        """Return the region component."""
+        return self.components["region"]
+
+    @property
+    def vulnerability_data(self) -> VulnerabilityComponent:
+        """Return the vulnerability component containing the data."""
+        return self.components["vulnerability_data"]
 
     ## I/O
     @hydromt_step
@@ -125,7 +135,15 @@ class FIATModel(Model):
     @hydromt_step
     def write(self):
         """Write the FIAT model."""
-        Model.write(self)
+        components = list(self.components.keys())
+        cfg = None
+        for c in [self.components[name] for name in components]:
+            if isinstance(c, ConfigComponent):
+                cfg = c
+                continue
+            c.write()
+        if cfg is not None:
+            cfg.write()
 
     ## Setup methods
     @hydromt_step
@@ -171,17 +189,3 @@ class FIATModel(Model):
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
         self.components["region"].set(geom)
-
-    @hydromt_step
-    def setup_exposure(
-        self,
-        exposure_fname: Path | str,
-    ):
-        """Set up the exposure from a data source.
-
-        Parameters
-        ----------
-        exposure_fname : Path | str
-            _description_
-        """
-        pass

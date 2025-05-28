@@ -2,11 +2,19 @@ from pathlib import Path
 
 import geopandas as gpd
 import pytest
+from hydromt.model.components import ConfigComponent
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.components import (
+    ExposureGeomsComponent,
+    ExposureGridComponent,
+    HazardGridComponent,
+    RegionComponent,
+    VulnerabilityComponent,
+)
 
 
-def test_empty_model(tmp_path):
+def test_empty_model(tmp_path: Path):
     # Setup an empty fiat model
     model = FIATModel(tmp_path)
 
@@ -17,7 +25,7 @@ def test_empty_model(tmp_path):
     assert len(model.components) == 7
 
 
-def test_basic_read_write(tmp_path):
+def test_basic_read_write(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -35,7 +43,7 @@ def test_basic_read_write(tmp_path):
     assert len(model.config.data) != 0
 
 
-def test_setup_config(tmp_path):
+def test_setup_config(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -55,7 +63,7 @@ def test_setup_config(tmp_path):
     assert model.config.get_value("global.srs") == {"value": "EPSG:4326"}
 
 
-def test_setup_region(tmp_path, build_region):
+def test_setup_region(tmp_path: Path, build_region: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
     assert model.region is None
@@ -67,7 +75,7 @@ def test_setup_region(tmp_path, build_region):
     assert len(model.region) == 1
 
 
-def test_setup_region_error(tmp_path):
+def test_setup_region_error(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -77,11 +85,15 @@ def test_setup_region_error(tmp_path):
         model.setup_region(region=region_no)
 
 
-## Bloody integration tests
-# TODO fill these in when the functionality is fully there
-def test_fiatmodel_geom():
-    pass
+def test_model_properties(model_with_region: FIATModel):
+    # Setup an empty fiat model
+    model = model_with_region
 
-
-def test_fiatmodel_grid():
-    pass
+    # Assert the types of model properties
+    assert isinstance(model.config, ConfigComponent)
+    assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
+    assert isinstance(model.exposure_grid, ExposureGridComponent)
+    assert isinstance(model.hazard_grid, HazardGridComponent)
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert isinstance(model.region_data, RegionComponent)
+    assert isinstance(model.vulnerability_data, VulnerabilityComponent)

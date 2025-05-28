@@ -1,4 +1,4 @@
-"""The custom hazard component."""
+"""The custom exposure grid component."""
 
 import logging
 from pathlib import Path

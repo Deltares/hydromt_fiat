@@ -1,5 +1,7 @@
+from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
+import pandas as pd
 import pytest
 from hydromt import DataCatalog
 from hydromt.model import ModelRoot
@@ -9,9 +11,27 @@ from pytest_mock import MockerFixture
 from hydromt_fiat import FIATModel
 
 
-## Mocked objects
+## Models and Mocked objects
 @pytest.fixture
-def mock_model(tmp_path, mocker: MockerFixture) -> MagicMock:
+def model_exposure_setup(
+    model_with_region: FIATModel,
+    vulnerability_curves: pd.DataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+) -> FIATModel:
+    model = model_with_region
+    model.vulnerability_data.set(
+        vulnerability_curves,
+        name="vulnerability_curves",
+    )
+    model.vulnerability_data.set(
+        vulnerability_identifiers,
+        name="vulnerability_identifiers",
+    )
+    return model
+
+
+@pytest.fixture
+def mock_model(tmp_path: Path, mocker: MockerFixture) -> MagicMock:
     model = mocker.create_autospec(FIATModel)
     model.root = mocker.create_autospec(ModelRoot(tmp_path), instance=True)
     model.root.path.return_value = tmp_path

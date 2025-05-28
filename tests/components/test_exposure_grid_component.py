@@ -1,15 +1,20 @@
 import logging
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
 import xarray as xr
+from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
 
 
-def test_exposure_grid_component_empty(mock_model):
+def test_exposure_grid_component_empty(
+    mock_model: MagicMock,
+):
     # Setup the component
     component = ExposureGridComponent(model=mock_model)
 
@@ -19,11 +24,15 @@ def test_exposure_grid_component_empty(mock_model):
     assert isinstance(component.data, xr.Dataset)
 
 
-def test_setup_exposure_grid(tmp_path, caplog, model, build_region, mocker):
+def test_exposure_grid_component_setup(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    model_with_region: FIATModel,
+):
     caplog.set_level(logging.INFO)
     # Setup the component
-    model.setup_region(region=build_region)
-    component = ExposureGridComponent(model=model)
+    component = ExposureGridComponent(model=model_with_region)
 
     # create linking table
     linking_table = pd.DataFrame(
@@ -42,7 +51,9 @@ def test_setup_exposure_grid(tmp_path, caplog, model, build_region, mocker):
     flood_event_da = component.data.flood_event
     assert flood_event_da.attrs.get("fn_damage") == "vulnerability_curve"
     assert "Setting up exposure grid" in caplog.text
-    assert model.config.get_value("exposure.grid.file") == component._filename
+    assert (
+        model_with_region.config.get_value("exposure.grid.file") == component._filename
+    )
 
     # Check if config is set properly when data is added to existing grid
     component.setup_exposure_grid(
@@ -50,10 +61,15 @@ def test_setup_exposure_grid(tmp_path, caplog, model, build_region, mocker):
         exposure_grid_link_fname=linking_table_fp.as_posix(),
     )
 
-    assert model.config.get_value("exposure.grid.settings.var_as_band")
+    assert model_with_region.config.get_value("exposure.grid.settings.var_as_band")
 
 
-def test_setup_exposure_grid_errors(tmp_path, model, build_region, mocker):
+def test_exposure_grid_component_setup_errors(
+    tmp_path: Path,
+    mocker: MockerFixture,
+    model: FIATModel,
+    build_region: Path,
+):
     # Setup the component
     component = ExposureGridComponent(model=model)
 

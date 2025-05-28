@@ -1,8 +1,9 @@
 import logging
 from pathlib import Path
-from unittest.mock import PropertyMock
+from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
+import pytest
 from hydromt.model import ModelRoot
 from pyproj.crs import CRS
 from shapely.geometry import MultiPolygon, Polygon
@@ -10,7 +11,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from hydromt_fiat.components import RegionComponent
 
 
-def test_region_component_empty(mock_model):
+def test_region_component_empty(mock_model: MagicMock):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
 
@@ -19,7 +20,11 @@ def test_region_component_empty(mock_model):
     assert component._filename == "region.geojson"
 
 
-def test_region_component_set(build_region_gdf, build_region_small_gdf, mock_model):
+def test_region_component_set(
+    build_region_gdf: gpd.GeoDataFrame,
+    build_region_small_gdf: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
 
@@ -45,7 +50,11 @@ def test_region_component_set(build_region_gdf, build_region_small_gdf, mock_mod
     assert component.region is not None
 
 
-def test_region_component_append(box_geometry, build_region_gdf, mock_model):
+def test_region_component_append(
+    box_geometry: gpd.GeoDataFrame,
+    build_region_gdf: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
     component.set(build_region_gdf)
@@ -59,7 +68,11 @@ def test_region_component_append(box_geometry, build_region_gdf, mock_model):
     assert isinstance(component.region.geometry[0], MultiPolygon)
 
 
-def test_region_component_read(tmp_path, build_region_gdf, mock_model):
+def test_region_component_read(
+    tmp_path: Path,
+    build_region_gdf: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
     # Setup the component
     type(mock_model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),
@@ -78,7 +91,10 @@ def test_region_component_read(tmp_path, build_region_gdf, mock_model):
     assert component.region is not None
 
 
-def test_region_component_write_empty(mock_model, caplog):
+def test_region_component_write_empty(
+    caplog: pytest.LogCaptureFixture,
+    mock_model: MagicMock,
+):
     caplog.set_level(logging.DEBUG)
 
     # Setup component and a region
@@ -94,7 +110,11 @@ def test_region_component_write_empty(mock_model, caplog):
     assert "region is empty. Skipping..." in caplog.text
 
 
-def test_region_component_write_default(tmp_path, build_region_gdf, mock_model):
+def test_region_component_write_default(
+    tmp_path: Path,
+    build_region_gdf: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
     # Setup the component
     component = RegionComponent(model=mock_model)
 
@@ -110,7 +130,11 @@ def test_region_component_write_default(tmp_path, build_region_gdf, mock_model):
     component = None
 
 
-def test_region_component_write_crs(tmp_path, build_region_small_gdf, mock_model):
+def test_region_component_write_crs(
+    tmp_path: Path,
+    build_region_small_gdf: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
     # Create new component
     # Adjust the model crs to test the write capabilities
     type(mock_model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(28992))
