@@ -7,12 +7,18 @@ import pytest
 from hydromt import DataCatalog
 from hydromt.data_catalog.sources import GeoDataFrameSource
 from osmnx._errors import InsufficientResponseError
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.drivers import OSMDriver
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])
-def test_osm_driver_get_osm_data(tag_name, build_region_gdf, osm_cached, caplog):
+def test_osm_driver_get_osm_data(
+    caplog: pytest.LogCaptureFixture,
+    tag_name: str,
+    build_region_gdf: gpd.geodataframe,
+    osm_cached: Path,
+):
     geom_type = (
         ["LineString", "MultiLineString"]
         if tag_name == "highway"
@@ -30,7 +36,11 @@ def test_osm_driver_get_osm_data(tag_name, build_region_gdf, osm_cached, caplog)
     assert osm_data.intersects(polygon).all()
 
 
-def test_osm_driver_get_osm_data_errors(build_region_gdf, osm_cached, caplog):
+def test_osm_driver_get_osm_data_errors(
+    caplog: pytest.LogCaptureFixture,
+    build_region_gdf: gpd.GeoDataFrame,
+    osm_cached: Path,
+):
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     with pytest.raises(
@@ -51,7 +61,12 @@ def test_osm_driver_get_osm_data_errors(build_region_gdf, osm_cached, caplog):
     assert f"No OSM data retrieved with the following tags: {tag}" in caplog.text
 
 
-def test_osm_driver_get_osm_data_empty(mocker, build_region_gdf, osm_cached, caplog):
+def test_osm_driver_get_osm_data_empty(
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    build_region_gdf: gpd.GeoDataFrame,
+    osm_cached: Path,
+):
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     caplog.set_level(logging.WARNING)
@@ -66,7 +81,10 @@ def test_osm_driver_get_osm_data_empty(mocker, build_region_gdf, osm_cached, cap
     assert "No building features found for polygon" in caplog.text
 
 
-def test_osm_driver_read_raise_errors(build_region_gdf, osm_cached):
+def test_osm_driver_read_raise_errors(
+    build_region_gdf: gpd.GeoDataFrame,
+    osm_cached: Path,
+):
     osm_driver = OSMDriver()
     with pytest.raises(
         ValueError, match="Cannot use multiple uris for reading OSM data."
@@ -82,7 +100,12 @@ def test_osm_driver_read_raise_errors(build_region_gdf, osm_cached):
         osm_driver.read(uris=["uri"], mask=mask)
 
 
-def test_osm_driver_read(build_region_gdf, mocker, osm_cached, caplog):
+def test_osm_driver_read(
+    caplog: pytest.LogCaptureFixture,
+    mocker: MockerFixture,
+    build_region_gdf: gpd.GeoDataFrame,
+    osm_cached: Path,
+):
     osm_driver = OSMDriver()
     mock_method = mocker.patch.object(OSMDriver, "get_osm_data")
     osm_driver.read(uris=["building"], mask=build_region_gdf)
@@ -100,7 +123,12 @@ def test_osm_driver_read(build_region_gdf, mocker, osm_cached, caplog):
     )
 
 
-def test_osm_driver_write(tmp_path, build_region_gdf, osm_cached, caplog):
+def test_osm_driver_write(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    build_region_gdf: gpd.GeoDataFrame,
+    osm_cached: Path,
+):
     osm_driver = OSMDriver()
     # Test with supported extension
     fp = tmp_path / "test_data.fgb"
@@ -119,10 +147,10 @@ def test_osm_driver_write(tmp_path, build_region_gdf, osm_cached, caplog):
 
 
 def test_osm_driver_datacatalog(
-    tmp_path,
-    build_region_gdf,
-    build_data_catalog,
-    osm_cached,
+    tmp_path: Path,
+    build_region_gdf: gpd.GeoDataFrame,
+    build_data_catalog: Path,
+    osm_cached: Path,
 ):
     dc = DataCatalog(build_data_catalog)
     # Create data catalog source for osm data and add to data catalog

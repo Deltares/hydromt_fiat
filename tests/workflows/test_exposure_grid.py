@@ -1,12 +1,15 @@
 import logging
 
 import pandas as pd
+import pytest
 import xarray as xr
 
 from hydromt_fiat.workflows import exposure_grid_data
 
 
-def test_exposure_grid_data(hazard_event_data, caplog):
+def test_exposure_grid_data(
+    hazard_event_data: xr.DataArray,
+):
     linking_table = pd.DataFrame(
         data=[{"type": "flood_event", "curve_id": "damage_function_file"}]
     )
@@ -20,7 +23,10 @@ def test_exposure_grid_data(hazard_event_data, caplog):
     assert ds.flood_event.attrs.get("fn_damage") == "damage_function_file"
 
 
-def test_exposure_grid_data_no_linking_table_match(hazard_event_data, caplog):
+def test_exposure_grid_data_no_linking_table_match(
+    caplog: pytest.LogCaptureFixture,
+    hazard_event_data: xr.DataArray,
+):
     # Test without matching exposure file name in linking table
     exposure_data = {"flood_event": hazard_event_data}
     caplog.set_level(logging.WARNING)

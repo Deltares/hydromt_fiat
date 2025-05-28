@@ -1,6 +1,7 @@
 """HydroMT-FIAT workflow function."""
 
-from .api import *
-from .exposure import *
+from .damage import *
+from .exposure_geom import *
+from .exposure_grid import *
 from .hazard import *
 from .vulnerability import *

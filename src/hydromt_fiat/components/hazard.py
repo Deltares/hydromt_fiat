@@ -57,11 +57,12 @@ class HazardGridComponent(GridComponent):
     def setup_hazard(
         self,
         hazard_fnames: list[Path | str] | Path | str,
-        hazard_type: str = "flooding",
+        hazard_type: str = "water_depth",
         *,
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
+        **settings: dict,
     ) -> None:
         """Set up hazard maps.
 
@@ -70,7 +71,7 @@ class HazardGridComponent(GridComponent):
         hazard_fnames : list[Path | str] | Path | str
             Path(s) to the hazard file(s) or name(s) of the data catalog entries.
         hazard_type : str, optional
-            Type of hazard, by default "flooding".
+            Type of hazard, by default "water_depth".
         return_periods : list[int] | None, optional
             List of return periods. Length of list should match the number hazard
             files, by default None.
@@ -79,6 +80,10 @@ class HazardGridComponent(GridComponent):
             by default False.
         unit : str, optional
             The unit which the hazard data is in, by default 'm' (meters)
+        settings : dict
+            Extra settings to be added under the hazard header.
+            For flood maps (water depth), elevation_reference set to either 'datum' \
+            or 'dem' is recommeneded.
 
         Returns
         -------
@@ -126,11 +131,12 @@ class HazardGridComponent(GridComponent):
             self.model.config.set("hazard.settings.var_as_band", True)
 
         if risk:
-            self.model.config.set("hazard.risk", risk)
+            self.model.config.set("model.risk", risk)
             self.model.config.set("hazard.return_periods", return_periods)
 
+        # Set the output filename
         self.model.config.set("hazard.file", self._filename)
-        self.model.config.set(
-            "hazard.elevation_reference",
-            "DEM" if hazard_type == "water_depth" else "datum",
-        )
+
+        # Set the extra settings
+        for key, item in settings.items():
+            self.model.config.set(f"hazard.{key}", item)
