@@ -35,6 +35,7 @@ def test_model_geom_integration(
     # Add an hazard layer
     model.hazard_grid.setup_hazard(
         "flood_event",
+        elevation_reference="dem",
     )
 
     # Setup the exposure geometry data

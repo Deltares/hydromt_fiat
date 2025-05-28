@@ -29,11 +29,11 @@ def test_hazard_component_setup_event(
     component = HazardGridComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
-    component.setup_hazard(hazard_fnames="flood_event")
+    component.setup_hazard(hazard_fnames="flood_event", elevation_reference="dem")
 
-    assert "Added flooding hazard map: flood_event" in caplog.text
+    assert "Added water_depth hazard map: flood_event" in caplog.text
     assert model_with_region.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
-    assert model_with_region.config.get_value("hazard.elevation_reference") == "datum"
+    assert model_with_region.config.get_value("hazard.elevation_reference") == "dem"
 
     # Test setting data to hazard grid with data
     component.setup_hazard(hazard_fnames="flood_event_highres")
@@ -58,7 +58,7 @@ def test_hazard_component_setup_risk(
     )
 
     assert isinstance(component.data, xr.Dataset)
-    assert model_with_region.config.get_value("hazard.risk")
+    assert model_with_region.config.get_value("model.risk")
     assert model_with_region.config.get_value("hazard.return_periods") == [50000]
 
 
