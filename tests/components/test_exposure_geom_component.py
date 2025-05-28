@@ -99,6 +99,8 @@ def test_exposure_geom_component_read(
     assert isinstance(component._data, dict)
     assert len(component._data) == 3
     assert "buildings" in component.data
+    # Merging of csv and geoms went well
+    assert "extract_method" in component.data["buildings_split"].columns
 
 
 def test_exposure_geom_component_write(

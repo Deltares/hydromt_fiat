@@ -1,12 +1,13 @@
 """The custom exposure geometries component."""
 
-import glob
 import logging
+import os.path
 from pathlib import Path
 from typing import cast
 
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import shapely.geometry as sg
 from hydromt._utils.naming_convention import _expand_uri_placeholders
 from hydromt.model import Model
@@ -116,12 +117,21 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
         f = filename or self._filename
-        read_path = self.root.path / f
-        path_glob, _, regex = _expand_uri_placeholders(str(read_path))
-        paths = glob.glob(path_glob)
-        for p in paths:
-            name = ".".join(regex.match(p).groups())  # type: ignore
+        path_glob, _, regex = _expand_uri_placeholders(f)
+        for p in Path(self.root.path).glob(path_glob):
+            # Solve the naming
+            rel = Path(os.path.relpath(p, self.root.path))
+            name = ".".join(regex.match(rel.as_posix()).groups())  # type: ignore
+
+            # Get the data
             geom = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
+            # Check for data in csv file, this has to be merged
+            # TODO this should be solved better with help of the config file
+            csv_path = p.with_suffix(".csv")
+            if csv_path.is_file():
+                csv_data = pd.read_csv(csv_path)
+                geom = geom.merge(csv_data, on="object_id")
+
             logger.debug(f"Reading model file {name} at {p}.")
 
             self.set(geom=geom, name=name)
