@@ -108,7 +108,7 @@ these features are removed"
             inplace=True,
         )
         # And merge the data
-        exposure_data = exposure_data.merge(link, on="object_type")
+        exposure_data = exposure_data.merge(link, on="object_type", how="left")
 
     # Check the length after vulerability merging
     data_v_size = len(exposure_data)
