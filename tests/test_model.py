@@ -2,12 +2,12 @@ from pathlib import Path
 
 import geopandas as gpd
 import pytest
-from hydromt.model.components import ConfigComponent
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
+    FIATConfigComponent,
     HazardGridComponent,
     RegionComponent,
     VulnerabilityComponent,
@@ -22,7 +22,7 @@ def test_empty_model(tmp_path: Path):
     assert "config" in model.components
     assert "region" in model.components
     assert model.region is None
-    assert len(model.components) == 7
+    assert len(model.components) == 6
 
 
 def test_basic_read_write(tmp_path: Path):
@@ -90,7 +90,7 @@ def test_model_properties(model_with_region: FIATModel):
     model = model_with_region
 
     # Assert the types of model properties
-    assert isinstance(model.config, ConfigComponent)
+    assert isinstance(model.config, FIATConfigComponent)
     assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
     assert isinstance(model.exposure_grid, ExposureGridComponent)
     assert isinstance(model.hazard_grid, HazardGridComponent)

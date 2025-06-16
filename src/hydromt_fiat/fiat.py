@@ -5,15 +5,12 @@ from pathlib import Path
 
 import geopandas as gpd
 from hydromt.model import Model
-from hydromt.model.components import (
-    ConfigComponent,
-    TablesComponent,
-)
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
+    FIATConfigComponent,
     HazardGridComponent,
     RegionComponent,
     VulnerabilityComponent,
@@ -72,11 +69,7 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            ConfigComponent(model=self, filename=config_fname),
-        )
-        self.add_component(
-            "exposure_data",
-            TablesComponent(model=self),
+            FIATConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
             "exposure_geoms",
@@ -97,7 +90,7 @@ class FIATModel(Model):
 
     ## Properties
     @property
-    def config(self) -> ConfigComponent:
+    def config(self) -> FIATConfigComponent:
         """Return the configurations component."""
         return self.components["config"]
 
@@ -138,7 +131,7 @@ class FIATModel(Model):
         components = list(self.components.keys())
         cfg = None
         for c in [self.components[name] for name in components]:
-            if isinstance(c, ConfigComponent):
+            if isinstance(c, FIATConfigComponent):
                 cfg = c
                 continue
             c.write()
