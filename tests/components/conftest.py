@@ -1,3 +1,4 @@
+import platform
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
@@ -9,6 +10,14 @@ from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
+
+
+## OS related fixture
+@pytest.fixture(scope="session")
+def mount_string() -> str:
+    if platform.system().lower() == "windows":
+        return "d:/"
+    return "/d/"  # Posix paths
 
 
 ## Models and Mocked objects
@@ -40,3 +49,17 @@ def mock_model(tmp_path: Path, mocker: MockerFixture) -> MagicMock:
     type(model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(4326))
     type(model).root = PropertyMock(side_effect=lambda: ModelRoot(tmp_path))
     return model
+
+
+## Extra data structures
+@pytest.fixture
+def config_dummy(tmp_path: Path) -> dict:
+    data = {
+        "foo": "bar",
+        "baz": {
+            "file1": Path(tmp_path, "tmp.txt").as_posix(),
+            "file2": "tmp/tmp.txt",
+        },
+        "spooky": {"ghost": [1, 2, 3]},
+    }
+    return data
