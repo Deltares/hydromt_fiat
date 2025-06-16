@@ -6,22 +6,25 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
-__all__ = ["exposure_add_columns", "exposure_geom_linking"]
+__all__ = [
+    "exposure_add_columns",
+    "exposure_setup",
+    "exposure_vulnerability_link",
+]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def exposure_geom_linking(
+def exposure_setup(
     exposure_data: gpd.GeoDataFrame,
     exposure_type_column: str,
-    vulnerability: pd.DataFrame,
     *,
     exposure_linking: pd.DataFrame | None = None,
     exposure_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
-    """Link the raw exposure data to the vulnerability curves.
+    """Prep the raw exposure data for later fuctions/ methods.
 
-    I.e. link the curve id's of the vulnerability to the exposure types.
+    Here the exposure type can be mapped for better linking later on.
 
     Parameters
     ----------
@@ -29,8 +32,6 @@ def exposure_geom_linking(
         The raw exposure data.
     exposure_type_column : str
         The name of column that specifies the exposure type, e.g. occupancy type.
-    vulnerability : pd.DataFrame
-        The vulnerability identifier table to link up with.
     exposure_linking : pd.DataFrame, optional
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
@@ -42,8 +43,9 @@ def exposure_geom_linking(
     Returns
     -------
     gpd.GeoDataFrame
-        The resulting exposure data with links to the vulnerability curves.
+        The resulting exposure data.
     """
+    logger.info("Setting up the exposure data for further use")
     # Some checks
     if exposure_type_column not in exposure_data:
         raise KeyError(f"{exposure_type_column} not found in the exposure data")
@@ -88,19 +90,48 @@ defaulting to exposure data object type"
     )
     data_m_size = len(exposure_data)
 
+    # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
         logger.warning(
-            f"{data_or_size - data_m_size} features could not be linked, \
+            f"{data_or_size - data_m_size} features could not be internally linked, \
 these features are removed"
         )
 
+    # Return the data
+    return exposure_data
+
+
+def exposure_vulnerability_link(
+    exposure_data: gpd.GeoDataFrame,
+    vulnerability: pd.DataFrame,
+) -> gpd.GeoDataFrame:
+    """Link the exposure data to the vulnerability data.
+
+    I.e. link the curve id's of the vulnerability to the exposure types.
+
+    Parameters
+    ----------
+    exposure_data : gpd.GeoDataFrame
+        The raw exposure data.
+    vulnerability : pd.DataFrame
+        The vulnerability identifier table to link up with.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The resulting exposure data linked with the vulnerability data.
+    """
+    logger.info("Linking the exposure data with the vulnerability data")
     # Get the unique exposure types
     headers = vulnerability["exposure_type"]
     if "subtype" in vulnerability:
         headers = vulnerability["exposure_type"] + "_" + vulnerability["subtype"]
 
+    # Set the current size for a check later on
+    data_m_size = len(exposure_data)
     # Go through the unique new headers
-    for header in headers.unique().tolist():
+    header_list = headers.unique().tolist()
+    for header in header_list:
         link = vulnerability[headers == header][["exposure_link", "curve_id"]]
         link.rename(
             {"exposure_link": "object_type", "curve_id": f"fn_{header}"},
@@ -109,6 +140,13 @@ these features are removed"
         )
         # And merge the data
         exposure_data = exposure_data.merge(link, on="object_type", how="left")
+
+    # Remove the features that don't have any linking to the vulnerability
+    exposure_data.dropna(
+        subset=[f"fn_{item}" for item in header_list],
+        how="all",
+        inplace=True,
+    )
 
     # Check the length after vulerability merging
     data_v_size = len(exposure_data)

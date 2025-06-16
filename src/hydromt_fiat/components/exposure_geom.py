@@ -306,14 +306,17 @@ use 'setup_region' before this method"
             )
 
         # Call the workflows function(s) to manipulate the data
-        exposure_vector = workflows.exposure_geom_linking(
+        exposure_vector = workflows.exposure_setup(
             exposure_data=exposure_data,
             exposure_type_column=exposure_type_column,
+            exposure_linking=exposure_linking,
+            exposure_type_fill=exposure_type_fill,
+        )
+        exposure_vector = workflows.exposure_vulnerability_link(
+            exposure_data=exposure_vector,
             vulnerability=self.model.vulnerability_data.data[
                 "vulnerability_identifiers"
             ],
-            exposure_linking=exposure_linking,
-            exposure_type_fill=exposure_type_fill,
         )
 
         # Set the data in the component
