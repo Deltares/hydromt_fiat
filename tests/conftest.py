@@ -7,7 +7,7 @@ from hydromt import DataCatalog
 from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.data.fetch import fetch_data
+from hydromt_fiat.data import fetch_data
 
 
 ## Cached build data

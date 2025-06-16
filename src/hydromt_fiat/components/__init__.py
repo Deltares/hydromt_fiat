@@ -1,7 +1,17 @@
 """The custom HydroMT-FIAT components."""
 
-from .exposure_geom import *
-from .exposure_grid import *
-from .hazard import *
-from .region import *
-from .vulnerability import *
+from .config import FIATConfigComponent
+from .exposure_geom import ExposureGeomsComponent
+from .exposure_grid import ExposureGridComponent
+from .hazard import HazardGridComponent
+from .region import RegionComponent
+from .vulnerability import VulnerabilityComponent
+
+__all__ = [
+    "ExposureGeomsComponent",
+    "ExposureGridComponent",
+    "FIATConfigComponent",
+    "HazardGridComponent",
+    "RegionComponent",
+    "VulnerabilityComponent",
+]
