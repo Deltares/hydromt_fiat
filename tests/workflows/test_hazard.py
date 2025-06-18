@@ -45,8 +45,8 @@ def test_hazard_grid_reproj(
     hazard_event_data_highres: xr.DataArray,
 ):
     # assert the shapes at the start
-    assert hazard_event_data.shape == (34, 25)
-    assert hazard_event_data_highres.shape == (675, 503)
+    assert hazard_event_data.shape == (5, 4)
+    assert hazard_event_data_highres.shape == (94, 93)
 
     # Setup with a grid_like
     hazard_data = {"event": hazard_event_data_highres}
@@ -59,7 +59,7 @@ def test_hazard_grid_reproj(
 
     assert ds.event.name == "event"
     # More importantly, check the shape
-    assert ds.event.shape == (34, 25)  # Should be the same as the hazard event data
+    assert ds.event.shape == (5, 4)  # Should be the same as the hazard event data
 
 
 def test_hazard_grid_unit_default(hazard_event_data: xr.DataArray):
@@ -71,8 +71,9 @@ def test_hazard_grid_unit_default(hazard_event_data: xr.DataArray):
         hazard_type="flooding",
     )
 
+    # Assert the avg level
     avg_level = ds.event.mean().values
-    assert np.isclose(avg_level, 1.2019)
+    assert np.isclose(avg_level, 1.7947)
 
 
 def test_hazard_grid_unit_differ(
@@ -88,8 +89,9 @@ def test_hazard_grid_unit_differ(
         unit="ft",
     )
 
+    # Assert the avg level
     avg_level_ft = ds.event.mean().values
     assert (
         "Given unit (ft) does not match the standard unit (m) for length" in caplog.text
     )
-    assert np.isclose(avg_level_ft, 0.366337)
+    assert np.isclose(avg_level_ft, 0.547029)

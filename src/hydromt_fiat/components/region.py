@@ -12,6 +12,8 @@ from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 
+from hydromt_fiat.utils import REGION
+
 __all__ = ["RegionComponent"]
 
 logger: Logger = getLogger(f"hydromt.{__name__}")
@@ -76,7 +78,7 @@ class RegionComponent(SpatialModelComponent):
         # Use the total bounds of all geometries as region
         if len(self.data) == 0:
             return None
-        return self.data["region"]
+        return self.data[REGION]
 
     ## I/O methods
     @hydromt_step
@@ -187,8 +189,8 @@ class RegionComponent(SpatialModelComponent):
         geom = geom["geometry"].to_frame()
 
         # Make a union with the current region geodataframe
-        cur = self._data.get("region")
+        cur = self._data.get(REGION)
         if cur is not None and not geom.equals(cur):
             geom = geom.union(cur)
 
-        self._data["region"] = geom
+        self._data[REGION] = geom

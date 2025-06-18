@@ -56,16 +56,16 @@ class ExposureGridComponent(GridComponent):
     @hydromt_step
     def setup_exposure_grid(
         self,
-        exposure_grid_fnames: str | Path | list[str | Path],
-        exposure_grid_link_fname: str | Path,
+        exposure_fnames: Path | str | list[Path | str],
+        exposure_link_fname: Path | str,
     ) -> None:
         """Set up an exposure grid.
 
         Parameters
         ----------
-        exposure_grid_fnames : str | Path | list[str  |  Path]
+        exposure_fnames : Path | str | list[Path | str]
             Name of or path to exposure file(s)
-        exposure_grid_link_fname : str | Path
+        exposure_link_fname : Path | str
             Table containing the names of the exposure files and corresponding
             vulnerability curves.
         """
@@ -78,36 +78,25 @@ class ExposureGridComponent(GridComponent):
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid.")
 
-        # Check if linking_table exists
-        if not Path(exposure_grid_link_fname).exists():
-            raise ValueError("Given path to linking table does not exist.")
         # Read linking table
-        exposure_linking = self.model.data_catalog.get_dataframe(
-            exposure_grid_link_fname
-        )
+        exposure_linking = self.model.data_catalog.get_dataframe(exposure_link_fname)
 
-        # Check if linking table columns are named according to convention
-        for col_name in ["type", "curve_id"]:
-            if col_name not in exposure_linking.columns:
-                raise ValueError(
-                    f"Missing column, '{col_name}' in exposure grid linking table"
-                )
-
-        exposure_files = (
-            [exposure_grid_fnames]
-            if not isinstance(exposure_grid_fnames, list)
-            else exposure_grid_fnames
+        # Sort the input out as iterator
+        exposure_fnames = (
+            [exposure_fnames]
+            if not isinstance(exposure_fnames, list)
+            else exposure_fnames
         )
 
         # Read exposure data files from data catalog
         exposure_data = {}
-        for exposure_file in exposure_files:
-            exposure_fn = Path(exposure_file).stem
+        for fname in exposure_fnames:
+            name = Path(fname).stem
             da = self.model.data_catalog.get_rasterdataset(
-                exposure_file,
+                fname,
                 geom=self.model.region,
             )
-            exposure_data[exposure_fn] = da
+            exposure_data[name] = da
 
         # Get grid like from existing exposure data if there is any
         grid_like = self.data if self.data != {} else None

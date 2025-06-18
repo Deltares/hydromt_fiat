@@ -80,7 +80,7 @@ def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
 
 
 @pytest.fixture
-def exposure_geom_data_reduced(
+def exposure_geom_data_damage(
     exposure_geom_data: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
     exposure_geom_data.drop(
@@ -134,9 +134,9 @@ def model(tmp_path: Path, build_data_catalog: Path) -> FIATModel:
 @pytest.fixture
 def model_with_region(
     model: FIATModel,
-    build_region: Path,
+    build_region_small: Path,
 ) -> FIATModel:
-    model.setup_region(build_region)
+    model.setup_region(build_region_small)
     return model
 
 

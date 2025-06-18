@@ -5,72 +5,66 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hydromt_fiat.workflows import exposure_add_columns, exposure_geom_linking
+from hydromt_fiat.workflows import (
+    exposure_add_columns,
+    exposure_setup,
+    exposure_vulnerability_link,
+)
 
 
-def test_exposure_geom_linking(
+def test_exposure_setup(
     buildings_data: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
     buildings_link_table: pd.DataFrame,
 ):
-    # Assert amount of columns in the exposure data
-    assert len(buildings_data.columns) == 11
-    # Assert that these columns are absent
-    assert "object_id" not in buildings_data.columns
-    assert "fn_damage_structure" not in buildings_data.columns
-
-    # Call the workflow function
-    exposure_vector = exposure_geom_linking(
+    # Simply call the function
+    exposure_vector = exposure_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers,
         exposure_linking=buildings_link_table,
     )
 
     # Assert the output
-    assert len(exposure_vector.columns) == 15
-    assert "object_id" in exposure_vector.columns
-    assert "fn_damage_structure" in exposure_vector.columns
-
-    # A simple that the curves set in the exposure data (linking) are present
-    # in the vulnerability identifiers
-    for value in exposure_vector["fn_damage_structure"].unique():
-        assert value in vulnerability_identifiers["curve_id"].values
+    assert len(exposure_vector) == 9
+    assert "object_type" in exposure_vector.columns
+    assert "industrial" in exposure_vector.object_type.values
 
 
-def test_exposure_geom_linking_no_subtype(
+def test_exposure_setup_fill_nodata(
+    caplog: pytest.LogCaptureFixture,
     buildings_data: gpd.GeoDataFrame,
-    vulnerability_identifiers_alt: pd.DataFrame,
+    buildings_link_table: pd.DataFrame,
 ):
-    # Assert amount of columns in the exposure data
-    assert len(buildings_data.columns) == 11
-    # Assert that these columns are absent
-    assert "object_id" not in buildings_data.columns
-    assert "fn_damage" not in buildings_data.columns
-
-    # Calling the workflow function wihtout subtyping
-    exposure_vector = exposure_geom_linking(
+    # Produce the warning by default
+    exposure_vector = exposure_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers_alt,
+        exposure_linking=buildings_link_table,
     )
 
     # Assert the output
-    assert len(exposure_vector.columns) == 14  # One column less
-    assert "object_id" in exposure_vector.columns
-    assert "fn_damage" in exposure_vector.columns  # Not fn_damage_*, but just base
+    assert "3 features could not be internally linked" in caplog.text
+    assert len(exposure_vector) == 9
 
-
-def test_exposure_geom_linking_no_table(
-    caplog: pytest.LogCaptureFixture,
-    buildings_data: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
-):
-    # Calling the workflow function without an exposure link table
-    exposure_vector = exposure_geom_linking(
+    # Fill the nodata in the linking with a known (irony) value
+    exposure_vector = exposure_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers,
+        exposure_linking=buildings_link_table,
+        exposure_type_fill="unknown",
+    )
+
+    # Assert the output
+    assert len(exposure_vector) == 12
+
+
+def test_exposure_setup_no_table(
+    caplog: pytest.LogCaptureFixture,
+    buildings_data: gpd.GeoDataFrame,
+):
+    # Calling the workflow function without an exposure link table
+    exposure_vector = exposure_setup(
+        exposure_data=buildings_data,
+        exposure_type_column="gebruiksdoel",
     )
 
     # This will produce a warning
@@ -79,59 +73,12 @@ def test_exposure_geom_linking_no_table(
 defaulting to exposure data object type"
         in caplog.text
     )
-
-    # As no translation was done, the exposure type cant be matched with the
-    # vulnerability data, so empty geodataframe as output
-    assert len(exposure_vector) == 0
+    # Assert that the link names are no in the 'object_type' column
+    assert "industrial" not in exposure_vector.object_type.values
 
 
-def test_exposure_geom_linking_fill_nodata(
-    caplog: pytest.LogCaptureFixture,
+def test_exposure_setup_errors(
     buildings_data: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
-    buildings_link_table: pd.DataFrame,
-):
-    # Produce the warning by default
-    exposure_vector = exposure_geom_linking(
-        exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers,
-        exposure_linking=buildings_link_table,
-    )
-
-    # Assert the output
-    assert "3 features could not be linked" in caplog.text
-    assert len(exposure_vector) == 9
-
-    # Fill the nodata in the linking with a known (irony) value
-    exposure_vector = exposure_geom_linking(
-        exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers,
-        exposure_linking=buildings_link_table,
-        exposure_type_fill="unknown",
-    )
-
-    # Assert the output
-    assert len(exposure_vector) == 12
-
-    # Fill the nodata in the linking with an unknown (more irony) value
-    exposure_vector = exposure_geom_linking(
-        exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
-        vulnerability=vulnerability_identifiers,
-        exposure_linking=buildings_link_table,
-        exposure_type_fill="known",
-    )
-
-    # Assert the output
-    assert "3 features could not be linked to vulnerability data" in caplog.text
-    assert len(exposure_vector) == 9
-
-
-def test_exposure_geom_linking_errors(
-    buildings_data: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
     buildings_link_table: pd.DataFrame,
 ):
     # Supply a exposure type column that is not in the raw exposure data
@@ -139,10 +86,9 @@ def test_exposure_geom_linking_errors(
         KeyError,
         match="unknown_col not found in the exposure data",
     ):
-        _ = exposure_geom_linking(
+        _ = exposure_setup(
             exposure_data=buildings_data,
             exposure_type_column="unknown_col",
-            vulnerability=vulnerability_identifiers,
         )
 
     # The exposure type column is not found in the link table
@@ -154,12 +100,76 @@ def test_exposure_geom_linking_errors(
         KeyError,
         match="gebruiksdoel not found in the provided linking data",
     ):
-        _ = exposure_geom_linking(
+        _ = exposure_setup(
             exposure_data=buildings_data,
             exposure_type_column="gebruiksdoel",
-            vulnerability=vulnerability_identifiers,
             exposure_linking=buildings_link_table,
         )
+
+
+def test_exposure_vulnerability_link(
+    exposure_geom_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+):
+    # Assert amount of columns in the exposure data
+    assert len(exposure_geom_data_link.columns) == 11
+    # Assert that these columns are absent
+    assert "object_id" not in exposure_geom_data_link.columns
+    assert "fn_damage_structure" not in exposure_geom_data_link.columns
+
+    # Call the workflow function
+    exposure_vector = exposure_vulnerability_link(
+        exposure_data=exposure_geom_data_link,
+        vulnerability=vulnerability_identifiers,
+    )
+
+    # Assert the output
+    assert len(exposure_vector.columns) == 14
+    assert "object_id" in exposure_vector.columns
+    assert "fn_damage_structure" in exposure_vector.columns
+
+    # A simple that the curves set in the exposure data (linking) are present
+    # in the vulnerability identifiers
+    for value in exposure_vector["fn_damage_structure"].unique():
+        assert value in vulnerability_identifiers["curve_id"].values
+
+
+def test_exposure_vulnerability_link_subtype(
+    exposure_geom_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers_alt: pd.DataFrame,
+):
+    # Assert amount of columns in the exposure data
+    assert len(exposure_geom_data_link.columns) == 11
+    # Assert that these columns are absent
+    assert "object_id" not in exposure_geom_data_link.columns
+    assert "fn_damage" not in exposure_geom_data_link.columns
+
+    # Calling the workflow function wihtout subtyping
+    exposure_vector = exposure_vulnerability_link(
+        exposure_data=exposure_geom_data_link,
+        vulnerability=vulnerability_identifiers_alt,
+    )
+
+    # Assert the output
+    assert len(exposure_vector.columns) == 13  # One column less
+    assert "object_id" in exposure_vector.columns
+    assert "fn_damage" in exposure_vector.columns  # Not fn_damage_*, but just base
+
+
+def test_exposure_vulnerability_link_warnings(
+    caplog: pytest.LogCaptureFixture,
+    exposure_geom_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+):
+    # Fill the nodata in the linking with an unknown (more irony) value
+    exposure_vector = exposure_vulnerability_link(
+        exposure_data=exposure_geom_data_link.replace("unknown", "known"),
+        vulnerability=vulnerability_identifiers,
+    )
+
+    # Assert the output
+    assert "3 features could not be linked to vulnerability data" in caplog.text
+    assert len(exposure_vector) == 9
 
 
 def test_exposure_add_columns(
