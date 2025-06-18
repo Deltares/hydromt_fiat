@@ -16,6 +16,7 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import OBJECT_ID
 
 __all__ = ["ExposureGeomsComponent"]
 
@@ -130,7 +131,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
             csv_path = p.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                geom = geom.merge(csv_data, on="object_id")
+                geom = geom.merge(csv_data, on=OBJECT_ID)
 
             logger.debug(f"Reading model file {name} at {p}.")
 
@@ -188,7 +189,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
                 continue
 
             # Split into the vector only file
-            geom = gdf.loc[:, ["object_id", "geometry"]]
+            geom = gdf.loc[:, [OBJECT_ID, "geometry"]]
             geom.to_file(write_path, **kwargs)
             geom = None
 

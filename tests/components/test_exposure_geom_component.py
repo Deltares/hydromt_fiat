@@ -239,12 +239,12 @@ def test_exposure_geom_component_setup_errors(
 
 def test_exposure_geom_component_setup_max(
     model_exposure_setup: FIATModel,
-    exposure_geom_data_reduced: gpd.GeoDataFrame,
+    exposure_geom_data_damage: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=model_exposure_setup)
     # Added the exposure to the data to expand upon
-    component.set(exposure_geom_data_reduced, name="buildings")
+    component.set(exposure_geom_data_damage, name="buildings")
 
     # Assert max damage column is not present
     assert "max_damage_structure" not in component.data["buildings"].columns
@@ -283,12 +283,12 @@ with 'bag' as input or chose from already present geometries: ",
 
 def test_exposure_geom_component_update_cols(
     model_with_region: FIATModel,
-    exposure_geom_data_reduced: gpd.GeoDataFrame,
+    exposure_geom_data_damage: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=model_with_region)
     # Added the exposure to the data to expand upon
-    component.set(exposure_geom_data_reduced, name="bag")
+    component.set(exposure_geom_data_damage, name="bag")
 
     # Assert max damage column is not present
     assert "ground_flht" not in component.data["bag"].columns

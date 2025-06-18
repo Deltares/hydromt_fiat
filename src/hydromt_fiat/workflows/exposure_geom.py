@@ -6,6 +6,15 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
+from hydromt_fiat.utils import (
+    CURVE_ID,
+    EXPOSURE_LINK,
+    EXPOSURE_TYPE,
+    OBJECT_ID,
+    OBJECT_TYPE,
+    SUBTYPE,
+)
+
 __all__ = [
     "exposure_add_columns",
     "exposure_setup",
@@ -57,7 +66,7 @@ defaulting to exposure data object type"
         exposure_linking = pd.DataFrame(
             {
                 exposure_type_column: exposure_data[exposure_type_column].values,
-                "object_type": exposure_data[exposure_type_column].values,
+                OBJECT_TYPE: exposure_data[exposure_type_column].values,
             }
         )
     if exposure_type_column not in exposure_linking:
@@ -71,7 +80,7 @@ defaulting to exposure data object type"
     # Drop the row with None as key, prevents duplicates later
     exposure_linking = exposure_linking.dropna(subset=exposure_type_column)
     # Also drop the remaining unused columns
-    exposure_linking = exposure_linking[[exposure_type_column, "object_type"]]
+    exposure_linking = exposure_linking[[exposure_type_column, OBJECT_TYPE]]
 
     # Set the nodata fill
     if exposure_type_fill is not None:
@@ -123,23 +132,27 @@ def exposure_vulnerability_link(
     """
     logger.info("Linking the exposure data with the vulnerability data")
     # Get the unique exposure types
-    headers = vulnerability["exposure_type"]
-    if "subtype" in vulnerability:
-        headers = vulnerability["exposure_type"] + "_" + vulnerability["subtype"]
+    headers = vulnerability[EXPOSURE_TYPE]
+    if SUBTYPE in vulnerability:
+        headers = vulnerability[EXPOSURE_TYPE] + "_" + vulnerability[SUBTYPE]
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][["exposure_link", "curve_id"]]
+        link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE_ID]]
         link.rename(
-            {"exposure_link": "object_type", "curve_id": f"fn_{header}"},
+            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"fn_{header}"},
             axis=1,
             inplace=True,
         )
         # And merge the data
-        exposure_data = exposure_data.merge(link, on="object_type", how="left")
+        exposure_data = exposure_data.merge(
+            link.drop_duplicates(subset=OBJECT_TYPE),
+            on=OBJECT_TYPE,
+            how="left",
+        )
 
     # Remove the features that don't have any linking to the vulnerability
     exposure_data.dropna(
@@ -157,7 +170,8 @@ vulnerability data, these were removed"
         )
 
     # Reset the index as default for object_id
-    exposure_data.reset_index(names="object_id", inplace=True)
+    if OBJECT_ID not in exposure_data.columns:
+        exposure_data.reset_index(names=OBJECT_ID, inplace=True)
 
     return exposure_data
 
