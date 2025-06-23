@@ -353,7 +353,15 @@ use 'setup_region' before this method"
             Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
-            exposure type, e.g. 'residential_structure' or 'residential_content'
+            exposure type, e.g. 'residential_structure' or 'residential_content'.
+        exposure_cost_link_fname : Path | str, optional
+            A linking table to like the present object type with the identifiers
+            defined in the cost table. If None, it is assumed the present object type
+            matches the identifiers in the cost table. By default None.
+        **select : dict
+            Keyword arguments used to select data from the exposure cost table.
+            E.g. a column is present named 'country' and the wanted values are in the
+            row with 'UK', provided country='UK' as keyword argument.
         """
         logger.info(f"Setting up maximum potential damage for {exposure_name}")
         # Some checks on the input
