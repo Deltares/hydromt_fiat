@@ -246,7 +246,7 @@ column will be removed"
 
     ## Setup methods
     @hydromt_step
-    def setup_exposure_geoms(
+    def setup(
         self,
         exposure_fname: Path | str,
         exposure_type_column: str,
@@ -331,7 +331,7 @@ use 'setup_region' before this method"
         )
 
     @hydromt_step
-    def setup_exposure_max_damage(
+    def setup_max_damage(
         self,
         exposure_name: str,
         exposure_type: str,
@@ -398,7 +398,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
         self.set(exposure_vector, exposure_name)
 
     @hydromt_step
-    def update_exposure_column(
+    def update_column(
         self,
         exposure_name: str,
         columns: list[str],
@@ -417,6 +417,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             all columns, a list of values corresponding to the number of columns or
             a 2d array.
         """
+        logger.info(f"Updating exposure data with {columns} columns")
         # Some checks on the input
         if exposure_name not in self.data:
             raise RuntimeError(

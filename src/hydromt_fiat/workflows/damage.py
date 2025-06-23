@@ -112,7 +112,7 @@ def max_monetary_damage(
         exposure_cost_link,
         on=OBJECT_TYPE,
         how="inner",
-    )["cost_type"]
+    )[COST_TYPE]
 
     # Get the area, make sure its a projected crs
     old_crs = exposure_data.crs

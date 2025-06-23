@@ -41,9 +41,13 @@ def _merge_dataarrays(
     if isinstance(grid_like, xr.DataArray):
         grid_like = grid_like.to_dataset()
 
+    # Reproject if necessary
+    for idx, da in enumerate(dataarrays):
+        dataarrays[idx] = grid_from_rasterdataset(grid_like=grid_like, ds=da)
+
     ds = xr.merge(dataarrays)
     ds.attrs = {}  # Ensure that the dataset doesnt copy a merged instance of
     # the data variables' attributes
 
-    # Reproject to gridlike
-    return grid_from_rasterdataset(grid_like=grid_like, ds=ds)
+    # Return the data
+    return ds

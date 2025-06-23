@@ -192,7 +192,7 @@ def test_exposure_geom_component_setup(
     assert "exposure" not in component.model.config.data
 
     # Setup the data
-    component.setup_exposure_geoms(
+    component.setup(
         exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
@@ -216,7 +216,7 @@ def test_exposure_geom_component_setup_errors(
         MissingRegionError,
         match="Region is None -> use 'setup_region' before this method",
     ):
-        component.setup_exposure_geoms(
+        component.setup(
             exposure_fname="bag",
             exposure_type_column="gebruiksdoel",
             exposure_link_fname="bag_link",
@@ -230,7 +230,7 @@ def test_exposure_geom_component_setup_errors(
         RuntimeError,
         match="Use setup_vulnerability before this method",
     ):
-        component.setup_exposure_geoms(
+        component.setup(
             exposure_fname="bag",
             exposure_type_column="gebruiksdoel",
             exposure_link_fname="bag_link",
@@ -250,7 +250,7 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_exposure_max_damage(
+    component.setup_max_damage(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="damage_values",
@@ -273,7 +273,7 @@ def test_exposure_geom_component_setup_max_errors(
         match="Run `setup_exposure_geoms` before this methods \
 with 'bag' as input or chose from already present geometries: ",
     ):
-        component.setup_exposure_max_damage(
+        component.setup_max_damage(
             exposure_name="bag",
             exposure_type="damage",
             exposure_cost_table_fname="jrc_damage_values",
@@ -294,7 +294,7 @@ def test_exposure_geom_component_update_cols(
     assert "ground_flht" not in component.data["bag"].columns
 
     # Call the setup method
-    component.update_exposure_column(
+    component.update_column(
         exposure_name="bag",
         columns=["ground_flht"],
         values=0,
@@ -308,7 +308,7 @@ def test_exposure_geom_component_update_cols(
     assert "extract_method" not in component.data["bag"].columns
 
     # Set multiple at once
-    component.update_exposure_column(
+    component.update_column(
         exposure_name="bag",
         columns=["ground_elevtn", "extract_method"],
         values=[0, "centroid"],
@@ -331,7 +331,7 @@ def test_exposure_geom_component_update_cols_errors(
         match="Run `setup_exposure_geoms` before this methods \
 with 'bag' as input or chose from already present geometries: ",
     ):
-        component.update_exposure_column(
+        component.update_column(
             exposure_name="bag",
             columns=["ground_flht"],
             values=0,

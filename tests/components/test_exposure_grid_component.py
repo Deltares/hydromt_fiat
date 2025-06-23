@@ -34,7 +34,7 @@ def test_exposure_grid_component_setup(
     # Mock vulnerability_data attribute to pass check
     mocker.patch.object(FIATModel, "vulnerability_data")
     # Call the method
-    component.setup_exposure_grid(
+    component.setup(
         exposure_fnames="industrial_content",
         exposure_link_fname="exposure_grid_link",
     )
@@ -58,7 +58,7 @@ def test_exposure_grid_component_setup_multi(
     # Mock vulnerability_data attribute to pass check
     mocker.patch.object(FIATModel, "vulnerability_data")
     # Call the method
-    component.setup_exposure_grid(
+    component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
     )
@@ -79,7 +79,7 @@ def test_exposure_grid_component_setup_errors(
     # Assert the vulnerability absent error
     err_msg = "setup_vulnerability step is required before setting up exposure grid."
     with pytest.raises(RuntimeError, match=err_msg):
-        component.setup_exposure_grid(
+        component.setup(
             exposure_fnames="industrial_content",
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
@@ -89,7 +89,7 @@ def test_exposure_grid_component_setup_errors(
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid."
     ):
-        component.setup_exposure_grid(
+        component.setup(
             exposure_fnames="industrial_content",
             exposure_link_fname="",
         )
