@@ -7,7 +7,14 @@ import geopandas as gpd
 import pandas as pd
 from hydromt.gis import utm_crs
 
-from hydromt_fiat.utils import create_query
+from hydromt_fiat.utils import (
+    COST_TYPE,
+    EXPOSURE_LINK,
+    EXPOSURE_TYPE,
+    OBJECT_TYPE,
+    SUBTYPE,
+    create_query,
+)
 
 __all__ = ["max_monetary_damage"]
 
@@ -19,9 +26,14 @@ def max_monetary_damage(
     exposure_cost_table: pd.DataFrame,
     exposure_type: str,
     vulnerability: pd.DataFrame,
+    exposure_cost_link: pd.DataFrame | None = None,
     **select: dict,
 ) -> gpd.GeoDataFrame:
     """Determine maximum monetary damage per object.
+
+    The maximum potential monetary damage is calculated based on the area (footprint)
+    of the objects. The exposure cost table should therefore contain values per square
+    meter.
 
     Parameters
     ----------
@@ -33,6 +45,9 @@ def max_monetary_damage(
         Type of exposure data, e.g. 'damage'.
     vulnerability : pd.DataFrame
         The vulnerability identifier table.
+    exposure_cost_link : pd.DataFrame, optional
+        A linking table to connect the exposure data to the exposure cost data.
+        By default None.
     select : dict, optional
         Keyword arguments to select data from the cost table.
         The key corresponds to the column and the value to value in that column.
@@ -52,12 +67,28 @@ def max_monetary_damage(
     if len(exposure_cost_table) == 0:
         raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
 
+    # If not cost link table is defined, define it self
+    if exposure_cost_link is None:
+        exposure_cost_link = pd.DataFrame(
+            data={
+                OBJECT_TYPE: vulnerability[EXPOSURE_LINK].values,
+                COST_TYPE: vulnerability[EXPOSURE_LINK].values,
+            }
+        )
+
+    # Check for the necessary columns
+    if not all(item in exposure_cost_link.columns for item in [OBJECT_TYPE, COST_TYPE]):
+        raise ValueError(f"Cost link table either missing {OBJECT_TYPE} or {COST_TYPE}")
+    # Leave only the necessary columns
+    exposure_cost_link = exposure_cost_link[[OBJECT_TYPE, COST_TYPE]]
+    exposure_cost_link = exposure_cost_link.drop_duplicates(subset=OBJECT_TYPE)
+
     # Get the unique headers corresponding to the 'exposure_type'
-    if "subtype" not in vulnerability.columns:
+    if SUBTYPE not in vulnerability.columns:
         headers = [""]
     else:
-        headers = vulnerability[vulnerability["exposure_type"] == exposure_type]
-        headers = ["_" + str(item) for item in headers["subtype"].unique()]
+        headers = vulnerability[vulnerability[EXPOSURE_TYPE] == exposure_type]
+        headers = ["_" + str(item) for item in headers[SUBTYPE].unique()]
 
     # If not headers were found, log and return
     if len(headers) == 0:
@@ -66,15 +97,22 @@ def max_monetary_damage(
         )
 
     # Get unique linking names
-    unique_link = vulnerability["exposure_link"].unique().tolist()
+    unique_link = exposure_cost_link[COST_TYPE].unique().tolist()
     unique_link = [f"{x}{y}" for x, y in product(unique_link, headers)]
     # Transpose the cost table, rename index to object_type to easily merge
     # This is not the object type, but the specific max costs of that element
-    exposure_cost_table = exposure_cost_table.T.reset_index(names="object_type")
+    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST_TYPE)
     # Index the cost table
     exposure_cost_table = exposure_cost_table[
-        exposure_cost_table["object_type"].isin(unique_link)
+        exposure_cost_table[COST_TYPE].isin(unique_link)
     ]
+
+    # Link the cost type to the exposure data
+    exposure_data[COST_TYPE] = exposure_data[[OBJECT_TYPE]].merge(
+        exposure_cost_link,
+        on=OBJECT_TYPE,
+        how="inner",
+    )["cost_type"]
 
     # Get the area, make sure its a projected crs
     old_crs = exposure_data.crs
@@ -85,10 +123,10 @@ def max_monetary_damage(
 
     # Loop through the headers to set the max damage per subtype (or not)
     for header in headers:
-        data = exposure_data["object_type"] + header
+        data = exposure_data[COST_TYPE] + header
         # Get the costs per object
-        costs_per = data.to_frame().merge(exposure_cost_table, on="object_type")
-        costs_per.drop("object_type", axis=1, inplace=True)
+        costs_per = data.to_frame().merge(exposure_cost_table, on=COST_TYPE)
+        costs_per.drop(COST_TYPE, axis=1, inplace=True)
         costs_per = costs_per.squeeze()
         # Multiply by the area
         costs_per *= area

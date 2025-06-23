@@ -29,19 +29,39 @@ def exposure_cost_table(data_catalog: DataCatalog) -> pd.DataFrame:
 
 
 @pytest.fixture
-def hazard_event_data(
-    data_catalog: DataCatalog, build_region_gdf: gpd.GeoDataFrame
+def exposure_grid_data_ind(
+    data_catalog: DataCatalog, build_region_small_gdf: gpd.GeoDataFrame
 ) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_gdf)
+    ds = data_catalog.get_rasterdataset(
+        "industrial_content",
+        geom=build_region_small_gdf,
+    )
+    return ds
+
+
+@pytest.fixture
+def exposure_grid_link(data_catalog: DataCatalog) -> pd.DataFrame:
+    df = data_catalog.get_dataframe("exposure_grid_link")
+    return df
+
+
+@pytest.fixture
+def hazard_event_data(
+    data_catalog: DataCatalog, build_region_small_gdf: gpd.GeoDataFrame
+) -> xr.DataArray:
+    ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_small_gdf)
     return ds
 
 
 @pytest.fixture
 def hazard_event_data_highres(
     data_catalog: DataCatalog,
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region_small_gdf: gpd.GeoDataFrame,
 ) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset("flood_event_highres", geom=build_region_gdf)
+    ds = data_catalog.get_rasterdataset(
+        "flood_event_highres",
+        geom=build_region_small_gdf,
+    )
     return ds
 
 
@@ -74,6 +94,22 @@ def exposure_geom_data_alt(model_cached: Path) -> gpd.GeoDataFrame:
     gdf = gpd.read_file(p)
     assert len(gdf) != 0
     return gdf
+
+
+@pytest.fixture
+def exposure_geom_data_link(
+    exposure_geom_data_damage: gpd.geodataframe,
+) -> gpd.GeoDataFrame:
+    exposure_geom_data_damage.drop(
+        [
+            "object_id",
+            "fn_damage_structure",
+            "fn_damage_content",
+        ],
+        axis=1,
+        inplace=True,
+    )
+    return exposure_geom_data_damage
 
 
 @pytest.fixture(scope="session")
