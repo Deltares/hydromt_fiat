@@ -25,7 +25,7 @@ def test_model_geom_integration(
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
-    model.vulnerability_data.setup_vulnerability(
+    model.vulnerability_data.setup(
         "vulnerability_curves",
         "vulnerability_curves_linking",
         unit="m",
@@ -33,25 +33,25 @@ def test_model_geom_integration(
     )
 
     # Add an hazard layer
-    model.hazard_grid.setup_hazard(
+    model.hazard_grid.setup(
         "flood_event",
         elevation_reference="dem",
     )
 
     # Setup the exposure geometry data
-    model.exposure_geoms.setup_exposure_geoms(
+    model.exposure_geoms.setup(
         exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
-    model.exposure_geoms.setup_exposure_max_damage(
+    model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="damage_values",
         country="Netherlands",  # Select the correct row from the data
     )
     # Needed for flood calculations
-    model.exposure_geoms.update_exposure_column(
+    model.exposure_geoms.update_column(
         exposure_name="buildings",
         columns=["ground_flht", "ground_elevtn", "extract_method"],
         values=[0, 0, "centroid"],

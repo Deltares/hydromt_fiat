@@ -54,7 +54,7 @@ class HazardGridComponent(GridComponent):
         )
 
     @hydromt_step
-    def setup_hazard(
+    def setup(
         self,
         hazard_fnames: list[Path | str] | Path | str,
         hazard_type: str = "water_depth",

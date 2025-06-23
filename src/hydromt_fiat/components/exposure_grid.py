@@ -54,7 +54,7 @@ class ExposureGridComponent(GridComponent):
         )
 
     @hydromt_step
-    def setup_exposure_grid(
+    def setup(
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str,
