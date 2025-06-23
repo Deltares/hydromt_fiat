@@ -15,6 +15,7 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.utils import REGION
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -59,9 +60,9 @@ class FIATModel(Model):
     ):
         super().__init__(
             root,
-            components={"region": RegionComponent(model=self)},
+            components={REGION: RegionComponent(model=self)},
             mode=mode,
-            region_component="region",
+            region_component=REGION,
             data_libs=data_libs,
             **catalog_keys,
         )
@@ -73,15 +74,15 @@ class FIATModel(Model):
         )
         self.add_component(
             "exposure_geoms",
-            ExposureGeomsComponent(model=self, region_component="region"),
+            ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
             "exposure_grid",
-            ExposureGridComponent(model=self, region_component="region"),
+            ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
             "hazard_grid",
-            HazardGridComponent(model=self, region_component="region"),
+            HazardGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
             "vulnerability_data",
@@ -112,7 +113,7 @@ class FIATModel(Model):
     @property
     def region_data(self) -> RegionComponent:
         """Return the region component."""
-        return self.components["region"]
+        return self.components[REGION]
 
     @property
     def vulnerability_data(self) -> VulnerabilityComponent:
@@ -181,4 +182,4 @@ class FIATModel(Model):
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components["region"].set(geom)
+        self.components[REGION].set(geom)

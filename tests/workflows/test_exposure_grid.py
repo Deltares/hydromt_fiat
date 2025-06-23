@@ -8,40 +8,56 @@ from hydromt_fiat.workflows import exposure_grid_data
 
 
 def test_exposure_grid_data(
-    hazard_event_data: xr.DataArray,
+    exposure_grid_data_ind: xr.DataArray,
+    exposure_grid_link: pd.DataFrame,
 ):
-    linking_table = pd.DataFrame(
-        data=[{"type": "flood_event", "curve_id": "damage_function_file"}]
-    )
-    exposure_data = {"flood_event": hazard_event_data}
+    # Call the function
     ds = exposure_grid_data(
         grid_like=None,
-        exposure_data=exposure_data,
-        exposure_linking=linking_table,
+        exposure_data={"industrial_content": exposure_grid_data_ind},
+        exposure_linking=exposure_grid_link,
     )
+
+    # Assert the output
     assert isinstance(ds, xr.Dataset)
-    assert ds.flood_event.attrs.get("fn_damage") == "damage_function_file"
+    assert ds.industrial_content.attrs.get("fn_damage") == "in1"
 
 
-def test_exposure_grid_data_no_linking_table_match(
+def test_exposure_grid_data_no_linking(
     caplog: pytest.LogCaptureFixture,
-    hazard_event_data: xr.DataArray,
+    exposure_grid_data_ind: xr.DataArray,
+    exposure_grid_link: pd.DataFrame,
 ):
-    # Test without matching exposure file name in linking table
-    exposure_data = {"flood_event": hazard_event_data}
     caplog.set_level(logging.WARNING)
-    linking_table = pd.DataFrame(
-        data=[{"type": "event", "curve_id": "damage_function_file"}]
+    # Call the function
+    ds = exposure_grid_data(
+        grid_like=None,
+        exposure_data={"industrial_content": exposure_grid_data_ind},
+        exposure_linking=exposure_grid_link.replace("industrial_content", "unknown"),
     )
 
-    ds = exposure_grid_data(
-        grid_like=None, exposure_data=exposure_data, exposure_linking=linking_table
-    )
+    # Assert the logging message
     log_msg = (
-        "Exposure file name, 'flood_event', not found in linking table."
-        " Setting damage curve name attribute to 'flood_event'."
+        "Exposure file name, 'industrial_content', not found in linking table."
+        " Setting damage curve name attribute to 'industrial_content'."
     )
     assert log_msg in caplog.text
 
     # Check if damage function defaults to exposure file name
-    assert ds.flood_event.attrs.get("fn_damage") == "flood_event"
+    assert ds.industrial_content.attrs.get("fn_damage") == "industrial_content"
+
+
+def test_exposure_grid_data_errors(
+    exposure_grid_data_ind: xr.DataArray,
+):
+    # Assert an error on the missing necessary columns
+    with pytest.raises(
+        ValueError,
+        match="Missing column, 'exposure_link' in exposure grid linking table",
+    ):
+        # Call the function
+        _ = exposure_grid_data(
+            grid_like=None,
+            exposure_data={"industrial_content": exposure_grid_data_ind},
+            exposure_linking=pd.DataFrame(),
+        )

@@ -6,6 +6,18 @@ from barril.units import Scalar, UnitDatabase
 
 __all__ = ["create_query"]
 
+# GLOBAL STRINGS
+COST_TYPE = "cost_type"
+CURVE = "curve"
+CURVE_ID = "curve_id"
+EXPOSURE_LINK = "exposure_link"
+EXPOSURE_TYPE = "exposure_type"
+OBJECT_TYPE = "object_type"
+OBJECT_ID = "object_id"
+REGION = "region"
+SUBTYPE = "subtype"
+
+# Unit database init
 UNIT_DATABASE = UnitDatabase.GetSingleton()
 
 logger = logging.getLogger(f"hydromt.{__name__}")

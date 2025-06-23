@@ -16,6 +16,7 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import OBJECT_ID
 
 __all__ = ["ExposureGeomsComponent"]
 
@@ -130,7 +131,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
             csv_path = p.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                geom = geom.merge(csv_data, on="object_id")
+                geom = geom.merge(csv_data, on=OBJECT_ID)
 
             logger.debug(f"Reading model file {name} at {p}.")
 
@@ -188,7 +189,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
                 continue
 
             # Split into the vector only file
-            geom = gdf.loc[:, ["object_id", "geometry"]]
+            geom = gdf.loc[:, [OBJECT_ID, "geometry"]]
             geom.to_file(write_path, **kwargs)
             geom = None
 
@@ -306,14 +307,17 @@ use 'setup_region' before this method"
             )
 
         # Call the workflows function(s) to manipulate the data
-        exposure_vector = workflows.exposure_geom_linking(
+        exposure_vector = workflows.exposure_setup(
             exposure_data=exposure_data,
             exposure_type_column=exposure_type_column,
+            exposure_linking=exposure_linking,
+            exposure_type_fill=exposure_type_fill,
+        )
+        exposure_vector = workflows.exposure_vulnerability_link(
+            exposure_data=exposure_vector,
             vulnerability=self.model.vulnerability_data.data[
                 "vulnerability_identifiers"
             ],
-            exposure_linking=exposure_linking,
-            exposure_type_fill=exposure_type_fill,
         )
 
         # Set the data in the component
@@ -332,6 +336,7 @@ use 'setup_region' before this method"
         exposure_name: str,
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
+        exposure_cost_link_fname: Path | str | None = None,
         **select: dict,
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
@@ -348,7 +353,15 @@ use 'setup_region' before this method"
             Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
-            exposure type, e.g. 'residential_structure' or 'residential_content'
+            exposure type, e.g. 'residential_structure' or 'residential_content'.
+        exposure_cost_link_fname : Path | str, optional
+            A linking table to like the present object type with the identifiers
+            defined in the cost table. If None, it is assumed the present object type
+            matches the identifiers in the cost table. By default None.
+        **select : dict
+            Keyword arguments used to select data from the exposure cost table.
+            E.g. a column is present named 'country' and the wanted values are in the
+            row with 'UK', provided country='UK' as keyword argument.
         """
         logger.info(f"Setting up maximum potential damage for {exposure_name}")
         # Some checks on the input
@@ -362,6 +375,12 @@ with '{exposure_name}' as input or chose from already present geometries: \
         exposure_cost_table = self.model.data_catalog.get_dataframe(
             exposure_cost_table_fname,
         )
+        # Get the exposure cost link is not None
+        exposure_cost_link = None
+        if exposure_cost_link_fname is not None:
+            exposure_cost_link = self.model.data_catalog.get_dataframe(
+                exposure_cost_link_fname,
+            )
 
         # Call the workflows function to add the max damage
         exposure_vector = workflows.max_monetary_damage(
@@ -371,6 +390,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             vulnerability=self.model.vulnerability_data.data[
                 "vulnerability_identifiers"
             ],
+            exposure_cost_link=exposure_cost_link,
             **select,
         )
 

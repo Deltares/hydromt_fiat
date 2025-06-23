@@ -1,8 +1,6 @@
 import logging
-from pathlib import Path
 from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 import xarray as xr
 from pytest_mock import MockerFixture
@@ -25,7 +23,6 @@ def test_exposure_grid_component_empty(
 
 
 def test_exposure_grid_component_setup(
-    tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
     mocker: MockerFixture,
     model_with_region: FIATModel,
@@ -34,93 +31,65 @@ def test_exposure_grid_component_setup(
     # Setup the component
     component = ExposureGridComponent(model=model_with_region)
 
-    # create linking table
-    linking_table = pd.DataFrame(
-        data=[{"type": "flood_event", "curve_id": "vulnerability_curve"}]
-    )
-    linking_table_fp = tmp_path / "linking_table.csv"
-    linking_table.to_csv(linking_table_fp)
-
     # Mock vulnerability_data attribute to pass check
     mocker.patch.object(FIATModel, "vulnerability_data")
+    # Call the method
     component.setup_exposure_grid(
-        exposure_grid_fnames=["flood_event"],
-        exposure_grid_link_fname=linking_table_fp.as_posix(),
+        exposure_fnames="industrial_content",
+        exposure_link_fname="exposure_grid_link",
     )
+
+    # Assert the output
     assert isinstance(component.data, xr.Dataset)
-    flood_event_da = component.data.flood_event
-    assert flood_event_da.attrs.get("fn_damage") == "vulnerability_curve"
     assert "Setting up exposure grid" in caplog.text
     assert (
         model_with_region.config.get_value("exposure.grid.file") == component._filename
     )
+    assert "industrial_content" in component.data.data_vars
 
-    # Check if config is set properly when data is added to existing grid
+
+def test_exposure_grid_component_setup_multi(
+    mocker: MockerFixture,
+    model_with_region: FIATModel,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_with_region)
+
+    # Mock vulnerability_data attribute to pass check
+    mocker.patch.object(FIATModel, "vulnerability_data")
+    # Call the method
     component.setup_exposure_grid(
-        exposure_grid_fnames=["flood_event_highres"],
-        exposure_grid_link_fname=linking_table_fp.as_posix(),
+        exposure_fnames=["industrial_content", "industrial_structure"],
+        exposure_link_fname="exposure_grid_link",
     )
 
-    assert model_with_region.config.get_value("exposure.grid.settings.var_as_band")
+    # Assert the output
+    assert "industrial_content" in component.data.data_vars
+    assert "industrial_structure" in component.data.data_vars
+    assert component.data.industrial_structure.attrs.get("fn_damage") == "in2"
 
 
 def test_exposure_grid_component_setup_errors(
-    tmp_path: Path,
     mocker: MockerFixture,
     model: FIATModel,
-    build_region: Path,
 ):
     # Setup the component
     component = ExposureGridComponent(model=model)
 
-    # Assert the errors pop up
+    # Assert the vulnerability absent error
     err_msg = "setup_vulnerability step is required before setting up exposure grid."
     with pytest.raises(RuntimeError, match=err_msg):
         component.setup_exposure_grid(
-            exposure_grid_fnames="flood_event",
-            exposure_grid_link_fname="test.csv",
+            exposure_fnames="industrial_content",
+            exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
 
+    # Assert missing region error
     mocker.patch.object(FIATModel, "vulnerability_data")
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid."
     ):
         component.setup_exposure_grid(
-            exposure_grid_fnames="flood_event",
-            exposure_grid_link_fname="test.csv",
-        )
-
-    # check raise value error if linking table does not exist
-    model.setup_region(build_region)
-    with pytest.raises(ValueError, match="Given path to linking table does not exist."):
-        component.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname="not/a/file/path",
-        )
-    linking_table = pd.DataFrame(
-        data=[{"exposure": "flood_event", "curve_id": "damage_fn"}]
-    )
-    linking_table_fp = tmp_path / "test_linking_table.csv"
-    linking_table.to_csv(linking_table_fp, index=False)
-
-    with pytest.raises(
-        ValueError, match="Missing column, 'type' in exposure grid linking table"
-    ):
-        component.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp.as_posix(),
-        )
-
-    linking_table = pd.DataFrame(
-        data=[{"type": "flood_event", "curve_name": "damage_fn"}]
-    )
-    linking_table_fp = tmp_path / "test_linking_table.csv"
-    linking_table.to_csv(linking_table_fp, index=False)
-
-    with pytest.raises(
-        ValueError, match="Missing column, 'curve_id' in exposure grid linking table"
-    ):
-        component.setup_exposure_grid(
-            exposure_grid_fnames=["flood_event"],
-            exposure_grid_link_fname=linking_table_fp.as_posix(),
+            exposure_fnames="industrial_content",
+            exposure_link_fname="",
         )
