@@ -123,3 +123,17 @@ def test_max_monetary_damage_errors(
             vulnerability=vulnerability_identifiers,
             country="World",
         )
+
+    # Exposure cost link table missing columns
+    with pytest.raises(
+        ValueError,
+        match="Cost link table either missing object_type or cost_type",
+    ):
+        _ = max_monetary_damage(
+            exposure_data=exposure_geom_data_damage,
+            exposure_cost_table=exposure_cost_table,
+            exposure_type="damage",
+            vulnerability=vulnerability_identifiers,
+            country="World",
+            exposure_cost_link=pd.DataFrame(),
+        )

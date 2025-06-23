@@ -336,6 +336,7 @@ use 'setup_region' before this method"
         exposure_name: str,
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
+        exposure_cost_link_fname: Path | str | None = None,
         **select: dict,
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
@@ -366,6 +367,12 @@ with '{exposure_name}' as input or chose from already present geometries: \
         exposure_cost_table = self.model.data_catalog.get_dataframe(
             exposure_cost_table_fname,
         )
+        # Get the exposure cost link is not None
+        exposure_cost_link = None
+        if exposure_cost_link_fname is not None:
+            exposure_cost_link = self.model.data_catalog.get_dataframe(
+                exposure_cost_link_fname,
+            )
 
         # Call the workflows function to add the max damage
         exposure_vector = workflows.max_monetary_damage(
@@ -375,6 +382,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             vulnerability=self.model.vulnerability_data.data[
                 "vulnerability_identifiers"
             ],
+            exposure_cost_link=exposure_cost_link,
             **select,
         )
 

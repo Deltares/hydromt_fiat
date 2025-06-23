@@ -7,6 +7,7 @@ from barril.units import Scalar, UnitDatabase
 __all__ = ["create_query"]
 
 # GLOBAL STRINGS
+COST_TYPE = "cost_type"
 CURVE = "curve"
 CURVE_ID = "curve_id"
 EXPOSURE_LINK = "exposure_link"
