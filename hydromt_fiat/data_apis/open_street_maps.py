@@ -36,14 +36,14 @@ def get_roads_from_osm(
     if isinstance(road_types, str):
         road_types = [road_types]
 
-    tag = {"highway": road_types}  # this is the tag we use to find the correct OSM data
+    tags = {"highway": road_types}  # this is the tag we use to find the correct OSM data
 
     # Make sure that polygon is valid
     if not polygon.is_valid:
         polygon = polygon.buffer(0)
     try:
         roads = ox.features.features_from_polygon(
-            polygon, tags=tag
+            polygon, tags=tags
         )  # then we query the data
     except (ValueError, TypeError):
         logging.warning(
@@ -73,7 +73,7 @@ def get_roads_from_osm(
 
 
 def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
-    # osmnx does no loger add a omsid column, so we add it manually
+    tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
     landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data
 
     if landuse.empty:
@@ -139,7 +139,6 @@ def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
 
 def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     amenity = {"amenity": True}  # this is the tag we use to find the correct OSM data
-    # osmnx does no loger add a omsid column, so we add it manually
     amenity = ox.features.features_from_polygon(
         polygon, amenity
     )  # then we query the data

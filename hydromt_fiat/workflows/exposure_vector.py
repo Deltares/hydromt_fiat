@@ -475,7 +475,7 @@ class ExposureVector(Exposure):
                 )
 
             # Rename index to object_id
-            assets.reset_index("object_id", inplace=True)
+            assets = assets.rename_axis("object_id", axis=0).reset_index()
         else:
             assets = self.data_catalog.get_geodataframe(
                 asset_locations, geom=self.region
