@@ -1720,7 +1720,7 @@ class FiatModel(GridModel):
         if not os.path.exists(folder):
             os.makedirs(folder)
         self.building_footprint.to_file(
-            Path(folder).joinpath("building_footprints.geojson")
+            Path(folder).joinpath("building_footprints.gpkg"), driver="GPKG"
         )
 
     def write_geoms(self, output_single_file: bool = False):

@@ -334,12 +334,14 @@ def ground_elevation_from_dem(
     # fill remaining nan values with its nearest geographical neighbor
     nan_geoms = gdf[gdf["ground_elevtn"].isna()]
     if not nan_geoms.empty:
+        _gdf1 = gdf[gdf["ground_elevtn"].notna()]
         logger.warning(
             f"Found {len(nan_geoms)} geometries with no ground elevation data. "
             "Filling with nearest neighbor."
         )
-        nearest_ids = gdf.sindex.nearest(nan_geoms.geometry, exclusive=True, return_all=False)
-        gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[nearest_ids, "ground_elevtn"].values
+        nearest_ids = _gdf1.sindex.nearest(nan_geoms.geometry, exclusive=True, return_all=False)
+        gdf.loc[nan_geoms.index, "ground_elevtn"] = _gdf1.loc[nearest_ids[1], "ground_elevtn"].values
+        del _gdf1
 
     gdf.index = exposure_geoms.index  # Restore original index
     return gdf["ground_elevtn"]
