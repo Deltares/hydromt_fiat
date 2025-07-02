@@ -1,19 +1,17 @@
-import geopandas as gpd
-from hydromt.gis_utils import utm_crs, nearest_merge
-from typing import List, Union
 import logging
-from pyparsing import Literal
-import rasterio
-from rasterio.features import rasterize
-from xrspatial import zonal_stats
-import pandas as pd
-import numpy as np
-import xarray as xr
-from pathlib import Path
-from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 import time
+from typing import List, Literal
+
+import geopandas as gpd
+import numpy as np
+import pandas as pd
 import pint
+import xarray as xr
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
+from geopy.geocoders import Nominatim
+from hydromt.gis_utils import nearest_merge, utm_crs
+from xrspatial import zonal_stats
+
 from hydromt_fiat.api.data_types import Conversion
 
 
