@@ -1188,11 +1188,11 @@ class ExposureVector(Exposure):
             )
 
             if self.exposure_db["ground_elevtn"].isna().any():
-                nempty = self.exposure_db["ground_elevtn"].isna().sum()
+                nempty = int(self.exposure_db["ground_elevtn"].isna().sum())
                 self.logger.warning(
                     f"{nempty} objects do not have a ground elevation value. "
-                    "This can happen when the exposure data is outside the extent of the DEM.",
-                    "These objects will be dropped from the exposure data.",
+                    "This can happen when the exposure data is outside the extent of the DEM."
+                    "These objects will be dropped from the exposure data."
                 )
                 self.exposure_db.dropna(subset=["ground_elevtn"], inplace=True)
 
@@ -1697,11 +1697,11 @@ class ExposureVector(Exposure):
                 exposure_geoms=_new_exposure_geoms,
             )
             if new_objects["ground_elevtn"].isna().any():
-                nempty = new_objects["ground_elevtn"].isna().sum()
+                nempty = int(new_objects["ground_elevtn"].isna().sum())
                 self.logger.warning(
                     f"{nempty} objects do not have a ground elevation value. "
-                    "This can happen when the exposure data is outside the extent of the DEM.",
-                    "These objects will be dropped from the exposure data.",
+                    "This can happen when the exposure data is outside the extent of the DEM."
+                    "These objects will be dropped from the exposure data."
                 )
                 new_objects.dropna(subset=["ground_elevtn"], inplace=True)
 
