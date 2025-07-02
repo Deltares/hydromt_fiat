@@ -298,7 +298,7 @@ def ground_elevation_from_dem(
     """
     # rasterize the exposure geometries to match the DEM raster
     # NOTE that multiple buildings can fall into the same pixel, which we deal with later
-    gdf = exposure_geoms.reset_index(drop=True).to_crs(dem_da.raster.crs)
+    gdf = exposure_geoms.reset_index(drop=True).to_crs(dem_da.raster.crs).copy()
     gdf.index = gdf.index.astype(int) + 1  # Ensure index starts at 1 for rasterization
     da_exposure_id = dem_da.raster.rasterize(gdf, all_touched=True, nodata=0)
 
@@ -322,6 +322,10 @@ def ground_elevation_from_dem(
     nan_geoms = gdf[gdf["ground_elevtn"].isna()]
     # use centroid to sample the values from the raster
     if not nan_geoms.empty:
+        logger.debug(
+            f"Found {len(nan_geoms)} geometries which were not rasterized. "
+            "Filling based on geometry centroid."
+        )
         sampled_ids = da_exposure_id.raster.sample(
             nan_geoms.geometry.centroid
         )
@@ -330,14 +334,14 @@ def ground_elevation_from_dem(
     # fill remaining nan values with its nearest geographical neighbor
     nan_geoms = gdf[gdf["ground_elevtn"].isna()]
     if not nan_geoms.empty:
-        if logger:
-            logger.warning(
-                f"Found {len(nan_geoms)} geometries with no ground elevation data. "
-                "Filling with nearest neighbor."
-            )
-        nearest_ids = gdf.sindex.nearest(nan_geoms.geometry, exclusive=True)
+        logger.warning(
+            f"Found {len(nan_geoms)} geometries with no ground elevation data. "
+            "Filling with nearest neighbor."
+        )
+        nearest_ids = gdf.sindex.nearest(nan_geoms.geometry, exclusive=True, return_all=False)
         gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[nearest_ids, "ground_elevtn"].values
 
+    gdf.index = exposure_geoms.index  # Restore original index
     return gdf["ground_elevtn"]
 
 

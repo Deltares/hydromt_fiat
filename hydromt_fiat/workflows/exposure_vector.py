@@ -442,10 +442,7 @@ class ExposureVector(Exposure):
             any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]) 
             or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"])
         ):
-            self.building_footprints = self.exposure_geoms[0]
-            self.convert_bf_into_centroids(
-                self.exposure_geoms[0], self.exposure_geoms[0].crs
-            )
+            self.convert_bf_into_centroids()
         self.setup_ground_floor_height(
             ground_floor_height, gfh_attribute_name, gfh_method, max_dist, gfh_unit
         )
@@ -1188,14 +1185,6 @@ class ExposureVector(Exposure):
                 logger=self.logger,
             )
 
-            if self.exposure_db["ground_elevtn"].isna().any():
-                nempty = int(self.exposure_db["ground_elevtn"].isna().sum())
-                self.logger.warning(
-                    f"{nempty} objects do not have a ground elevation value. "
-                    "This can happen when the exposure data is outside the extent of the DEM."
-                    "These objects will be dropped from the exposure data."
-                )
-                self.exposure_db.dropna(subset=["ground_elevtn"], inplace=True)
 
             # Unit conversion
             if grnd_elev_unit:
@@ -1474,7 +1463,7 @@ class ExposureVector(Exposure):
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
 
-    def convert_bf_into_centroids(self, gdf_bf, crs):
+    def convert_bf_into_centroids(self):
         """Convert building footprints into point data.
 
         Parameters
@@ -1484,23 +1473,17 @@ class ExposureVector(Exposure):
         crs : str
             The CRS of the model.
         """
-        list_centroid = []
-        list_object_id = []
-        for index, row in gdf_bf.iterrows():
-            centroid = row["geometry"].centroid
-            list_centroid.append(centroid)
-            list_object_id.append(row["object_id"])
-        data = {"object_id": list_object_id, "geometry": list_centroid}
-        gdf_centroid = gpd.GeoDataFrame(data, columns=["object_id", "geometry"])
-        gdf = gdf_bf.merge(gdf_centroid, on="object_id", suffixes=("_gdf1", "_gdf2"))
-        gdf.drop(columns="geometry_gdf1", inplace=True)
-        gdf.rename(columns={"geometry_gdf2": "geometry"}, inplace=True)
-        gdf.drop_duplicates(inplace=True)
-        gdf = gpd.GeoDataFrame(gdf, geometry=gdf["geometry"])
-
-        # Update geoms
-        self.exposure_geoms[0] = gdf
-        self.exposure_geoms[0].crs = crs
+        if not self.exposure_geoms[0].geometry.type.isin(["Polygon", "MultiPolygon"]).any():
+            self.logger.warning(
+                "The building footprints are not polygons or multipolygons, "
+                "cannot convert to centroids."
+            )
+            return
+        gdf_bf: gpd.GeoDataFrame = self.exposure_geoms[0].copy()
+        self.building_footprints = gdf_bf
+        # replace geometry with representative points (centroid within the footprint)
+        self.exposure_geoms[0] = gdf_bf.set_geometry(gdf_bf.geometry.representative_point())
+        self.exposure_geoms[0].crs = gdf_bf.crs
 
     def calculate_damages_new_exposure_object(
         self, percent_growth: float, damage_types: List[str]
@@ -1698,14 +1681,6 @@ class ExposureVector(Exposure):
                 exposure_geoms=_new_exposure_geoms,
                 logger=self.logger,
             )
-            if new_objects["ground_elevtn"].isna().any():
-                nempty = int(new_objects["ground_elevtn"].isna().sum())
-                self.logger.warning(
-                    f"{nempty} objects do not have a ground elevation value. "
-                    "This can happen when the exposure data is outside the extent of the DEM."
-                    "These objects will be dropped from the exposure data."
-                )
-                new_objects.dropna(subset=["ground_elevtn"], inplace=True)
 
         if elevation_reference == "datum":
             # Ensure that the new objects have a first floor height that elevates them above the requirement
