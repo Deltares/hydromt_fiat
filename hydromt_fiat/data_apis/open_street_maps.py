@@ -10,10 +10,9 @@ logger = logging.getLogger(__name__)
 def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     tags = {"building": True}  # this is the tag we use to find the correct OSM data
 
-    # osmnx does no loger add a omsid column, so we add it manually
     footprints = ox.features.features_from_polygon(
         polygon, tags
-    ).reset_index("osmid")  # then we query the data
+    )  # then we query the data
 
     if footprints.empty:
         return None
@@ -26,7 +25,7 @@ def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
         | (footprints.geometry.type == "MultiPolygon")
     ]
     footprints = footprints.reset_index()
-    footprints = footprints.loc[:, ["osmid", "geometry"]]
+    footprints = footprints.loc[:, ["geometry"]]
     return footprints
 
 
@@ -43,10 +42,9 @@ def get_roads_from_osm(
     if not polygon.is_valid:
         polygon = polygon.buffer(0)
     try:
-        # osmnx does no loger add a omsid column, so we add it manually
         roads = ox.features.features_from_polygon(
             polygon, tags=tag
-        ).reset_index("osmid")  # then we query the data
+        )  # then we query the data
     except (ValueError, TypeError):
         logging.warning(
             "Could not download road data from OSM for the given region and road types."
@@ -76,8 +74,7 @@ def get_roads_from_osm(
 
 def get_landuse_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     # osmnx does no loger add a omsid column, so we add it manually
-    tags = {"landuse": True}  # this is the tag we use to find the correct OSM data
-    landuse = ox.features.features_from_polygon(polygon, tags).reset_index("osmid")  # then we query the data
+    landuse = ox.features.features_from_polygon(polygon, tags)  # then we query the data
 
     if landuse.empty:
         logger.warning("No land use data found from OSM")
@@ -117,10 +114,9 @@ def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     buildings = {
         "building": True
     }  # this is the tag we use to find the correct OSM data
-    # osmnx does no loger add a omsid column, so we add it manually
     buildings = ox.features.features_from_polygon(
         polygon, buildings
-    ).reset_index("osmid")  # then we query the data
+    )  # then we query the data
 
 
     if buildings.empty:
@@ -146,7 +142,7 @@ def get_amenity_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     # osmnx does no loger add a omsid column, so we add it manually
     amenity = ox.features.features_from_polygon(
         polygon, amenity
-    ).reset_index("osmid")  # then we query the data
+    )  # then we query the data
 
     if amenity.empty:
         logging.warning("No amenity data found from OSM")

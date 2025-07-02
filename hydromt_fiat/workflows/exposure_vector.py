@@ -474,8 +474,8 @@ class ExposureVector(Exposure):
                     f"{asset_locations}."
                 )
 
-            # Rename the osmid column to object_id
-            assets.rename(columns={"osmid": "object_id"}, inplace=True)
+            # Rename index to object_id
+            assets.reset_index("object_id", inplace=True)
         else:
             assets = self.data_catalog.get_geodataframe(
                 asset_locations, geom=self.region
