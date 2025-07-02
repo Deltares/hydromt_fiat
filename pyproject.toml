@@ -33,7 +33,7 @@ dependencies = [
     "tqdm",
     "pycountry-convert",
     "pyarrow",
-    "dask<=2024.12.1",
+    "dask",
     "pint"
 ]
 readme = "README.rst"
