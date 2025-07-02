@@ -1,50 +1,48 @@
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon, MultiPolygon
-from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
 
-import pycountry_convert as pc
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pycountry_convert as pc
+import xarray as xr
+from geopy.extra.rate_limiter import RateLimiter
+from geopy.geocoders import Nominatim
 from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
-import re
+from shapely.geometry import MultiPolygon, Polygon
 
+from hydromt_fiat.api.data_types import Conversion, Currency, Units
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
-from hydromt_fiat.api.data_types import Units, Conversion, Currency
 from hydromt_fiat.data_apis.open_street_maps import (
-    get_assets_from_osm,
-    get_landuse_from_osm,
-    get_buildings_from_osm,
     get_amenity_from_osm,
+    get_assets_from_osm,
+    get_buildings_from_osm,
+    get_landuse_from_osm,
     get_roads_from_osm,
 )
-
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.damage_values import (
-    preprocess_jrc_damage_values,
-    preprocess_hazus_damage_values,
     preprocess_damage_values,
+    preprocess_hazus_damage_values,
+    preprocess_jrc_damage_values,
 )
 from hydromt_fiat.workflows.exposure import Exposure
-from hydromt_fiat.workflows.utils import detect_delimiter
-from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
     get_area,
     get_crs_str_from_gdf,
-    join_spatial_data,
     ground_elevation_from_dem,
+    join_spatial_data,
 )
-
 from hydromt_fiat.workflows.roads import (
     get_max_potential_damage_roads,
     get_road_lengths,
 )
-
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.utils import detect_delimiter
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 
 class ExposureVector(Exposure):
@@ -1179,12 +1177,24 @@ class ExposureVector(Exposure):
             The unit of the ground elevation. This can be either 'meters' or 'feet'.
         """
 
+
         if ground_elevation:
+            dem_da: xr.DataArray = self.data_catalog.get_rasterdataset(
+                ground_elevation, geom=self.region, variables=["elevtn"], buffer=2
+            )
             self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
-                ground_elevation=ground_elevation,
-                exposure_db=self.exposure_db,
+                dem_da=dem_da,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
             )
+
+            if self.exposure_db["ground_elevtn"].isna().any():
+                nempty = self.exposure_db["ground_elevtn"].isna().sum()
+                self.logger.warning(
+                    f"{nempty} objects do not have a ground elevation value. "
+                    "This can happen when the exposure data is outside the extent of the DEM.",
+                    "These objects will be dropped from the exposure data.",
+                )
+                self.exposure_db.dropna(subset=["ground_elevtn"], inplace=True)
 
             # Unit conversion
             if grnd_elev_unit:
@@ -1679,11 +1689,21 @@ class ExposureVector(Exposure):
         # If the user supplied ground_elevtn data, assign that to the new
         # composite areas
         if ground_elevation is not None:
+            dem_da: xr.DataArray = self.data_catalog.get_rasterdataset(
+                ground_elevation, geom=self.region, variables=["elevtn"], buffer=2
+            )
             new_objects["ground_elevtn"] = ground_elevation_from_dem(
-                ground_elevation=ground_elevation,
-                exposure_db=new_objects,
+                dem_da=dem_da,
                 exposure_geoms=_new_exposure_geoms,
             )
+            if new_objects["ground_elevtn"].isna().any():
+                nempty = new_objects["ground_elevtn"].isna().sum()
+                self.logger.warning(
+                    f"{nempty} objects do not have a ground elevation value. "
+                    "This can happen when the exposure data is outside the extent of the DEM.",
+                    "These objects will be dropped from the exposure data.",
+                )
+                new_objects.dropna(subset=["ground_elevtn"], inplace=True)
 
         if elevation_reference == "datum":
             # Ensure that the new objects have a first floor height that elevates them above the requirement

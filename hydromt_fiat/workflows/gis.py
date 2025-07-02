@@ -2,6 +2,7 @@ import geopandas as gpd
 from hydromt.gis_utils import utm_crs, nearest_merge
 from typing import List, Union
 import logging
+from pyparsing import Literal
 import rasterio
 from rasterio.features import rasterize
 from xrspatial import zonal_stats
@@ -276,53 +277,58 @@ def join_spatial_data(
 
 
 def ground_elevation_from_dem(
-    ground_elevation: Union[None, str, Path],
-    exposure_db: pd.DataFrame,
+    dem_da: xr.DataArray,
     exposure_geoms: gpd.GeoDataFrame,
-) -> None:
-    # This function was developed by Willem https://github.com/interTwin-eu/DT-flood/blob/DemonstrationNotebooks/Notebooks/SetupFIAT.ipynb
-    # TODO: Find equivalent functions in hydromt
-    # Read in the DEM
-    dem = rasterio.open(ground_elevation)
-    # gdf = self.get_full_gdf(exposure_db)
+    stats_func: Literal["mean", "min"] = "mean",
+) -> pd.Series:
+    """Calculate the ground elevation from a DEM for the given exposure geometries.
 
-    # TODO if exposure.geoms is not POINTS: either take average value of pixels or create a centroid
+    Parameters
+    ----------
+    dem_da : xr.DataArray
+        The DEM data as an xarray DataArray.
+    exposure_geoms : gpd.GeoDataFrame
+        The exposure geometries as a GeoDataFrame.
+    stats_func : Literal["mean", "min"], optional
+        The statistic to calculate for the ground elevation, by default "mean".
+    
+    Returns
+    -------
+    pd.Series
+        A pandas Series containing the ground elevation for each exposure geometry.
+    """
+    # rasterize the exposure geometries to match the DEM raster
+    # NOTE that multiple buildings can fall into the same pixel, which we deal with later
+    gdf = exposure_geoms.reset_index(drop=True).to_crs(dem_da.raster.crs)
+    gdf.index = gdf.index.astype(int) + 1  # Ensure index starts at 1 for rasterization
+    da_exposure_id = dem_da.raster.rasterize(gdf, all_touched=True, nodata=0)
 
-    gdf = exposure_geoms.to_crs(dem.crs.data)
-    # Create a list of geometries plus a label for rasterize
-    # The labels start at 1 since the label 0 is reserved for everything not in a geometry
-    # The order of each tuple is (geometry,label)
-    shapes = list(enumerate(gdf["geometry"].values))
-    shapes = [(t[1], t[0] + 1) for t in shapes]
-
-    rasterized = rasterize(
-        shapes=shapes, out_shape=dem.shape, transform=dem.transform, all_touched=True
-    )
-    # zonal_stats needs xarrays as input
-    rasterized = xr.DataArray(rasterized)
-
-    # Calculate the zonal statistics
-    zonal_out = zonal_stats(
-        rasterized,
-        xr.DataArray(dem.read(1)),
-        stats_funcs=["mean"],
+    # Calculate the zonal statistics using xrspatial
+    # NOTE this is much faster than using hydromt.raster.zonal_stats, but we need to 
+    # deal with the fact that multiple buildings can fall into the same pixel
+    df_elev = zonal_stats(
+        da_exposure_id,
+        dem_da.load(),
+        stats_funcs=[stats_func],
         nodata_values=np.nan,
-    )
+    ).set_index("zone")["mean"]
 
-    # The zero label is for pixels not in a geometry so we discard them
-    zonal_out = zonal_out.drop(0)
+    # Reindex to match the exposure GeoDataFrame
+    # and set the ground_elevtn column
+    gdf["ground_elevtn"] = df_elev.reindex(
+        gdf.index, fill_value=np.nan
+    )  
 
-    # Array storing the zonal means
-    # Store the calculated means at index corresponding to their label
-    zonal_means = np.full(len(shapes), np.nan)
-    zonal_means[[zonal_out["zone"].values - 1]] = zonal_out["mean"].values
+    # fill nan values for buildings that fall into the same pixel
+    nan_geoms = gdf[gdf["ground_elevtn"].isna()]
+    # use centroid to sample the values from the raster
+    if not nan_geoms.empty:
+        sampled_ids = da_exposure_id.raster.sample(
+            nan_geoms.geometry.centroid
+        )
+        gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[sampled_ids.values, "ground_elevtn"].values
 
-    # Fill nan values with neighboring values.
-    # # Add ground_elevtn column and get rid of nans in the appropriate way
-    exposure_db["ground_elevtn"] = zonal_means
-    exposure_db["ground_elevtn"].bfill(inplace=True)
-
-    return exposure_db["ground_elevtn"]
+    return gdf["ground_elevtn"]
 
 
 def do_geocode(geolocator, xycoords, attempt=1, max_attempts=5):
