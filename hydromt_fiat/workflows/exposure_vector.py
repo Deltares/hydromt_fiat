@@ -1,50 +1,48 @@
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, List, Optional, Union
-from shapely.geometry import Polygon, MultiPolygon
-from geopy.geocoders import Nominatim
-from geopy.extra.rate_limiter import RateLimiter
 
-import pycountry_convert as pc
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pycountry_convert as pc
+import xarray as xr
+from geopy.extra.rate_limiter import RateLimiter
+from geopy.geocoders import Nominatim
 from hydromt.data_catalog import DataCatalog
 from pyproj import CRS
-import re
+from shapely.geometry import MultiPolygon, Polygon
 
+from hydromt_fiat.api.data_types import Conversion, Currency, Units
 from hydromt_fiat.data_apis.national_structure_inventory import get_assets_from_nsi
-from hydromt_fiat.api.data_types import Units, Conversion, Currency
 from hydromt_fiat.data_apis.open_street_maps import (
-    get_assets_from_osm,
-    get_landuse_from_osm,
-    get_buildings_from_osm,
     get_amenity_from_osm,
+    get_assets_from_osm,
+    get_buildings_from_osm,
+    get_landuse_from_osm,
     get_roads_from_osm,
 )
-
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
 from hydromt_fiat.workflows.damage_values import (
-    preprocess_jrc_damage_values,
-    preprocess_hazus_damage_values,
     preprocess_damage_values,
+    preprocess_hazus_damage_values,
+    preprocess_jrc_damage_values,
 )
 from hydromt_fiat.workflows.exposure import Exposure
-from hydromt_fiat.workflows.utils import detect_delimiter
-from hydromt_fiat.workflows.vulnerability import Vulnerability
 from hydromt_fiat.workflows.gis import (
     get_area,
     get_crs_str_from_gdf,
-    join_spatial_data,
     ground_elevation_from_dem,
+    join_spatial_data,
 )
-
 from hydromt_fiat.workflows.roads import (
     get_max_potential_damage_roads,
     get_road_lengths,
 )
-
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.utils import detect_delimiter
+from hydromt_fiat.workflows.vulnerability import Vulnerability
 
 
 class ExposureVector(Exposure):
@@ -107,7 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
-        self.building_footprints = gpd.GeoDataFrame
+        self.building_footprints = gpd.GeoDataFrame()
 
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -444,10 +442,7 @@ class ExposureVector(Exposure):
             any(isinstance(geom, Polygon) for geom in self.exposure_geoms[0]["geometry"]) 
             or any(isinstance(geom, MultiPolygon) for geom in self.exposure_geoms[0]["geometry"])
         ):
-            self.building_footprints = self.exposure_geoms[0]
-            self.convert_bf_into_centroids(
-                self.exposure_geoms[0], self.exposure_geoms[0].crs
-            )
+            self.convert_bf_into_centroids()
         self.setup_ground_floor_height(
             ground_floor_height, gfh_attribute_name, gfh_method, max_dist, gfh_unit
         )
@@ -476,8 +471,8 @@ class ExposureVector(Exposure):
                     f"{asset_locations}."
                 )
 
-            # Rename the osmid column to object_id
-            assets.rename(columns={"osmid": "object_id"}, inplace=True)
+            # Rename index to object_id
+            assets = assets.rename_axis("object_id", axis=0).reset_index()
         else:
             assets = self.data_catalog.get_geodataframe(
                 asset_locations, geom=self.region
@@ -1179,12 +1174,17 @@ class ExposureVector(Exposure):
             The unit of the ground elevation. This can be either 'meters' or 'feet'.
         """
 
+
         if ground_elevation:
-            self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
-                ground_elevation=ground_elevation,
-                exposure_db=self.exposure_db,
-                exposure_geoms=self.get_full_gdf(self.exposure_db),
+            dem_da: xr.DataArray = self.data_catalog.get_rasterdataset(
+                ground_elevation, geom=self.region, variables=["elevtn"], buffer=2
             )
+            self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
+                dem_da=dem_da,
+                exposure_geoms=self.get_full_gdf(self.exposure_db),
+                logger=self.logger,
+            )
+
 
             # Unit conversion
             if grnd_elev_unit:
@@ -1463,7 +1463,7 @@ class ExposureVector(Exposure):
             self.exposure_db.iloc[idx, damage_function_column_idx] + df_name_suffix
         )
 
-    def convert_bf_into_centroids(self, gdf_bf, crs):
+    def convert_bf_into_centroids(self):
         """Convert building footprints into point data.
 
         Parameters
@@ -1473,23 +1473,17 @@ class ExposureVector(Exposure):
         crs : str
             The CRS of the model.
         """
-        list_centroid = []
-        list_object_id = []
-        for index, row in gdf_bf.iterrows():
-            centroid = row["geometry"].centroid
-            list_centroid.append(centroid)
-            list_object_id.append(row["object_id"])
-        data = {"object_id": list_object_id, "geometry": list_centroid}
-        gdf_centroid = gpd.GeoDataFrame(data, columns=["object_id", "geometry"])
-        gdf = gdf_bf.merge(gdf_centroid, on="object_id", suffixes=("_gdf1", "_gdf2"))
-        gdf.drop(columns="geometry_gdf1", inplace=True)
-        gdf.rename(columns={"geometry_gdf2": "geometry"}, inplace=True)
-        gdf.drop_duplicates(inplace=True)
-        gdf = gpd.GeoDataFrame(gdf, geometry=gdf["geometry"])
-
-        # Update geoms
-        self.exposure_geoms[0] = gdf
-        self.exposure_geoms[0].crs = crs
+        if not self.exposure_geoms[0].geometry.type.isin(["Polygon", "MultiPolygon"]).any():
+            self.logger.warning(
+                "The building footprints are not polygons or multipolygons, "
+                "cannot convert to centroids."
+            )
+            return
+        gdf_bf: gpd.GeoDataFrame = self.exposure_geoms[0].copy()
+        self.building_footprints = gdf_bf
+        # replace geometry with representative points (centroid within the footprint)
+        self.exposure_geoms[0] = gdf_bf.set_geometry(gdf_bf.geometry.representative_point())
+        self.exposure_geoms[0].crs = gdf_bf.crs
 
     def calculate_damages_new_exposure_object(
         self, percent_growth: float, damage_types: List[str]
@@ -1679,10 +1673,13 @@ class ExposureVector(Exposure):
         # If the user supplied ground_elevtn data, assign that to the new
         # composite areas
         if ground_elevation is not None:
+            dem_da: xr.DataArray = self.data_catalog.get_rasterdataset(
+                ground_elevation, geom=self.region, variables=["elevtn"], buffer=2
+            )
             new_objects["ground_elevtn"] = ground_elevation_from_dem(
-                ground_elevation=ground_elevation,
-                exposure_db=new_objects,
+                dem_da=dem_da,
                 exposure_geoms=_new_exposure_geoms,
+                logger=self.logger,
             )
 
         if elevation_reference == "datum":
