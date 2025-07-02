@@ -278,6 +278,7 @@ def ground_elevation_from_dem(
     dem_da: xr.DataArray,
     exposure_geoms: gpd.GeoDataFrame,
     stats_func: Literal["mean", "min"] = "mean",
+    logger: logging.Logger = None
 ) -> pd.Series:
     """Calculate the ground elevation from a DEM for the given exposure geometries.
 
@@ -325,6 +326,17 @@ def ground_elevation_from_dem(
             nan_geoms.geometry.centroid
         )
         gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[sampled_ids.values, "ground_elevtn"].values
+
+    # fill remaining nan values with its nearest geographical neighbor
+    nan_geoms = gdf[gdf["ground_elevtn"].isna()]
+    if not nan_geoms.empty:
+        if logger:
+            logger.warning(
+                f"Found {len(nan_geoms)} geometries with no ground elevation data. "
+                "Filling with nearest neighbor."
+            )
+        nearest_ids = gdf.sindex.nearest(nan_geoms.geometry, exclusive=True)
+        gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[nearest_ids, "ground_elevtn"].values
 
     return gdf["ground_elevtn"]
 

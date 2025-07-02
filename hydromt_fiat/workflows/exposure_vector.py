@@ -105,7 +105,7 @@ class ExposureVector(Exposure):
         self.unit = unit
         self._geom_names = list()  # A list of (original) names of the geometry (files)
         self.damage_unit = damage_unit
-        self.building_footprints = gpd.GeoDataFrame
+        self.building_footprints = gpd.GeoDataFrame()
 
     def bounding_box(self):
         if len(self.exposure_geoms) > 0:
@@ -1185,6 +1185,7 @@ class ExposureVector(Exposure):
             self.exposure_db["ground_elevtn"] = ground_elevation_from_dem(
                 dem_da=dem_da,
                 exposure_geoms=self.get_full_gdf(self.exposure_db),
+                logger=self.logger,
             )
 
             if self.exposure_db["ground_elevtn"].isna().any():
@@ -1695,6 +1696,7 @@ class ExposureVector(Exposure):
             new_objects["ground_elevtn"] = ground_elevation_from_dem(
                 dem_da=dem_da,
                 exposure_geoms=_new_exposure_geoms,
+                logger=self.logger,
             )
             if new_objects["ground_elevtn"].isna().any():
                 nempty = int(new_objects["ground_elevtn"].isna().sum())
