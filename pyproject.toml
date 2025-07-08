@@ -21,6 +21,7 @@ authors = [
     {name = "L. Blom", email = "luuk.blom@deltares.nl"}
 ]
 maintainers = [
+    {name = "B.W. Dalmijn", email = "brendan.dalmijn@deltares.nl"},
     {name = "T.C. de Jong", email = "tjalling.dejong@deltares.nl"},
     {name = "L. Blom", email = "luuk.blom@deltares.nl"}
 ]
@@ -131,6 +132,10 @@ deps_not_in_conda = [
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "serial",
+]
 testpaths = [
     "tests",
 ]
@@ -157,6 +162,7 @@ exclude_also = [
     # Don't complain about abstract methods, they aren't run:
     "@(abc\\.)?abstractmethod",
     ]
+omit = ["src/hydromt_fiat/data/fetch.py"]
 
 ignore_errors = true
 
@@ -176,6 +182,7 @@ exclude = ["docs/**"]
 "tests/**" = ["D103", "D100", "D104"]
 "tests/conftest.py" = ["E402"]
 "src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
+"src/hydromt_fiat/components/__init__.py" = ["F403"]
 "src/hydromt_fiat/workflows/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
@@ -207,8 +214,24 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"
 # Testing
 test = { cmd = ["pytest"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-cov = { cmd = ["pytest", "--verbose", "--cov=hydromt_fiat", "--cov-report", "xml"] }
-test-cov-local = { cmd = ["pytest", "--verbose", "--cov", "--cov-report", "html",] }
+test-cov = { cmd = [
+    "pytest",
+    "-m",
+    "not integration",
+    "--verbose",
+    "--cov=hydromt_fiat",
+    "--cov-report",
+    "xml"
+] }
+test-cov-local = { cmd = [
+    "pytest",
+    "-m",
+    "not integration",
+    "--verbose",
+    "--cov",
+    "--cov-report",
+    "html"
+] }
 
 # Clean up (some of) the temporary files
 clean = { depends-on = [
@@ -257,9 +280,9 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = [] }
-dev = { features = ["dev", "docs", "examples", "test"] }
+default = { features = ["dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
+slim = { features = [] }
 test-py313 = {features = ["py313", "test"]}
 test-py312 = {features = ["py312", "test"]}
 test-py311 = {features = ["py311", "test"]}

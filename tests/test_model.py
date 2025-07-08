@@ -1,14 +1,20 @@
-import logging
 from pathlib import Path
 
+import geopandas as gpd
 import pytest
-import xarray as xr
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.components import (
+    ExposureGeomsComponent,
+    ExposureGridComponent,
+    FIATConfigComponent,
+    HazardGridComponent,
+    RegionComponent,
+    VulnerabilityComponent,
+)
 
 
-def test_empty_model(tmp_path):
+def test_empty_model(tmp_path: Path):
     # Setup an empty fiat model
     model = FIATModel(tmp_path)
 
@@ -16,103 +22,78 @@ def test_empty_model(tmp_path):
     assert "config" in model.components
     assert "region" in model.components
     assert model.region is None
-    assert len(model.components) == 7
+    assert len(model.components) == 6
 
 
-def test_basic_read_write(tmp_path, build_region):
+def test_basic_read_write(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.setup_config(model="geom")
-    model.setup_region(region=build_region)
+    model.setup_config(some_var="some_value")
     # Write the model
     model.write()
     model = None
-    assert Path(tmp_path, "region.geojson").is_file()
+    assert Path(tmp_path, "settings.toml").is_file()
 
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
     model.read()
 
-    assert model.region is not None
+    assert len(model.config.data) != 0
 
 
-def test_setup_vulnerability(tmp_path, build_data_catalog):
+def test_setup_config(tmp_path: Path):
     # Setup the model
-    model = FIATModel(tmp_path, mode="w+", data_libs=build_data_catalog)
+    model = FIATModel(tmp_path, mode="w")
 
-    assert len(model.vulnerability_data.data) == 0
-
-    # Setup the vulnerability
-    model.setup_vulnerability(
-        vuln_fname="jrc_vulnerability_curves",
-        vuln_link_fname="jrc_vulnerability_curves_linking",
-        continent="europe",
+    # Setup some config variables
+    model.setup_config(
+        **{
+            "global.model": "geom",
+            "global.srs.value": "EPSG:4326",
+            "output.path": "output",
+        }
     )
 
-    assert len(model.vulnerability_data.data) == 2
-    assert "vulnerability_curves" in model.vulnerability_data.data
-    assert "vulnerability_identifiers" in model.vulnerability_data.data
-    assert (
-        model.config.get_value("vulnerability.file")
-        == "vulnerability/vulnerability_curves.csv"
-    )
+    # Assert the config component
+    assert model.config.data["output"] == {"path": "output"}
+    assert model.config.get_value("output.path") == "output"
+    assert len(model.config.get_value("global")) == 2
+    assert model.config.get_value("global.srs") == {"value": "EPSG:4326"}
 
 
-def test_setup_hazard(tmp_path, build_data_catalog, caplog, build_region):
+def test_setup_region(tmp_path: Path, build_region: Path):
     # Setup the model
-    model = FIATModel(tmp_path, data_libs=[build_data_catalog])
+    model = FIATModel(tmp_path, mode="w")
+    assert model.region is None
+
+    # Setup the region
     model.setup_region(region=build_region)
-    # Test hazard event
-    caplog.set_level(logging.INFO)
-    model.setup_hazard(hazard_fnames="flood_event")
-
-    assert "Added flooding hazard map: flood_event" in caplog.text
-    assert model.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
-    assert model.config.get_value("hazard.elevation_reference") == "datum"
-
-    # Test setting data to hazard grid with data
-    model.setup_hazard(hazard_fnames="flood_event_highres")
-
-    # Check if both ds are still there
-    assert "flood_event" in model.hazard_grid.data.data_vars.keys()
-    assert "flood_event_highres" in model.hazard_grid.data.data_vars.keys()
-
-    # Test hazard with return period
-    model2 = FIATModel(tmp_path, data_libs=[build_data_catalog])
-    model2.setup_region(region=build_region)
-    model2.setup_hazard(
-        hazard_fnames=["flood_event_highres"],
-        risk=True,
-        return_periods=[50000],
-    )
-
-    assert isinstance(model2.hazard_grid.data, xr.Dataset)
-    assert model2.config.get_value("hazard.risk")
-    assert model2.config.get_value("hazard.return_periods") == [50000]
+    assert model.region is not None
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert len(model.region) == 1
 
 
-def test_setup_hazard_errors(tmp_path):
+def test_setup_region_error(tmp_path: Path):
     # Setup the model
-    model = FIATModel(tmp_path)
+    model = FIATModel(tmp_path, mode="w")
 
-    with pytest.raises(
-        ValueError, match="Cannot perform risk analysis without return periods"
-    ):
-        model.setup_hazard(hazard_fnames="test.nc", risk=True)
+    # Setup the region
+    region_no = Path(tmp_path, "region.geojson")
+    with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
+        model.setup_region(region=region_no)
 
-    with pytest.raises(
-        ValueError, match="Return periods do not match the number of hazard files"
-    ):
-        model.setup_hazard(
-            hazard_fnames=["test1.nc", "test2.nc"],
-            risk=True,
-            return_periods=[1, 2, 3],
-        )
 
-    with pytest.raises(
-        MissingRegionError,
-        match=("Region component is missing for setting up hazard data."),
-    ):
-        model.setup_hazard(hazard_fnames=["flood_event"])
+def test_model_properties(model_with_region: FIATModel):
+    # Setup an empty fiat model
+    model = model_with_region
+
+    # Assert the types of model properties
+    assert isinstance(model.config, FIATConfigComponent)
+    assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
+    assert isinstance(model.exposure_grid, ExposureGridComponent)
+    assert isinstance(model.hazard_grid, HazardGridComponent)
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert isinstance(model.region_data, RegionComponent)
+    assert isinstance(model.vulnerability_data, VulnerabilityComponent)
