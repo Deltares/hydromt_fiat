@@ -46,8 +46,6 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/build_api';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
@@ -476,19 +474,33 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">FIATModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_data</span>
 </pre></div>
 </div>
 </div>
 <p>Lets make sure that there is a directory to build to.</p>
-<div class="nbinput nblast docutils container">
+<p>Also ensure we have some data to build with, hydromt_fiat comes with a small to function to fetch a small dataset to build with.</p>
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the built-in tempfile package</span>
 <span class="n">temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temp_dir</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="c1">## Get the build data</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">fetch_data</span><span class="p">(</span><span class="s2">&quot;build-data&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Downloading file &#39;build-data.tar.gz&#39; from &#39;doi:10.5281/zenodo.15691207/build-data.tar.gz&#39; to &#39;/home/runner/.cache/hydromt_fiat&#39;.
+Untarring contents of &#39;/home/runner/.cache/hydromt_fiat/build-data.tar.gz&#39; to &#39;/home/runner/.cache/hydromt_fiat/build-data&#39;
+</pre></div></div>
 </div>
 <p>Now lets setup the Model.</p>
 <div class="nbinput docutils container">
@@ -497,7 +509,7 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a model in write mode.</span>
 <span class="n">log</span><span class="o">.</span><span class="n">_setuplog</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">FIATModel</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">FIATModel</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w+&quot;</span><span class="p">,</span> <span class="n">data_libs</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;data_catalog.yml&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -506,12 +518,146 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2025-03-27 15:58:13,120 - hydromt - log - INFO - HydroMT version: 1.0.1
-2025-03-27 15:58:13,121 - hydromt.model.root - root - INFO - setting root to /tmp/tmpdvtr6d0f
-2025-03-27 15:58:13,139 - hydromt.model.model - model - INFO - Initializing fiat_model model from hydromt_fiat (v1.0.0.dev0).
+2025-07-08 12:24:29,534 - hydromt - log - INFO - HydroMT version: 1.1.0
+2025-07-08 12:24:29,535 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from /home/runner/.cache/hydromt_fiat/build-data/data_catalog.yml
+2025-07-08 12:24:30,215 - hydromt.model.root - root - INFO - setting root to /tmp/tmp31txuvab
+2025-07-08 12:24:30,226 - hydromt.model.model - model - INFO - Initializing fiat_model model from hydromt_fiat (v1.0.0.dev0).
 </pre></div></div>
 </div>
 <p>Next step is to update the configurations and add a region for the model to know to collect data in.</p>
+<p>Luckily a region vector file is incorporated in the small build data directory.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add some of the configurations</span>
+<span class="n">model</span><span class="o">.</span><span class="n">setup_config</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s2">&quot;model.model_type&quot;</span><span class="p">:</span> <span class="s2">&quot;geom&quot;</span><span class="p">,</span> <span class="s2">&quot;output.path&quot;</span><span class="p">:</span> <span class="s2">&quot;output&quot;</span><span class="p">})</span>
+
+<span class="c1"># Add a region to build with</span>
+<span class="n">model</span><span class="o">.</span><span class="n">setup_region</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2025-07-08 12:24:30,231 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting config entries from user input
+2025-07-08 12:24:30,232 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/.cache/hydromt_fiat/build-data/region.geojson&#39;
+</pre></div></div>
+</div>
+<p>Lets verify the presence of our region, which is crucial for building our hazard and exposure data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">region</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>POLYGON ((4.38362 51.97582, 4.38125 51.97865, ...</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>All seems in order, therefore we can move on to setting up the FIAT model data.</p>
+<p>Let’s start with the vulnerability, as this data is crucial for the exposure data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Call the setup method of the component</span>
+<span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span>
+    <span class="n">vulnerability_fname</span><span class="o">=</span><span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">,</span>
+    <span class="n">vulnerability_linking_fname</span><span class="o">=</span><span class="s2">&quot;vulnerability_curves_linking&quot;</span><span class="p">,</span>
+    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">,</span>
+    <span class="n">continent</span><span class="o">=</span><span class="s2">&quot;europe&quot;</span><span class="p">,</span>  <span class="c1"># A keyword argument to select data from the</span>
+    <span class="c1"># vulnerability_fname dataset</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+2025-07-08 12:24:30,258 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
+2025-07-08 12:24:30,259 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/.cache/hydromt_fiat/build-data/vulnerability/jrc_damage_functions.csv
+2025-07-08 12:24:30,276 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/.cache/hydromt_fiat/build-data/vulnerability/jrc_damage_functions_linking.csv
+</pre></div></div>
+</div>
+<p>This should result in data in our vulnerability data component, lets see.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;vulnerability_curves&#39;:       water depth    rs1    cm1    in1    in2     un1
+ 0            0.00  0.000  0.000  0.000  0.000  0.0000
+ 1            0.01  0.005  0.003  0.003  0.005  0.0049
+ 2            0.02  0.010  0.006  0.006  0.010  0.0098
+ 3            0.03  0.015  0.009  0.009  0.015  0.0146
+ 4            0.04  0.020  0.012  0.012  0.020  0.0195
+ ...           ...    ...    ...    ...    ...     ...
+ 996          9.96  1.000  1.000  1.000  1.000  1.0000
+ 997          9.97  1.000  1.000  1.000  1.000  1.0000
+ 998          9.98  1.000  1.000  1.000  1.000  1.0000
+ 999          9.99  1.000  1.000  1.000  1.000  1.0000
+ 1000        10.00  1.000  1.000  1.000  1.000  1.0000
+
+ [1001 rows x 6 columns],
+ &#39;vulnerability_identifiers&#39;:   exposure_link exposure_type curve    subtype curve_id
+ 0   residential        damage   rs1  structure      rs1
+ 1    commercial        damage   cm1  structure      cm1
+ 2    industrial        damage   in1  structure      in1
+ 3       unknown        damage   un1  structure      un1
+ 4   residential        damage   rs1    content      rs1
+ 5    commercial        damage   cm1    content      cm1
+ 6    industrial        damage   in2    content      in2
+ 7       unknown        damage   un1    content      un1}
+</pre></div></div>
+</div>
 <p>Simply done.</p>
 </section>
 </section>
@@ -626,7 +772,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

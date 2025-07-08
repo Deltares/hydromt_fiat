@@ -435,49 +435,45 @@
 <span></span><span class="sd">&quot;&quot;&quot;Hazard workflows.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataCatalog</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.processes.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">grid_from_rasterdataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">barril.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard_data&quot;</span><span class="p">]</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">standard_unit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.workflows.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_merge_dataarrays</span><span class="p">,</span> <span class="n">_process_dataarray</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard_grid&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="hazard_data">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.hazard_data.html#hydromt_fiat.workflows.hazard_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">hazard_data</span><span class="p">(</span>
+<div class="viewcode-block" id="hazard_grid">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.hazard_grid.html#hydromt_fiat.workflows.hazard_grid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hazard_grid</span><span class="p">(</span>
     <span class="n">grid_like</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">region</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
-    <span class="n">data_catalog</span><span class="p">:</span> <span class="n">DataCatalog</span><span class="p">,</span>
-    <span class="n">hazard_fnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">return_periods</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">hazard_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span> <span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">],</span>
+    <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">risk</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">return_periods</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">risk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse hazard data files to xarray dataset.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    grid_like: xr.Dataset | None</span>
+<span class="sd">    grid_like : xr.Dataset | None</span>
 <span class="sd">        Grid dataset that serves as an example dataset for transforming the input data</span>
-<span class="sd">    region: gpd.GeoDataFrame</span>
-<span class="sd">        Region geometry used for reading data from data catalog</span>
-<span class="sd">    data_catalog : DataCatalog</span>
-<span class="sd">        Model data catalog</span>
-<span class="sd">    hazard_fnames : list[str]</span>
-<span class="sd">        Names or paths of hazard files</span>
-<span class="sd">    hazard_type : str | None</span>
+<span class="sd">    hazard_data : dict[str:xr.DataArray]</span>
+<span class="sd">        The hazard data in a dictionary with the names of the datasets as keys.</span>
+<span class="sd">    hazard_type : str</span>
 <span class="sd">        Type of hazard</span>
-<span class="sd">    risk : bool</span>
-<span class="sd">        Designate hazard files for risk analysis</span>
 <span class="sd">    return_periods : list[int] | None, optional</span>
 <span class="sd">        List of return periods, by default None</span>
+<span class="sd">    risk : bool</span>
+<span class="sd">        Designate hazard files for risk analysis, by default False</span>
+<span class="sd">    unit : str</span>
+<span class="sd">        The unit which the hazard data is in, by default &#39;m&#39;</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -485,65 +481,39 @@
 <span class="sd">        Unified xarray dataset containing the hazard data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">hazard_dataarrays</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hazard_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">hazard_fnames</span><span class="p">):</span>
-        <span class="n">da</span> <span class="o">=</span> <span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span><span class="n">hazard_file</span><span class="p">,</span> <span class="n">geom</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_periods</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">risk</span><span class="p">:</span>
+        <span class="n">return_periods</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">hazard_data</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">return_period</span><span class="p">,</span> <span class="p">(</span><span class="n">da_name</span><span class="p">,</span> <span class="n">da</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">return_periods</span><span class="p">,</span> <span class="n">hazard_data</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">_process_dataarray</span><span class="p">(</span><span class="n">da</span><span class="o">=</span><span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
 
-        <span class="c1"># Convert to gdal compliant</span>
-        <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="s2">&quot;_FillValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">gdal_compliant</span><span class="p">()</span>
+        <span class="c1"># Check for unit</span>
+        <span class="n">conversion</span> <span class="o">=</span> <span class="n">standard_unit</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
+        <span class="n">da</span> <span class="o">*=</span> <span class="n">conversion</span><span class="o">.</span><span class="n">value</span>
 
-        <span class="c1"># ensure variable name is lowercase</span>
-        <span class="n">da_name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">hazard_file</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-        <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">da_name</span><span class="p">)</span>
-
-        <span class="c1"># Check if map is rotated and if yes, reproject to a non-rotated grid</span>
-        <span class="k">if</span> <span class="s2">&quot;xc&quot;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">coords</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;Hazard map is rotated. It will be reprojected&quot;</span>
-                <span class="s2">&quot; to a none rotated grid using nearest neighbor&quot;</span>
-                <span class="s2">&quot;interpolation&quot;</span>
-            <span class="p">)</span>
-            <span class="n">da</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">reproject</span><span class="p">(</span><span class="n">dst_crs</span><span class="o">=</span><span class="n">da</span><span class="o">.</span><span class="n">rio</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;grid_mapping&quot;</span> <span class="ow">in</span> <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="p">:</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">encoding</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;grid_mapping&quot;</span><span class="p">)</span>
-
-        <span class="n">rp</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(rp </span><span class="si">{</span><span class="n">return_periods</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">risk</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">rp</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;(rp </span><span class="si">{</span><span class="n">return_period</span><span class="si">}</span><span class="s2">)&quot;</span> <span class="k">if</span> <span class="n">risk</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added </span><span class="si">{</span><span class="n">hazard_type</span><span class="si">}</span><span class="s2"> hazard map: </span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">rp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">risk</span><span class="p">:</span>
-            <span class="c1"># Set the event data arrays to the hazard grid component</span>
-            <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span>
-                    <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
-                <span class="p">}</span>
-            <span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;return_period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_period</span>
+        <span class="c1"># Set the event data arrays to the hazard grid component</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
         <span class="n">hazard_dataarrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">grid_like</span><span class="p">:</span>
-        <span class="n">grid_like</span> <span class="o">=</span> <span class="n">hazard_dataarrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
-
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">hazard_dataarrays</span><span class="p">)</span>
 
     <span class="c1"># Reproject to gridlike</span>
-    <span class="n">ds</span> <span class="o">=</span> <span class="n">grid_from_rasterdataset</span><span class="p">(</span><span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span> <span class="n">ds</span><span class="o">=</span><span class="n">ds</span><span class="p">)</span>
-    <span class="n">da_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">hazard_dataarrays</span><span class="p">]</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">_merge_dataarrays</span><span class="p">(</span><span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span> <span class="n">dataarrays</span><span class="o">=</span><span class="n">hazard_dataarrays</span><span class="p">)</span>
 
+    <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span>
+        <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
     <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;return_period&quot;</span><span class="p">:</span> <span class="n">return_periods</span><span class="p">,</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_names</span><span class="p">,</span>
-                <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;risk&quot;</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;risk&quot;</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">da_names</span><span class="p">}</span>
-        <span class="p">)</span>
     <span class="k">return</span> <span class="n">ds</span></div>
 
 </pre></div>
@@ -596,7 +566,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

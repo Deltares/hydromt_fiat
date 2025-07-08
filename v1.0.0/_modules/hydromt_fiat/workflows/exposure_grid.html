@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hydromt_fiat.workflows.vulnerability &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.workflows.exposure_grid &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -44,7 +44,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/vulnerability';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/exposure_grid';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -414,7 +414,7 @@
     
     <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.workflows.vulnerability</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.workflows.exposure_grid</span></li>
   </ul>
 </nav>
 </div>
@@ -431,124 +431,75 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for hydromt_fiat.workflows.vulnerability</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Vulnerability workflows.&quot;&quot;&quot;</span>
+  <h1>Source code for hydromt_fiat.workflows.exposure_grid</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Exposure workflows.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">barril.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CURVE</span><span class="p">,</span>
-    <span class="n">CURVE_ID</span><span class="p">,</span>
-    <span class="n">EXPOSURE_LINK</span><span class="p">,</span>
-    <span class="n">EXPOSURE_TYPE</span><span class="p">,</span>
-    <span class="n">create_query</span><span class="p">,</span>
-    <span class="n">standard_unit</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CURVE</span><span class="p">,</span> <span class="n">EXPOSURE_LINK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.workflows.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_merge_dataarrays</span><span class="p">,</span> <span class="n">_process_dataarray</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;exposure_grid_data&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="vulnerability_curves">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">vulnerability_curves</span><span class="p">(</span>
-    <span class="n">vulnerability_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">vulnerability_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-    <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;water depth&quot;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">select</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create vulnerability curves from raw data.</span>
-
-<span class="sd">    Warning</span>
-<span class="sd">    -------</span>
-<span class="sd">    If not default exposure type is present in the vulnerability linking, the</span>
-<span class="sd">    default exposure type is assumed to be &#39;damage&#39;.</span>
+<div class="viewcode-block" id="exposure_grid_data">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.exposure_grid_data.html#hydromt_fiat.workflows.exposure_grid_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">exposure_grid_data</span><span class="p">(</span>
+    <span class="n">grid_like</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">exposure_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">],</span>
+    <span class="n">exposure_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and transform exposure grid data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    vulnerability_data : pd.DataFrame</span>
-<span class="sd">        The raw vulnerability dataset.</span>
-<span class="sd">    vulnerability_linking : pd.DataFrame | None, optional</span>
-<span class="sd">        The vulnerability linking table, by default None</span>
-<span class="sd">    unit : str, optional</span>
-<span class="sd">        The unit of the vulnerability dataset index, by default &quot;m&quot;</span>
-<span class="sd">    index_name : str, optional</span>
-<span class="sd">        The name of the outgoing vulnerability curves dataset index,</span>
-<span class="sd">        by default &quot;water depth&quot;</span>
-<span class="sd">    select : dict, optional</span>
-<span class="sd">        Keyword arguments to select data from `vulnerability_data`</span>
+<span class="sd">    grid_like : xr.Dataset | None</span>
+<span class="sd">        Xarray dataset that is used to transform exposure data with. If set to None,</span>
+<span class="sd">        the first data array in exposure_data is used to transform the data.</span>
+<span class="sd">    exposure_data : dict[str, xr.DataArray]</span>
+<span class="sd">        Dictionary containing name of exposure file and associated data</span>
+<span class="sd">    exposure_linking : pd.DataFrame</span>
+<span class="sd">        Table containing the names of the exposure files and corresponding</span>
+<span class="sd">        vulnerability curves.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tuple[pd.DataFrame]</span>
-<span class="sd">        A tuple containing the the vulnerability curves and updated link table.</span>
+<span class="sd">    xr.Dataset</span>
+<span class="sd">        Transformed and unified exposure grid</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Quick check on the data</span>
-    <span class="k">if</span> <span class="n">CURVE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_data</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;The &#39;curve&#39; column in not present in the vulnerability data&quot;</span><span class="p">)</span>
-    <span class="c1"># Sort the linking table</span>
-    <span class="k">if</span> <span class="n">vulnerability_linking</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No linking table provided, inferred from raw vulnerability data&quot;</span><span class="p">)</span>
-        <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">EXPOSURE_LINK</span><span class="p">:</span> <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                <span class="n">CURVE</span><span class="p">:</span> <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">CURVE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_linking</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;The &#39;curve&#39; column in not present in the linking table&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">EXPOSURE_TYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_linking</span><span class="p">:</span>  <span class="c1"># default to damage</span>
-        <span class="n">vulnerability_linking</span><span class="p">[</span><span class="n">EXPOSURE_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;damage&quot;</span>
-    <span class="c1"># Build a query from the index kwargs</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">select</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="n">create_query</span><span class="p">(</span><span class="o">**</span><span class="n">select</span><span class="p">)</span>
-        <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">exposure_dataarrays</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="c1"># Query the linking data</span>
-    <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">CURVE_ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span>
-    <span class="n">types</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">curve</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;curve in </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Check if linking table columns are named according to convention</span>
+    <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">,</span> <span class="n">CURVE</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Missing column, &#39;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">&#39; in exposure grid linking table&quot;</span>
+            <span class="p">)</span>
 
-    <span class="c1"># Set a separate column with the curve id&#39;s for merging</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-        <span class="n">vulnerability_data</span><span class="p">,</span>
-        <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">CURVE_ID</span><span class="p">),</span>
-        <span class="n">on</span><span class="o">=</span><span class="n">CURVE</span><span class="p">,</span>
-        <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
-        <span class="n">validate</span><span class="o">=</span><span class="s2">&quot;many_to_many&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="c1"># Loop through the the supplied data arrays</span>
+    <span class="k">for</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da</span> <span class="ow">in</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">da_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+            <span class="n">fn_damage</span> <span class="o">=</span> <span class="n">da_name</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Exposure file name, &#39;</span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2">&#39;, not found in linking table.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Setting damage curve name attribute to &#39;</span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fn_damage</span> <span class="o">=</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span> <span class="o">==</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">CURVE</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="c1"># Reshape the vulnerability data</span>
-    <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
-    <span class="n">columns</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">CURVE_ID</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-        <span class="n">columns</span><span class="o">=</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">CURVE_ID</span><span class="p">]</span>
-    <span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">CURVE_ID</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">index_name</span>
+        <span class="c1"># Process the arrays, .e.g make gdal compliant</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">_process_dataarray</span><span class="p">(</span><span class="n">da</span><span class="o">=</span><span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
+        <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span><span class="s2">&quot;fn_damage&quot;</span><span class="p">:</span> <span class="n">fn_damage</span><span class="p">})</span>
+        <span class="n">exposure_dataarrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
 
-    <span class="c1"># Again query the linking table based on the vulnerability curves</span>
-    <span class="c1"># But this time on the curve ID</span>
-    <span class="n">types</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;curve_id in </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="c1"># At last reset the index</span>
-    <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-    <span class="c1"># Scale the data according to the unit</span>
-    <span class="n">conversion</span> <span class="o">=</span> <span class="n">standard_unit</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
-    <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">index_name</span><span class="p">]</span> <span class="o">*=</span> <span class="n">conversion</span><span class="o">.</span><span class="n">value</span>
-
-    <span class="k">return</span> <span class="n">vulnerability_data</span><span class="p">,</span> <span class="n">vulnerability_linking</span></div>
+    <span class="k">return</span> <span class="n">_merge_dataarrays</span><span class="p">(</span><span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span> <span class="n">dataarrays</span><span class="o">=</span><span class="n">exposure_dataarrays</span><span class="p">)</span></div>
 
 </pre></div>
 

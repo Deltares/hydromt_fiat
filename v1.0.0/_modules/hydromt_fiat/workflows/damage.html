@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>hydromt_fiat.workflows.vulnerability &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.workflows.damage &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -44,7 +44,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/vulnerability';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/damage';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -414,7 +414,7 @@
     
     <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.workflows.vulnerability</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.workflows.damage</span></li>
   </ul>
 </nav>
 </div>
@@ -431,124 +431,145 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for hydromt_fiat.workflows.vulnerability</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Vulnerability workflows.&quot;&quot;&quot;</span>
+  <h1>Source code for hydromt_fiat.workflows.damage</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Calculate max potential damage based on exposure type.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">product</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">barril.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.gis</span><span class="w"> </span><span class="kn">import</span> <span class="n">utm_crs</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CURVE</span><span class="p">,</span>
-    <span class="n">CURVE_ID</span><span class="p">,</span>
+    <span class="n">COST_TYPE</span><span class="p">,</span>
     <span class="n">EXPOSURE_LINK</span><span class="p">,</span>
     <span class="n">EXPOSURE_TYPE</span><span class="p">,</span>
+    <span class="n">OBJECT_TYPE</span><span class="p">,</span>
+    <span class="n">SUBTYPE</span><span class="p">,</span>
     <span class="n">create_query</span><span class="p">,</span>
-    <span class="n">standard_unit</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;max_monetary_damage&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="vulnerability_curves">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">vulnerability_curves</span><span class="p">(</span>
-    <span class="n">vulnerability_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">vulnerability_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-    <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;water depth&quot;</span><span class="p">,</span>
+<div class="viewcode-block" id="max_monetary_damage">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.max_monetary_damage.html#hydromt_fiat.workflows.max_monetary_damage">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">max_monetary_damage</span><span class="p">(</span>
+    <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="n">exposure_cost_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">exposure_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">vulnerability</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">exposure_cost_link</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">select</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create vulnerability curves from raw data.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine maximum monetary damage per object.</span>
 
-<span class="sd">    Warning</span>
-<span class="sd">    -------</span>
-<span class="sd">    If not default exposure type is present in the vulnerability linking, the</span>
-<span class="sd">    default exposure type is assumed to be &#39;damage&#39;.</span>
+<span class="sd">    The maximum potential monetary damage is calculated based on the area (footprint)</span>
+<span class="sd">    of the objects. The exposure cost table should therefore contain values per square</span>
+<span class="sd">    meter.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    vulnerability_data : pd.DataFrame</span>
-<span class="sd">        The raw vulnerability dataset.</span>
-<span class="sd">    vulnerability_linking : pd.DataFrame | None, optional</span>
-<span class="sd">        The vulnerability linking table, by default None</span>
-<span class="sd">    unit : str, optional</span>
-<span class="sd">        The unit of the vulnerability dataset index, by default &quot;m&quot;</span>
-<span class="sd">    index_name : str, optional</span>
-<span class="sd">        The name of the outgoing vulnerability curves dataset index,</span>
-<span class="sd">        by default &quot;water depth&quot;</span>
+<span class="sd">    exposure_data : gpd.GeoDataFrame</span>
+<span class="sd">        The existing exposure data.</span>
+<span class="sd">    exposure_cost_table : pd.DataFrame</span>
+<span class="sd">        The cost table.</span>
+<span class="sd">    exposure_type : str</span>
+<span class="sd">        Type of exposure data, e.g. &#39;damage&#39;.</span>
+<span class="sd">    vulnerability : pd.DataFrame</span>
+<span class="sd">        The vulnerability identifier table.</span>
+<span class="sd">    exposure_cost_link : pd.DataFrame, optional</span>
+<span class="sd">        A linking table to connect the exposure data to the exposure cost data.</span>
+<span class="sd">        By default None.</span>
 <span class="sd">    select : dict, optional</span>
-<span class="sd">        Keyword arguments to select data from `vulnerability_data`</span>
+<span class="sd">        Keyword arguments to select data from the cost table.</span>
+<span class="sd">        The key corresponds to the column and the value to value in that column.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    tuple[pd.DataFrame]</span>
-<span class="sd">        A tuple containing the the vulnerability curves and updated link table.</span>
+<span class="sd">    gpd.GeoDataFrame</span>
+<span class="sd">        The resulting exposure data with the maximum damage included.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Quick check on the data</span>
-    <span class="k">if</span> <span class="n">CURVE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_data</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;The &#39;curve&#39; column in not present in the vulnerability data&quot;</span><span class="p">)</span>
-    <span class="c1"># Sort the linking table</span>
-    <span class="k">if</span> <span class="n">vulnerability_linking</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No linking table provided, inferred from raw vulnerability data&quot;</span><span class="p">)</span>
-        <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="k">if</span> <span class="n">exposure_cost_table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Exposure costs table cannot be None&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create a query from the kwargs</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">create_query</span><span class="p">(</span><span class="o">**</span><span class="n">select</span><span class="p">)</span>
+    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_cost_table</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Select kwargs (</span><span class="si">{</span><span class="n">select</span><span class="si">}</span><span class="s2">) resulted in no remaining data&quot;</span><span class="p">)</span>
+
+    <span class="c1"># If not cost link table is defined, define it self</span>
+    <span class="k">if</span> <span class="n">exposure_cost_link</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">EXPOSURE_LINK</span><span class="p">:</span> <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                <span class="n">CURVE</span><span class="p">:</span> <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">OBJECT_TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">COST_TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">CURVE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_linking</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;The &#39;curve&#39; column in not present in the linking table&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">EXPOSURE_TYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability_linking</span><span class="p">:</span>  <span class="c1"># default to damage</span>
-        <span class="n">vulnerability_linking</span><span class="p">[</span><span class="n">EXPOSURE_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;damage&quot;</span>
-    <span class="c1"># Build a query from the index kwargs</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">select</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="n">create_query</span><span class="p">(</span><span class="o">**</span><span class="n">select</span><span class="p">)</span>
-        <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 
-    <span class="c1"># Query the linking data</span>
-    <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">CURVE_ID</span><span class="p">]</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span>
-    <span class="n">types</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">curve</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;curve in </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Check for the necessary columns</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">item</span> <span class="ow">in</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">COST_TYPE</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cost link table either missing </span><span class="si">{</span><span class="n">OBJECT_TYPE</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">COST_TYPE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Leave only the necessary columns</span>
+    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[[</span><span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">COST_TYPE</span><span class="p">]]</span>
+    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">OBJECT_TYPE</span><span class="p">)</span>
 
-    <span class="c1"># Set a separate column with the curve id&#39;s for merging</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-        <span class="n">vulnerability_data</span><span class="p">,</span>
-        <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">CURVE_ID</span><span class="p">),</span>
-        <span class="n">on</span><span class="o">=</span><span class="n">CURVE</span><span class="p">,</span>
+    <span class="c1"># Get the unique headers corresponding to the &#39;exposure_type&#39;</span>
+    <span class="k">if</span> <span class="n">SUBTYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="n">exposure_type</span><span class="p">]</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">[</span><span class="n">SUBTYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()]</span>
+
+    <span class="c1"># If not headers were found, log and return</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Exposure type (</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}</span><span class="s2">) not found in vulnerability data&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Get unique linking names</span>
+    <span class="n">unique_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">unique_link</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">unique_link</span><span class="p">,</span> <span class="n">headers</span><span class="p">)]</span>
+    <span class="c1"># Transpose the cost table, rename index to object_type to easily merge</span>
+    <span class="c1"># This is not the object type, but the specific max costs of that element</span>
+    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">)</span>
+    <span class="c1"># Index the cost table</span>
+    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="p">[</span>
+        <span class="n">exposure_cost_table</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">unique_link</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Link the cost type to the exposure data</span>
+    <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[[</span><span class="n">OBJECT_TYPE</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+        <span class="n">exposure_cost_link</span><span class="p">,</span>
+        <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_TYPE</span><span class="p">,</span>
         <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
-        <span class="n">validate</span><span class="o">=</span><span class="s2">&quot;many_to_many&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">)[</span><span class="n">COST_TYPE</span><span class="p">]</span>
 
-    <span class="c1"># Reshape the vulnerability data</span>
-    <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()))</span>
-    <span class="n">columns</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">CURVE_ID</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-        <span class="n">columns</span><span class="o">=</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">CURVE_ID</span><span class="p">]</span>
-    <span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">CURVE_ID</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">index_name</span>
+    <span class="c1"># Get the area, make sure its a projected crs</span>
+    <span class="n">old_crs</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span>
+    <span class="k">if</span> <span class="n">old_crs</span><span class="o">.</span><span class="n">is_geographic</span><span class="p">:</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="n">utm_crs</span><span class="p">(</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">)</span>
+        <span class="n">exposure_data</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">area</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">area</span>
 
-    <span class="c1"># Again query the linking table based on the vulnerability curves</span>
-    <span class="c1"># But this time on the curve ID</span>
-    <span class="n">types</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="n">vulnerability_linking</span> <span class="o">=</span> <span class="n">vulnerability_linking</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;curve_id in </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">types</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Loop through the headers to set the max damage per subtype (or not)</span>
+    <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span>
+        <span class="c1"># Get the costs per object</span>
+        <span class="n">costs_per</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">exposure_cost_table</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">)</span>
+        <span class="n">costs_per</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">COST_TYPE</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">costs_per</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="c1"># Multiply by the area</span>
+        <span class="n">costs_per</span> <span class="o">*=</span> <span class="n">area</span>
 
-    <span class="c1"># At last reset the index</span>
-    <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">vulnerability_data</span> <span class="o">=</span> <span class="n">vulnerability_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">exposure_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;max_</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="c1"># Scale the data according to the unit</span>
-    <span class="n">conversion</span> <span class="o">=</span> <span class="n">standard_unit</span><span class="p">(</span><span class="n">Scalar</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
-    <span class="n">vulnerability_data</span><span class="p">[</span><span class="n">index_name</span><span class="p">]</span> <span class="o">*=</span> <span class="n">conversion</span><span class="o">.</span><span class="n">value</span>
-
-    <span class="k">return</span> <span class="n">vulnerability_data</span><span class="p">,</span> <span class="n">vulnerability_linking</span></div>
+    <span class="k">return</span> <span class="n">exposure_data</span></div>
 
 </pre></div>
 

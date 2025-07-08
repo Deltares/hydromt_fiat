@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>hydromt_fiat.FIATModel.setup_vulnerability &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.components.ExposureGeomsComponent.update_column &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.FIATModel.setup_vulnerability';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.FIATModel.read" href="hydromt_fiat.FIATModel.read.html" />
-    <link rel="prev" title="hydromt_fiat.FIATModel.setup_hazard" href="hydromt_fiat.FIATModel.setup_hazard.html" />
+    <link rel="next" title="hydromt_fiat.components.ExposureGridComponent.setup" href="hydromt_fiat.components.ExposureGridComponent.setup.html" />
+    <link rel="prev" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -389,25 +389,38 @@
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
 </ul>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_hazard.html">hydromt_fiat.FIATModel.setup_hazard</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.FIATModel.setup_vulnerability</a></li>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard_grid.html">hydromt_fiat.FIATModel.hazard_grid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_grid.html">hydromt_fiat.FIATModel.exposure_grid</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.read.html">hydromt_fiat.FIATModel.read</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard_grid.html">hydromt_fiat.FIATModel.hazard_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.setup.html">hydromt_fiat.components.VulnerabilityComponent.setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.HazardGridComponent.setup.html">hydromt_fiat.components.HazardGridComponent.setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.hazard_data.html">hydromt_fiat.workflows.hazard_data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.max_monetary_damage.html">hydromt_fiat.workflows.max_monetary_damage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_grid_data.html">hydromt_fiat.workflows.exposure_grid_data</a></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
@@ -459,7 +472,7 @@
     
     <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API reference</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.FIATModel.setup_vulnerability</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.components.ExposureGeomsComponent.update_column</span></li>
   </ul>
 </nav>
 </div>
@@ -476,31 +489,21 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="hydromt-fiat-fiatmodel-setup-vulnerability">
-<h1>hydromt_fiat.FIATModel.setup_vulnerability<a class="headerlink" href="#hydromt-fiat-fiatmodel-setup-vulnerability" title="Link to this heading">#</a></h1>
+  <section id="hydromt-fiat-components-exposuregeomscomponent-update-column">
+<h1>hydromt_fiat.components.ExposureGeomsComponent.update_column<a class="headerlink" href="#hydromt-fiat-components-exposuregeomscomponent-update-column" title="Link to this heading">#</a></h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="hydromt_fiat.FIATModel.setup_vulnerability">
-<span class="sig-prename descclassname"><span class="pre">FIATModel.</span></span><span class="sig-name descname"><span class="pre">setup_vulnerability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vuln_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vuln_link_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'m'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'water</span> <span class="pre">depth'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">select</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/fiat.html#FIATModel.setup_vulnerability"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.FIATModel.setup_vulnerability" title="Link to this definition">#</a></dt>
-<dd><p>Set up the vulnerability from a data source.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The datasets (vuln_fname and vuln_link_fname) need to have a ‘type’ column.</p>
-</div>
+<dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGeomsComponent.update_column">
+<span class="sig-prename descclassname"><span class="pre">ExposureGeomsComponent.</span></span><span class="sig-name descname"><span class="pre">update_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_geom.html#ExposureGeomsComponent.update_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGeomsComponent.update_column" title="Link to this definition">#</a></dt>
+<dd><p>Update an existing dataset by adding columns with values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vuln_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to vulnerability dataset file or an entry in the data catalog that
-points to the vulnerability dataset file.</p></li>
-<li><p><strong>vuln_link_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – Path or data catalog entry of the vulnerability linking table.
-If not provided, it is assumed that the ‘type’ in the vulnerability dataset
-is correct, by default None</p></li>
-<li><p><strong>unit</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The unit which the vulnerability index is in, by default “m”</p></li>
-<li><p><strong>index_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The output name of the index column, by default “water depth”</p></li>
-<li><p><strong>select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Keyword arguments to select data from the ‘vuln_fname’ data source.</p></li>
+<li><p><strong>exposure_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of the existing dataset.</p></li>
+<li><p><strong>columns</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – A list of the names of the columns.</p></li>
+<li><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> | </em><em>np.ndarray</em>) – The correspoding values of the columns. Either a single value set for
+all columns, a list of values corresponding to the number of columns or
+a 2d array.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -518,20 +521,20 @@ is correct, by default None</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.FIATModel.setup_hazard.html"
+       href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.setup_hazard</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</p>
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.FIATModel.read.html"
+       href="hydromt_fiat.components.ExposureGridComponent.setup.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.FIATModel.read</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.setup</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -554,7 +557,7 @@ is correct, by default None</p></li>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.FIATModel.setup_vulnerability"><code class="docutils literal notranslate"><span class="pre">FIATModel.setup_vulnerability()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.components.ExposureGeomsComponent.update_column"><code class="docutils literal notranslate"><span class="pre">ExposureGeomsComponent.update_column()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -562,7 +565,7 @@ is correct, by default None</p></li>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.FIATModel.setup_vulnerability.rst">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -578,7 +581,7 @@ is correct, by default None</p></li>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_generated/hydromt_fiat.FIATModel.setup_vulnerability.rst.txt"
+      <li><a href="../_sources/_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>
@@ -617,7 +620,7 @@ is correct, by default None</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>

@@ -439,17 +439,17 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.components</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConfigComponent</span><span class="p">,</span>
-    <span class="n">GeomsComponent</span><span class="p">,</span>
-    <span class="n">GridComponent</span><span class="p">,</span>
-    <span class="n">TablesComponent</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegionComponent</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ExposureGeomsComponent</span><span class="p">,</span>
+    <span class="n">ExposureGridComponent</span><span class="p">,</span>
+    <span class="n">FIATConfigComponent</span><span class="p">,</span>
+    <span class="n">HazardGridComponent</span><span class="p">,</span>
+    <span class="n">RegionComponent</span><span class="p">,</span>
+    <span class="n">VulnerabilityComponent</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">REGION</span>
 
 <span class="c1"># Set some global variables</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FIATModel&quot;</span><span class="p">]</span>
@@ -468,6 +468,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    root : str, optional</span>
 <span class="sd">        Model root, by default None</span>
+<span class="sd">    config_fname : str, optional</span>
+<span class="sd">        Name of the configurations file, by default &#39;settings.toml&#39;</span>
 <span class="sd">    mode : {&#39;r&#39;,&#39;r+&#39;,&#39;w&#39;}, optional</span>
 <span class="sd">        read/append/write mode, by default &quot;w&quot;</span>
 <span class="sd">    data_libs : list[str] | str, optional</span>
@@ -486,16 +488,17 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config_fname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;settings.toml&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span>
         <span class="n">data_libs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">catalog_keys</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="n">Model</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">root</span><span class="p">,</span>
-            <span class="n">components</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="n">RegionComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">)},</span>
+            <span class="n">components</span><span class="o">=</span><span class="p">{</span><span class="n">REGION</span><span class="p">:</span> <span class="n">RegionComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">)},</span>
             <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
-            <span class="n">region_component</span><span class="o">=</span><span class="s2">&quot;region&quot;</span><span class="p">,</span>
+            <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">,</span>
             <span class="n">data_libs</span><span class="o">=</span><span class="n">data_libs</span><span class="p">,</span>
             <span class="o">**</span><span class="n">catalog_keys</span><span class="p">,</span>
         <span class="p">)</span>
@@ -503,45 +506,53 @@
         <span class="c1">## Setup components</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;config&quot;</span><span class="p">,</span>
-            <span class="n">ConfigComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;settings.toml&quot;</span><span class="p">),</span>
+            <span class="n">FIATConfigComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">config_fname</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span><span class="s2">&quot;exposure_data&quot;</span><span class="p">,</span> <span class="n">TablesComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;exposure_geoms&quot;</span><span class="p">,</span>
-            <span class="n">GeomsComponent</span><span class="p">(</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
-                <span class="n">region_component</span><span class="o">=</span><span class="s2">&quot;region&quot;</span><span class="p">,</span>
-                <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;exposure/</span><span class="si">{name}</span><span class="s2">.fgb&quot;</span><span class="p">,</span>
-            <span class="p">),</span>
+            <span class="n">ExposureGeomsComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;exposure_grid&quot;</span><span class="p">,</span>
-            <span class="n">GridComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="s2">&quot;region&quot;</span><span class="p">),</span>
+            <span class="n">ExposureGridComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;hazard_grid&quot;</span><span class="p">,</span>
-            <span class="n">GridComponent</span><span class="p">(</span>
-                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="s2">&quot;region&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;hazard/hazard_grid.nc&quot;</span>
-            <span class="p">),</span>
+            <span class="n">HazardGridComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;vulnerability_data&quot;</span><span class="p">,</span>
-            <span class="n">TablesComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;vulnerability/</span><span class="si">{name}</span><span class="s2">.csv&quot;</span><span class="p">),</span>
+            <span class="n">VulnerabilityComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="c1">## Properties</span>
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigComponent</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FIATConfigComponent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the configurations component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hazard_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GridComponent</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exposure_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureGeomsComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the exposure geoms component.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;exposure_geoms&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exposure_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureGridComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the exposure grid component.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;exposure_grid&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hazard_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HazardGridComponent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return hazard grid component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;hazard_grid&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">vulnerability_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TablesComponent</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">region_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegionComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the region component.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vulnerability_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VulnerabilityComponent</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the vulnerability component containing the data.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;vulnerability_data&quot;</span><span class="p">]</span>
 
@@ -559,7 +570,15 @@
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the FIAT model.&quot;&quot;&quot;</span>
-        <span class="n">Model</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">components</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">FIATConfigComponent</span><span class="p">):</span>
+                <span class="n">cfg</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="k">continue</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">write</span><span class="p">()</span></div>
 
 
     <span class="c1">## Setup methods</span>
@@ -610,155 +629,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
         <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;region&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span></div>
-
-
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">setup_exposure</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">exposure_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the exposure from a data source.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        exposure_fname : Path | str</span>
-<span class="sd">            _description_</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-
-<div class="viewcode-block" id="FIATModel.setup_hazard">
-<a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.setup_hazard.html#hydromt_fiat.FIATModel.setup_hazard">[docs]</a>
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">setup_hazard</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">hazard_fnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">return_periods</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;flooding&quot;</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">risk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up hazard maps.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        hazard_fnames : list[Path | str] | Path | str</span>
-<span class="sd">            Path(s) to the hazard file(s) or name(s) of the data catalog entries.</span>
-<span class="sd">        return_periods : list[int] | None, optional</span>
-<span class="sd">            List of return periods. Length of list should match the number hazard</span>
-<span class="sd">            files, by default None.</span>
-<span class="sd">        hazard_type : str | None, optional</span>
-<span class="sd">            Type of hazard, by default &quot;flooding&quot;.</span>
-<span class="sd">        risk : bool, optional</span>
-<span class="sd">            Whether the hazard files are part of a risk analysis,</span>
-<span class="sd">            by default False.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up hazard raster data&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hazard_fnames</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="n">hazard_fnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">hazard_fnames</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">risk</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">return_periods</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot perform risk analysis without return periods&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">risk</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">return_periods</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hazard_fnames</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Return periods do not match the number of hazard files&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">MissingRegionError</span><span class="p">(</span>
-                <span class="s2">&quot;Region component is missing for setting up hazard data.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Check if there is already data set to this grid component.</span>
-        <span class="n">grid_like</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span> <span class="o">!=</span> <span class="p">{}</span> <span class="k">else</span> <span class="kc">None</span>
-
-        <span class="c1"># Parse hazard files to an xarray dataset</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">hazard_data</span><span class="p">(</span>
-            <span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-            <span class="n">data_catalog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="p">,</span>
-            <span class="n">hazard_fnames</span><span class="o">=</span><span class="n">hazard_fnames</span><span class="p">,</span>
-            <span class="n">hazard_type</span><span class="o">=</span><span class="n">hazard_type</span><span class="p">,</span>
-            <span class="n">return_periods</span><span class="o">=</span><span class="n">return_periods</span><span class="p">,</span>
-            <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Set the data to the hazard grid component</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.risk&quot;</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.return_periods&quot;</span><span class="p">,</span> <span class="n">return_periods</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hazard_grid</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-            <span class="s2">&quot;hazard.elevation_reference&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;DEM&quot;</span> <span class="k">if</span> <span class="n">hazard_type</span> <span class="o">==</span> <span class="s2">&quot;water_depth&quot;</span> <span class="k">else</span> <span class="s2">&quot;datum&quot;</span><span class="p">,</span>
-        <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="FIATModel.setup_vulnerability">
-<a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.setup_vulnerability.html#hydromt_fiat.FIATModel.setup_vulnerability">[docs]</a>
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">setup_vulnerability</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">vuln_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">vuln_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
-        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
-        <span class="n">index_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;water depth&quot;</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">select</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the vulnerability from a data source.</span>
-
-<span class="sd">        Warning</span>
-<span class="sd">        -------</span>
-<span class="sd">        The datasets (vuln_fname and vuln_link_fname) need to have a &#39;type&#39; column.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        vuln_fname : Path | str</span>
-<span class="sd">            Path to vulnerability dataset file or an entry in the data catalog that</span>
-<span class="sd">            points to the vulnerability dataset file.</span>
-<span class="sd">        vuln_link_fname : Path | str | None, optional</span>
-<span class="sd">            Path or data catalog entry of the vulnerability linking table.</span>
-<span class="sd">            If not provided, it is assumed that the &#39;type&#39; in the vulnerability dataset</span>
-<span class="sd">            is correct, by default None</span>
-<span class="sd">        unit : str, optional</span>
-<span class="sd">            The unit which the vulnerability index is in, by default &quot;m&quot;</span>
-<span class="sd">        index_name : str, optional</span>
-<span class="sd">            The output name of the index column, by default &quot;water depth&quot;</span>
-<span class="sd">        select : dict, optional</span>
-<span class="sd">            Keyword arguments to select data from the &#39;vuln_fname&#39; data source.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up the vulnerability curves&quot;</span><span class="p">)</span>
-        <span class="c1"># Get the data from the catalog</span>
-        <span class="n">vuln_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">vuln_fname</span><span class="p">)</span>
-        <span class="n">vuln_linking</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">vuln_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">vuln_linking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">vuln_link_fname</span><span class="p">)</span>
-
-        <span class="c1"># Invoke the workflow method to create the curves from raw data</span>
-        <span class="n">vuln_curves</span><span class="p">,</span> <span class="n">vuln_id</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">vulnerability_curves</span><span class="p">(</span>
-            <span class="n">vuln_data</span><span class="p">,</span>
-            <span class="n">vuln_linking</span><span class="o">=</span><span class="n">vuln_linking</span><span class="p">,</span>
-            <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
-            <span class="n">index_name</span><span class="o">=</span><span class="n">index_name</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">select</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">vuln_curves</span><span class="p">,</span> <span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">vuln_id</span><span class="p">,</span> <span class="s2">&quot;vulnerability_identifiers&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-            <span class="s2">&quot;vulnerability.file&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">),</span>
-        <span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -811,7 +682,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>
