@@ -30,18 +30,20 @@ Initialize
 
     FIATModel
 
-.. _setup_methods:
+.. _model_attributes:
 
-Setup methods
--------------
+Attributes
+----------
 
 .. autosummary::
     :toctree: _generated
 
-    FIATModel.setup_config
-    FIATModel.setup_region
-    FIATModel.setup_hazard
-    FIATModel.setup_vulnerability
+    FIATModel.config
+    FIATModel.region
+    FIATModel.vulnerability_data
+    FIATModel.hazard_grid
+    FIATModel.exposure_geoms
+    FIATModel.exposure_grid
 
 .. _model_io:
 
@@ -54,18 +56,37 @@ I/O methods
     FIATModel.read
     FIATModel.write
 
-.. _model_attributes:
+.. _model_setup_methods:
 
-Attributes
-----------
+Model setup methods
+-------------------
 
 .. autosummary::
     :toctree: _generated
 
-    FIATModel.config
-    FIATModel.region
-    FIATModel.hazard_grid
-    FIATModel.vulnerability_data
+    FIATModel.setup_config
+    FIATModel.setup_region
+
+.. currentmodule:: hydromt_fiat.components
+
+.. _component_setup_methods:
+
+Component setup methods
+-----------------------
+
+.. autosummary::
+    :toctree: _generated
+
+    VulnerabilityComponent.setup
+    HazardGridComponent.setup
+    ExposureGeomsComponent.setup
+    ExposureGeomsComponent.setup_max_damage
+    ExposureGeomsComponent.update_column
+    ExposureGridComponent.setup
+
+.. currentmodule:: hydromt_fiat
+
+.. _workflow_functions:
 
 Workflow functions
 ==================
@@ -75,8 +96,15 @@ The underlying workflow methods of the FIATModel.
 .. autosummary::
     :toctree: _generated
 
-    workflows.hazard_data
     workflows.vulnerability_curves
+    workflows.hazard_grid
+    workflows.exposure_setup
+    workflows.exposure_vulnerability_link
+    workflows.exposure_add_columns
+    workflows.max_monetary_damage
+    workflows.exposure_grid_data
+
+.. _drivers:
 
 Drivers
 =======
@@ -88,8 +116,6 @@ Added drivers specifically for HydroMT-FIAT
     :template: autosummary/class_noinherit.rst
 
     drivers.OSMDriver
-
-.. _drivers:
 
 OSMDriver methods
 -----------------
