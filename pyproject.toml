@@ -88,7 +88,7 @@ dev = [
 docs = [
     "nbsphinx",
 	"pydata-sphinx-theme",
-    "sphinx",
+    "sphinx>=8.2.0",
     "sphinx_design",
     "sphinx_autosummary_accessors",
     "hydromt_fiat[all, examples]",
@@ -208,6 +208,7 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 # Documentation generation
 docs-dummy = {cmd = ["sphinx-build", "./docs", "./docs/_build", "-b", "dummy", "-W"] }
 docs-html = { cmd = ["sphinx-build", "-M", "html", "docs", "docs/_build", "-W"] }
+docs-html-rebuild = { depends-on = ["clean-docs", "docs-html"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"] }
 
 # Testing
@@ -237,16 +238,21 @@ clean = { depends-on = [
   "clean-env-files",
   "clean-bin",
   "clean-dist",
-  "clean-docs",
+  "clean-docs-build",
   "clean-docs-example",
   "clean-docs-gen",
 ] }
 clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
 clean-dist = {cmd = ["rm", "-rf", "dist"] }
-clean-docs = { cmd = ["rm", "-rf", "docs/_build/html"] }
+clean-docs-build = { cmd = ["rm", "-rf", "docs/_build"] }
 clean-docs-example = { cmd = ["rm", "-rf", "docs/_examples"] }
 clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
+clean-docs = { depends-on = [
+  "clean-docs-build",
+  "clean-docs-example",
+  "clean-docs-gen",
+] }
 
 ## Dependencies
 [tool.pixi.dependencies]
