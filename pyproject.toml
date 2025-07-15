@@ -26,14 +26,14 @@ dependencies = [
     "tomli",
     "xarray",
     "pydantic",
-    "osmnx>=1,<2",
+    "osmnx>=2, <3",
     "census",
     "us",
     "xarray-spatial",
     "tqdm",
     "pycountry-convert",
     "pyarrow",
-    "dask<=2024.12.1",
+    "dask",
     "pint"
 ]
 readme = "README.rst"
