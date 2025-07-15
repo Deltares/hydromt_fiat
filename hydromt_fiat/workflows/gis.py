@@ -329,7 +329,11 @@ def ground_elevation_from_dem(
         sampled_ids = da_exposure_id.raster.sample(
             nan_geoms.geometry.centroid
         )
-        gdf.loc[nan_geoms.index, "ground_elevtn"] = gdf.loc[sampled_ids.values, "ground_elevtn"].values
+        # fill the ground_elevtn column with the sampled values
+        valid_ids = np.isin(sampled_ids.values, gdf.index)
+        gdf.loc[nan_geoms.index[valid_ids], "ground_elevtn"] = gdf.loc[
+            sampled_ids.values[valid_ids], "ground_elevtn"
+        ].values
 
     # fill remaining nan values with its nearest geographical neighbor
     nan_geoms = gdf[gdf["ground_elevtn"].isna()]
