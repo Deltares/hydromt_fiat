@@ -5,7 +5,7 @@ import pytest
 import xarray as xr
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.components import HazardGridComponent
+from hydromt_fiat.components import HazardComponent
 from hydromt_fiat.errors import MissingRegionError
 
 
@@ -13,7 +13,7 @@ def test_hazard_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
-    component = HazardGridComponent(model=mock_model)
+    component = HazardComponent(model=mock_model)
 
     # Assert some very basic stuff
     assert component._filename == "hazard/hazard_grid.nc"
@@ -26,7 +26,7 @@ def test_hazard_component_setup_event(
     model_with_region: FIATModel,
 ):
     # Setup the component
-    component = HazardGridComponent(model=model_with_region)
+    component = HazardComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
     component.setup(hazard_fnames="flood_event", elevation_reference="dem")
@@ -40,7 +40,7 @@ def test_hazard_component_setup_multi(
     model_with_region: FIATModel,
 ):
     # Setup the component
-    component = HazardGridComponent(model=model_with_region)
+    component = HazardComponent(model=model_with_region)
 
     # Test setting data to hazard grid with data
     component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
@@ -55,7 +55,7 @@ def test_hazard_component_setup_risk(
     model_with_region: FIATModel,
 ):
     # Setup the compoentn
-    component = HazardGridComponent(model=model_with_region)
+    component = HazardComponent(model=model_with_region)
 
     # Test hazard with return period
     component.setup(
@@ -71,7 +71,7 @@ def test_hazard_component_setup_risk(
 
 def test_hazard_component_setup_errors(model: FIATModel):
     # Setup the component
-    component = HazardGridComponent(model=model)
+    component = HazardComponent(model=model)
 
     # Assert the errors
     with pytest.raises(

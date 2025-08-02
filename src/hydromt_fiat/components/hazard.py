@@ -10,12 +10,12 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
 
-__all__ = ["HazardGridComponent"]
+__all__ = ["HazardComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardGridComponent(GridComponent):
+class HazardComponent(GridComponent):
     """Custom hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.

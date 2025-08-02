@@ -3,7 +3,7 @@
 from .config import FIATConfigComponent
 from .exposure_geom import ExposureGeomsComponent
 from .exposure_grid import ExposureGridComponent
-from .hazard import HazardGridComponent
+from .hazard import HazardComponent
 from .region import RegionComponent
 from .vulnerability import VulnerabilityComponent
 
@@ -11,7 +11,7 @@ __all__ = [
     "ExposureGeomsComponent",
     "ExposureGridComponent",
     "FIATConfigComponent",
-    "HazardGridComponent",
+    "HazardComponent",
     "RegionComponent",
     "VulnerabilityComponent",
 ]

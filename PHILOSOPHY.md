@@ -24,11 +24,10 @@ HydroMT-FIAT makes use of 7 components to store (or set) it's data.
 
 - `config` (ConfigComponent)
 - `region` (RegionComponent; custom made)
-- `exposure_data` (TablesComponent)
 - `exposure_grid` (GridComponent)
 - `exposure_geoms` (GeomsComponent)
-- `hazard_grid` (GridComponent)
-- `vulnerability_data` (TablesComponent)
+- `hazard` (GridComponent)
+- `vulnerability` (TablesComponent)
 
 #### Config component
 Holds the configurations for the Delft-FIAT model.\

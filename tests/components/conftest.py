@@ -28,11 +28,11 @@ def model_exposure_setup(
     vulnerability_identifiers: pd.DataFrame,
 ) -> FIATModel:
     model = model_with_region
-    model.vulnerability_data.set(
+    model.vulnerability.set(
         vulnerability_curves,
         name="vulnerability_curves",
     )
-    model.vulnerability_data.set(
+    model.vulnerability.set(
         vulnerability_identifiers,
         name="vulnerability_identifiers",
     )

@@ -287,7 +287,7 @@ use 'setup_region' before this method"
             )
         # Check for vulnerability
         keys = ["vulnerability_curves", "vulnerability_identifiers"]
-        if not all([item in self.model.vulnerability_data.data for item in keys]):
+        if not all([item in self.model.vulnerability.data for item in keys]):
             # TODO Replace with custom error class
             raise RuntimeError("Use setup_vulnerability before this method")
 
@@ -315,9 +315,7 @@ use 'setup_region' before this method"
         )
         exposure_vector = workflows.exposure_vulnerability_link(
             exposure_data=exposure_vector,
-            vulnerability=self.model.vulnerability_data.data[
-                "vulnerability_identifiers"
-            ],
+            vulnerability=self.model.vulnerability.data["vulnerability_identifiers"],
         )
 
         # Set the data in the component
@@ -387,9 +385,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             exposure_type=exposure_type,
-            vulnerability=self.model.vulnerability_data.data[
-                "vulnerability_identifiers"
-            ],
+            vulnerability=self.model.vulnerability.data["vulnerability_identifiers"],
             exposure_cost_link=exposure_cost_link,
             **select,
         )

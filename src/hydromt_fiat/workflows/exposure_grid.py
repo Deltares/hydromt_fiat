@@ -8,12 +8,12 @@ import xarray as xr
 from hydromt_fiat.utils import CURVE, EXPOSURE_LINK
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
-__all__ = ["exposure_grid_data"]
+__all__ = ["exposure_grid"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def exposure_grid_data(
+def exposure_grid(
     grid_like: xr.Dataset | None,
     exposure_data: dict[str, xr.DataArray],
     exposure_linking: pd.DataFrame,

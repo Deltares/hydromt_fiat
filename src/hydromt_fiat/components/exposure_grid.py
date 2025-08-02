@@ -71,7 +71,7 @@ class ExposureGridComponent(GridComponent):
         """
         logger.info("Setting up exposure grid")
 
-        if self.model.vulnerability_data.data == {}:
+        if self.model.vulnerability.data == {}:
             raise RuntimeError(
                 "setup_vulnerability step is required before setting up exposure grid."
             )
@@ -102,7 +102,7 @@ class ExposureGridComponent(GridComponent):
         grid_like = self.data if self.data != {} else None
 
         # Execute the workflow function
-        ds = workflows.exposure_grid_data(
+        ds = workflows.exposure_grid(
             grid_like=grid_like,
             exposure_data=exposure_data,
             exposure_linking=exposure_linking,

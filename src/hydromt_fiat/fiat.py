@@ -11,7 +11,7 @@ from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
     FIATConfigComponent,
-    HazardGridComponent,
+    HazardComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -81,11 +81,11 @@ class FIATModel(Model):
             ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "hazard_grid",
-            HazardGridComponent(model=self, region_component=REGION),
+            "hazard",
+            HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "vulnerability_data",
+            "vulnerability",
             VulnerabilityComponent(model=self),
         )
 
@@ -106,19 +106,19 @@ class FIATModel(Model):
         return self.components["exposure_grid"]
 
     @property
-    def hazard_grid(self) -> HazardGridComponent:
-        """Return hazard grid component."""
-        return self.components["hazard_grid"]
+    def hazard(self) -> HazardComponent:
+        """Return hazard component."""
+        return self.components["hazard"]
 
     @property
-    def region_data(self) -> RegionComponent:
+    def region_component(self) -> RegionComponent:
         """Return the region component."""
         return self.components[REGION]
 
     @property
-    def vulnerability_data(self) -> VulnerabilityComponent:
-        """Return the vulnerability component containing the data."""
-        return self.components["vulnerability_data"]
+    def vulnerability(self) -> VulnerabilityComponent:
+        """Return the vulnerability component."""
+        return self.components["vulnerability"]
 
     ## I/O
     @hydromt_step

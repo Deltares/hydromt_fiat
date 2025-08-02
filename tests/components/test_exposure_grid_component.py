@@ -31,8 +31,8 @@ def test_exposure_grid_component_setup(
     # Setup the component
     component = ExposureGridComponent(model=model_with_region)
 
-    # Mock vulnerability_data attribute to pass check
-    mocker.patch.object(FIATModel, "vulnerability_data")
+    # Mock vulnerability attribute to pass check
+    mocker.patch.object(FIATModel, "vulnerability")
     # Call the method
     component.setup(
         exposure_fnames="industrial_content",
@@ -55,8 +55,8 @@ def test_exposure_grid_component_setup_multi(
     # Setup the component
     component = ExposureGridComponent(model=model_with_region)
 
-    # Mock vulnerability_data attribute to pass check
-    mocker.patch.object(FIATModel, "vulnerability_data")
+    # Mock vulnerability attribute to pass check
+    mocker.patch.object(FIATModel, "vulnerability")
     # Call the method
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
@@ -85,7 +85,7 @@ def test_exposure_grid_component_setup_errors(
         )
 
     # Assert missing region error
-    mocker.patch.object(FIATModel, "vulnerability_data")
+    mocker.patch.object(FIATModel, "vulnerability")
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid."
     ):
