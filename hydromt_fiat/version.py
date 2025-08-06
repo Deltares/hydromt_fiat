@@ -2,7 +2,7 @@
 
 major = 0
 minor = 5
-patch = 5
+patch = 6
 suffix = ""
 
 __version__ = f"{major}.{minor}.{patch}{suffix}"
