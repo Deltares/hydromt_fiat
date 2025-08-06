@@ -1,18 +1,18 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
+import copy
+import shutil
 from pathlib import Path
+
 import numpy as np
 import pytest
-import shutil
-import copy
 import rasterio
+from hydromt.log import setuplog
 
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_FLOODADAPT
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_elevation"
-DATADIR = Path().absolute() / "hydromt_fiat" / "data"
-DATADIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/FloodAdapt/Test_data/Database_env_fix/static/dem"
-)
+# DATADIR = Path().absolute() / "hydromt_fiat" / "data"
+DATADIR = P_DRIVE_FLOODADAPT / "FloodAdapt" / "Test_data" / "Database_env_fix" / "static" / "dem"
 
 _cases = {
     "update_ground_elevation_with_dem": {

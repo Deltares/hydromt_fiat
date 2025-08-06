@@ -1,13 +1,13 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
-import geopandas as gpd
+from pathlib import Path
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+import geopandas as gpd
+import pytest
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
+
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _region = {
@@ -72,11 +72,11 @@ _cases = {
 # @pytest.mark.skip(reason="Needs to be updated")
 def test_SVI_exposure(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["folder"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["folder"])
     if root.exists():
         shutil.rmtree(root)
     logger = setuplog("hydromt_fiat", log_level=10)
-    data_libs = EXAMPLEDIR.joinpath(_cases[case]["data_catalogue"])
+    data_libs = P_DRIVE_TEST_DB.joinpath(_cases[case]["data_catalogue"])
     fm = FiatModel(root=root, mode="w", data_libs=data_libs, logger=logger)
 
     region = gpd.GeoDataFrame.from_features(_cases[case]["region"], crs=4326)

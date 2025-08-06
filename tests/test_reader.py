@@ -1,15 +1,10 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
 import pytest
+from hydromt.log import setuplog
 
+from hydromt_fiat.fiat import FiatModel
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-
-
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+from tests.conftest import P_DRIVE_TEST_DB
 
 _cases = {
     "read": {
@@ -21,7 +16,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_read(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
 
     fm = FiatModel(root=root, mode="r", logger=logger)

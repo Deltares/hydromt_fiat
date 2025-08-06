@@ -1,13 +1,13 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
-import geopandas as gpd
+from pathlib import Path
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+import geopandas as gpd
+import pytest
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
+
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _region = {
@@ -60,7 +60,7 @@ _cases = {
             },
             "setup_hazard": {
                 "map_fn": [
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
                 ],
                 "map_type": "water_depth",  # description of the hazard file type
                 "rp": None,  # hazard return period in years, required for a risk calculation (optional)
@@ -100,13 +100,13 @@ _cases = {
             },
             "setup_hazard": {
                 "map_fn": [
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=5_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=10_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=25_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=50_max_flood_depth.tif",
-                    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database/data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=1_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=5_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=10_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=25_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=50_max_flood_depth.tif",
+                    P_DRIVE_TEST_DB / "data/Hazard/Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
                 ],
                 "map_type": "water_depth",  # description of the hazard file type
                 "rp": [
@@ -133,7 +133,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_integration(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     if root.exists():
         shutil.rmtree(root)
 

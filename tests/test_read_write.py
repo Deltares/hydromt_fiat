@@ -1,22 +1,19 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
 
+import pytest
+from hydromt.log import setuplog
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
 
 _cases = {
     "read_read_write_single_file": {
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_read_write_single",
+        "new_root": P_DRIVE_TEST_DB / "test_read_write_single",
     },
     "read_read_write_multiple_files": {
         "dir": "test_read_multiple",
-        "new_root": EXAMPLEDIR / "test_read_write_multiple",
+        "new_root": P_DRIVE_TEST_DB / "test_read_write_multiple",
     },
 }
 
@@ -24,7 +21,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_read_write(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
 
     fm = FiatModel(root=root, mode="r", logger=logger)
