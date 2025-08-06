@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # ! Currently `local_test_database` is ~8GB, which is too much for a CI test.
     download_directory(
         client=client,
-        path_in_bucket="examples", #  "local_test_database", 
-        output_path=data_dir / "_examples", # "test_db",
-        overwrite=True
+        path_in_bucket="examples",  #  "local_test_database",
+        output_path=data_dir / "test_db",
+        overwrite=True,
     )
