@@ -1,13 +1,13 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
-import geopandas as gpd
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+import geopandas as gpd
+import pytest
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
+
+TEST_RP_MAP_DIR = P_DRIVE_TEST_DB / "test_RP_floodmaps"
 
 _region = {
     "type": "FeatureCollection",
@@ -62,7 +62,7 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_1_maps.nc",
+                    (TEST_RP_MAP_DIR / "RP_1_maps.nc").as_posix(),
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -79,10 +79,10 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_1_maps.nc",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_50_maps.nc",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_10_maps.nc",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\RP_100_maps.nc",
+                    (TEST_RP_MAP_DIR / "RP_1_maps.nc").as_posix(),
+                    (TEST_RP_MAP_DIR / "RP_50_maps.nc").as_posix(),
+                    (TEST_RP_MAP_DIR / "RP_10_maps.nc").as_posix(),
+                    (TEST_RP_MAP_DIR / "RP_100_maps.nc").as_posix(),
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -99,7 +99,9 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP1_Final.tif",
+                    (
+                        TEST_RP_MAP_DIR / "Swell_Majuro_case_SW_slr_100_RP1_Final.tif"
+                    ).as_posix(),
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -116,9 +118,15 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP1_Final.tif",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP10_Final.tif",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Swell_Majuro_case_SW_slr_100_RP50_Final.tif",
+                    (
+                        TEST_RP_MAP_DIR / "Swell_Majuro_case_SW_slr_100_RP1_Final.tif"
+                    ).as_posix(),
+                    (
+                        TEST_RP_MAP_DIR / "Swell_Majuro_case_SW_slr_100_RP10_Final.tif"
+                    ).as_posix(),
+                    (
+                        TEST_RP_MAP_DIR / "Swell_Majuro_case_SW_slr_100_RP50_Final.tif"
+                    ).as_posix(),
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -135,7 +143,7 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\kingTide_SLR_max_flood_depth.tif",
+                    (TEST_RP_MAP_DIR / "kingTide_SLR_max_flood_depth.tif").as_posix(),
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -152,9 +160,12 @@ _cases = {
         "configuration": {
             "setup_hazard": {
                 "map_fn": [
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Current_prob_event_set_combined_doNothing_withSeaWall_RP=10_max_flood_depth.tif",
-                    r"P:\11207949-dhs-phaseii-floodadapt\Model-builder\Delft-FIAT\local_test_database\test_RP_floodmaps\Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
+                    TEST_RP_MAP_DIR
+                    / "Current_prob_event_set_combined_doNothing_withSeaWall_RP=2_max_flood_depth.tif",
+                    TEST_RP_MAP_DIR
+                    / "Current_prob_event_set_combined_doNothing_withSeaWall_RP=10_max_flood_depth.tif",
+                    TEST_RP_MAP_DIR
+                    / "Current_prob_event_set_combined_doNothing_withSeaWall_RP=100_max_flood_depth.tif",
                 ],
                 "map_type": "water_depth",
                 "rp": None,
@@ -171,7 +182,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_hazard(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     if root.exists():
         shutil.rmtree(root)
 

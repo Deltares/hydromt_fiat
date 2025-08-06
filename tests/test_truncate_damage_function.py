@@ -1,20 +1,20 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
-import pandas as pd
+from pathlib import Path
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+import pandas as pd
+import pytest
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
+
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
 
 _cases = {
     "truncate_damage_function": {
         "data_catalogue": DATADIR / "hydromt_fiat_catalog_USA.yml",
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_truncate_damage_function",
+        "new_root": P_DRIVE_TEST_DB / "test_truncate_damage_function",
     },
 }
 
@@ -22,7 +22,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_truncate_damage_function(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
     data_catalog_yml = str(_cases[case]["data_catalogue"])
 

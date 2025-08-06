@@ -1,19 +1,17 @@
-from hydromt_fiat.fiat import FiatModel
-from hydromt.log import setuplog
-from pathlib import Path
-import pytest
 import shutil
-import pandas as pd
 
-EXAMPLEDIR = Path(
-    "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-)
+import pandas as pd
+import pytest
+from hydromt.log import setuplog
+
+from hydromt_fiat.fiat import FiatModel
+from tests.conftest import P_DRIVE_TEST_DB
 
 _cases = {
     "raise_ground_floor_height_geom": {
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_geom",
-        "ground_floor_height_reference": EXAMPLEDIR
+        "new_root": P_DRIVE_TEST_DB / "test_raise_ground_floor_height_geom",
+        "ground_floor_height_reference": P_DRIVE_TEST_DB
         / "test_read"
         / "reference_groundHeight_test.shp",
         "height_reference": "geom",
@@ -21,7 +19,7 @@ _cases = {
     },
     "raise_ground_floor_height_datum": {
         "dir": "test_read",
-        "new_root": EXAMPLEDIR / "test_raise_ground_floor_height_datum",
+        "new_root": P_DRIVE_TEST_DB / "test_raise_ground_floor_height_datum",
         "ground_floor_height_reference": None,
         "height_reference": "datum",
         "attr_ref": None,
@@ -32,7 +30,7 @@ _cases = {
 @pytest.mark.parametrize("case", list(_cases.keys()))
 def test_raise_ground_floor_height(case):
     # Read model in examples folder.
-    root = EXAMPLEDIR.joinpath(_cases[case]["dir"])
+    root = P_DRIVE_TEST_DB.joinpath(_cases[case]["dir"])
     logger = setuplog("hydromt_fiat", log_level=10)
 
     fm = FiatModel(root=root, mode="r", logger=logger)
