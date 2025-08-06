@@ -6,15 +6,11 @@ import pytest
 from hydromt.log import setuplog
 
 from hydromt_fiat.fiat import FiatModel
-from tests.conftest import P_DRIVE_FLOODADAPT
-
-# EXAMPLEDIR = Path(
-#     "P:/11207949-dhs-phaseii-floodadapt/Model-builder/Delft-FIAT/local_test_database"
-# )
+from tests.conftest import P_DRIVE_TEST_DB
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "setup_new_composite_area"
 DATADIR = Path().absolute() / "hydromt_fiat" / "data"
-DATADIRDEM = P_DRIVE_FLOODADAPT / "FloodAdapt/Test_data/Database_env_fix/static/dem"
+DATADIRDEM = P_DRIVE_TEST_DB
 
 
 _cases = {

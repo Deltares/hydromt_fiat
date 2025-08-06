@@ -8,11 +8,11 @@ import rasterio
 from hydromt.log import setuplog
 
 from hydromt_fiat.fiat import FiatModel
-from tests.conftest import P_DRIVE_FLOODADAPT
+from tests.conftest import P_DRIVE_TEST_DB
 
 EXAMPLEDIR = Path().absolute() / "examples" / "data" / "update_ground_elevation"
 # DATADIR = Path().absolute() / "hydromt_fiat" / "data"
-DATADIR = P_DRIVE_FLOODADAPT / "FloodAdapt" / "Test_data" / "Database_env_fix" / "static" / "dem"
+DATADIR = P_DRIVE_TEST_DB
 
 _cases = {
     "update_ground_elevation_with_dem": {
