@@ -46,6 +46,9 @@ jobs:
           pixi-version: "v0.41.1"
           environments: full${{ matrix.python-version }}
       - name: Test
+        env:
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
           pixi run --locked -e full${{ matrix.python-version }} test
 
