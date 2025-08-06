@@ -33,7 +33,7 @@ dependencies = [
     "tqdm",
     "pycountry-convert",
     "pyarrow",
-    "dask<=2024.12.1",
+    "dask",
     "pint"
 ]
 readme = "README.rst"
@@ -67,6 +67,8 @@ test = [
 	"responses",
 	"pytest>=2.7.3",
 	"pytest-cov",
+    "minio",
+    "python-dotenv",
 ]
 doc = [
 	"sphinx",

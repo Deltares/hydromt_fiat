@@ -13,8 +13,7 @@ authors = [
 channels = ["conda-forge"]
 platforms = ["win-64"]
 
-[tasks]
-lint = { cmd = ["pre-commit", "run", "--all"] }
+[feature.docs.tasks]
 doctest = { cmd = [
 	"sphinx-build",
 	"-M",
@@ -37,24 +36,49 @@ docs = { depends-on = ["docs-build"] } # alias
 doc = { depends-on = ["docs-build"] } # alias
 serve = { cmd = ["python", "-m", "http.server", "-d", "docs/_build/html"] }
 
-
-test = { cmd = ["pytest"] }
-test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
-test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"] }
+[feature.dev.tasks]
+lint = { cmd = ["pre-commit", "run", "--all"] }
+fetch-test-db = { cmd = ["python", "tests/fetch_data.py"], outputs = [
+	"tests/data/test_db",
+] }
+test = { cmd = ["pytest"], depends-on = ["fetch-test-db"]}
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"], depends-on = ["fetch-test-db"] }
+test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"], depends-on = ["fetch-test-db"] }
 test-cov = { cmd = [
 	"pytest",
 	"--verbose",
 	"--cov=hydromt",
 	"--cov-report",
 	"xml",
-] }
+], depends-on = ["fetch-test-db"] }
 
 
+[feature.py39.dependencies]
+python = "3.9.*"
+
+[feature.py310.dependencies]
+python = "3.10.*"
+
+[feature.py311.dependencies]
+python = "3.11.*"
+
+[feature.py312.dependencies]
+python = "3.12.*"
+
+[feature.py313.dependencies]
+python = "3.13.*"
 
 [environments]
-default = {features = ["dev", "docs"]}
-dev = {features = ["dev"]}
-docs = {features = ["docs"]}
+default = {features = ["dev", "docs", "py310"], solve-group = "py310"}
+dev = {features = ["dev", "py310"], solve-group = "py310"}
+docs = {features = ["docs", "py310"], solve-group = "py310"}
+
+full39 =  {features = ["dev", "docs", "py39"], solve-group = "py39"}
+full310 = {features = ["dev", "docs", "py310"], solve-group = "py310"}
+full311 = {features = ["dev", "docs", "py311"], solve-group = "py311"}
+full312 = {features = ["dev", "docs", "py312"], solve-group = "py312"}
+full313 = {features = ["dev", "docs", "py313"], solve-group = "py313"}
+
 
 [dependencies]
 census = "*"
@@ -70,25 +94,28 @@ osmnx = "*"
 pandas = "*"
 pydantic = "*"
 pyogrio = "*"
-python = "3.10.*"
 rasterio = "*"
 requests = "*"
 rioxarray = "*"
 tomli = "*"
 tomli-w = "*"
 universal_pathlib = "*"
-us = "*"
+
 xarray = "*"
 xarray-spatial = "*"
+pint = "*"
 
 [pypi-dependencies]
 pycountry-convert = "*"
+us = "*"
 
 [feature.dev.dependencies]
 pytest = "*"
-ruff = "0.6.8"
+ruff = "==0.6.8"
 pre-commit = "*"
 tqdm = "*"
+python-dotenv = "*"
+minio = "*"
 
 [feature.docs.dependencies]
 jupyterlab = "*"
