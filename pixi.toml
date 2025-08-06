@@ -38,19 +38,17 @@ serve = { cmd = ["python", "-m", "http.server", "-d", "docs/_build/html"] }
 
 [feature.dev.tasks]
 lint = { cmd = ["pre-commit", "run", "--all"] }
-fetch-test-db = { cmd = ["python", "tests/fetch_data.py"], outputs = [
-	"tests/data/test_db",
-] }
-test = { cmd = ["pytest"], depends-on = ["fetch-test-db"]}
-test-lf = { cmd = ["pytest", "--lf", "--tb=short"], depends-on = ["fetch-test-db"] }
-test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"], depends-on = ["fetch-test-db"] }
+fetch-test-db = { cmd = ["python", "tests/fetch_data.py"] }
+test = { cmd = ["pytest"] }
+test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
+test-err-warn = { cmd = ["pytest", "--tb=short", "-W", "error"] }
 test-cov = { cmd = [
 	"pytest",
 	"--verbose",
 	"--cov=hydromt",
 	"--cov-report",
 	"xml",
-], depends-on = ["fetch-test-db"] }
+]}
 
 
 [feature.py39.dependencies]
