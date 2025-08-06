@@ -23,10 +23,39 @@ on:
       - .github/workflows/tests.yml
 
 jobs:
+  fetch-db:
+    strategy:
+      matrix:
+        os: [windows-latest] # ubuntu-latest, 
+    name: Fetch test DB (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.8
+        with:
+          pixi-version: "v0.41.1"
+          environments: default
+      - name: Fetch test data
+        env:
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+        run: |
+          pixi run --locked -e default fetch-test-db
+      - name: Upload test data
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-db-${{ matrix.os }}
+          path: tests/data/test_db
+
   test:
     defaults:
       run:
         shell: bash -e -l {0}
+    needs: fetch-db
     strategy:
       fail-fast: false
       matrix:
@@ -45,10 +74,14 @@ jobs:
         with:
           pixi-version: "v0.41.1"
           environments: full${{ matrix.python-version }}
+
+      - name: Download test DB
+        uses: actions/download-artifact@v4
+        with:
+          name: test-db-${{ matrix.os }}
+          path: tests/data/test_db
+
       - name: Test
-        env:
-          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
-          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
           pixi run --locked -e full${{ matrix.python-version }} test
 

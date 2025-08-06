@@ -79,9 +79,11 @@ if __name__ == "__main__":
 
     client = prepare_client(access_key=access_key, secret_key=secret_key)
 
+    # TODO reduce the amount of data required and stored in minio server. 
+    # ! Currently `local_test_database` is ~8GB, which is too much for a CI test.
     download_directory(
         client=client,
-        path_in_bucket="local_test_database",
-        output_path=data_dir / "test_db",
+        path_in_bucket="examples", #  "local_test_database", 
+        output_path=data_dir / "_examples", # "test_db",
         overwrite=True
     )
