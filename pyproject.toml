@@ -7,10 +7,10 @@ name = "hydromt_fiat"
 # TODO description = "Hydrological model for flood impact assessment and adaptation planning"
 authors = [
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
-	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
-	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
-	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
-	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
+    {name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
+    {name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
+    {name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
+    {name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
     {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
 ]
 requires-python = ">=3.8"
@@ -63,17 +63,17 @@ include = ["hydromt_fiat*"]
 
 [project.optional-dependencies]
 test = [
-	"testpath",
-	"responses",
-	"pytest>=2.7.3",
-	"pytest-cov",
+    "testpath",
+    "responses",
+    "pytest>=2.7.3",
+    "pytest-cov",
     "minio",
     "python-dotenv",
 ]
 doc = [
-	"sphinx",
-	"sphinx_rtd_theme",
-	"ruff==0.6.8",
+    "sphinx",
+    "sphinx_rtd_theme",
+    "ruff==0.6.8",
 ]
 
 [project.urls]
