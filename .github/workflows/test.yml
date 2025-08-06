@@ -49,6 +49,8 @@ jobs:
         with:
           name: test-db-${{ matrix.os }}
           path: tests/data/test_db
+          if-no-files-found: error
+
 
   test:
     defaults:
