@@ -45,6 +45,7 @@ version = hydromt_fiat.__version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "nbsphinx",
     "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
@@ -56,7 +57,6 @@ extensions = [
     "sphinx_autosummary_accessors",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "nbsphinx",
 ]
 
 autosummary_generate = True
@@ -72,8 +72,8 @@ todo_include_todos = False
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+autoclass_content = "class"
 autodoc_member_order = "bysource"
-autoclass_content = "both"
 
 bare_version = hydromt_fiat.__version__
 doc_version = bare_version[: bare_version.find("dev") - 1]
