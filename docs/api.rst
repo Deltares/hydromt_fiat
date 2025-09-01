@@ -29,7 +29,7 @@ Setup methods
 
     FIATModel.setup_config
     FIATModel.setup_region
-    components.VulnerabilityComponent.setup_vulnerability
+    components.VulnerabilityComponent.setup
 
 I/O methods
 -----------
