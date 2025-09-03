@@ -182,4 +182,4 @@ class FIATModel(Model):
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components[REGION].set(geom)
+        self.region_component.set(geom)

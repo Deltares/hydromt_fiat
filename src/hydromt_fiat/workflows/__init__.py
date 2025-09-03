@@ -8,7 +8,7 @@ from .exposure_geom import (
 )
 from .exposure_grid import exposure_grid
 from .hazard import hazard_grid
-from .vulnerability import vulnerability_curves
+from .vulnerability import process_vulnerability_linking, vulnerability_curves
 
 __all__ = [
     "exposure_add_columns",
@@ -17,5 +17,6 @@ __all__ = [
     "exposure_grid",
     "hazard_grid",
     "max_monetary_damage",
+    "process_vulnerability_linking",
     "vulnerability_curves",
 ]
