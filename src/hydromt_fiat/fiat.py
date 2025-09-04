@@ -8,9 +8,9 @@ from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
+    ConfigComponent,
     ExposureGeomsComponent,
     ExposureGridComponent,
-    FIATConfigComponent,
     HazardComponent,
     RegionComponent,
     VulnerabilityComponent,
@@ -70,7 +70,7 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            FIATConfigComponent(model=self, filename=config_fname),
+            ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
             "exposure_geoms",
@@ -91,7 +91,7 @@ class FIATModel(Model):
 
     ## Properties
     @property
-    def config(self) -> FIATConfigComponent:
+    def config(self) -> ConfigComponent:
         """Return the configurations component."""
         return self.components["config"]
 
@@ -132,7 +132,7 @@ class FIATModel(Model):
         components = list(self.components.keys())
         cfg = None
         for c in [self.components[name] for name in components]:
-            if isinstance(c, FIATConfigComponent):
+            if isinstance(c, ConfigComponent):
                 cfg = c
                 continue
             c.write()

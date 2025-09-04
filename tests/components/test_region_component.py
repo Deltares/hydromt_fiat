@@ -102,12 +102,12 @@ def test_region_component_write_empty(
 
     # Empty write
     component.write()
-    assert "No geoms data found, skip writing." in caplog.text
+    assert "No region data found, skip writing." in caplog.text
 
     # Write empty region GeoDataFrame
     component._data = {"region": gpd.GeoDataFrame()}
     component.write()
-    assert "region is empty. Skipping..." in caplog.text
+    assert "Region is empty. Skipping..." in caplog.text
 
 
 def test_region_component_write_default(

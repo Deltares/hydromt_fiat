@@ -131,12 +131,13 @@ class ExposureGridComponent(GridComponent):
         """
         logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability.data == {}:
+        if self.model.vulnerability.data.identifiers.empty == True:
             raise RuntimeError(
-                "setup_vulnerability step is required before setting up exposure grid."
+                "'setup_vulnerability' step is required \
+before setting up exposure grid"
             )
         if self.model.region is None:
-            raise MissingRegionError("Region is required for setting up exposure grid.")
+            raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
         exposure_linking = self.model.data_catalog.get_dataframe(exposure_link_fname)
@@ -159,13 +160,14 @@ class ExposureGridComponent(GridComponent):
             exposure_data[name] = da
 
         # Get grid like from existing exposure data if there is any
-        grid_like = self.data if self.data != {} else None
+        grid_like = self.data if self.data else None
 
         # Execute the workflow function
-        ds = workflows.exposure_grid(
+        ds = workflows.exposure_grid_setup(
             grid_like=grid_like,
             exposure_data=exposure_data,
             exposure_linking=exposure_linking,
+            vulnerability=self.model.vulnerability.data.identifiers,
         )
 
         # Set the dataset

@@ -12,12 +12,12 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
 
-__all__ = ["FIATConfigComponent"]
+__all__ = ["ConfigComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class FIATConfigComponent(ModelComponent):
+class ConfigComponent(ModelComponent):
     """A Custom config component for FIAT models.
 
     Parameters

@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from hydromt._utils.naming_convention import _expand_uri_placeholders
-from hydromt.model.components import ConfigComponent
 
 MOUNT_PATTERN = re.compile(r"(^\/(\w+)\/|^(\w+):\/).*$")
 
@@ -31,11 +30,8 @@ def _relpath(
     if not isinstance(value, (Path, str)) or not Path(value).is_absolute():
         return value
     value = Path(value)
-    try:
-        if _mount(value.as_posix()) == _mount(root.as_posix()):
-            value = Path(relpath(value, root))
-    except ValueError:
-        pass  # `value` path is not relative to root
+    if _mount(value.as_posix()) == _mount(root.as_posix()):
+        value = Path(relpath(value, root))
     return value.as_posix()
 
 
@@ -68,40 +64,10 @@ def make_config_paths_relative(
     return data
 
 
-def config_file_entry(
-    cfg: ConfigComponent,
-    entry: str,
-) -> Path | None:
-    """Get file entry from config.
-
-    Parameters
-    ----------
-    cfg : ConfigComponent
-        The config component of the model.
-    entry : str
-        Requested value paired with this entry.
-    """
-    # Return None if None
-    if cfg is None:
-        return
-    value = cfg.get_value(entry)
-    # Return None if None
-    if value is None:
-        return
-    # File check
-    value = Path(value)
-    root = Path(cfg.model.root.path, cfg._filename).parent
-    if not value.is_absolute():
-        value = Path(root, value)
-    if value.is_file():
-        return value
-    return
-
-
 def get_item(
     parts: list,
     current: dict,
-    root: Path | str,
+    root: Path | str | None = None,
     fallback: Any | None = None,
     abs_path: bool = False,
 ) -> Any | None:
@@ -138,15 +104,15 @@ def pathing_expand(root: Path, filename: str | None = None) -> tuple[list]:
     return p, n
 
 
-def pathing_config(p: list | str | None):
+def pathing_config(p: list | Path | str | None):
     """Sort pathing based on config entries (i.e. a list)."""
     # Handling legacy configs
     if not isinstance(p, list):
-        p = list(p)
+        p = [p]
     # If no files return None
     if all([item is None for item in p]):
         return
     # Remove entries with no files and get the names of the remaining ones
-    p = [item for item in p if item is not None]
+    p = [Path(item) for item in p if item is not None]
     n = [item.stem for item in p]
     return p, n

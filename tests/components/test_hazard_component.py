@@ -16,7 +16,7 @@ def test_hazard_component_empty(
     component = HazardComponent(model=mock_model)
 
     # Assert some very basic stuff
-    assert component._filename == "hazard/hazard_grid.nc"
+    assert component._filename == "hazard.nc"
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
 
@@ -32,8 +32,7 @@ def test_hazard_component_setup_event(
     component.setup(hazard_fnames="flood_event", elevation_reference="dem")
 
     assert "Added water_depth hazard map: flood_event" in caplog.text
-    assert model_with_region.config.get_value("hazard.file") == "hazard/hazard_grid.nc"
-    assert model_with_region.config.get_value("hazard.elevation_reference") == "dem"
+    assert model_with_region.config.get("hazard.elevation_reference") == "dem"
 
 
 def test_hazard_component_setup_multi(
@@ -44,7 +43,7 @@ def test_hazard_component_setup_multi(
 
     # Test setting data to hazard grid with data
     component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
-    assert model_with_region.config.get_value("hazard.settings.var_as_band")
+    assert model_with_region.config.get("hazard.settings.var_as_band")
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars.keys()
@@ -65,8 +64,8 @@ def test_hazard_component_setup_risk(
     )
 
     assert isinstance(component.data, xr.Dataset)
-    assert model_with_region.config.get_value("model.risk")
-    assert model_with_region.config.get_value("hazard.return_periods") == [50000]
+    assert model_with_region.config.get("model.risk")
+    assert model_with_region.config.get("hazard.return_periods") == [50000]
 
 
 def test_hazard_component_setup_errors(model: FIATModel):
