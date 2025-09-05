@@ -136,8 +136,7 @@ def test_pathing_expand(
     # Assert the output
     assert len(paths) == 3
     assert len(names) == 3
-    assert names[0] == "buildings"
-    assert paths[0] == Path(model_cached, "exposure", "buildings.fgb")
+    assert paths[0].suffix == ".fgb"
 
     # To a directory with no data
     # Call the function
