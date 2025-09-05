@@ -114,7 +114,7 @@ def exposure_geom_data_link(
 
 @pytest.fixture(scope="session")
 def vulnerability_curves_alt(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "vulnerability_curves_alt.csv")
+    p = Path(model_cached, "vulnerability", "curves_alt.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0
@@ -123,7 +123,7 @@ def vulnerability_curves_alt(model_cached: Path) -> pd.DataFrame:
 
 @pytest.fixture(scope="session")
 def vulnerability_identifiers_alt(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "vulnerability_identifiers_alt.csv")
+    p = Path(model_cached, "vulnerability", "curves_alt_id.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0

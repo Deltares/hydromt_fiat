@@ -26,9 +26,7 @@ def test_merge_dataarrays(
     das = [da1, da2]
     caplog.set_level(logging.WARNING)
     ds = _merge_dataarrays(grid_like=None, dataarrays=das)
-    warning_msg = (
-        "grid_like argument not given, defaulting to first grid file in"
-        " the list of grids"
-    )
+    warning_msg = "No known grid provided to reproject to, \
+defaulting to first specified grid for transform and extent"
     assert warning_msg in caplog.text
     assert isinstance(ds, xr.Dataset)

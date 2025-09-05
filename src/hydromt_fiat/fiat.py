@@ -8,10 +8,10 @@ from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
+    ConfigComponent,
     ExposureGeomsComponent,
     ExposureGridComponent,
-    FIATConfigComponent,
-    HazardGridComponent,
+    HazardComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -70,7 +70,7 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            FIATConfigComponent(model=self, filename=config_fname),
+            ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
             "exposure_geoms",
@@ -81,17 +81,17 @@ class FIATModel(Model):
             ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "hazard_grid",
-            HazardGridComponent(model=self, region_component=REGION),
+            "hazard",
+            HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "vulnerability_data",
+            "vulnerability",
             VulnerabilityComponent(model=self),
         )
 
     ## Properties
     @property
-    def config(self) -> FIATConfigComponent:
+    def config(self) -> ConfigComponent:
         """Return the configurations component."""
         return self.components["config"]
 
@@ -106,19 +106,19 @@ class FIATModel(Model):
         return self.components["exposure_grid"]
 
     @property
-    def hazard_grid(self) -> HazardGridComponent:
-        """Return hazard grid component."""
-        return self.components["hazard_grid"]
+    def hazard(self) -> HazardComponent:
+        """Return hazard component."""
+        return self.components["hazard"]
 
     @property
-    def region_data(self) -> RegionComponent:
+    def region_component(self) -> RegionComponent:
         """Return the region component."""
         return self.components[REGION]
 
     @property
-    def vulnerability_data(self) -> VulnerabilityComponent:
-        """Return the vulnerability component containing the data."""
-        return self.components["vulnerability_data"]
+    def vulnerability(self) -> VulnerabilityComponent:
+        """Return the vulnerability component."""
+        return self.components["vulnerability"]
 
     ## I/O
     @hydromt_step
@@ -132,7 +132,7 @@ class FIATModel(Model):
         components = list(self.components.keys())
         cfg = None
         for c in [self.components[name] for name in components]:
-            if isinstance(c, FIATConfigComponent):
+            if isinstance(c, ConfigComponent):
                 cfg = c
                 continue
             c.write()
@@ -182,4 +182,4 @@ class FIATModel(Model):
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components[REGION].set(geom)
+        self.region_component.set(geom)

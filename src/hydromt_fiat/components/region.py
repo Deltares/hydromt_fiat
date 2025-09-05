@@ -1,8 +1,6 @@
 """Custom region components."""
 
-import os
 from logging import Logger, getLogger
-from os.path import dirname, isdir, join
 from pathlib import Path
 from typing import Dict, Optional, Union, cast
 
@@ -83,14 +81,12 @@ class RegionComponent(SpatialModelComponent):
     ## I/O methods
     @hydromt_step
     def read(self, filename: Optional[str] = None, **kwargs) -> None:
-        r"""Read model geometries files at <root>/<filename>.
-
-        key-word arguments are passed to :py:func:`geopandas.read_file`
+        """Read model region data.
 
         Parameters
         ----------
         filename : str, optional
-            filename relative to model root.
+            Filename relative to model root.
             If None, the path that was provided at init will be used.
         **kwargs : dict
             Additional keyword arguments that are passed to the
@@ -102,6 +98,7 @@ class RegionComponent(SpatialModelComponent):
         read_path = self.root.path / f
         if not read_path.is_file():
             return
+        logger.info(f"Reading the model region file at {read_path.as_posix()}")
         geom = cast(GeoDataFrame, gpd.read_file(read_path, **kwargs))
         self.set(geom=geom)
 
@@ -112,14 +109,12 @@ class RegionComponent(SpatialModelComponent):
         to_wgs84: bool = False,
         **kwargs,
     ) -> None:
-        r"""Write model geometries to a vector file at <root>/<filename>.
-
-        Key-word arguments are passed to :py:meth:`geopandas.GeoDataFrame.to_file`
+        """Write model region data.
 
         Parameters
         ----------
         filename : str, optional
-            filename relative to model root.
+            Filename relative to model root.
             If None, the path that was provided at init will be used.
         to_wgs84 : bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
@@ -130,37 +125,35 @@ class RegionComponent(SpatialModelComponent):
         """
         self.root._assert_write_mode()
 
-        if len(self.data) == 0:
-            logger.info("No geoms data found, skip writing.")
+        # If nothing to write, return
+        if REGION not in self.data:
+            logger.info("No region data found, skip writing.")
             return
 
-        for name, gdf in self.data.items():
-            if len(gdf) == 0:
-                logger.warning(f"{name} is empty. Skipping...")
-                continue
+        # Sort the filename
+        # Hierarchy: 1) signature, 2) default
+        filename = filename or self._filename
+        write_path = Path(self.root.path, filename)
 
-            geom_filename = filename or self._filename
+        # Write the file(s)
+        logger.info("Writing the model region file..")
+        gdf = self.data[REGION]
+        if len(gdf) == 0:
+            logger.warning("Region is empty. Skipping...")
+            return
 
-            write_path = Path(
-                join(
-                    self.root.path,
-                    geom_filename.format(name=name),
-                )
-            )
+        # Create dir if not there
+        if not write_path.parent.is_dir():
+            write_path.parent.mkdir(parents=True, exist_ok=True)
 
-            logger.debug(f"Writing file {write_path}")
-
-            write_folder = dirname(write_path)
-            if not isdir(write_folder):
-                os.makedirs(write_folder, exist_ok=True)
-
-            if to_wgs84 and (
-                kwargs.get("driver") == "GeoJSON"
-                or str(write_path).lower().endswith(".geojson")
-            ):
-                gdf.to_crs(epsg=4326, inplace=True)
-
-            gdf.to_file(write_path, **kwargs)
+        # Reproject to WGS84 is wantead
+        if to_wgs84 and (
+            kwargs.get("driver") == "GeoJSON"
+            or str(write_path).lower().endswith(".geojson")
+        ):
+            gdf.to_crs(epsg=4326, inplace=True)
+        # Write
+        gdf.to_file(write_path, **kwargs)
 
     ## Set(up) methods
     def set(self, geom: Union[GeoDataFrame, GeoSeries]):

@@ -3,6 +3,7 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 import pytest
+import xarray as xr
 from hydromt import DataCatalog
 from shapely.geometry import box
 
@@ -85,6 +86,7 @@ def exposure_geom_data_damage(
 ) -> gpd.GeoDataFrame:
     exposure_geom_data.drop(
         [
+            "cost_type",
             "max_damage_structure",
             "max_damage_content",
             "ground_flht",
@@ -97,9 +99,30 @@ def exposure_geom_data_damage(
     return exposure_geom_data
 
 
+@pytest.fixture
+def exposure_grid_data(model_cached: Path) -> xr.Dataset:
+    p = Path(model_cached, "exposure", "spatial.nc")
+    assert p.is_file()
+    ds = xr.open_dataset(p)
+    assert len(ds.data_vars) != 0
+    return ds
+
+
+@pytest.fixture
+def hazard_data(model_cached: Path) -> xr.Dataset:
+    p = Path(
+        model_cached,
+        "hazard.nc",
+    )
+    assert p.is_file()
+    ds = xr.open_dataset(p)
+    assert len(ds.data_vars) != 0
+    return ds
+
+
 @pytest.fixture(scope="session")
 def vulnerability_curves(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "vulnerability_curves.csv")
+    p = Path(model_cached, "vulnerability", "curves.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0
@@ -108,7 +131,7 @@ def vulnerability_curves(model_cached: Path) -> pd.DataFrame:
 
 @pytest.fixture(scope="session")
 def vulnerability_identifiers(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "vulnerability_identifiers.csv")
+    p = Path(model_cached, "vulnerability", "curves_id.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0

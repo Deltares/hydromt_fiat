@@ -1,5 +1,6 @@
 import platform
 from pathlib import Path
+from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
 import pandas as pd
@@ -10,6 +11,7 @@ from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.components import ConfigComponent
 
 
 ## OS related fixture
@@ -28,26 +30,44 @@ def model_exposure_setup(
     vulnerability_identifiers: pd.DataFrame,
 ) -> FIATModel:
     model = model_with_region
-    model.vulnerability_data.set(
+    model.vulnerability.set(
         vulnerability_curves,
-        name="vulnerability_curves",
+        name="curves",
     )
-    model.vulnerability_data.set(
+    model.vulnerability.set(
         vulnerability_identifiers,
-        name="vulnerability_identifiers",
+        name="identifiers",
     )
     return model
 
 
 @pytest.fixture
-def mock_model(tmp_path: Path, mocker: MockerFixture) -> MagicMock:
-    model = mocker.create_autospec(FIATModel)
-    model.root = mocker.create_autospec(ModelRoot(tmp_path), instance=True)
-    model.root.path.return_value = tmp_path
-    model.data_catalog = mocker.create_autospec(DataCatalog)
-    # Set attributes for practical use
-    type(model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(4326))
-    type(model).root = PropertyMock(side_effect=lambda: ModelRoot(tmp_path))
+def mock_model_factory(
+    mocker: MockerFixture, tmp_path: Path
+) -> Callable[[Path, str], FIATModel]:
+    def _factory(path: Path = tmp_path, mode: str = "w") -> MagicMock:
+        model = mocker.create_autospec(FIATModel)
+        model.root = ModelRoot(path, mode=mode)
+        model.data_catalog = mocker.create_autospec(DataCatalog)
+        model.crs = CRS.from_epsg(4326)
+        return model
+
+    return _factory
+
+
+@pytest.fixture
+def mock_model(mock_model_factory: Callable[[Path, str], FIATModel]) -> MagicMock:
+    model = mock_model_factory()
+    return model
+
+
+@pytest.fixture
+def mock_model_config(
+    mock_model_factory: Callable[[Path, str], FIATModel],
+) -> MagicMock:
+    model = mock_model_factory()
+    config = ConfigComponent(model)
+    type(model).config = PropertyMock(side_effect=lambda: config)
     return model
 
 
@@ -61,5 +81,6 @@ def config_dummy(tmp_path: Path) -> dict:
             "file2": "tmp/tmp.txt",
         },
         "spooky": {"ghost": [1, 2, 3]},
+        "multi": [{"file": "tmp/tmp.txt"}, {"file": "boo.txt"}],
     }
     return data
