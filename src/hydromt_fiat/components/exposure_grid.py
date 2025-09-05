@@ -117,7 +117,7 @@ class ExposureGridComponent(GridComponent):
     def setup(
         self,
         exposure_fnames: Path | str | list[Path | str],
-        exposure_link_fname: Path | str,
+        exposure_link_fname: Path | str | None = None,
     ) -> None:
         """Set up an exposure grid.
 
@@ -125,9 +125,9 @@ class ExposureGridComponent(GridComponent):
         ----------
         exposure_fnames : Path | str | list[Path | str]
             Name of or path to exposure file(s)
-        exposure_link_fname : Path | str
+        exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
-            vulnerability curves.
+            vulnerability curves. By default None
         """
         logger.info("Setting up gridded exposure")
 
@@ -140,7 +140,11 @@ before setting up exposure grid"
             raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
-        exposure_linking = self.model.data_catalog.get_dataframe(exposure_link_fname)
+        exposure_linking = None
+        if exposure_link_fname is not None:
+            exposure_linking = self.model.data_catalog.get_dataframe(
+                exposure_link_fname
+            )
 
         # Sort the input out as iterator
         exposure_fnames = (
@@ -174,6 +178,9 @@ before setting up exposure grid"
         self.set(ds)
 
         # Set the config entries
+        logger.info("Setting the model type to 'grid'")
+        self.model.config.set("model.model_type", "grid")
+        # Check for multiple bands, because gdal and netcdf..
         self.model.config.set("exposure.grid.settings.var_as_band", False)
         if len(self.data.data_vars) > 1:
             self.model.config.set("exposure.grid.settings.var_as_band", True)

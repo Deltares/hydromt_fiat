@@ -140,6 +140,16 @@ def test_config_component_write(
     data = _read_toml(Path(tmp_path, component._filename))
     assert data["baz"]["file1"] == "tmp.txt"
 
+
+def test_config_component_write_sig(
+    tmp_path: Path,
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model)
+    # Set data like a dummy
+    component._data = {"foo": "bar"}
+
     # Write to an alternative path
     component.write(filename="settings/tmp.toml")
 

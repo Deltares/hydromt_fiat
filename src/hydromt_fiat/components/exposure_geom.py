@@ -339,6 +339,10 @@ use 'setup_region' before this method"
         # Set the data in the component
         self.set(exposure_vector, name=name)
 
+        # Update the config
+        logger.info("Setting the model type to 'geom'")
+        self.model.config.set("model.model_type", "geom")
+
     @hydromt_step
     def setup_max_damage(
         self,
