@@ -43,11 +43,11 @@ class OSMDriver(GeoDataFrameDriver):
             List containing single OSM asset type.
         mask : gpd.GeoDataFrame | gpd.GeoSeries
             GeoDataFrame containing the region of interest.
-        tags : list[str] | None, optional
-            Additional tags to filter the OSM data by, by default None
-        geom_type : list[str] | None, optional
+        tags : list[str], optional
+            Additional tags to filter the OSM data by, by default None.
+        geom_type : list[str], optional
             List of geometry types to filter data with,
-            i.e. ['MultiPolygon', 'Polygon'], by default None
+            i.e. ['MultiPolygon', 'Polygon'], by default None.
 
         Returns
         -------
@@ -104,7 +104,7 @@ class OSMDriver(GeoDataFrameDriver):
         Returns
         -------
         StrPath
-            Path to file
+            Path to the file.
         """
         path = Path(path)
         ext = path.suffix
@@ -128,10 +128,10 @@ class OSMDriver(GeoDataFrameDriver):
         polygon : Polygon
             Area of interest.
         tag : dict
-            OSM tag to filter data with, i.e. {'building': True}
+            OSM tag to filter data with, i.e. {'building': True}.
         geom_type : list[str] | None
             List of geometry types to filter data with,
-            i.e. ['MultiPolygon', 'Polygon']
+            i.e. ['MultiPolygon', 'Polygon'].
 
         Returns
         -------

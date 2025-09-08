@@ -32,8 +32,8 @@ def _merge_dataarrays(
 ) -> xr.Dataset:
     if grid_like is None:
         logger.warning(
-            "grid_like argument not given, defaulting to first grid file in the list"
-            " of grids"
+            "No known grid provided to reproject to, \
+defaulting to first specified grid for transform and extent"
         )
         grid_like = dataarrays[0]
 

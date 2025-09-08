@@ -10,30 +10,30 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
 
-__all__ = ["HazardGridComponent"]
+__all__ = ["HazardComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardGridComponent(GridComponent):
+class HazardComponent(GridComponent):
     """Custom hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 
     Parameters
     ----------
-    model: Model
-        HydroMT model instance
-    filename: str
+    model : Model
+        HydroMT model instance.
+    filename : str, optional
         The path to use for reading and writing of component data by default.
-        By default "hazard/hazard_grid.nc".
-    region_component: str, optional
+        By default "hazard.nc".
+    region_component : str, optional
         The name of the region component to use as reference
         for this component's region. If None, the region will be set to the grid extent.
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
-        a reference to another grid component for correct reprojection, by default None
-    region_filename: str
+        a reference to another grid component for correct reprojection, by default None.
+    region_filename : str
         The path to use for reading and writing of the region data by default.
         By default "region.geojson".
     """
@@ -42,7 +42,7 @@ class HazardGridComponent(GridComponent):
         self,
         model: Model,
         *,
-        filename: str = "hazard/hazard_grid.nc",
+        filename: str = "hazard.nc",
         region_component: str | None = None,
         region_filename: str = "region.geojson",
     ):
@@ -53,6 +53,70 @@ class HazardGridComponent(GridComponent):
             region_filename=region_filename,
         )
 
+    ## I/O methods
+    @hydromt_step
+    def read(
+        self,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Read the hazard data.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
+        **kwargs : dict
+            Additional keyword arguments to be passed to the `read_nc` method.
+        """
+        # Sort the filename
+        # Hierarchy: 1) signature, 2) config file, 3) default
+        filename = (
+            filename
+            or self.model.config.get("hazard.file", abs_path=True)
+            or self._filename
+        )
+        # Read the data
+        logger.info("Reading the hazard data..")
+        super().read(filename=filename, **kwargs)
+
+    @hydromt_step
+    def write(
+        self,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Write the hazard data.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
+        **kwargs : dict
+            Additional keyword arguments to be passed to the `write_nc` method.
+        """
+        # Sort out the filename
+        # Hierarchy: 1) signature, 2) config file, 3) default
+        filename = filename or self.model.config.get("hazard.file") or self._filename
+        write_path = Path(self.root.path, filename)
+
+        # Update the kwargs
+        if "gdal_compliant" not in kwargs:
+            kwargs["gdal_compliant"] = True
+        # Write it in a gdal compliant manner by default
+        logger.info("Writing the hazard data..")
+        super().write(write_path.as_posix(), **kwargs)
+
+        # Update the config
+        self.model.config.set("hazard.file", write_path)
+        # Check for multiple bands, because gdal and netcdf..
+        self.model.config.set("hazard.settings.var_as_band", False)
+        if len(self.data.data_vars) > 1:
+            self.model.config.set("hazard.settings.var_as_band", True)
+
+    ## Mutating methods
     @hydromt_step
     def setup(
         self,
@@ -79,8 +143,8 @@ class HazardGridComponent(GridComponent):
             Whether the hazard files are part of a risk analysis,
             by default False.
         unit : str, optional
-            The unit which the hazard data is in, by default 'm' (meters)
-        settings : dict
+            The unit which the hazard data is in, by default 'm' (meters).
+        **settings : dict
             Extra settings to be added under the hazard header.
             For flood maps (water depth), elevation_reference set to either 'datum' \
             or 'dem' is recommeneded.
@@ -127,15 +191,9 @@ class HazardGridComponent(GridComponent):
         self.set(ds)
 
         # Set the config entries
-        if len(self.data.data_vars) > 1:
-            self.model.config.set("hazard.settings.var_as_band", True)
-
+        self.model.config.set("model.risk", risk)
         if risk:
-            self.model.config.set("model.risk", risk)
             self.model.config.set("hazard.return_periods", return_periods)
-
-        # Set the output filename
-        self.model.config.set("hazard.file", self._filename)
 
         # Set the extra settings
         for key, item in settings.items():

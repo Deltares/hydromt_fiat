@@ -27,22 +27,22 @@ def hazard_grid(
     Parameters
     ----------
     grid_like : xr.Dataset | None
-        Grid dataset that serves as an example dataset for transforming the input data
-    hazard_data : dict[str:xr.DataArray]
+        Grid dataset that serves as an example dataset for transforming the input data.
+    hazard_data : dict[str, xr.DataArray]
         The hazard data in a dictionary with the names of the datasets as keys.
     hazard_type : str
-        Type of hazard
-    return_periods : list[int] | None, optional
-        List of return periods, by default None
-    risk : bool
-        Designate hazard files for risk analysis, by default False
-    unit : str
-        The unit which the hazard data is in, by default 'm'
+        Type of hazard.
+    return_periods : list[int], optional
+        List of return periods, by default None.
+    risk : bool, optional
+        Designate hazard files for risk analysis, by default False.
+    unit : str, optional
+        The unit which the hazard data is in, by default 'm'.
 
     Returns
     -------
     xr.Dataset
-        Unified xarray dataset containing the hazard data
+        Unified xarray dataset containing the hazard data.
     """
     hazard_dataarrays = []
     if return_periods is None and not risk:
