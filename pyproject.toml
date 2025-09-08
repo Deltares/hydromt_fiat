@@ -226,6 +226,12 @@ test-cov-local = { cmd = [
     "--cov-report",
     "html"
 ] }
+test-integration = { cmd = [
+    "pytest",
+    "-m",
+    "integration",
+    "--verbose",
+] }
 
 # Clean up (some of) the temporary files
 clean = { depends-on = [
