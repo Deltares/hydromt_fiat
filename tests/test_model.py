@@ -5,10 +5,10 @@ import pytest
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import (
+    ConfigComponent,
     ExposureGeomsComponent,
     ExposureGridComponent,
-    FIATConfigComponent,
-    HazardGridComponent,
+    HazardComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -58,9 +58,9 @@ def test_setup_config(tmp_path: Path):
 
     # Assert the config component
     assert model.config.data["output"] == {"path": "output"}
-    assert model.config.get_value("output.path") == "output"
-    assert len(model.config.get_value("global")) == 2
-    assert model.config.get_value("global.srs") == {"value": "EPSG:4326"}
+    assert model.config.get("output.path") == "output"
+    assert len(model.config.get("global")) == 2
+    assert model.config.get("global.srs") == {"value": "EPSG:4326"}
 
 
 def test_setup_region(tmp_path: Path, build_region: Path):
@@ -90,10 +90,10 @@ def test_model_properties(model_with_region: FIATModel):
     model = model_with_region
 
     # Assert the types of model properties
-    assert isinstance(model.config, FIATConfigComponent)
+    assert isinstance(model.config, ConfigComponent)
     assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
     assert isinstance(model.exposure_grid, ExposureGridComponent)
-    assert isinstance(model.hazard_grid, HazardGridComponent)
+    assert isinstance(model.hazard, HazardComponent)
     assert isinstance(model.region, gpd.GeoDataFrame)
-    assert isinstance(model.region_data, RegionComponent)
-    assert isinstance(model.vulnerability_data, VulnerabilityComponent)
+    assert isinstance(model.region_component, RegionComponent)
+    assert isinstance(model.vulnerability, VulnerabilityComponent)

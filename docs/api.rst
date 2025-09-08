@@ -48,4 +48,4 @@ Attributes
 
     FIATModel.config
     FIATModel.region
-    FIATModel.vulnerability_data
+    FIATModel.vulnerability

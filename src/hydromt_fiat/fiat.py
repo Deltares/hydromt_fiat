@@ -8,10 +8,10 @@ from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
+    ConfigComponent,
     ExposureGeomsComponent,
     ExposureGridComponent,
-    FIATConfigComponent,
-    HazardGridComponent,
+    HazardComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -31,16 +31,14 @@ class FIATModel(Model):
     Parameters
     ----------
     root : str, optional
-        Model root, by default None
+        Model root, by default None.
     config_fname : str, optional
-        Name of the configurations file, by default 'settings.toml'
+        Name of the configurations file, by default 'settings.toml'.
     mode : {'r','r+','w'}, optional
-        read/append/write mode, by default "w"
+        read/append/write mode, by default "w".
     data_libs : list[str] | str, optional
-        List of data catalog configuration files, by default None
-    logger:
-        The logger to be used.
-    **catalog_keys:
+        List of data catalog configuration files, by default None.
+    **catalog_keys : dict
         Additional keyword arguments to be passed down to the DataCatalog.
     """
 
@@ -70,7 +68,7 @@ class FIATModel(Model):
         ## Setup components
         self.add_component(
             "config",
-            FIATConfigComponent(model=self, filename=config_fname),
+            ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
             "exposure_geoms",
@@ -81,18 +79,18 @@ class FIATModel(Model):
             ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "hazard_grid",
-            HazardGridComponent(model=self, region_component=REGION),
+            "hazard",
+            HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "vulnerability_data",
+            "vulnerability",
             VulnerabilityComponent(model=self),
         )
 
     ## Properties
     @property
-    def config(self) -> FIATConfigComponent:
-        """Return the configurations component."""
+    def config(self) -> ConfigComponent:
+        """Return the config component."""
         return self.components["config"]
 
     @property
@@ -106,33 +104,33 @@ class FIATModel(Model):
         return self.components["exposure_grid"]
 
     @property
-    def hazard_grid(self) -> HazardGridComponent:
-        """Return hazard grid component."""
-        return self.components["hazard_grid"]
+    def hazard(self) -> HazardComponent:
+        """Return the hazard component."""
+        return self.components["hazard"]
 
     @property
-    def region_data(self) -> RegionComponent:
+    def region_component(self) -> RegionComponent:
         """Return the region component."""
         return self.components[REGION]
 
     @property
-    def vulnerability_data(self) -> VulnerabilityComponent:
-        """Return the vulnerability component containing the data."""
-        return self.components["vulnerability_data"]
+    def vulnerability(self) -> VulnerabilityComponent:
+        """Return the vulnerability component."""
+        return self.components["vulnerability"]
 
     ## I/O
     @hydromt_step
-    def read(self):
+    def read(self) -> None:
         """Read the FIAT model."""
         Model.read(self)
 
     @hydromt_step
-    def write(self):
+    def write(self) -> None:
         """Write the FIAT model."""
         components = list(self.components.keys())
         cfg = None
         for c in [self.components[name] for name in components]:
-            if isinstance(c, FIATConfigComponent):
+            if isinstance(c, ConfigComponent):
                 cfg = c
                 continue
             c.write()
@@ -152,10 +150,6 @@ class FIATModel(Model):
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
-
-        Returns
-        -------
-            None
         """
         logger.info("Setting config entries from user input")
         for key, value in settings.items():
@@ -172,14 +166,10 @@ class FIATModel(Model):
         ----------
         region : Path | str
             Path to the region vector file.
-
-        Returns
-        -------
-            None
         """
         region = Path(region)
         logger.info(f"Setting region from '{region.as_posix()}'")
         if not region.is_file():
             raise FileNotFoundError(region.as_posix())
         geom = gpd.read_file(region)
-        self.components[REGION].set(geom)
+        self.region_component.set(geom)

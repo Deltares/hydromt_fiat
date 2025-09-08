@@ -1,11 +1,16 @@
 from pathlib import Path
 
 import pytest
-from fiat import Configurations, GeomModel
+from fiat import Configurations, GeomModel, __version__
+from packaging.version import Version
 
 from hydromt_fiat import FIATModel
 
 
+@pytest.mark.skipif(
+    Version(__version__) < Version("1"),
+    reason="At least Delft-FIAT version 1.0.0 is required.",
+)
 @pytest.mark.integration
 def test_model_geom_integration(
     tmp_path: Path,
@@ -25,7 +30,7 @@ def test_model_geom_integration(
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
-    model.vulnerability_data.setup(
+    model.vulnerability.setup(
         "vulnerability_curves",
         "vulnerability_curves_linking",
         unit="m",

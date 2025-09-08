@@ -32,17 +32,16 @@ license = {text = "GPL-3.0"}
 
 requires-python = ">=3.11"
 dependencies = [
-"barril",
-"dask",
-"geopandas",
-"hydromt>=1.2.0",
-"numpy",
-"osmnx",
-"pooch",
-"requests",
-"tomli",
-"tomli-w",
-"xarray",
+    "barril",
+    "dask",
+    "geopandas",
+    "hydromt>=1.2.0",
+    "numpy",
+    "osmnx",
+    "pooch",
+    "requests",
+    "tomlkit",
+    "xarray",
 ]
 
 keywords = ["HydroMT", "FIAT", "Damage"]
@@ -87,7 +86,7 @@ dev = [
 docs = [
     "nbsphinx",
 	"pydata-sphinx-theme",
-    "sphinx",
+    "sphinx>=8.2.0",
     "sphinx_design",
     "sphinx_autosummary_accessors",
 ]
@@ -118,6 +117,13 @@ fiat = "hydromt_fiat.drivers.resolvers"
 "Homepage" = "https://github.com/Deltares/hydromt_fiat"
 "Bug Reports" = "https://github.com/Deltares/hydromt_fiat/issues"
 "Source" =  "https://github.com/Deltares/hydromt_fiat"
+
+[tool.make_env]
+channels = ["conda-forge"]
+deps_not_in_conda = [
+    "sphinx_autosummary_accessors",
+    "sphinx_design",
+]
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
@@ -171,8 +177,7 @@ exclude = ["docs/**"]
 "tests/**" = ["D103", "D100", "D104"]
 "tests/conftest.py" = ["E402"]
 "src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
-"src/hydromt_fiat/components/__init__.py" = ["F403"]
-"src/hydromt_fiat/workflows/__init__.py" = ["F403"]
+"src/hydromt_fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -197,6 +202,7 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 # Documentation generation
 docs-dummy = {cmd = ["sphinx-build", "./docs", "./docs/_build", "-b", "dummy", "-W"] }
 docs-html = { cmd = ["sphinx-build", "-M", "html", "docs", "docs/_build", "-W"] }
+docs-html-rebuild = { depends-on = ["clean-docs", "docs-html"] }
 serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"] }
 
 # Testing
@@ -220,25 +226,35 @@ test-cov-local = { cmd = [
     "--cov-report",
     "html"
 ] }
+test-integration = { cmd = [
+    "pytest",
+    "-m",
+    "integration",
+    "--verbose",
+] }
 
 # Clean up (some of) the temporary files
 clean = { depends-on = [
-  "clean-env-files",
-  "clean-bin",
-  "clean-dist",
-  "clean-docs",
-  "clean-docs-example",
-  "clean-docs-gen",
+    "clean-bin",
+    "clean-build",
+    "clean-dist",
+    "clean-docs",
 ] }
-clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
+clean-build = { cmd = ["rm", "-rf", "build"] }
 clean-dist = {cmd = ["rm", "-rf", "dist"] }
-clean-docs = { cmd = ["rm", "-rf", "docs/_build/html"] }
+clean-docs = { depends-on = [
+    "clean-docs-build",
+    "clean-docs-example",
+    "clean-docs-gen",
+] }
+clean-docs-build = { cmd = ["rm", "-rf", "docs/_build/html"] }
 clean-docs-example = { cmd = ["rm", "-rf", "docs/_examples"] }
 clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
 
 ## Dependencies
 [tool.pixi.dependencies]
+numpy = "<2.3"
 pip = "*"
 
 [tool.pixi.pypi-dependencies]
@@ -249,7 +265,7 @@ pandoc = "*"
 
 [tool.pixi.feature.test.dependencies]
 delft_fiat = ">=0.3.0"
-numpy = "==2.2.6"
+gdal = ">=3.9.1"
 
 # Extra python environments
 [tool.pixi.feature.py313.dependencies]
@@ -263,7 +279,7 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["dev", "docs", "examples", "test"] }
+default = { features = ["py313", "dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
 slim = { features = [] }
 test-py313 = {features = ["py313", "test"]}
