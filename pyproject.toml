@@ -40,7 +40,6 @@ dependencies = [
     "osmnx",
     "pooch",
     "requests",
-    "tomli",
     "tomlkit",
     "xarray",
 ]
@@ -87,7 +86,7 @@ dev = [
 docs = [
     "nbsphinx",
 	"pydata-sphinx-theme",
-    "sphinx",
+    "sphinx>=8.2.0",
     "sphinx_design",
     "sphinx_autosummary_accessors",
 ]

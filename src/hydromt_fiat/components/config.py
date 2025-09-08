@@ -23,11 +23,11 @@ class ConfigComponent(ModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance
-    filename : str
+        HydroMT model instance.
+    filename : str, optional
         A path relative to the root where the configuration file will
         be read and written if user does not provide a path themselves.
-        By default 'config.yml'
+        By default 'settings.toml'.
     """
 
     def __init__(
@@ -158,7 +158,7 @@ class ConfigComponent(ModelComponent):
         Parameters
         ----------
         args : tuple | str
-            Key can given as a string with '.' indicating a new level: ('key1.key2')
+            Key can given as a string with '.' indicating a new level: ('key1.key2').
         fallback: Any, optional
             Fallback value if key not found in config, by default None.
         abs_path: bool, optional
@@ -185,9 +185,9 @@ class ConfigComponent(ModelComponent):
         ----------
         key : str
             A string with '.' indicating a new level: 'key1.key2' will translate
-            to {"key1":{"key2": value}}
+            to {"key1":{"key2": value}}.
         value : Any
-            The value to set the config to
+            The value to set the config to.
         """
         self._initialize()
         parts = key.split(".")

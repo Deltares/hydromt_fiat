@@ -23,8 +23,8 @@ class ExposureGridComponent(GridComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance
-    filename : str
+        HydroMT model instance.
+    filename : str, optional
         The path to use for reading and writing of component data by default.
         By default "exposure/spatial.nc".
     region_component : str, optional
@@ -32,7 +32,7 @@ class ExposureGridComponent(GridComponent):
         for this component's region. If None, the region will be set to the grid extent.
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
-        a reference to another grid component for correct reprojection, by default None
+        a reference to another grid component for correct reprojection, by default None.
     region_filename : str
         The path to use for reading and writing of the region data by default.
         By default "region.geojson".
@@ -59,13 +59,14 @@ class ExposureGridComponent(GridComponent):
         self,
         filename: str | None = None,
         **kwargs,
-    ):
+    ) -> None:
         """Read the exposure grid data.
 
         Parameters
         ----------
         filename : str, optional
-            Filename relative to model root, by default 'exposure/spatial.nc'
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments to be passed to the `read_nc` method.
         """
@@ -85,13 +86,14 @@ class ExposureGridComponent(GridComponent):
         self,
         filename: str | None = None,
         **kwargs,
-    ):
+    ) -> None:
         """Write the exposure grid data.
 
         Parameters
         ----------
         filename : str, optional
-            Filename relative to model root, by default 'exposure/spatial.nc'
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments to be passed to the `write_nc` method.
         """
@@ -111,6 +113,10 @@ class ExposureGridComponent(GridComponent):
 
         # Update the config
         self.model.config.set("exposure.grid.file", write_path)
+        # Check for multiple bands, because gdal and netcdf..
+        self.model.config.set("exposure.grid.settings.var_as_band", False)
+        if len(self.data.data_vars) > 1:
+            self.model.config.set("exposure.grid.settings.var_as_band", True)
 
     ## Mutating methods
     @hydromt_step
@@ -124,7 +130,7 @@ class ExposureGridComponent(GridComponent):
         Parameters
         ----------
         exposure_fnames : Path | str | list[Path | str]
-            Name of or path to exposure file(s)
+            Name of or path to exposure file(s).
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None
@@ -180,7 +186,3 @@ before setting up exposure grid"
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
         self.model.config.set("model.model_type", "grid")
-        # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set("exposure.grid.settings.var_as_band", False)
-        if len(self.data.data_vars) > 1:
-            self.model.config.set("exposure.grid.settings.var_as_band", True)

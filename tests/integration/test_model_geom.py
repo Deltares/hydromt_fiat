@@ -8,8 +8,8 @@ from hydromt_fiat import FIATModel
 
 
 @pytest.mark.skipif(
-    Version(__version__) < Version("0.4.0"),
-    reason="At least Delft-FIAT version 0.4.0 is required.",
+    Version(__version__) < Version("1"),
+    reason="At least Delft-FIAT version 1.0.0 is required.",
 )
 @pytest.mark.integration
 def test_model_geom_integration(

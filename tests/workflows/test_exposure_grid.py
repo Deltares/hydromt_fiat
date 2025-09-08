@@ -76,7 +76,10 @@ def test_exposure_grid_setup_alt(
     assert isinstance(ds, xr.Dataset)
     assert len(ds.data_vars) == 0
     # Assert the logging
-    assert "Couldn't link 'industrial_content' to vulnerability, skipping..."
+    assert (
+        "Couldn't link 'industrial_content' to vulnerability, skipping..."
+        in caplog.text
+    )
 
 
 def test_exposure_grid_setup_alt_link(

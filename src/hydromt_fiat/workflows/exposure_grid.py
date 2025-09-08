@@ -38,7 +38,7 @@ def exposure_grid_setup(
     Returns
     -------
     xr.Dataset
-        Transformed and unified exposure grid
+        Transformed and unified exposure grid.
     """
     exposure_dataarrays = []
 

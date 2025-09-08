@@ -40,16 +40,16 @@ def fetch_data(
         The data to fetch.
     output_dir : Path | str | None
         The output directory to store the data.
-        If None, the data will be stored in ~/.cache/hydromt_fiat/<data>
+        If None, the data will be stored in ~/.cache/hydromt_fiat/<data>.
     sub_dir : bool
         Whether to place the fetched data in a sub directory of the same name.
         I.e. if  the (tarred) dataset is named 'custom-data' a directory named
-        'custom-data' is created in which the data are placed. By default True
+        'custom-data' is created in which the data are placed. By default True.
 
     Returns
     -------
     Path
-        The output directory where the data is stored
+        The output directory where the data is stored.
     """
     # Open the registry
     # update the base URL and registry with new versions of the data

@@ -87,7 +87,7 @@ def get_item(
             return value
 
 
-def pathing_expand(root: Path, filename: str | None = None) -> tuple[list]:
+def pathing_expand(root: Path, filename: str | None = None) -> tuple[list] | None:
     """Sort the pathing on reading based on a wildcard."""
     # If the filename is None, do nothing
     if filename is None:
@@ -104,7 +104,7 @@ def pathing_expand(root: Path, filename: str | None = None) -> tuple[list]:
     return p, n
 
 
-def pathing_config(p: list | Path | str | None):
+def pathing_config(p: list | Path | str | None) -> tuple[list] | None:
     """Sort pathing based on config entries (i.e. a list)."""
     # Handling legacy configs
     if not isinstance(p, list):

@@ -8,17 +8,17 @@ on:
       - src/hydromt_fiat/*
       - tests/*
       - pyproject.toml
-      - .github/workflows/docs.yml
+      - .github/workflows/test.yml
   pull_request:
     branches: [v1]
     paths:
       - src/hydromt_fiat/*
       - tests/*
       - pyproject.toml
-      - .github/workflows/docs.yml
+      - .github/workflows/test.yml
 
 jobs:
-  test:
+  unit_test:
     defaults:
       run:
         shell: bash -e -l {0}

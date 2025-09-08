@@ -79,6 +79,7 @@ def test_hazard_component_write(
 
     # Assert the config file
     assert component.model.config.get("hazard.file") == Path(tmp_path, "hazard.nc")
+    assert not component.model.config.get("hazard.settings.var_as_band")
 
 
 def test_hazard_component_write_sig(
@@ -90,6 +91,7 @@ def test_hazard_component_write_sig(
     component = HazardComponent(model=mock_model_config)
     # Set data like a dummy
     component._data = hazard_data
+    component._data["flood_event2"] = hazard_data["flood_event"]
 
     # Write the data using the argument of the read method
     component.write("other/baz.nc")
@@ -101,6 +103,7 @@ def test_hazard_component_write_sig(
     assert component.model.config.get("hazard.file") == Path(
         tmp_path, "other", "baz.nc"
     )
+    assert component.model.config.get("hazard.settings.var_as_band")
 
 
 def test_hazard_component_setup_event(
@@ -125,7 +128,6 @@ def test_hazard_component_setup_multi(
 
     # Test setting data to hazard grid with data
     component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
-    assert model_with_region.config.get("hazard.settings.var_as_band")
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars.keys()

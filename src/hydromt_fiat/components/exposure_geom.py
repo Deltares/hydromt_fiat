@@ -29,7 +29,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ----------
     model : Model
         HydroMT model instance (FIATModel)
-    filename : str
+    filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "exposure/{name}.fgb".
     region_component : str, optional
@@ -86,7 +86,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
     def data(self) -> dict[str, gpd.GeoDataFrame | gpd.GeoSeries]:
         """Model geometries.
 
-        Return dict of geopandas.GeoDataFrame or geopandas.GeoSeries
+        Return dict of `geopandas.GeoDataFrame` or `geopandas.GeoSeries`.
         """
         if self._data is None:
             self._initialize()
@@ -102,15 +102,16 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ) -> None:
         r"""Read exposure geometry files.
 
-        Key-word arguments are passed to :py:func:`geopandas.read_file`
+        Key-word arguments are passed to :py:func:`geopandas.read_file`.
 
         Parameters
         ----------
         filename : str, optional
             Filename relative to model root. should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used.
-        kwargs : dict
+            if None, the path that was provided at init will be used or, if present,
+            the files present in the model configurations.
+        **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
@@ -147,10 +148,10 @@ class ExposureGeomsComponent(SpatialModelComponent):
         filename: str | None = None,
         csv: bool = False,
         **kwargs,
-    ):
+    ) -> None:
         """Write exposure geometries to a vector file.
 
-        Key-word arguments are passed to :py:meth:`geopandas.GeoDataFrame.to_file`
+        Key-word arguments are passed to :py:meth:`geopandas.GeoDataFrame.to_file`.
 
         Parameters
         ----------
@@ -160,8 +161,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
             if None, the path that was provided at init will be used.
         csv : bool, optional
             Whether to split the data into a pure vector file and a csv containing
-            all the field information of the geometries.
-        kwargs : dict
+            all the field information of the geometries. By default False.
+        **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
         """
@@ -231,13 +232,13 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self,
         geom: gpd.GeoDataFrame,
         name: str,
-    ):
+    ) -> None:
         """Add data to the geom component.
 
         Arguments
         ---------
         geom : gpd.GeoDataFrame
-            New geometry data to add
+            New geometry data to add.
         name : str
             Geometry name.
         """
@@ -290,10 +291,10 @@ column will be removed"
             e.g. the occupancy type.
         exposure_link_fname : Path | str | None, optional
             The name of/ path to the dataset containing the mapping of the exposure
-            types to the vulnerability data, by default None
+            types to the vulnerability data, by default None.
         exposure_type_fill : str, optional
             Value to which missing entries in the exposure type column will be mapped
-            to, if provided. By default None
+            to, if provided. By default None.
         """
         logger.info("Setting up exposure geometries")
         # Check for region

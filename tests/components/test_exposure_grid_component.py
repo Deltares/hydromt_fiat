@@ -81,6 +81,7 @@ def test_exposure_grid_component_write(
         "exposure",
         "spatial.nc",
     )
+    assert component.model.config.get("exposure.grid.settings.var_as_band")
 
 
 def test_exposure_grid_component_write_config(
@@ -92,7 +93,7 @@ def test_exposure_grid_component_write_config(
     component = ExposureGridComponent(model=mock_model_config)
 
     # Set data like a dummy
-    component._data = exposure_grid_data
+    component._data = exposure_grid_data["industrial_content"].to_dataset()
     # Add to the config
     component.model.config.set("exposure.grid.file", "foo.nc")
 
@@ -101,6 +102,8 @@ def test_exposure_grid_component_write_config(
 
     # Assert the output
     assert Path(tmp_path, "foo.nc").is_file()
+    # Assert the config
+    assert not component.model.config.get("exposure.grid.settings.var_as_band")
 
 
 def test_exposure_grid_component_write_sig(
@@ -162,9 +165,6 @@ def test_exposure_grid_component_setup_multi(
     assert "industrial_content" in component.data.data_vars
     assert "industrial_structure" in component.data.data_vars
     assert component.data.industrial_structure.attrs.get("fn_damage") == "in1"
-
-    # Assert the config
-    assert component.model.config.get("exposure.grid.settings.var_as_band")
 
 
 def test_exposure_grid_component_setup_errors(

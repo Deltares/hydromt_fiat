@@ -31,16 +31,14 @@ class FIATModel(Model):
     Parameters
     ----------
     root : str, optional
-        Model root, by default None
+        Model root, by default None.
     config_fname : str, optional
-        Name of the configurations file, by default 'settings.toml'
+        Name of the configurations file, by default 'settings.toml'.
     mode : {'r','r+','w'}, optional
-        read/append/write mode, by default "w"
+        read/append/write mode, by default "w".
     data_libs : list[str] | str, optional
-        List of data catalog configuration files, by default None
-    logger:
-        The logger to be used.
-    **catalog_keys:
+        List of data catalog configuration files, by default None.
+    **catalog_keys : dict
         Additional keyword arguments to be passed down to the DataCatalog.
     """
 
@@ -92,7 +90,7 @@ class FIATModel(Model):
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the configurations component."""
+        """Return the config component."""
         return self.components["config"]
 
     @property
@@ -107,7 +105,7 @@ class FIATModel(Model):
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return hazard component."""
+        """Return the hazard component."""
         return self.components["hazard"]
 
     @property
@@ -122,12 +120,12 @@ class FIATModel(Model):
 
     ## I/O
     @hydromt_step
-    def read(self):
+    def read(self) -> None:
         """Read the FIAT model."""
         Model.read(self)
 
     @hydromt_step
-    def write(self):
+    def write(self) -> None:
         """Write the FIAT model."""
         components = list(self.components.keys())
         cfg = None
@@ -152,10 +150,6 @@ class FIATModel(Model):
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
-
-        Returns
-        -------
-            None
         """
         logger.info("Setting config entries from user input")
         for key, value in settings.items():
@@ -172,10 +166,6 @@ class FIATModel(Model):
         ----------
         region : Path | str
             Path to the region vector file.
-
-        Returns
-        -------
-            None
         """
         region = Path(region)
         logger.info(f"Setting region from '{region.as_posix()}'")

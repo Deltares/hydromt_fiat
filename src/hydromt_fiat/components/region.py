@@ -2,10 +2,9 @@
 
 from logging import Logger, getLogger
 from pathlib import Path
-from typing import Dict, Optional, Union, cast
+from typing import cast
 
 import geopandas as gpd
-from geopandas import GeoDataFrame, GeoSeries
 from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
@@ -23,8 +22,8 @@ class RegionComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance
-    filename : str
+        HydroMT model instance.
+    filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
     region_component : str, optional
@@ -41,10 +40,10 @@ class RegionComponent(SpatialModelComponent):
         model: Model,
         *,
         filename: str = "region.geojson",
-        region_component: Optional[str] = None,
+        region_component: str | None = None,
         region_filename: str = "region.geojson",
     ):
-        self._data: Optional[Dict[str, Union[GeoDataFrame, GeoSeries]]] = None
+        self._data: dict[str, gpd.GeoDataFrame | gpd.GeoSeries] | None = None
         self._filename: str = filename
         super().__init__(
             model=model,
@@ -61,10 +60,10 @@ class RegionComponent(SpatialModelComponent):
 
     ## Properties
     @property
-    def data(self) -> Dict[str, Union[GeoDataFrame, GeoSeries]]:
+    def data(self) -> dict[str, gpd.GeoDataFrame | gpd.GeoSeries]:
         """Model geometries.
 
-        Return dict of geopandas.GeoDataFrame or geopandas.GeoSeries
+        Return dict of `geopandas.GeoDataFrame` or `geopandas.GeoSeries`.
         """
         if self._data is None:
             self._initialize()
@@ -72,7 +71,7 @@ class RegionComponent(SpatialModelComponent):
         return self._data
 
     @property
-    def _region_data(self) -> Optional[GeoDataFrame]:
+    def _region_data(self) -> gpd.GeoDataFrame | None:
         # Use the total bounds of all geometries as region
         if len(self.data) == 0:
             return None
@@ -80,7 +79,7 @@ class RegionComponent(SpatialModelComponent):
 
     ## I/O methods
     @hydromt_step
-    def read(self, filename: Optional[str] = None, **kwargs) -> None:
+    def read(self, filename: str | None = None, **kwargs) -> None:
         """Read model region data.
 
         Parameters
@@ -99,13 +98,13 @@ class RegionComponent(SpatialModelComponent):
         if not read_path.is_file():
             return
         logger.info(f"Reading the model region file at {read_path.as_posix()}")
-        geom = cast(GeoDataFrame, gpd.read_file(read_path, **kwargs))
+        geom = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
         self.set(geom=geom)
 
     @hydromt_step
     def write(
         self,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         to_wgs84: bool = False,
         **kwargs,
     ) -> None:
@@ -156,22 +155,23 @@ class RegionComponent(SpatialModelComponent):
         gdf.to_file(write_path, **kwargs)
 
     ## Set(up) methods
-    def set(self, geom: Union[GeoDataFrame, GeoSeries]):
+    def set(self, geom: gpd.GeoDataFrame | gpd.GeoSeries) -> None:
         """Add data to the region component.
 
-        If a region is already present
+        If a region is already present, the new region will be merged with in one
+        already present in a union.
 
         Parameters
         ----------
-        geom : geopandas.GeoDataFrame or geopandas.GeoSeries
-            New geometry data to add
+        geom : gpd.GeoDataFrame | gpd.GeoSeries
+            New geometry data to add.
         """
         self._initialize()
         if len(self.data) != 0:
             logger.warning("Replacing/ updating region")
 
-        if isinstance(geom, GeoSeries):
-            geom = cast(GeoDataFrame, geom.to_frame())
+        if isinstance(geom, gpd.GeoSeries):
+            geom = cast(gpd.GeoDataFrame, geom.to_frame())
 
         # Verify if a geom is set to model crs and if not sets geom to model crs
         model_crs = self.model.crs

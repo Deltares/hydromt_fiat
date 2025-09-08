@@ -36,7 +36,7 @@ def create_query(
     Returns
     -------
     str
-        A string containing the pandas dataframe query
+        A string containing the pandas dataframe query.
     """
     query = ""
     idx = 0
@@ -67,7 +67,7 @@ def standard_unit(unit: Scalar) -> Scalar:
     Returns
     -------
     Scalar
-        Scaling factor in Scalar structure (unitless)
+        Scaling factor in Scalar structure (unitless).
     """
     # Check for the dafault unit
     default_unit = UNIT_DATABASE.GetDefaultUnit(unit.category)
