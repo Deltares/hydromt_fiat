@@ -22,18 +22,18 @@ class ExposureGridComponent(GridComponent):
 
     Parameters
     ----------
-    model: Model
-        HydroMT model instance
-    filename: str
+    model : Model
+        HydroMT model instance.
+    filename : str, optional
         The path to use for reading and writing of component data by default.
         By default "exposure/spatial.nc".
-    region_component: str, optional
+    region_component : str, optional
         The name of the region component to use as reference
         for this component's region. If None, the region will be set to the grid extent.
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
-        a reference to another grid component for correct reprojection, by default None
-    region_filename: str
+        a reference to another grid component for correct reprojection, by default None.
+    region_filename : str
         The path to use for reading and writing of the region data by default.
         By default "region.geojson".
     """
@@ -53,33 +53,104 @@ class ExposureGridComponent(GridComponent):
             region_filename=region_filename,
         )
 
+    ## I/O methods
+    @hydromt_step
+    def read(
+        self,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Read the exposure grid data.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
+        **kwargs : dict
+            Additional keyword arguments to be passed to the `read_nc` method.
+        """
+        # Sort the filename
+        # Hierarchy: 1) signature, 2) config file, 3) default
+        filename = (
+            filename
+            or self.model.config.get("exposure.grid.file", abs_path=True)
+            or self._filename
+        )
+        # Read the data
+        logger.info("Reading the exposure grid data..")
+        super().read(filename=filename, **kwargs)
+
+    @hydromt_step
+    def write(
+        self,
+        filename: str | None = None,
+        **kwargs,
+    ) -> None:
+        """Write the exposure grid data.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Filename relative to model root. If None, the value is either taken from
+            the model configurations or the `_filename` attribute, by default None.
+        **kwargs : dict
+            Additional keyword arguments to be passed to the `write_nc` method.
+        """
+        # Sort out the filename
+        # Hierarchy: 1) signature, 2) config file, 3) default
+        filename = (
+            filename or self.model.config.get("exposure.grid.file") or self._filename
+        )
+        write_path = Path(self.root.path, filename)
+
+        # Update the kwargs
+        if "gdal_compliant" not in kwargs:
+            kwargs["gdal_compliant"] = True
+        # Write it in a gdal compliant manner by default
+        logger.info("Writing the exposure grid data..")
+        super().write(write_path.as_posix(), **kwargs)
+
+        # Update the config
+        self.model.config.set("exposure.grid.file", write_path)
+        # Check for multiple bands, because gdal and netcdf..
+        self.model.config.set("exposure.grid.settings.var_as_band", False)
+        if len(self.data.data_vars) > 1:
+            self.model.config.set("exposure.grid.settings.var_as_band", True)
+
+    ## Mutating methods
     @hydromt_step
     def setup(
         self,
         exposure_fnames: Path | str | list[Path | str],
-        exposure_link_fname: Path | str,
+        exposure_link_fname: Path | str | None = None,
     ) -> None:
         """Set up an exposure grid.
 
         Parameters
         ----------
         exposure_fnames : Path | str | list[Path | str]
-            Name of or path to exposure file(s)
-        exposure_link_fname : Path | str
+            Name of or path to exposure file(s).
+        exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
-            vulnerability curves.
+            vulnerability curves. By default None
         """
-        logger.info("Setting up exposure grid")
+        logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability_data.data == {}:
+        if self.model.vulnerability.data.identifiers.empty == True:
             raise RuntimeError(
-                "setup_vulnerability step is required before setting up exposure grid."
+                "'setup_vulnerability' step is required \
+before setting up exposure grid"
             )
         if self.model.region is None:
-            raise MissingRegionError("Region is required for setting up exposure grid.")
+            raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
-        exposure_linking = self.model.data_catalog.get_dataframe(exposure_link_fname)
+        exposure_linking = None
+        if exposure_link_fname is not None:
+            exposure_linking = self.model.data_catalog.get_dataframe(
+                exposure_link_fname
+            )
 
         # Sort the input out as iterator
         exposure_fnames = (
@@ -99,19 +170,19 @@ class ExposureGridComponent(GridComponent):
             exposure_data[name] = da
 
         # Get grid like from existing exposure data if there is any
-        grid_like = self.data if self.data != {} else None
+        grid_like = self.data if self.data else None
 
         # Execute the workflow function
-        ds = workflows.exposure_grid_data(
+        ds = workflows.exposure_grid_setup(
             grid_like=grid_like,
             exposure_data=exposure_data,
             exposure_linking=exposure_linking,
+            vulnerability=self.model.vulnerability.data.identifiers,
         )
 
         # Set the dataset
         self.set(ds)
 
         # Set the config entries
-        if len(self.data.data_vars) > 1:
-            self.model.config.set("exposure.grid.settings.var_as_band", True)
-        self.model.config.set("exposure.grid.file", self._filename)
+        logger.info("Setting the model type to 'grid'")
+        self.model.config.set("model.model_type", "grid")

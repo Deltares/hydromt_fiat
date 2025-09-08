@@ -81,72 +81,108 @@ def test_exposure_geom_component_region(
 
 def test_exposure_geom_component_read(
     model_cached: Path,
-    mock_model: MagicMock,
+    mock_model_config: MagicMock,
 ):
-    type(mock_model).root = PropertyMock(
+    type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_cached, mode="r"),
     )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model)
+    component = ExposureGeomsComponent(model=mock_model_config)
+
+    # Assert it's empty
+    assert component._data is None
+
+    # Reading by calling the data
+    component.data
+
+    # Assert that the data is a dictionary with two elements
+    assert isinstance(component._data, dict)
+    assert len(component._data) == 1
+    assert "buildings" in component.data
+
+
+def test_exposure_geom_component_read_sig(
+    model_cached: Path,
+    mock_model_config: MagicMock,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config)
 
     # Assert it's empty
     assert component._data is None
 
     # Calling read to read in the data
-    component.read()
+    component.read("exposure/{name}.fgb")
 
-    # Assert that the data is a dictionary with two elements
-    assert isinstance(component._data, dict)
+    # Assert the output
     assert len(component._data) == 3
-    assert "buildings" in component.data
     # Merging of csv and geoms went well
     assert "extract_method" in component.data["buildings_split"].columns
 
 
 def test_exposure_geom_component_write(
     tmp_path: Path,
-    model_cached: Path,
-    mock_model: MagicMock,
+    mock_model_config: MagicMock,
+    exposure_geom_data: gpd.GeoDataFrame,
 ):
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
-    )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model)
-    # Read the data
-    component.read()
+    component = ExposureGeomsComponent(model=mock_model_config)
+    # Set data like a dummy
+    component._data = {
+        "buildings": exposure_geom_data,
+        "buildings2": exposure_geom_data,
+    }
 
-    # Set the model root to the tmp directory
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="w"),
-    )
     # Write the data
     component.write()
 
     # Assert the files
     assert Path(tmp_path, component._filename.format(name="buildings")).is_file()
-    assert Path(tmp_path, component._filename.format(name="buildings_split")).is_file()
+    assert Path(tmp_path, component._filename.format(name="buildings2")).is_file()
+
+    # Assert the config file entries
+    geom_cfg = mock_model_config.config.get("exposure.geom")
+    assert len(geom_cfg) == 2
+    assert geom_cfg[0]["file"] == Path(tmp_path, "exposure/buildings.fgb")
+    assert not geom_cfg[0]["csv"]  # Should be False
+
+
+def test_exposure_geom_component_write_sig(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+    exposure_geom_data: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config)
+    # Set data like a dummy
+    component._data = {
+        "buildings": exposure_geom_data,
+    }
+
+    # Write the data
+    component.write("other/{name}.fgb")
+
+    # Assert the files
+    assert Path(tmp_path, "other", "buildings.fgb").is_file()
 
 
 def test_exposure_geom_component_write_split(
     tmp_path: Path,
-    model_cached: Path,
-    mock_model: MagicMock,
+    mock_model_config: MagicMock,
+    exposure_geom_data: gpd.GeoDataFrame,
 ):
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
-    )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model)
-    # Read the data
-    component.read()
+    component = ExposureGeomsComponent(model=mock_model_config)
+    # Set data like a dummy
+    component._data = {
+        "buildings": exposure_geom_data,
+    }
 
-    # Set the model root to the tmp directory
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="w"),
-    )
     # Write the data
-    component.write(split=True)
+    component.write(csv=True)
 
     # Assert the files
     assert Path(tmp_path, component._filename.format(name="buildings")).is_file()
@@ -155,6 +191,10 @@ def test_exposure_geom_component_write_split(
         .with_suffix(".csv")
         .is_file()
     )
+
+    # Assert the config
+    geom_cfg = mock_model_config.config.get("exposure.geom")
+    assert geom_cfg[0]["csv"]  # Should be True
 
 
 def test_exposure_geom_component_write_warnings(
@@ -201,7 +241,6 @@ def test_exposure_geom_component_setup(
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
-    assert "exposure" in component.model.config.data
 
 
 def test_exposure_geom_component_setup_errors(
@@ -228,7 +267,7 @@ def test_exposure_geom_component_setup_errors(
     # Assert that no vulnerability data present results in an error
     with pytest.raises(
         RuntimeError,
-        match="Use setup_vulnerability before this method",
+        match="Use `setup_vulnerability` before this method",
     ):
         component.setup(
             exposure_fname="bag",

@@ -48,7 +48,7 @@ def max_monetary_damage(
     exposure_cost_link : pd.DataFrame, optional
         A linking table to connect the exposure data to the exposure cost data.
         By default None.
-    select : dict, optional
+    **select : dict, optional
         Keyword arguments to select data from the cost table.
         The key corresponds to the column and the value to value in that column.
 

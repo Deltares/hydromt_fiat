@@ -1,11 +1,12 @@
 from pathlib import Path
 
-from hydromt_fiat import FIATModel
 from hydromt_fiat.components.utils import (
     _mount,
     _relpath,
-    config_file_entry,
+    get_item,
     make_config_paths_relative,
+    pathing_config,
+    pathing_expand,
 )
 
 
@@ -87,60 +88,88 @@ def test_make_config_paths_relative(
     assert cfg["baz"]["file2"] == "tmp/tmp.txt"
 
 
-def test_config_file_entry_no_config():
-    # Call the function
-    res = config_file_entry(None, "entry")
-
-    # Assert its None
-    assert res is None
-
-
-def test_config_file_entry_no_value(
-    model: FIATModel,
+def test_get_item(
+    config_dummy: dict,
 ):
     # Call the function
-    res = config_file_entry(model.config, "entry")
+    res = get_item(["foo"], config_dummy)
+    # Assert the output
+    assert res == "bar"
 
-    # Assert its None
-    assert res is None
+    # With multiple parts
+    res = get_item(["spooky", "ghost"], config_dummy)
+    # Assert the output
+    assert res == [1, 2, 3]
+
+    # Get an entry that doesnt exists, return fallback
+    res = get_item(["No"], config_dummy, fallback=2)
+    # Assert the entry
+    assert res == 2
 
 
-def test_config_file_entry_no_file_return(
+def test_get_item_path(
     tmp_path: Path,
-    model: FIATModel,
+    config_dummy: dict,
 ):
-    # Set and entry to return
-    model.config.set("path_to_file", Path(tmp_path, "tmp.unknown"))
     # Call the function
-    res = config_file_entry(model.config, "path_to_file")
+    res = get_item(["baz", "file2"], config_dummy, root=tmp_path, abs_path=True)
+    # Assert the output
+    assert res == Path(tmp_path, "tmp/tmp.txt")
 
-    # Assert its None
-    assert res is None
+
+def test_get_item_multi(
+    config_dummy: dict,
+):
+    # Call the function
+    res = get_item(["multi", "file"], config_dummy)
+    # Assert the output
+    assert isinstance(res, list)
+    assert len(res) == 2
+    assert res[0] == "tmp/tmp.txt"
 
 
-def test_config_file_entry_return(
-    model: FIATModel,
+def test_pathing_expand(
     model_cached: Path,
 ):
-    # Set and entry to return
-    model.config.set("path_to_file", Path(model_cached, "region.geojson"))
     # Call the function
-    res = config_file_entry(model.config, "path_to_file")
+    paths, names = pathing_expand(root=model_cached, filename="exposure/{name}.fgb")
+    # Assert the output
+    assert len(paths) == 3
+    assert len(names) == 3
+    assert paths[0].suffix == ".fgb"
 
-    # Assert its None
-    assert res is not None
-    assert isinstance(res, Path)
+    # To a directory with no data
+    # Call the function
+    paths, names = pathing_expand(root=model_cached, filename="foo/{name}.fgb")
+    # Assert the output
+    assert len(paths) == 0
+    assert len(names) == 0
 
 
-def test_config_file_entry_rel_return(
-    model: FIATModel,
+def test_pathing_expand_none(
     model_cached: Path,
 ):
-    # Set and entry to return
-    model.root.set(model_cached, mode="r")
     # Call the function
-    res = config_file_entry(model.config, "exposure.geom.file1")
+    out = pathing_expand(root=model_cached, filename=None)
+    # Assert the output
+    assert out is None
 
-    # Assert its None
-    assert res is not None
-    assert isinstance(res, Path)
+
+def test_pathing_config():
+    # Call the function
+    paths, names = pathing_config(["tmp/tmp.txt", None, "foo.txt"])
+    # Assert the output
+    assert all([isinstance(item, Path) for item in paths])
+    assert names == ["tmp", "foo"]
+
+
+def test_pathing_config_none():
+    # Call the function
+    out = pathing_config(None)
+    # Assert the output
+    assert out is None
+
+    # Call the function
+    out = pathing_config([None, None])
+    # Assert the output
+    assert out is None

@@ -32,17 +32,16 @@ license = {text = "GPL-3.0"}
 
 requires-python = ">=3.11"
 dependencies = [
-"barril",
-"dask",
-"geopandas",
-"hydromt>=1.0.1",
-"numpy",
-"osmnx",
-"pooch",
-"requests",
-"tomli",
-"tomli-w",
-"xarray",
+    "barril",
+    "dask",
+    "geopandas",
+    "hydromt>=1.2.0",
+    "numpy",
+    "osmnx",
+    "pooch",
+    "requests",
+    "tomlkit",
+    "xarray",
 ]
 
 keywords = ["HydroMT", "FIAT", "Damage"]
@@ -83,7 +82,6 @@ classifiers = [
 dev = [
     "pre-commit",
     "ruff",
-    "hydromt_fiat[all, docs, examples, test]"
 ]
 docs = [
     "nbsphinx",
@@ -91,7 +89,6 @@ docs = [
     "sphinx>=8.2.0",
     "sphinx_design",
     "sphinx_autosummary_accessors",
-    "hydromt_fiat[all, examples]",
 ]
 examples = [
     "cartopy",
@@ -99,14 +96,12 @@ examples = [
     "nbconvert==7.13.1",
     "notebook",
     "pandoc",
-    "hydromt_fiat[all]",
 ]
 test = [
     "pytest>=2.7.3",
     "pytest-cov",
     "pytest-mock",
     "responses",
-    "hydromt_fiat[all]",
 ]
 
 [project.entry-points."hydromt.models"]
@@ -182,8 +177,7 @@ exclude = ["docs/**"]
 "tests/**" = ["D103", "D100", "D104"]
 "tests/conftest.py" = ["E402"]
 "src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
-"src/hydromt_fiat/components/__init__.py" = ["F403"]
-"src/hydromt_fiat/workflows/__init__.py" = ["F403"]
+"src/hydromt_fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -232,31 +226,35 @@ test-cov-local = { cmd = [
     "--cov-report",
     "html"
 ] }
+test-integration = { cmd = [
+    "pytest",
+    "-m",
+    "integration",
+    "--verbose",
+] }
 
 # Clean up (some of) the temporary files
 clean = { depends-on = [
-  "clean-env-files",
-  "clean-bin",
-  "clean-dist",
-  "clean-docs-build",
-  "clean-docs-example",
-  "clean-docs-gen",
+    "clean-bin",
+    "clean-build",
+    "clean-dist",
+    "clean-docs",
 ] }
-clean-env-files = { cmd = ["rm", "-f", "environment.yml"] }
 clean-bin = { cmd = ["rm", "-rf", "bin"] }
+clean-build = { cmd = ["rm", "-rf", "build"] }
 clean-dist = {cmd = ["rm", "-rf", "dist"] }
-clean-docs-build = { cmd = ["rm", "-rf", "docs/_build"] }
+clean-docs = { depends-on = [
+    "clean-docs-build",
+    "clean-docs-example",
+    "clean-docs-gen",
+] }
+clean-docs-build = { cmd = ["rm", "-rf", "docs/_build/html"] }
 clean-docs-example = { cmd = ["rm", "-rf", "docs/_examples"] }
 clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
-clean-docs = { depends-on = [
-  "clean-docs-build",
-  "clean-docs-example",
-  "clean-docs-gen",
-] }
 
 ## Dependencies
 [tool.pixi.dependencies]
-hydromt = ">=1.0.1"
+numpy = "<2.3"
 pip = "*"
 
 [tool.pixi.pypi-dependencies]
@@ -267,6 +265,7 @@ pandoc = "*"
 
 [tool.pixi.feature.test.dependencies]
 delft_fiat = ">=0.3.0"
+gdal = ">=3.9.1"
 
 # Extra python environments
 [tool.pixi.feature.py313.dependencies]
@@ -280,7 +279,7 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["dev", "docs", "examples", "test"] }
+default = { features = ["py313", "dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
 slim = { features = [] }
 test-py313 = {features = ["py313", "test"]}
