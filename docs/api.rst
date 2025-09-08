@@ -40,8 +40,8 @@ Attributes
 
     FIATModel.config
     FIATModel.region
-    FIATModel.vulnerability_data
-    FIATModel.hazard_grid
+    FIATModel.vulnerability
+    FIATModel.hazard
     FIATModel.exposure_geoms
     FIATModel.exposure_grid
 
@@ -78,7 +78,7 @@ Component setup methods
     :toctree: _generated
 
     VulnerabilityComponent.setup
-    HazardGridComponent.setup
+    HazardComponent.setup
     ExposureGeomsComponent.setup
     ExposureGeomsComponent.setup_max_damage
     ExposureGeomsComponent.update_column
@@ -102,7 +102,7 @@ The underlying workflow methods of the FIATModel.
     workflows.exposure_vulnerability_link
     workflows.exposure_add_columns
     workflows.max_monetary_damage
-    workflows.exposure_grid_data
+    workflows.exposure_grid_setup
 
 .. _drivers:
 
