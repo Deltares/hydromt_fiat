@@ -203,10 +203,10 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 docs-dummy = {cmd = ["sphinx-build", "./docs", "./docs/_build", "-b", "dummy", "-W"] }
 docs-html = { cmd = ["sphinx-build", "-M", "html", "docs", "docs/_build", "-W"] }
 docs-html-rebuild = { depends-on = ["clean-docs", "docs-html"] }
-serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"] }
+serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "./docs/_build/html"] }
 
 # Testing
-test = { cmd = ["pytest"] }
+test = { cmd = ["pytest", "-m", "not integration", "--verbose"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = [
     "pytest",

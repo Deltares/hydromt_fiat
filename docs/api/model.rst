@@ -1,0 +1,63 @@
+.. currentmodule:: hydromt_fiat
+
+.. raw:: html
+
+    <style>
+        h2 {
+            border-bottom: 1px solid #000;
+        }
+    </style>
+
+.. _api_model:
+
+FIATModel
+=========
+
+All FIATModel related operations and attributes.
+
+Initialize
+----------
+
+.. autosummary::
+    :toctree: ../_generated
+    :template: autosummary/class.rst
+
+    FIATModel
+
+.. _api_model_attributes:
+
+Attributes
+----------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    FIATModel.config
+    FIATModel.region
+    FIATModel.region_component
+    FIATModel.vulnerability
+    FIATModel.hazard
+    FIATModel.exposure_geoms
+    FIATModel.exposure_grid
+
+.. _api_model_io:
+
+I/O methods
+-----------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    FIATModel.read
+    FIATModel.write
+
+.. _api_model_setup_methods:
+
+Model setup methods
+-------------------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    FIATModel.setup_config
+    FIATModel.setup_region

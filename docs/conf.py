@@ -94,7 +94,7 @@ html_static_path = ["_static"]
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "show_nav_level": 2,
+    "show_nav_level": 1,
     "navbar_align": "content",
     "use_edit_page_button": True,
     "icon_links": [
@@ -118,7 +118,7 @@ html_theme_options = {
         },
     ],
     "logo": {
-        "text": "HydroMT FIAT",
+        "text": "HydroMT-FIAT",
     },
     "navbar_end": ["navbar-icon-links", "version-switcher"],  # remove dark mode switch
     "switcher": {

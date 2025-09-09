@@ -27,15 +27,6 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: api_reference
-        :link-type: ref
-
-        :octicon:`list-unordered;10em`
-        +++
-        API reference
-
-    .. grid-item-card::
-        :text-align: center
         :link: examples
         :link-type: ref
 
@@ -43,7 +34,14 @@ Getting started
         +++
         Examples
 
+    .. grid-item-card::
+        :text-align: center
+        :link: api_reference
+        :link-type: ref
 
+        :octicon:`list-unordered;10em`
+        +++
+        API reference
 
 .. toctree::
    :caption: Table of Contents
