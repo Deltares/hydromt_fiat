@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../api.html">
+  <a class="nav-link nav-internal" href="../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../api.html">
+  <a class="nav-link nav-internal" href="../../api/index.html">
     API reference
   </a>
 </li>
@@ -442,10 +442,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConfigComponent</span><span class="p">,</span>
     <span class="n">ExposureGeomsComponent</span><span class="p">,</span>
     <span class="n">ExposureGridComponent</span><span class="p">,</span>
-    <span class="n">FIATConfigComponent</span><span class="p">,</span>
-    <span class="n">HazardGridComponent</span><span class="p">,</span>
+    <span class="n">HazardComponent</span><span class="p">,</span>
     <span class="n">RegionComponent</span><span class="p">,</span>
     <span class="n">VulnerabilityComponent</span><span class="p">,</span>
 <span class="p">)</span>
@@ -462,21 +462,19 @@
 <div class="viewcode-block" id="FIATModel">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.html#hydromt_fiat.FIATModel">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FIATModel</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read or Write a FIAT model.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build, read and/ or write a FIAT model.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    root : str, optional</span>
-<span class="sd">        Model root, by default None</span>
+<span class="sd">        Model root, by default None.</span>
 <span class="sd">    config_fname : str, optional</span>
-<span class="sd">        Name of the configurations file, by default &#39;settings.toml&#39;</span>
+<span class="sd">        Name of the configurations file, by default &#39;settings.toml&#39;.</span>
 <span class="sd">    mode : {&#39;r&#39;,&#39;r+&#39;,&#39;w&#39;}, optional</span>
-<span class="sd">        read/append/write mode, by default &quot;w&quot;</span>
+<span class="sd">        read/append/write mode, by default &quot;w&quot;.</span>
 <span class="sd">    data_libs : list[str] | str, optional</span>
-<span class="sd">        List of data catalog configuration files, by default None</span>
-<span class="sd">    logger:</span>
-<span class="sd">        The logger to be used.</span>
-<span class="sd">    **catalog_keys:</span>
+<span class="sd">        List of data catalog configuration files, by default None.</span>
+<span class="sd">    **catalog_keys : dict</span>
 <span class="sd">        Additional keyword arguments to be passed down to the DataCatalog.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -506,7 +504,7 @@
         <span class="c1">## Setup components</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;config&quot;</span><span class="p">,</span>
-            <span class="n">FIATConfigComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">config_fname</span><span class="p">),</span>
+            <span class="n">ConfigComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">config_fname</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
             <span class="s2">&quot;exposure_geoms&quot;</span><span class="p">,</span>
@@ -517,50 +515,58 @@
             <span class="n">ExposureGridComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
-            <span class="s2">&quot;hazard_grid&quot;</span><span class="p">,</span>
-            <span class="n">HazardGridComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
+            <span class="s2">&quot;hazard&quot;</span><span class="p">,</span>
+            <span class="n">HazardComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">region_component</span><span class="o">=</span><span class="n">REGION</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_component</span><span class="p">(</span>
-            <span class="s2">&quot;vulnerability_data&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;vulnerability&quot;</span><span class="p">,</span>
             <span class="n">VulnerabilityComponent</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="p">),</span>
         <span class="p">)</span>
 
     <span class="c1">## Properties</span>
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FIATConfigComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the configurations component.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the config component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">exposure_geoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureGeomsComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the exposure geoms component.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the exposure geoms component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;exposure_geoms&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">exposure_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExposureGridComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the exposure grid component.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the exposure grid component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;exposure_grid&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hazard_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HazardGridComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return hazard grid component.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;hazard_grid&quot;</span><span class="p">]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hazard</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HazardComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the hazard component.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;hazard&quot;</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">region_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegionComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the region component.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">region</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the model&#39;s region.</span>
+
+<span class="sd">        This will return a polygon covering the current region of the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_component</span><span class="o">.</span><span class="n">region</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">region_component</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegionComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the region component.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">vulnerability_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VulnerabilityComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the vulnerability component containing the data.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;vulnerability_data&quot;</span><span class="p">]</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vulnerability</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VulnerabilityComponent</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the vulnerability component.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="s2">&quot;vulnerability&quot;</span><span class="p">]</span>
 
     <span class="c1">## I/O</span>
 <div class="viewcode-block" id="FIATModel.read">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.read.html#hydromt_fiat.FIATModel.read">[docs]</a>
     <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the FIAT model.&quot;&quot;&quot;</span>
         <span class="n">Model</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -568,12 +574,12 @@
 <div class="viewcode-block" id="FIATModel.write">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.write.html#hydromt_fiat.FIATModel.write">[docs]</a>
     <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the FIAT model.&quot;&quot;&quot;</span>
         <span class="n">components</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">cfg</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">components</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">FIATConfigComponent</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ConfigComponent</span><span class="p">):</span>
                 <span class="n">cfg</span> <span class="o">=</span> <span class="n">c</span>
                 <span class="k">continue</span>
             <span class="n">c</span><span class="o">.</span><span class="n">write</span><span class="p">()</span>
@@ -596,10 +602,6 @@
 <span class="sd">        settings : dict</span>
 <span class="sd">            Settings for the configuration provided as keyword arguments</span>
 <span class="sd">            (KEY=VALUE).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting config entries from user input&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -619,17 +621,13 @@
 <span class="sd">        ----------</span>
 <span class="sd">        region : Path | str</span>
 <span class="sd">            Path to the region vector file.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">region</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting region from &#39;</span><span class="si">{</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
         <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region_component</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

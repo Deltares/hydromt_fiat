@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -439,20 +439,21 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CURVE</span><span class="p">,</span> <span class="n">EXPOSURE_LINK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">CURVE</span><span class="p">,</span> <span class="n">EXPOSURE_LINK</span><span class="p">,</span> <span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">SUBTYPE</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.workflows.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_merge_dataarrays</span><span class="p">,</span> <span class="n">_process_dataarray</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;exposure_grid_data&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;exposure_grid_setup&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="exposure_grid_data">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.exposure_grid_data.html#hydromt_fiat.workflows.exposure_grid_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">exposure_grid_data</span><span class="p">(</span>
+<div class="viewcode-block" id="exposure_grid_setup">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.exposure_grid_setup.html#hydromt_fiat.workflows.exposure_grid_setup">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">exposure_grid_setup</span><span class="p">(</span>
     <span class="n">grid_like</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">],</span>
-    <span class="n">exposure_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">vulnerability</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">exposure_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and transform exposure grid data.</span>
 
@@ -463,41 +464,72 @@
 <span class="sd">        the first data array in exposure_data is used to transform the data.</span>
 <span class="sd">    exposure_data : dict[str, xr.DataArray]</span>
 <span class="sd">        Dictionary containing name of exposure file and associated data</span>
-<span class="sd">    exposure_linking : pd.DataFrame</span>
+<span class="sd">    vulnerability : pd.DataFrame</span>
+<span class="sd">        A Table containing valid vulnerability curve id&#39;s an their</span>
+<span class="sd">        presumed link to the exposure.</span>
+<span class="sd">    exposure_linking : pd.DataFrame, optional</span>
 <span class="sd">        Table containing the names of the exposure files and corresponding</span>
 <span class="sd">        vulnerability curves.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.Dataset</span>
-<span class="sd">        Transformed and unified exposure grid</span>
+<span class="sd">        Transformed and unified exposure grid.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">exposure_dataarrays</span> <span class="o">=</span> <span class="p">[]</span>
 
+    <span class="c1"># Log the fact that there is not linking table</span>
+    <span class="k">if</span> <span class="n">exposure_linking</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;No exposure linking provided, </span><span class="se">\</span>
+<span class="s2">defaulting to the name of the exposure layer&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Construct a dummy dataframe from the names</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="n">EXPOSURE_LINK</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
+                <span class="n">OBJECT_TYPE</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
     <span class="c1"># Check if linking table columns are named according to convention</span>
-    <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">,</span> <span class="n">CURVE</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">,</span> <span class="n">OBJECT_TYPE</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Missing column, &#39;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">&#39; in exposure grid linking table&quot;</span>
             <span class="p">)</span>
 
+    <span class="c1"># Get the unique exposure types</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">SUBTYPE</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="p">:</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">SUBTYPE</span><span class="p">]</span>
+
     <span class="c1"># Loop through the the supplied data arrays</span>
     <span class="k">for</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da</span> <span class="ow">in</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">da_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
-            <span class="n">fn_damage</span> <span class="o">=</span> <span class="n">da_name</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Exposure file name, &#39;</span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2">&#39;, not found in linking table.&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; Setting damage curve name attribute to &#39;</span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-            <span class="p">)</span>
+            <span class="n">link_name</span> <span class="o">=</span> <span class="n">da_name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">fn_damage</span> <span class="o">=</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
-                <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span> <span class="o">==</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">CURVE</span>
+            <span class="n">link_name</span> <span class="o">=</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span> <span class="o">==</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">OBJECT_TYPE</span>
             <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Check if in vulnerability curves link table</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">headers</span> <span class="o">==</span> <span class="n">link_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">link</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Couldn&#39;t link &#39;</span><span class="si">{</span><span class="n">da_name</span><span class="si">}</span><span class="s2">&#39; to vulnerability, skipping...&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Get the vulnerability curve ID</span>
+        <span class="n">fn_damage</span> <span class="o">=</span> <span class="n">link</span><span class="p">[</span><span class="n">CURVE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Process the arrays, .e.g make gdal compliant</span>
         <span class="n">da</span> <span class="o">=</span> <span class="n">_process_dataarray</span><span class="p">(</span><span class="n">da</span><span class="o">=</span><span class="n">da</span><span class="p">,</span> <span class="n">da_name</span><span class="o">=</span><span class="n">da_name</span><span class="p">)</span>
         <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">({</span><span class="s2">&quot;fn_damage&quot;</span><span class="p">:</span> <span class="n">fn_damage</span><span class="p">})</span>
         <span class="n">exposure_dataarrays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">da</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_dataarrays</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">_merge_dataarrays</span><span class="p">(</span><span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span> <span class="n">dataarrays</span><span class="o">=</span><span class="n">exposure_dataarrays</span><span class="p">)</span></div>
 

@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -481,11 +481,11 @@
 <span class="sd">            List containing single OSM asset type.</span>
 <span class="sd">        mask : gpd.GeoDataFrame | gpd.GeoSeries</span>
 <span class="sd">            GeoDataFrame containing the region of interest.</span>
-<span class="sd">        tags : list[str] | None, optional</span>
-<span class="sd">            Additional tags to filter the OSM data by, by default None</span>
-<span class="sd">        geom_type : list[str] | None, optional</span>
+<span class="sd">        tags : list[str], optional</span>
+<span class="sd">            Additional tags to filter the OSM data by, by default None.</span>
+<span class="sd">        geom_type : list[str], optional</span>
 <span class="sd">            List of geometry types to filter data with,</span>
-<span class="sd">            i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;], by default None</span>
+<span class="sd">            i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;], by default None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -545,7 +545,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        StrPath</span>
-<span class="sd">            Path to file</span>
+<span class="sd">            Path to the file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">ext</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">suffix</span>
@@ -572,10 +572,10 @@
 <span class="sd">        polygon : Polygon</span>
 <span class="sd">            Area of interest.</span>
 <span class="sd">        tag : dict</span>
-<span class="sd">            OSM tag to filter data with, i.e. {&#39;building&#39;: True}</span>
+<span class="sd">            OSM tag to filter data with, i.e. {&#39;building&#39;: True}.</span>
 <span class="sd">        geom_type : list[str] | None</span>
 <span class="sd">            List of geometry types to filter data with,</span>
-<span class="sd">            i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;]</span>
+<span class="sd">            i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;].</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>

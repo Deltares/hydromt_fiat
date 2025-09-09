@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Changelog &#8212; hydromt_fiat  documentation</title>
+    <title>What’s new &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -128,7 +128,7 @@
     <img src="_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -157,7 +157,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="api.html">
+  <a class="nav-link nav-internal" href="api/index.html">
     API reference
   </a>
 </li>
@@ -302,7 +302,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="api.html">
+  <a class="nav-link nav-internal" href="api/index.html">
     API reference
   </a>
 </li>
@@ -388,9 +388,9 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Changelog</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">What’s new</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dev/roadmap.html">Roadmap</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://deltares.github.io/hydromt/latest/dev/contributing">Developer's guide</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://deltares.github.io/hydromt/stable/guides/core_dev/contributing">Developer's guide</a></li>
 </ul>
 </div>
 </nav></div>
@@ -434,7 +434,7 @@
     
     <li class="breadcrumb-item"><a href="dev/index.html" class="nav-link">Developments</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Changelog</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">What’s new</span></li>
   </ul>
 </nav>
 </div>
@@ -451,8 +451,41 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="changelog">
-<span id="id1"></span><h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
+  <section id="what-s-new">
+<span id="changelog"></span><h1>What’s new<a class="headerlink" href="#what-s-new" title="Link to this heading">#</a></h1>
+<p>All notable changes to this project will be documented in this page.</p>
+<p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>, and this project adheres to
+<a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<section id="unreleased">
+<h2>Unreleased<a class="headerlink" href="#unreleased" title="Link to this heading">#</a></h2>
+<p>These contain the unreleased changes of HydroMT-FIAT</p>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Model components for each specific data entry type (e.g. hazard or vulnerability)</p></li>
+<li><p>OSM driver to request data from OSM using the data catalog</p></li>
+</ul>
+</section>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Moved from HydroMT-core 0.x to 1.x</p></li>
+<li><p>Setup methods moved to the corresponding components</p></li>
+</ul>
+</section>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Support for generic data format</p></li>
+</ul>
+</section>
+<section id="removed">
+<h3>Removed<a class="headerlink" href="#removed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Removed support for specific data</p></li>
+</ul>
+</section>
+</section>
 </section>
 
 
@@ -493,6 +526,24 @@
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed">Removed</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
 
   <div class="sidebar-secondary-item">
 

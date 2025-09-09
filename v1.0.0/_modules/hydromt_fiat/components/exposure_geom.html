@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -435,7 +435,6 @@
 <span></span><span class="sd">&quot;&quot;&quot;The custom exposure geometries component.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
 
@@ -443,12 +442,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt._utils.naming_convention</span><span class="w"> </span><span class="kn">import</span> <span class="n">_expand_uri_placeholders</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpatialModelComponent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pathing_config</span><span class="p">,</span> <span class="n">pathing_expand</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">OBJECT_ID</span>
 
@@ -457,6 +456,8 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="ExposureGeomsComponent">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGeomsComponent.html#hydromt_fiat.components.ExposureGeomsComponent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExposureGeomsComponent</span><span class="p">(</span><span class="n">SpatialModelComponent</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exposure geometries component.</span>
 
@@ -464,7 +465,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    model : Model</span>
 <span class="sd">        HydroMT model instance (FIATModel)</span>
-<span class="sd">    filename : str</span>
+<span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
 <span class="sd">        by default &quot;exposure/{name}.fgb&quot;.</span>
 <span class="sd">    region_component : str, optional</span>
@@ -492,6 +493,7 @@
             <span class="n">region_filename</span><span class="o">=</span><span class="n">region_filename</span><span class="p">,</span>
         <span class="p">)</span>
 
+    <span class="c1">## Private methods</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize exposure geoms data structure (dict).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -520,15 +522,16 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Model geometries.</span>
 
-<span class="sd">        Return dict of geopandas.GeoDataFrame or geopandas.GeoSeries</span>
+<span class="sd">        Return dict of `geopandas.GeoDataFrame` or `geopandas.GeoSeries`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">()</span>
-
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
     <span class="c1">## I/O methods</span>
+<div class="viewcode-block" id="ExposureGeomsComponent.read">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGeomsComponent.read.html#hydromt_fiat.components.ExposureGeomsComponent.read">[docs]</a>
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -537,27 +540,35 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Read exposure geometry files.</span>
 
-<span class="sd">        Key-word arguments are passed to :py:func:`geopandas.read_file`</span>
+<span class="sd">        Key-word arguments are passed to :py:func:`geopandas.read_file`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str, optional</span>
-<span class="sd">            filename relative to model root. should contain a {name} placeholder</span>
+<span class="sd">            Filename relative to model root. should contain a {name} placeholder</span>
 <span class="sd">            which will be used to determine the names/keys of the geometries.</span>
-<span class="sd">            if None, the path that was provided at init will be used.</span>
-<span class="sd">        kwargs : dict</span>
+<span class="sd">            if None, the path that was provided at init will be used or, if present,</span>
+<span class="sd">            the files present in the model configurations.</span>
+<span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments that are passed to the</span>
 <span class="sd">            `geopandas.read_file` function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_assert_read_mode</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
-        <span class="n">path_glob</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">regex</span> <span class="o">=</span> <span class="n">_expand_uri_placeholders</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path_glob</span><span class="p">):</span>
-            <span class="c1"># Solve the naming</span>
-            <span class="n">rel</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">rel</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
 
+        <span class="c1"># Sort the filenames</span>
+        <span class="c1"># Hierarchy: 1) signature, 2) settings file, 3) default</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pathing_expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">pathing_config</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure.geom.file&quot;</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="ow">or</span> <span class="n">pathing_expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Loop through the found files</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the exposure vector data..&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># Get the data</span>
             <span class="n">geom</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="c1"># Check for data in csv file, this has to be merged</span>
@@ -566,58 +577,78 @@
             <span class="k">if</span> <span class="n">csv_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                 <span class="n">csv_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
                 <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_ID</span><span class="p">)</span>
+            <span class="c1"># Set the data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading model file </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-
+<div class="viewcode-block" id="ExposureGeomsComponent.write">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGeomsComponent.write.html#hydromt_fiat.components.ExposureGeomsComponent.write">[docs]</a>
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">split</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">csv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write exposure geometries to a vector file.</span>
 
-<span class="sd">        Key-word arguments are passed to :py:meth:`geopandas.GeoDataFrame.to_file`</span>
+<span class="sd">        Key-word arguments are passed to :py:meth:`geopandas.GeoDataFrame.to_file`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str, optional</span>
-<span class="sd">            filename relative to model root. should contain a {name} placeholder</span>
+<span class="sd">            Filename relative to model root. should contain a {name} placeholder</span>
 <span class="sd">            which will be used to determine the names/keys of the geometries.</span>
 <span class="sd">            if None, the path that was provided at init will be used.</span>
-<span class="sd">        kwargs : dict</span>
+<span class="sd">        csv : bool, optional</span>
+<span class="sd">            Whether to split the data into a pure vector file and a csv containing</span>
+<span class="sd">            all the field information of the geometries. By default False.</span>
+<span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments that are passed to the</span>
 <span class="sd">            `geopandas.to_file` function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_assert_write_mode</span><span class="p">()</span>
 
+        <span class="c1"># If no data to write, return</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No geoms data found, skip writing.&quot;</span><span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># Sort the filename</span>
+        <span class="c1"># Hierarchy: 1) Signature, 2) default</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+
+        <span class="c1"># The entries for the config</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Loop through the datasets</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the exposure vector data..&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is empty. Skipping...&quot;</span><span class="p">)</span>
                 <span class="k">continue</span>
 
-            <span class="n">geom_filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+            <span class="c1"># Abuse the fact that a dictionary is mutable and passed by ref</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">cfg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
+            <span class="c1"># Create the outgoing file path</span>
             <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
-                <span class="n">geom_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
+                <span class="n">filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
             <span class="p">)</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing file </span><span class="si">{</span><span class="n">write_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing file to </span><span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">write_dir</span> <span class="o">=</span> <span class="n">write_path</span><span class="o">.</span><span class="n">parent</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">write_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
                 <span class="n">write_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">split</span><span class="p">:</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">write_path</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;srs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">())</span>
+            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">csv</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">csv</span><span class="p">:</span>
                 <span class="c1"># Write the entire thing to vector file</span>
                 <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">write_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
                 <span class="k">continue</span>
@@ -634,26 +665,22 @@
             <span class="n">data</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="c1"># Set the config file, as the data has been split</span>
-            <span class="n">csv_filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">geom_filename</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;exposure.csv.file</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="n">csv_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># Set the config entries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.geom&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></div>
+
 
     <span class="c1">## Set(up) methods</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">geom</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add data to the geom component.</span>
 
 <span class="sd">        Arguments</span>
 <span class="sd">        ---------</span>
 <span class="sd">        geom : gpd.GeoDataFrame</span>
-<span class="sd">            New geometry data to add</span>
+<span class="sd">            New geometry data to add.</span>
 <span class="sd">        name : str</span>
 <span class="sd">            Geometry name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -708,10 +735,10 @@
 <span class="sd">            e.g. the occupancy type.</span>
 <span class="sd">        exposure_link_fname : Path | str | None, optional</span>
 <span class="sd">            The name of/ path to the dataset containing the mapping of the exposure</span>
-<span class="sd">            types to the vulnerability data, by default None</span>
+<span class="sd">            types to the vulnerability data, by default None.</span>
 <span class="sd">        exposure_type_fill : str, optional</span>
 <span class="sd">            Value to which missing entries in the exposure type column will be mapped</span>
-<span class="sd">            to, if provided. By default None</span>
+<span class="sd">            to, if provided. By default None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up exposure geometries&quot;</span><span class="p">)</span>
         <span class="c1"># Check for region</span>
@@ -722,10 +749,10 @@
 <span class="s2">use &#39;setup_region&#39; before this method&quot;</span>
             <span class="p">)</span>
         <span class="c1"># Check for vulnerability</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;vulnerability_curves&quot;</span><span class="p">,</span> <span class="s2">&quot;vulnerability_identifiers&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]):</span>
+        <span class="n">vulnerability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">empty</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="p">]):</span>
             <span class="c1"># TODO Replace with custom error class</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Use setup_vulnerability before this method&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Use `setup_vulnerability` before this method&quot;</span><span class="p">)</span>
 
         <span class="c1"># Guarantee typing</span>
         <span class="n">exposure_fname</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fname</span><span class="p">)</span>
@@ -751,20 +778,15 @@
         <span class="p">)</span>
         <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_vulnerability_link</span><span class="p">(</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_vector</span><span class="p">,</span>
-            <span class="n">vulnerability</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
-                <span class="s2">&quot;vulnerability_identifiers&quot;</span>
-            <span class="p">],</span>
+            <span class="n">vulnerability</span><span class="o">=</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Set the data in the component</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure_vector</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="c1"># Set the config file</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;exposure.geom.file</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
-        <span class="p">)</span></div>
+        <span class="c1"># Update the config</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting the model type to &#39;geom&#39;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.model_type&quot;</span><span class="p">,</span> <span class="s2">&quot;geom&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExposureGeomsComponent.setup_max_damage">
@@ -826,9 +848,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">exposure_name</span><span class="p">],</span>
             <span class="n">exposure_cost_table</span><span class="o">=</span><span class="n">exposure_cost_table</span><span class="p">,</span>
             <span class="n">exposure_type</span><span class="o">=</span><span class="n">exposure_type</span><span class="p">,</span>
-            <span class="n">vulnerability</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
-                <span class="s2">&quot;vulnerability_identifiers&quot;</span>
-            <span class="p">],</span>
+            <span class="n">vulnerability</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
             <span class="n">exposure_cost_link</span><span class="o">=</span><span class="n">exposure_cost_link</span><span class="p">,</span>
             <span class="o">**</span><span class="n">select</span><span class="p">,</span>
         <span class="p">)</span>
@@ -875,6 +895,7 @@
 
         <span class="c1"># Symbolically set back the data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure_vector</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">exposure_name</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

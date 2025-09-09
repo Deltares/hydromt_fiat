@@ -32,7 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -56,7 +56,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.workflows.exposure_grid_data" href="hydromt_fiat.workflows.exposure_grid_data.html" />
+    <link rel="next" title="hydromt_fiat.workflows.exposure_grid_setup" href="hydromt_fiat.workflows.exposure_grid_setup.html" />
     <link rel="prev" title="hydromt_fiat.workflows.exposure_add_columns" href="hydromt_fiat.workflows.exposure_add_columns.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -128,7 +128,7 @@
     <img src="../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -157,7 +157,7 @@
 
 
 <li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../api.html">
+  <a class="nav-link nav-internal" href="../api/index.html">
     API reference
   </a>
 </li>
@@ -302,7 +302,7 @@
 
 
 <li class="nav-item current active">
-  <a class="nav-link nav-internal" href="../api.html">
+  <a class="nav-link nav-internal" href="../api/index.html">
     API reference
   </a>
 </li>
@@ -386,49 +386,69 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/model.html">FIATModel</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region_component.html">hydromt_fiat.FIATModel.region_component</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability.html">hydromt_fiat.FIATModel.vulnerability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard.html">hydromt_fiat.FIATModel.hazard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_grid.html">hydromt_fiat.FIATModel.exposure_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.read.html">hydromt_fiat.FIATModel.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
 </ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability_data.html">hydromt_fiat.FIATModel.vulnerability_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard_grid.html">hydromt_fiat.FIATModel.hazard_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_grid.html">hydromt_fiat.FIATModel.exposure_grid</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/components.html">Components</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ConfigComponent.html">hydromt_fiat.components.ConfigComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.RegionComponent.html">hydromt_fiat.components.RegionComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.html">hydromt_fiat.components.VulnerabilityComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.html">hydromt_fiat.components.HazardComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.html">hydromt_fiat.components.ExposureGeomsComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.html">hydromt_fiat.components.ExposureGridComponent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ConfigComponent.data.html">hydromt_fiat.components.ConfigComponent.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ConfigComponent.read.html">hydromt_fiat.components.ConfigComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ConfigComponent.write.html">hydromt_fiat.components.ConfigComponent.write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.data.html">hydromt_fiat.components.VulnerabilityComponent.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.read.html">hydromt_fiat.components.VulnerabilityComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.setup.html">hydromt_fiat.components.VulnerabilityComponent.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.write.html">hydromt_fiat.components.VulnerabilityComponent.write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.data.html">hydromt_fiat.components.HazardComponent.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.read.html">hydromt_fiat.components.HazardComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.data.html">hydromt_fiat.components.ExposureGridComponent.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 </ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.read.html">hydromt_fiat.FIATModel.read</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/workflows.html">Workflow functions</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.workflows.max_monetary_damage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_grid_setup.html">hydromt_fiat.workflows.exposure_grid_setup</a></li>
 </ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/drivers.html">Drivers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.read.html">hydromt_fiat.drivers.OSMDriver.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.write.html">hydromt_fiat.drivers.OSMDriver.write</a></li>
 </ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.setup.html">hydromt_fiat.components.VulnerabilityComponent.setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.HazardGridComponent.setup.html">hydromt_fiat.components.HazardGridComponent.setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
-</ul>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">hydromt_fiat.workflows.max_monetary_damage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.workflows.exposure_grid_data.html">hydromt_fiat.workflows.exposure_grid_data</a></li>
-</ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.html">hydromt_fiat.drivers.OSMDriver</a></li>
-</ul>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.read.html">hydromt_fiat.drivers.OSMDriver.read</a></li>
-<li class="toctree-l1"><a class="reference internal" href="hydromt_fiat.drivers.OSMDriver.write.html">hydromt_fiat.drivers.OSMDriver.write</a></li>
+</details></li>
 </ul>
 </div>
 </nav></div>
@@ -470,7 +490,10 @@
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../api.html" class="nav-link">API reference</a></li>
+    <li class="breadcrumb-item"><a href="../api/index.html" class="nav-link">API reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../api/workflows.html" class="nav-link">Workflow functions</a></li>
     
     <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.workflows.max_monetary_damage</span></li>
   </ul>
@@ -493,7 +516,7 @@
 <h1>hydromt_fiat.workflows.max_monetary_damage<a class="headerlink" href="#hydromt-fiat-workflows-max-monetary-damage" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="hydromt_fiat.workflows.max_monetary_damage">
-<span class="sig-prename descclassname"><span class="pre">hydromt_fiat.workflows.</span></span><span class="sig-name descname"><span class="pre">max_monetary_damage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_cost_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.1)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vulnerability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.1)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_cost_link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.1)"><span class="pre">DataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/workflows/damage.html#max_monetary_damage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.workflows.max_monetary_damage" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">hydromt_fiat.workflows.</span></span><span class="sig-name descname"><span class="pre">max_monetary_damage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_cost_table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.2)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vulnerability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.2)"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_cost_link</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.3.2)"><span class="pre">DataFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/workflows/damage.html#max_monetary_damage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.workflows.max_monetary_damage" title="Link to this definition">#</a></dt>
 <dd><p>Determine maximum monetary damage per object.</p>
 <p>The maximum potential monetary damage is calculated based on the area (footprint)
 of the objects. The exposure cost table should therefore contain values per square
@@ -507,7 +530,7 @@ meter.</p>
 <li><p><strong>vulnerability</strong> (<em>pd.DataFrame</em>) – The vulnerability identifier table.</p></li>
 <li><p><strong>exposure_cost_link</strong> (<em>pd.DataFrame</em><em>, </em><em>optional</em>) – A linking table to connect the exposure data to the exposure cost data.
 By default None.</p></li>
-<li><p><strong>select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Keyword arguments to select data from the cost table.
+<li><p><strong>**select</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Keyword arguments to select data from the cost table.
 The key corresponds to the column and the value to value in that column.</p></li>
 </ul>
 </dd>
@@ -542,11 +565,11 @@ The key corresponds to the column and the value to value in that column.</p></li
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.workflows.exposure_grid_data.html"
+       href="hydromt_fiat.workflows.exposure_grid_setup.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.workflows.exposure_grid_data</p>
+        <p class="prev-next-title">hydromt_fiat.workflows.exposure_grid_setup</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -463,22 +463,22 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    grid_like : xr.Dataset | None</span>
-<span class="sd">        Grid dataset that serves as an example dataset for transforming the input data</span>
-<span class="sd">    hazard_data : dict[str:xr.DataArray]</span>
+<span class="sd">        Grid dataset that serves as an example dataset for transforming the input data.</span>
+<span class="sd">    hazard_data : dict[str, xr.DataArray]</span>
 <span class="sd">        The hazard data in a dictionary with the names of the datasets as keys.</span>
 <span class="sd">    hazard_type : str</span>
-<span class="sd">        Type of hazard</span>
-<span class="sd">    return_periods : list[int] | None, optional</span>
-<span class="sd">        List of return periods, by default None</span>
-<span class="sd">    risk : bool</span>
-<span class="sd">        Designate hazard files for risk analysis, by default False</span>
-<span class="sd">    unit : str</span>
-<span class="sd">        The unit which the hazard data is in, by default &#39;m&#39;</span>
+<span class="sd">        Type of hazard.</span>
+<span class="sd">    return_periods : list[int], optional</span>
+<span class="sd">        List of return periods, by default None.</span>
+<span class="sd">    risk : bool, optional</span>
+<span class="sd">        Designate hazard files for risk analysis, by default False.</span>
+<span class="sd">    unit : str, optional</span>
+<span class="sd">        The unit which the hazard data is in, by default &#39;m&#39;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    xr.Dataset</span>
-<span class="sd">        Unified xarray dataset containing the hazard data</span>
+<span class="sd">        Unified xarray dataset containing the hazard data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">hazard_dataarrays</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">return_periods</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">risk</span><span class="p">:</span>

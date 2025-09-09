@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -444,30 +444,32 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HazardGridComponent&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HazardComponent&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">HazardGridComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
+<div class="viewcode-block" id="HazardComponent">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.html#hydromt_fiat.components.HazardComponent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HazardComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom hazard component.</span>
 
 <span class="sd">    Inherits from the HydroMT-core GridComponent model-component.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model: Model</span>
-<span class="sd">        HydroMT model instance</span>
-<span class="sd">    filename: str</span>
+<span class="sd">    model : Model</span>
+<span class="sd">        HydroMT model instance.</span>
+<span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
-<span class="sd">        By default &quot;hazard/hazard_grid.nc&quot;.</span>
-<span class="sd">    region_component: str, optional</span>
+<span class="sd">        By default &quot;hazard.nc&quot;.</span>
+<span class="sd">    region_component : str, optional</span>
 <span class="sd">        The name of the region component to use as reference</span>
 <span class="sd">        for this component&#39;s region. If None, the region will be set to the grid extent.</span>
 <span class="sd">        Note that the create method only works if the region_component is None.</span>
 <span class="sd">        For add_data_from_* methods, the other region_component should be</span>
-<span class="sd">        a reference to another grid component for correct reprojection, by default None</span>
-<span class="sd">    region_filename: str</span>
+<span class="sd">        a reference to another grid component for correct reprojection, by default None.</span>
+<span class="sd">    region_filename : str</span>
 <span class="sd">        The path to use for reading and writing of the region data by default.</span>
 <span class="sd">        By default &quot;region.geojson&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -476,7 +478,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hazard/hazard_grid.nc&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hazard.nc&quot;</span><span class="p">,</span>
         <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
@@ -487,8 +489,78 @@
             <span class="n">region_filename</span><span class="o">=</span><span class="n">region_filename</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="HazardGridComponent.setup">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardGridComponent.setup.html#hydromt_fiat.components.HazardGridComponent.setup">[docs]</a>
+    <span class="c1">## I/O methods</span>
+<div class="viewcode-block" id="HazardComponent.read">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.read.html#hydromt_fiat.components.HazardComponent.read">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the hazard data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            Filename relative to model root. If None, the value is either taken from</span>
+<span class="sd">            the model configurations or the `_filename` attribute, by default None.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments to be passed to the `read_nc` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sort the filename</span>
+        <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">filename</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+        <span class="p">)</span>
+        <span class="c1"># Read the data</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the hazard data..&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HazardComponent.write">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.write.html#hydromt_fiat.components.HazardComponent.write">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the hazard data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            Filename relative to model root. If None, the value is either taken from</span>
+<span class="sd">            the model configurations or the `_filename` attribute, by default None.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments to be passed to the `write_nc` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sort out the filename</span>
+        <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+        <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="c1"># Update the kwargs</span>
+        <span class="k">if</span> <span class="s2">&quot;gdal_compliant&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;gdal_compliant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Write it in a gdal compliant manner by default</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the hazard data..&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Update the config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="n">write_path</span><span class="p">)</span>
+        <span class="c1"># Check for multiple bands, because gdal and netcdf..</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+    <span class="c1">## Mutating methods</span>
+<div class="viewcode-block" id="HazardComponent.setup">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup">[docs]</a>
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -515,8 +587,8 @@
 <span class="sd">            Whether the hazard files are part of a risk analysis,</span>
 <span class="sd">            by default False.</span>
 <span class="sd">        unit : str, optional</span>
-<span class="sd">            The unit which the hazard data is in, by default &#39;m&#39; (meters)</span>
-<span class="sd">        settings : dict</span>
+<span class="sd">            The unit which the hazard data is in, by default &#39;m&#39; (meters).</span>
+<span class="sd">        **settings : dict</span>
 <span class="sd">            Extra settings to be added under the hazard header.</span>
 <span class="sd">            For flood maps (water depth), elevation_reference set to either &#39;datum&#39; \</span>
 <span class="sd">            or &#39;dem&#39; is recommeneded.</span>
@@ -563,19 +635,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Set the config entries</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.risk&quot;</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.risk&quot;</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.return_periods&quot;</span><span class="p">,</span> <span class="n">return_periods</span><span class="p">)</span>
-
-        <span class="c1"># Set the output filename</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
 
         <span class="c1"># Set the extra settings</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hazard.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

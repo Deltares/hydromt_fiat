@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=967bc55a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -125,7 +125,7 @@
     <img src="../../../_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
-    <p class="title logo__title">HydroMT FIAT</p>
+    <p class="title logo__title">HydroMT-FIAT</p>
   
 </a></div>
     
@@ -154,7 +154,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -297,7 +297,7 @@
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="../../../api.html">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
     API reference
   </a>
 </li>
@@ -449,6 +449,8 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="ExposureGridComponent">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.html#hydromt_fiat.components.ExposureGridComponent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExposureGridComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exposure grid component.</span>
 
@@ -456,18 +458,18 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    model: Model</span>
-<span class="sd">        HydroMT model instance</span>
-<span class="sd">    filename: str</span>
+<span class="sd">    model : Model</span>
+<span class="sd">        HydroMT model instance.</span>
+<span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
 <span class="sd">        By default &quot;exposure/spatial.nc&quot;.</span>
-<span class="sd">    region_component: str, optional</span>
+<span class="sd">    region_component : str, optional</span>
 <span class="sd">        The name of the region component to use as reference</span>
 <span class="sd">        for this component&#39;s region. If None, the region will be set to the grid extent.</span>
 <span class="sd">        Note that the create method only works if the region_component is None.</span>
 <span class="sd">        For add_data_from_* methods, the other region_component should be</span>
-<span class="sd">        a reference to another grid component for correct reprojection, by default None</span>
-<span class="sd">    region_filename: str</span>
+<span class="sd">        a reference to another grid component for correct reprojection, by default None.</span>
+<span class="sd">    region_filename : str</span>
 <span class="sd">        The path to use for reading and writing of the region data by default.</span>
 <span class="sd">        By default &quot;region.geojson&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -487,35 +489,109 @@
             <span class="n">region_filename</span><span class="o">=</span><span class="n">region_filename</span><span class="p">,</span>
         <span class="p">)</span>
 
+    <span class="c1">## I/O methods</span>
+<div class="viewcode-block" id="ExposureGridComponent.read">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.read.html#hydromt_fiat.components.ExposureGridComponent.read">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read the exposure grid data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            Filename relative to model root. If None, the value is either taken from</span>
+<span class="sd">            the model configurations or the `_filename` attribute, by default None.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments to be passed to the `read_nc` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sort the filename</span>
+        <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">filename</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure.grid.file&quot;</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+        <span class="p">)</span>
+        <span class="c1"># Read the data</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the exposure grid data..&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the exposure grid data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            Filename relative to model root. If None, the value is either taken from</span>
+<span class="sd">            the model configurations or the `_filename` attribute, by default None.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments to be passed to the `write_nc` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Sort out the filename</span>
+        <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure.grid.file&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+        <span class="p">)</span>
+        <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="c1"># Update the kwargs</span>
+        <span class="k">if</span> <span class="s2">&quot;gdal_compliant&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;gdal_compliant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Write it in a gdal compliant manner by default</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the exposure grid data..&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># Update the config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.grid.file&quot;</span><span class="p">,</span> <span class="n">write_path</span><span class="p">)</span>
+        <span class="c1"># Check for multiple bands, because gdal and netcdf..</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.grid.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.grid.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1">## Mutating methods</span>
 <div class="viewcode-block" id="ExposureGridComponent.setup">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup">[docs]</a>
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">exposure_fnames</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">exposure_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exposure_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up an exposure grid.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        exposure_fnames : Path | str | list[Path | str]</span>
-<span class="sd">            Name of or path to exposure file(s)</span>
-<span class="sd">        exposure_link_fname : Path | str</span>
+<span class="sd">            Name of or path to exposure file(s).</span>
+<span class="sd">        exposure_link_fname : Path | str, optional</span>
 <span class="sd">            Table containing the names of the exposure files and corresponding</span>
-<span class="sd">            vulnerability curves.</span>
+<span class="sd">            vulnerability curves. By default None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up exposure grid&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up gridded exposure&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability_data</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="p">{}:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">identifiers</span><span class="o">.</span><span class="n">empty</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;setup_vulnerability step is required before setting up exposure grid.&quot;</span>
+                <span class="s2">&quot;&#39;setup_vulnerability&#39; step is required </span><span class="se">\</span>
+<span class="s2">before setting up exposure grid&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">MissingRegionError</span><span class="p">(</span><span class="s2">&quot;Region is required for setting up exposure grid.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">MissingRegionError</span><span class="p">(</span><span class="s2">&quot;Region is required for setting up exposure grid&quot;</span><span class="p">)</span>
 
         <span class="c1"># Read linking table</span>
-        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span><span class="n">exposure_link_fname</span><span class="p">)</span>
+        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">exposure_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exposure_linking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
+                <span class="n">exposure_link_fname</span>
+            <span class="p">)</span>
 
         <span class="c1"># Sort the input out as iterator</span>
         <span class="n">exposure_fnames</span> <span class="o">=</span> <span class="p">(</span>
@@ -535,22 +611,23 @@
             <span class="n">exposure_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">da</span>
 
         <span class="c1"># Get grid like from existing exposure data if there is any</span>
-        <span class="n">grid_like</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">!=</span> <span class="p">{}</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">grid_like</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Execute the workflow function</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_grid_data</span><span class="p">(</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_grid_setup</span><span class="p">(</span>
             <span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_data</span><span class="p">,</span>
             <span class="n">exposure_linking</span><span class="o">=</span><span class="n">exposure_linking</span><span class="p">,</span>
+            <span class="n">vulnerability</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Set the dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Set the config entries</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.grid.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.grid.file&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting the model type to &#39;grid&#39;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.model_type&quot;</span><span class="p">,</span> <span class="s2">&quot;grid&quot;</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 
