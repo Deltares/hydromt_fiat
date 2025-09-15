@@ -18,7 +18,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """A Custom config component for FIAT models.
+    """Custom config component for FIAT models.
 
     Parameters
     ----------

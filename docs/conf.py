@@ -45,6 +45,7 @@ version = hydromt_fiat.__version__
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "nbsphinx",
     "sphinx_design",
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
@@ -56,7 +57,6 @@ extensions = [
     "sphinx_autosummary_accessors",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "nbsphinx",
 ]
 
 autosummary_generate = True
@@ -72,8 +72,8 @@ todo_include_todos = False
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+autoclass_content = "class"
 autodoc_member_order = "bysource"
-autoclass_content = "both"
 
 bare_version = hydromt_fiat.__version__
 doc_version = bare_version[: bare_version.find("dev") - 1]
@@ -94,7 +94,7 @@ html_static_path = ["_static"]
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "show_nav_level": 2,
+    "show_nav_level": 1,
     "navbar_align": "content",
     "use_edit_page_button": True,
     "icon_links": [
@@ -118,7 +118,7 @@ html_theme_options = {
         },
     ],
     "logo": {
-        "text": "HydroMT FIAT",
+        "text": "HydroMT-FIAT",
     },
     "navbar_end": ["navbar-icon-links", "version-switcher"],  # remove dark mode switch
     "switcher": {

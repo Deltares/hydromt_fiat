@@ -26,7 +26,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class FIATModel(Model):
-    """Read or Write a FIAT model.
+    """Build, read and/ or write a FIAT model.
 
     Parameters
     ----------
@@ -90,32 +90,40 @@ class FIATModel(Model):
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the config component."""
+        """Access the config component."""
         return self.components["config"]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
-        """Return the exposure geoms component."""
+        """Access the exposure geoms component."""
         return self.components["exposure_geoms"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
-        """Return the exposure grid component."""
+        """Access the exposure grid component."""
         return self.components["exposure_grid"]
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return the hazard component."""
+        """Access the hazard component."""
         return self.components["hazard"]
 
     @property
+    def region(self) -> gpd.GeoDataFrame | None:
+        """Return the model's region.
+
+        This will return a polygon covering the current region of the model.
+        """
+        return self.region_component.region
+
+    @property
     def region_component(self) -> RegionComponent:
-        """Return the region component."""
+        """Access the region component."""
         return self.components[REGION]
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
-        """Return the vulnerability component."""
+        """Access the vulnerability component."""
         return self.components["vulnerability"]
 
     ## I/O
