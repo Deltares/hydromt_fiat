@@ -24,7 +24,7 @@ jobs:
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'v1' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Test
         run: |
@@ -48,7 +48,7 @@ jobs:
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'v1' }}
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Test
         run: |
