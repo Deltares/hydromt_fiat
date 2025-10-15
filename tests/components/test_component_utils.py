@@ -36,7 +36,7 @@ def test__relpath_abs(tmp_path: Path):
     assert p == "tmp/tmp.txt"
 
     # Path one above the current, also pass as a string
-    in_p = Path(tmp_path.parent, "tmp.txt").as_posix()
+    in_p = Path(tmp_path.parent, "tmp.txt")
     p = _relpath(in_p, tmp_path)
 
     # Assert the output

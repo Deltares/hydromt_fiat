@@ -5,6 +5,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import xarray as xr
+from hydromt._io.writers import _write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
@@ -87,6 +88,7 @@ class HazardComponent(GridComponent):
     def write(
         self,
         filename: str | None = None,
+        gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
         """Write the hazard data.
@@ -96,20 +98,37 @@ class HazardComponent(GridComponent):
         filename : str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
+        gdal_compliant : bool, optional
+            If True, write grid data in a way that is compatible with GDAL,
+            by default True.
         **kwargs : dict
             Additional keyword arguments to be passed to the `write_nc` method.
         """
+        # Check the state
+        self.root._assert_write_mode()
+
+        # Check for data. If no data, warn and return
+        if len(self.data) == 0:
+            logger.info("No hazard data found, skip writing.")
+            return
+
         # Sort out the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = filename or self.model.config.get("hazard.file") or self._filename
         write_path = Path(self.root.path, filename)
 
-        # Update the kwargs
-        if "gdal_compliant" not in kwargs:
-            kwargs["gdal_compliant"] = True
         # Write it in a gdal compliant manner by default
         logger.info("Writing the hazard data..")
-        super().write(write_path.as_posix(), **kwargs)
+        _write_nc(
+            {"grid": self.data},
+            write_path.as_posix(),
+            root=self.root.path,
+            gdal_compliant=gdal_compliant,
+            rename_dims=False,
+            force_overwrite=self.root.mode.is_override_mode(),
+            force_sn=False,
+            **kwargs,
+        )
 
         # Update the config
         self.model.config.set("hazard.file", write_path)

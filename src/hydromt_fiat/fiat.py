@@ -138,14 +138,18 @@ class FIATModel(Model):
         self,
         region: Path | str | gpd.GeoDataFrame,
     ) -> None:
-        """_summary_.
+        """Clip the model based on a new (smaller) region.
 
         Parameters
         ----------
-        region : gpd.GeoDataFrame | str
-            _description_
+        region : Path | str | gpd.GeoDataFrame
+            The region to be used for clipping. It can either be a path to a vector
+            file or a geopandas GeoDataFrame.
         """
+        # First update the region to the new region, thereby replace
         self.setup_region(region, replace=True)
+        # Call the clip methods of the spatial components
+        self.exposure_geoms.clip(self.region, inplace=True)
         self.exposure_grid.clip(self.region, buffer=1, inplace=True)
         self.hazard.clip(self.region, buffer=1, inplace=True)
 

@@ -61,8 +61,9 @@ def max_monetary_damage(
         raise ValueError("Exposure costs table cannot be None")
 
     # Create a query from the kwargs
-    query = create_query(**select)
-    exposure_cost_table = exposure_cost_table.query(query)
+    if len(select) != 0:
+        query = create_query(**select)
+        exposure_cost_table = exposure_cost_table.query(query)
 
     if len(exposure_cost_table) == 0:
         raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")

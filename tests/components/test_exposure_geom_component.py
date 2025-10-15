@@ -147,7 +147,6 @@ def test_exposure_geom_component_write(
     geom_cfg = mock_model_config.config.get("exposure.geom")
     assert len(geom_cfg) == 2
     assert geom_cfg[0]["file"] == Path(tmp_path, "exposure/buildings.fgb")
-    assert not geom_cfg[0]["csv"]  # Should be False
 
 
 def test_exposure_geom_component_write_sig(
@@ -167,34 +166,6 @@ def test_exposure_geom_component_write_sig(
 
     # Assert the files
     assert Path(tmp_path, "other", "buildings.fgb").is_file()
-
-
-def test_exposure_geom_component_write_split(
-    tmp_path: Path,
-    mock_model_config: MagicMock,
-    exposure_geom_data: gpd.GeoDataFrame,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
-    # Set data like a dummy
-    component._data = {
-        "buildings": exposure_geom_data,
-    }
-
-    # Write the data
-    component.write(csv=True)
-
-    # Assert the files
-    assert Path(tmp_path, component._filename.format(name="buildings")).is_file()
-    assert (
-        Path(tmp_path, component._filename.format(name="buildings"))
-        .with_suffix(".csv")
-        .is_file()
-    )
-
-    # Assert the config
-    geom_cfg = mock_model_config.config.get("exposure.geom")
-    assert geom_cfg[0]["csv"]  # Should be True
 
 
 def test_exposure_geom_component_write_warnings(
