@@ -148,6 +148,9 @@ class FIATModel(Model):
         """
         # First update the region to the new region, thereby replace
         self.setup_region(region, replace=True)
+        logger.info(
+            f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
+        )
         # Call the clip methods of the spatial components
         self.exposure_geoms.clip(self.region, inplace=True)
         self.exposure_grid.clip(self.region, buffer=1, inplace=True)

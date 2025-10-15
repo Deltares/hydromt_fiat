@@ -248,7 +248,7 @@ clean-docs = { depends-on = [
     "clean-docs-example",
     "clean-docs-gen",
 ] }
-clean-docs-build = { cmd = ["rm", "-rf", "docs/_build/html"] }
+clean-docs-build = { cmd = ["rm", "-rf", "docs/_build"] }
 clean-docs-example = { cmd = ["rm", "-rf", "docs/_examples"] }
 clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
 
