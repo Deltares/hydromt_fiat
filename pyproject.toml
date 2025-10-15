@@ -217,7 +217,7 @@ test-cov = { cmd = [
     "--cov-report",
     "xml"
 ] }
-test-cov-local = { cmd = [
+test-cov-html = { cmd = [
     "pytest",
     "-m",
     "not integration",

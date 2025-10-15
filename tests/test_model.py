@@ -9,7 +9,6 @@ from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
     HazardComponent,
-    RegionComponent,
     VulnerabilityComponent,
 )
 
@@ -95,5 +94,4 @@ def test_model_properties(model_with_region: FIATModel):
     assert isinstance(model.exposure_grid, ExposureGridComponent)
     assert isinstance(model.hazard, HazardComponent)
     assert isinstance(model.region, gpd.GeoDataFrame)
-    assert isinstance(model.region_component, RegionComponent)
     assert isinstance(model.vulnerability, VulnerabilityComponent)

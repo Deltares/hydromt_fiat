@@ -3,6 +3,8 @@
 import logging
 from pathlib import Path
 
+import geopandas as gpd
+import xarray as xr
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
@@ -119,6 +121,44 @@ class ExposureGridComponent(GridComponent):
             self.model.config.set("exposure.grid.settings.var_as_band", True)
 
     ## Mutating methods
+    @hydromt_step
+    def clip(
+        self,
+        geom: gpd.GeoDataFrame,
+        buffer: int = 0,
+        inplace: bool = False,
+    ) -> xr.Dataset | None:
+        """Clip the exposure data based on geometry.
+
+        Parameters
+        ----------
+        geom : gpd.GeoDataFrame
+            The area to clip the data to.
+        buffer : int, optional
+            A buffer of cells around the clipped area to keep, by default 0.
+        inplace : bool, optional
+            Whether to do the clipping in place or return a new xr.Dataset,
+            by default False.
+
+        Returns
+        -------
+        xr.Dataset | None
+            Return a dataset if the inplace is False.
+        """
+        # Check whether it has the necessary dims
+        try:
+            self.data.raster.set_spatial_dims()
+        except ValueError:
+            return
+
+        # If so, clip the data
+        data = self.data.raster.clip_geom(geom, buffer=buffer)
+        # If inplace, just set the data and return nothing
+        if inplace:
+            self._data = data
+            return
+        return data
+
     @hydromt_step
     def setup(
         self,
