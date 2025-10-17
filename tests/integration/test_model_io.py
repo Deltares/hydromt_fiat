@@ -8,9 +8,9 @@ from hydromt_fiat import FIATModel
 
 
 @pytest.mark.integration
-def test_fookin_io(tmp_path: Path, model_cached: Path):
+def test_fookin_io(tmp_path: Path, model_data_clipped_path: Path):
     # Create the model to read
-    model = FIATModel(root=model_cached)
+    model = FIATModel(root=model_data_clipped_path)
 
     # Read the model
     model.read()

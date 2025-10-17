@@ -22,9 +22,63 @@ def test_exposure_geom_component_empty(mock_model: MagicMock):
     assert isinstance(component.data, dict)
 
 
+def test_exposure_geoms_component_clip(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = ExposureGeomsComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector}
+    # Assert the current state, i.e. amount of rows
+    assert component.data["foo"].shape[0] == 543
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small.to_crs(4326))
+    # Assert the output
+    assert ds["foo"].shape[0] == 12
+
+
+def test_exposure_geoms_component_clip_no_data(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = ExposureGeomsComponent(model=mock_model)
+    # Assert the current state
+    assert component._data is None
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small)
+    # Assert that there is no output
+    assert ds is None
+
+
+def test_exposure_geoms_component_clip_inplace(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = ExposureGeomsComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector}
+    # Assert the current state
+    assert component.data["foo"].shape[0] == 543
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small.to_crs(4326), inplace=True)
+    # Assert that the output is None but the shape of the component data changed
+    assert ds is None
+    assert component.data["foo"].shape[0] == 12
+
+
 def test_exposure_geom_component_set(
     caplog: pytest.LogCaptureFixture,
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     caplog.set_level(logging.INFO)
@@ -33,23 +87,23 @@ def test_exposure_geom_component_set(
     assert len(component.data) == 0  # No data yet
 
     # Add a geometry dataset
-    component.set(geom=build_region_gdf, name="ds1")
+    component.set(geom=build_region, name="ds1")
 
     # Assert that it's there
     assert len(component.data) == 1
     assert "ds1" in component.data
 
     # Overwrite with the same dataset, should produce no warning
-    component.set(geom=build_region_gdf, name="ds1")
+    component.set(geom=build_region, name="ds1")
     assert "Replacing geom: ds1" not in caplog.text
 
     # Overwrite, but with a copy, should produce a warning
-    component.set(geom=build_region_gdf.copy(), name="ds1")
+    component.set(geom=build_region.copy(), name="ds1")
     assert "Replacing geom: ds1" in caplog.text
 
 
 def test_exposure_geom_component_region(
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
     box_geometry: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
@@ -58,7 +112,7 @@ def test_exposure_geom_component_region(
     assert component.region is None
 
     # Set a second dataset
-    component.set(geom=build_region_gdf, name="ds1")
+    component.set(geom=build_region, name="ds1")
 
     # Assert the content
     assert component.region is not None
@@ -80,11 +134,11 @@ def test_exposure_geom_component_region(
 
 
 def test_exposure_geom_component_read(
-    model_cached: Path,
+    model_data_clipped_path: Path,
     mock_model_config: MagicMock,
 ):
     type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
     component = ExposureGeomsComponent(model=mock_model_config)
@@ -102,11 +156,11 @@ def test_exposure_geom_component_read(
 
 
 def test_exposure_geom_component_read_sig(
-    model_cached: Path,
+    model_data_clipped_path: Path,
     mock_model_config: MagicMock,
 ):
     type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
     component = ExposureGeomsComponent(model=mock_model_config)
@@ -118,22 +172,20 @@ def test_exposure_geom_component_read_sig(
     component.read("exposure/{name}.fgb")
 
     # Assert the output
-    assert len(component._data) == 3
-    # Merging of csv and geoms went well
-    assert "extract_method" in component.data["buildings_split"].columns
+    assert len(component._data) == 2
 
 
 def test_exposure_geom_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    exposure_geom_data: gpd.GeoDataFrame,
+    exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=mock_model_config)
     # Set data like a dummy
     component._data = {
-        "buildings": exposure_geom_data,
-        "buildings2": exposure_geom_data,
+        "buildings": exposure_vector_clipped,
+        "buildings2": exposure_vector_clipped,
     }
 
     # Write the data
@@ -152,13 +204,13 @@ def test_exposure_geom_component_write(
 def test_exposure_geom_component_write_sig(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    exposure_geom_data: gpd.GeoDataFrame,
+    exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=mock_model_config)
     # Set data like a dummy
     component._data = {
-        "buildings": exposure_geom_data,
+        "buildings": exposure_vector_clipped,
     }
 
     # Write the data
@@ -249,12 +301,12 @@ def test_exposure_geom_component_setup_errors(
 
 def test_exposure_geom_component_setup_max(
     model_exposure_setup: FIATModel,
-    exposure_geom_data_damage: gpd.GeoDataFrame,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=model_exposure_setup)
     # Added the exposure to the data to expand upon
-    component.set(exposure_geom_data_damage, name="buildings")
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
     # Assert max damage column is not present
     assert "max_damage_structure" not in component.data["buildings"].columns
@@ -293,12 +345,12 @@ with 'bag' as input or chose from already present geometries: ",
 
 def test_exposure_geom_component_update_cols(
     model_with_region: FIATModel,
-    exposure_geom_data_damage: gpd.GeoDataFrame,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=model_with_region)
     # Added the exposure to the data to expand upon
-    component.set(exposure_geom_data_damage, name="bag")
+    component.set(exposure_vector_clipped_for_damamge, name="bag")
 
     # Assert max damage column is not present
     assert "ground_flht" not in component.data["bag"].columns

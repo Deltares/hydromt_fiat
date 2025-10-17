@@ -217,6 +217,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ) -> dict[str, gpd.GeoDataFrame] | None:
         """Clip the exposure vector data.
 
+        Geometry needs to be in the same crs (or lack thereof) as the data.
+
         Parameters
         ----------
         geom : gpd.GeoDataFrame
@@ -231,6 +233,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
             Return a dataset if the inplace is False.
         """
         data = {}
+        if len(self.data) == 0:
+            return
         # Loop through all the existing GeoDataFrames and clip them
         for key, gdf in self.data.items():
             data[key] = gdf.clip(geom)

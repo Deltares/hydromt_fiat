@@ -10,86 +10,86 @@ from hydromt import DataCatalog
 ## Data from the data catalog
 @pytest.fixture
 def buildings_data(
-    data_catalog: DataCatalog, build_region_small_gdf: gpd.GeoDataFrame
+    build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
 ) -> gpd.GeoDataFrame:
-    gdf = data_catalog.get_geodataframe("buildings", geom=build_region_small_gdf)
+    gdf = build_data_catalog.get_geodataframe("buildings", geom=build_region_small)
     return gdf
 
 
 @pytest.fixture(scope="session")
-def buildings_link_table(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("buildings_link")
+def buildings_link_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("buildings_link")
     return df
 
 
 @pytest.fixture(scope="session")
-def exposure_cost_table(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("damage_values")
+def exposure_cost_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("damage_values")
     return df
 
 
 @pytest.fixture
 def exposure_grid_data_ind(
-    data_catalog: DataCatalog, build_region_small_gdf: gpd.GeoDataFrame
+    build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
 ) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset(
+    ds = build_data_catalog.get_rasterdataset(
         "industrial_content",
-        geom=build_region_small_gdf,
+        geom=build_region_small,
     )
     return ds
 
 
 @pytest.fixture
-def exposure_grid_link(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("exposure_grid_link")
+def exposure_grid_link(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("exposure_grid_link")
     return df
 
 
 @pytest.fixture
 def hazard_event_data(
-    data_catalog: DataCatalog, build_region_small_gdf: gpd.GeoDataFrame
+    build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
 ) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset("flood_event", geom=build_region_small_gdf)
+    ds = build_data_catalog.get_rasterdataset("flood_event", geom=build_region_small)
     return ds
 
 
 @pytest.fixture
 def hazard_event_data_highres(
-    data_catalog: DataCatalog,
-    build_region_small_gdf: gpd.GeoDataFrame,
+    build_data_catalog: DataCatalog,
+    build_region_small: gpd.GeoDataFrame,
 ) -> xr.DataArray:
-    ds = data_catalog.get_rasterdataset(
+    ds = build_data_catalog.get_rasterdataset(
         "flood_event_highres",
-        geom=build_region_small_gdf,
+        geom=build_region_small,
     )
     return ds
 
 
 @pytest.fixture
-def vulnerability_data(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("vulnerability_curves")
+def vulnerability_data(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("vulnerability_curves")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("vulnerability_curves_linking")
+def vulnerability_linking(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("vulnerability_curves_linking")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking_alt(data_catalog: DataCatalog) -> pd.DataFrame:
-    df = data_catalog.get_dataframe("vulnerability_curves_linking_alt")
+def vulnerability_linking_alt(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("vulnerability_curves_linking_alt")
     assert len(df) != 0
     return df
 
 
 ## Data from a prebuild model
 @pytest.fixture
-def exposure_geom_data_alt(model_cached: Path) -> gpd.GeoDataFrame:
-    p = Path(model_cached, "exposure", "buildings_alt.fgb")
+def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
+    p = Path(model_data_clipped_path, "exposure", "buildings_alt.fgb")
     assert p.is_file()
     gdf = gpd.read_file(p)
     assert len(gdf) != 0
@@ -98,9 +98,9 @@ def exposure_geom_data_alt(model_cached: Path) -> gpd.GeoDataFrame:
 
 @pytest.fixture
 def exposure_geom_data_link(
-    exposure_geom_data_damage: gpd.geodataframe,
+    exposure_vector_clipped_for_damamge: gpd.geodataframe,
 ) -> gpd.GeoDataFrame:
-    exposure_geom_data_damage.drop(
+    exposure_vector_clipped_for_damamge.drop(
         [
             "object_id",
             "fn_damage_structure",
@@ -109,12 +109,12 @@ def exposure_geom_data_link(
         axis=1,
         inplace=True,
     )
-    return exposure_geom_data_damage
+    return exposure_vector_clipped_for_damamge
 
 
 @pytest.fixture(scope="session")
-def vulnerability_curves_alt(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "curves_alt.csv")
+def vulnerability_curves_alt(model_data_path: Path) -> pd.DataFrame:
+    p = Path(model_data_path, "vulnerability", "curves_alt.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0
@@ -122,8 +122,8 @@ def vulnerability_curves_alt(model_cached: Path) -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def vulnerability_identifiers_alt(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "curves_alt_id.csv")
+def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
+    p = Path(model_data_path, "vulnerability", "curves_alt_id.csv")
     assert p.is_file()
     df = pd.read_csv(p)
     assert len(df) != 0

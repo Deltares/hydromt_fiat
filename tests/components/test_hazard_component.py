@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
+import geopandas as gpd
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
@@ -23,12 +24,66 @@ def test_hazard_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
+def test_hazard_component_clip(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    # Assert the current state
+    assert component.data.flood_event.shape == (34, 25)
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small)
+    # Assert the output
+    assert ds.flood_event.shape == (5, 4)
+
+
+def test_hazard_component_clip_no_data(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+    # Assert the current state
+    assert component._data is None
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small)
+    # Assert that there is no output
+    assert ds is None
+
+
+def test_hazard_component_clip_inplace(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    # Assert the current state
+    assert component.data.flood_event.shape == (34, 25)
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small, inplace=True)
+    # Assert that the output is None but the shape of the component data changed
+    assert ds is None
+    assert component.data.flood_event.shape == (5, 4)
+
+
 def test_hazard_component_read(
     mock_model_config: MagicMock,
-    model_cached: Path,
+    model_data_clipped_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
     component = HazardComponent(model=mock_model_config)
@@ -46,10 +101,10 @@ def test_hazard_component_read(
 
 def test_hazard_component_read_sig(
     mock_model_config: MagicMock,
-    model_cached: Path,
+    model_data_clipped_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
     component = HazardComponent(model=mock_model_config)
@@ -64,12 +119,12 @@ def test_hazard_component_read_sig(
 def test_hazard_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    hazard_data: xr.Dataset,
+    hazard_clipped: xr.Dataset,
 ):
     # Setup the component
     component = HazardComponent(model=mock_model_config)
     # Set data like a dummy
-    component._data = hazard_data
+    component._data = hazard_clipped
 
     # Write the data
     component.write()
@@ -85,13 +140,13 @@ def test_hazard_component_write(
 def test_hazard_component_write_sig(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    hazard_data: xr.Dataset,
+    hazard_clipped: xr.Dataset,
 ):
     # Setup the component
     component = HazardComponent(model=mock_model_config)
     # Set data like a dummy
-    component._data = hazard_data
-    component._data["flood_event2"] = hazard_data["flood_event"]
+    component._data = hazard_clipped
+    component._data["flood_event2"] = hazard_clipped["flood_event"]
 
     # Write the data using the argument of the read method
     component.write("other/baz.nc")
