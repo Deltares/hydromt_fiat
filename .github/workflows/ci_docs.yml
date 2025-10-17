@@ -8,14 +8,14 @@ on:
       - docs/*
       - examples/*
       - pyproject.toml
-      - .github/workflows/docs.yml
+      - .github/workflows/ci_docs.yml
   pull_request:
     branches: [main]
     paths:
       - docs/*
       - examples/*
       - pyproject.toml
-      - .github/workflows/docs.yml
+      - .github/workflows/ci_docs.yml
 
 jobs:
   docs:

@@ -14,7 +14,7 @@ from hydromt_fiat import FIATModel
 @pytest.mark.integration
 def test_model_geom_integration(
     tmp_path: Path,
-    build_data_catalog: Path,
+    build_data_catalog_path: Path,
     build_region_small: Path,
 ):
     ## HydroMT-FIAT
@@ -22,7 +22,7 @@ def test_model_geom_integration(
     model = FIATModel(
         root=tmp_path,
         mode="w+",
-        data_libs=build_data_catalog,
+        data_libs=build_data_catalog_path,
     )
 
     # Add model type and region

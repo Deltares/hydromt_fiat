@@ -27,7 +27,7 @@ def _relpath(
     root: Path,
 ) -> str | Any:
     """Generate a relative path."""
-    if not isinstance(value, (Path, str)) or not Path(value).is_absolute():
+    if not isinstance(value, Path):
         return value
     value = Path(value)
     if _mount(value.as_posix()) == _mount(root.as_posix()):

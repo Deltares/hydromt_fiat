@@ -11,9 +11,9 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
 
 
-## Cached build data
+## Build data
 @pytest.fixture(scope="session")
-def build_data_cached() -> Path:  # The HydroMT-FIAT build data w/ catalog
+def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
     p = fetch_data("build-data")
     assert Path(p, "buildings", "buildings.fgb").is_file()
@@ -21,50 +21,50 @@ def build_data_cached() -> Path:  # The HydroMT-FIAT build data w/ catalog
 
 
 @pytest.fixture(scope="session")
-def build_data_catalog(build_data_cached: Path) -> Path:
-    p = Path(build_data_cached, "data_catalog.yml")
+def build_data_catalog_path(build_data_path: Path) -> Path:
+    p = Path(build_data_path, "data_catalog.yml")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
-def build_region(build_data_cached: Path) -> Path:
-    p = Path(build_data_cached, "region.geojson")
+def build_region_path(build_data_path: Path) -> Path:
+    p = Path(build_data_path, "region.geojson")
     assert p.is_file()
     return p
 
 
 @pytest.fixture(scope="session")
-def build_region_small(build_data_cached: Path) -> Path:
-    p = Path(build_data_cached, "region_small.geojson")
+def build_region_small_path(build_data_path: Path) -> Path:
+    p = Path(build_data_path, "region_small.geojson")
     assert p.is_file()
     return p
 
 
 @pytest.fixture
-def build_region_gdf(build_region: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(build_region)
+def build_region(build_region_path: Path) -> gpd.GeoDataFrame:
+    gdf = gpd.read_file(build_region_path)
     assert len(gdf) == 1
     return gdf
 
 
 @pytest.fixture
-def build_region_small_gdf(build_region_small: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(build_region_small)
+def build_region_small(build_region_small_path: Path) -> gpd.GeoDataFrame:
+    gdf = gpd.read_file(build_region_small_path)
     assert len(gdf) == 1
     return gdf
 
 
 @pytest.fixture(scope="session")
-def data_catalog(build_data_catalog: Path) -> DataCatalog:
-    dc = DataCatalog(build_data_catalog)
+def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
+    dc = DataCatalog(build_data_catalog_path)
     assert "buildings" in dc.sources
     return dc
 
 
-## Cached model data
+## Model data
 @pytest.fixture(scope="session")
-def model_cached() -> Path:
+def model_data_path() -> Path:
     # Fetch the data
     p = fetch_data("fiat-model")
     assert len(list(p.iterdir())) != 0
@@ -72,8 +72,8 @@ def model_cached() -> Path:
 
 
 @pytest.fixture
-def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
-    p = Path(model_cached, "exposure", "buildings.fgb")
+def exposure_vector(model_data_path: Path) -> gpd.GeoDataFrame:
+    p = Path(model_data_path, "exposure", "buildings.fgb")
     assert p.is_file()
     gdf = gpd.read_file(p)
     assert len(gdf) != 0
@@ -81,10 +81,67 @@ def exposure_geom_data(model_cached: Path) -> gpd.GeoDataFrame:
 
 
 @pytest.fixture
-def exposure_geom_data_damage(
-    exposure_geom_data: gpd.GeoDataFrame,
+def exposure_grid(model_data_path: Path) -> xr.Dataset:
+    p = Path(model_data_path, "exposure", "spatial.nc")
+    assert p.is_file()
+    ds = xr.open_dataset(p)
+    assert len(ds.data_vars) != 0
+    return ds
+
+
+@pytest.fixture
+def hazard(model_data_path: Path) -> xr.Dataset:
+    p = Path(
+        model_data_path,
+        "hazard.nc",
+    )
+    assert p.is_file()
+    ds = xr.open_dataset(p)
+    assert len(ds.data_vars) != 0
+    return ds
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curves(model_data_path: Path) -> pd.DataFrame:
+    p = Path(model_data_path, "vulnerability", "curves.csv")
+    assert p.is_file()
+    df = pd.read_csv(p)
+    assert len(df) != 0
+    return df
+
+
+@pytest.fixture(scope="session")
+def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
+    p = Path(model_data_path, "vulnerability", "curves_id.csv")
+    assert p.is_file()
+    df = pd.read_csv(p)
+    assert len(df) != 0
+    return df
+
+
+## Model data (clipped)
+@pytest.fixture(scope="session")
+def model_data_clipped_path() -> Path:
+    # Fetch the data
+    p = fetch_data("fiat-model-c")
+    assert len(list(p.iterdir())) != 0
+    return p
+
+
+@pytest.fixture
+def exposure_vector_clipped(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
+    p = Path(model_data_clipped_path, "exposure", "buildings.fgb")
+    assert p.is_file()
+    gdf = gpd.read_file(p)
+    assert len(gdf) != 0
+    return gdf
+
+
+@pytest.fixture
+def exposure_vector_clipped_for_damamge(
+    exposure_vector_clipped: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_geom_data.drop(
+    exposure_vector_clipped.drop(
         [
             "cost_type",
             "max_damage_structure",
@@ -96,12 +153,12 @@ def exposure_geom_data_damage(
         axis=1,
         inplace=True,
     )
-    return exposure_geom_data
+    return exposure_vector_clipped
 
 
 @pytest.fixture
-def exposure_grid_data(model_cached: Path) -> xr.Dataset:
-    p = Path(model_cached, "exposure", "spatial.nc")
+def exposure_grid_clipped(model_data_clipped_path: Path) -> xr.Dataset:
+    p = Path(model_data_clipped_path, "exposure", "spatial.nc")
     assert p.is_file()
     ds = xr.open_dataset(p)
     assert len(ds.data_vars) != 0
@@ -109,9 +166,9 @@ def exposure_grid_data(model_cached: Path) -> xr.Dataset:
 
 
 @pytest.fixture
-def hazard_data(model_cached: Path) -> xr.Dataset:
+def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
     p = Path(
-        model_cached,
+        model_data_clipped_path,
         "hazard.nc",
     )
     assert p.is_file()
@@ -120,27 +177,9 @@ def hazard_data(model_cached: Path) -> xr.Dataset:
     return ds
 
 
+## OSM data
 @pytest.fixture(scope="session")
-def vulnerability_curves(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "curves.csv")
-    assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
-    return df
-
-
-@pytest.fixture(scope="session")
-def vulnerability_identifiers(model_cached: Path) -> pd.DataFrame:
-    p = Path(model_cached, "vulnerability", "curves_id.csv")
-    assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
-    return df
-
-
-## Cached OSM data
-@pytest.fixture(scope="session")
-def osm_cached() -> Path:
+def osm_data_path() -> Path:
     # Fetch the data
     p = fetch_data("osmnx")
     assert len(list(p.iterdir())) != 0
@@ -149,8 +188,8 @@ def osm_cached() -> Path:
 
 ## Models and mocked objects
 @pytest.fixture
-def model(tmp_path: Path, build_data_catalog: Path) -> FIATModel:
-    model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog)
+def model(tmp_path: Path, build_data_catalog_path: Path) -> FIATModel:
+    model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog_path)
     return model
 
 

@@ -6,19 +6,19 @@ from hydromt_fiat.workflows import max_monetary_damage
 
 
 def test_max_monetary_damage(
-    exposure_geom_data_damage: gpd.GeoDataFrame,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
-    assert "max_damage_structure" not in exposure_geom_data_damage
+    assert "max_damage_structure" not in exposure_vector_clipped_for_damamge
 
     # Alterations should be inplace, i.e. id before == id after
-    id_before = id(exposure_geom_data_damage)
+    id_before = id(exposure_vector_clipped_for_damamge)
 
     # Call the function
     exposure_vector = max_monetary_damage(
-        exposure_data=exposure_geom_data_damage,
+        exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
         exposure_type="damage",
         vulnerability=vulnerability_identifiers,
@@ -30,18 +30,18 @@ def test_max_monetary_damage(
     assert id_before == id_after
 
     # Assert the content
-    assert "max_damage_structure" in exposure_geom_data_damage
+    assert "max_damage_structure" in exposure_vector_clipped_for_damamge
     assert int(exposure_vector["max_damage_structure"].mean()) == 663194
 
 
 def test_max_monetary_damage_geo_crs(
-    exposure_geom_data_damage: gpd.GeoDataFrame,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Call the function
     exposure_vector = max_monetary_damage(
-        exposure_data=exposure_geom_data_damage.to_crs(4326),
+        exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
         exposure_cost_table=exposure_cost_table,
         exposure_type="damage",
         vulnerability=vulnerability_identifiers,
@@ -82,7 +82,7 @@ def test_max_monetary_damage_no_subtype(
 
 
 def test_max_monetary_damage_errors(
-    exposure_geom_data_damage: gpd.GeoDataFrame,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
@@ -92,7 +92,7 @@ def test_max_monetary_damage_errors(
         match="Exposure costs table cannot be None",
     ):
         _ = max_monetary_damage(
-            exposure_data=exposure_geom_data_damage,
+            exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=None,
             exposure_type="damage",
             vulnerability=vulnerability_identifiers,
@@ -104,7 +104,7 @@ def test_max_monetary_damage_errors(
         match=r"Select kwargs \(\{'country': 'Unknown'\}\) resulted in no remaining",
     ):
         _ = max_monetary_damage(
-            exposure_data=exposure_geom_data_damage,
+            exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             exposure_type="damage",
             vulnerability=vulnerability_identifiers,
@@ -117,7 +117,7 @@ def test_max_monetary_damage_errors(
         match=r"Exposure type \(affected\) not found in vulnerability data",
     ):
         _ = max_monetary_damage(
-            exposure_data=exposure_geom_data_damage,
+            exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             exposure_type="affected",
             vulnerability=vulnerability_identifiers,
@@ -130,7 +130,7 @@ def test_max_monetary_damage_errors(
         match="Cost link table either missing object_type or cost_type",
     ):
         _ = max_monetary_damage(
-            exposure_data=exposure_geom_data_damage,
+            exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             exposure_type="damage",
             vulnerability=vulnerability_identifiers,

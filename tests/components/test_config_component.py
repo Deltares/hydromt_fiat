@@ -96,11 +96,11 @@ def test_config_component_set(
 
 def test_config_component_read(
     mock_model: MagicMock,
-    model_cached: Path,
+    model_data_clipped_path: Path,
 ):
     # Set it to read mode
     type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_cached, mode="r"),
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
 
     # Setup the component

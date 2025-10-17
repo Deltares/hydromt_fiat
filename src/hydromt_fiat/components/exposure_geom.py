@@ -146,7 +146,6 @@ class ExposureGeomsComponent(SpatialModelComponent):
     def write(
         self,
         filename: str | None = None,
-        csv: bool = False,
         **kwargs,
     ) -> None:
         """Write exposure geometries to a vector file.
@@ -159,9 +158,6 @@ class ExposureGeomsComponent(SpatialModelComponent):
             Filename relative to model root. should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
             if None, the path that was provided at init will be used.
-        csv : bool, optional
-            Whether to split the data into a pure vector file and a csv containing
-            all the field information of the geometries. By default False.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -205,29 +201,49 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
             entry["file"] = write_path
             entry["srs"] = ":".join(gdf.crs.to_authority())
-            entry["csv"] = csv
 
-            if not csv:
-                # Write the entire thing to vector file
-                gdf.to_file(write_path, **kwargs)
-                continue
-
-            # Split into the vector only file
-            geom = gdf.loc[:, [OBJECT_ID, "geometry"]]
-            geom.to_file(write_path, **kwargs)
-            geom = None
-
-            # And the data file
-            cols = gdf.columns.values.tolist()
-            cols.remove("geometry")
-            data = gdf.loc[:, cols]
-            data.to_csv(write_path.with_suffix(".csv"), index=False)
-            data = None
+            # Write the entire thing to vector file
+            gdf.to_file(write_path, **kwargs)
 
         # Set the config entries
         self.model.config.set("exposure.geom", cfg)
 
-    ## Set(up) methods
+    ## Mutating methods
+    @hydromt_step
+    def clip(
+        self,
+        geom: gpd.GeoDataFrame,
+        inplace: bool = False,
+    ) -> dict[str, gpd.GeoDataFrame] | None:
+        """Clip the exposure vector data.
+
+        Geometry needs to be in the same crs (or lack thereof) as the data.
+
+        Parameters
+        ----------
+        geom : gpd.GeoDataFrame
+            The area to clip the data to.
+        inplace : bool, optional
+            Whether to do the clipping in place or return a new dictionary containing
+            the GeoDataFrames, by default False.
+
+        Returns
+        -------
+        dict[str, gpd.GeoDataFrame] | None
+            Return a dataset if the inplace is False.
+        """
+        data = {}
+        if len(self.data) == 0:
+            return
+        # Loop through all the existing GeoDataFrames and clip them
+        for key, gdf in self.data.items():
+            data[key] = gdf.clip(geom)
+        # If inplace is true, just set the new data and return None
+        if inplace:
+            self._data = data
+            return
+        return data
+
     def set(
         self,
         geom: gpd.GeoDataFrame,

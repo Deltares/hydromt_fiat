@@ -1,37 +1,55 @@
 ---
-name: Test Package
+name: Test
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - src/hydromt_fiat/*
-      - tests/*
-      - pyproject.toml
-      - .github/workflows/test.yml
-  pull_request:
-    branches: [main]
-    paths:
-      - src/hydromt_fiat/*
-      - tests/*
-      - pyproject.toml
-      - .github/workflows/test.yml
+  workflow_call:
+    inputs:
+      os:               { type: string, required: true }
+      python-version:   { type: string, required: true }
 
 jobs:
-  test:
-    name: "${{ matrix.label }} - py${{ matrix.python-version }}"
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest", "windows-latest"]
-        python-version: ["311", "312", "313"]
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-          - os: windows-latest
-            label: win-64
+  unit:
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    uses: ./.github/workflows/test_single.yml
-    with:
-      os: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@194d461b21b6c5717c722ffc597fa91ed2ff29fa
+        with:
+          pixi-version: "v0.54.1"
+          environments: test-py${{ inputs.python-version }}
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+      - name: Test
+        run: |
+          pixi run -e test-py${{ inputs.python-version }} test-cov
+
+  integration:
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    runs-on: ${{ inputs.os }}
+    needs: unit
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@194d461b21b6c5717c722ffc597fa91ed2ff29fa
+        with:
+          pixi-version: "v0.54.1"
+          environments: test-py${{ inputs.python-version }}
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+      - name: Test
+        run: |
+          pixi run -e test-py${{ inputs.python-version }} test-integration

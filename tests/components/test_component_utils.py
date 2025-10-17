@@ -36,7 +36,7 @@ def test__relpath_abs(tmp_path: Path):
     assert p == "tmp/tmp.txt"
 
     # Path one above the current, also pass as a string
-    in_p = Path(tmp_path.parent, "tmp.txt").as_posix()
+    in_p = Path(tmp_path.parent, "tmp.txt")
     p = _relpath(in_p, tmp_path)
 
     # Assert the output
@@ -129,28 +129,32 @@ def test_get_item_multi(
 
 
 def test_pathing_expand(
-    model_cached: Path,
+    model_data_clipped_path: Path,
 ):
     # Call the function
-    paths, names = pathing_expand(root=model_cached, filename="exposure/{name}.fgb")
+    paths, names = pathing_expand(
+        root=model_data_clipped_path, filename="exposure/{name}.fgb"
+    )
     # Assert the output
-    assert len(paths) == 3
-    assert len(names) == 3
+    assert len(paths) == 2
+    assert len(names) == 2
     assert paths[0].suffix == ".fgb"
 
     # To a directory with no data
     # Call the function
-    paths, names = pathing_expand(root=model_cached, filename="foo/{name}.fgb")
+    paths, names = pathing_expand(
+        root=model_data_clipped_path, filename="foo/{name}.fgb"
+    )
     # Assert the output
     assert len(paths) == 0
     assert len(names) == 0
 
 
 def test_pathing_expand_none(
-    model_cached: Path,
+    model_data_clipped_path: Path,
 ):
     # Call the function
-    out = pathing_expand(root=model_cached, filename=None)
+    out = pathing_expand(root=model_data_clipped_path, filename=None)
     # Assert the output
     assert out is None
 
