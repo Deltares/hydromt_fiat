@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -160,7 +161,7 @@ class FIATModel(Model):
     @hydromt_step
     def setup_config(
         self,
-        **settings: dict,
+        **settings: dict[str, Any],
     ) -> None:
         """Set config file entries.
 

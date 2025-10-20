@@ -67,7 +67,7 @@ class RegionComponent(SpatialModelComponent):
         """
         if self._data is None:
             self._initialize()
-
+        assert isinstance(self._data, dict)
         return self._data
 
     @property
@@ -190,8 +190,8 @@ class RegionComponent(SpatialModelComponent):
         geom = geom["geometry"].to_frame()
 
         # Make a union with the current region geodataframe
-        cur = self._data.get(REGION)
+        cur = self.data.get(REGION)
         if cur is not None and not geom.equals(cur) and not replace:
             geom = geom.union(cur)
 
-        self._data[REGION] = geom
+        self.data[REGION] = geom

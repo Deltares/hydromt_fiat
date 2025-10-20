@@ -80,6 +80,7 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 dev = [
+    "mypy",
     "pre-commit",
     "ruff",
 ]
@@ -164,6 +165,7 @@ ignore_errors = true
 [tool.coverage.html]
 directory = ".cov"
 
+## Linting and formatting
 [tool.ruff]
 line-length = 88
 
@@ -182,6 +184,22 @@ exclude = ["docs/**"]
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+## In depth code checking
+[tool.mypy]
+# TODO: Re-enable the tests
+exclude = ["tests/.*", "tmp/.*"]
+plugins = ["pydantic.mypy", "numpy.typing.mypy_plugin"]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
+disallow_any_generics = true
+
 ## Project related stuff
 [tool.pixi.project]
 channels = ["conda-forge"]
@@ -195,6 +213,7 @@ install-pre-commit = "pre-commit install"
 
 # Repo related tasks
 lint = { cmd = ["pre-commit", "run", "--all"] }
+mypy = { cmd = ["mypy", "."] }
 
 # Docker related stuff (expand in future)
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }

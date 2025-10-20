@@ -92,17 +92,17 @@ def test_get_item(
     config_dummy: dict,
 ):
     # Call the function
-    res = get_item(["foo"], config_dummy)
+    res = get_item(["foo"], config_dummy, "")
     # Assert the output
     assert res == "bar"
 
     # With multiple parts
-    res = get_item(["spooky", "ghost"], config_dummy)
+    res = get_item(["spooky", "ghost"], config_dummy, "")
     # Assert the output
     assert res == [1, 2, 3]
 
     # Get an entry that doesnt exists, return fallback
-    res = get_item(["No"], config_dummy, fallback=2)
+    res = get_item(["No"], config_dummy, "", fallback=2)
     # Assert the entry
     assert res == 2
 
@@ -121,7 +121,7 @@ def test_get_item_multi(
     config_dummy: dict,
 ):
     # Call the function
-    res = get_item(["multi", "file"], config_dummy)
+    res = get_item(["multi", "file"], config_dummy, "")
     # Assert the output
     assert isinstance(res, list)
     assert len(res) == 2
