@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; HydroMT-FIAT  documentation</title>
+    <title>Index &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -31,7 +31,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css" />
+    <link rel="stylesheet" type="text/css" href="_static/theme-deltares.css?v=3d8b2b8d" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -45,11 +45,19 @@
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '1.0.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.5.1.dev" />
+  <meta name="docsearch:version" content="1.0.0.dev" />
   </head>
   
   
@@ -113,8 +121,8 @@
     
     
     
-    <img src="_static/fiat_logo.svg" class="logo__image only-light" alt=""/>
-    <img src="_static/fiat_logo.svg" class="logo__image only-dark pst-js-only" alt=""/>
+    <img src="_static/hydromt-icon.svg" class="logo__image only-light" alt=""/>
+    <img src="_static/hydromt-icon.svg" class="logo__image only-dark pst-js-only" alt=""/>
   
   
     <p class="title logo__title">HydroMT-FIAT</p>
@@ -132,56 +140,39 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="installation.html">
-    Installation
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Getting started
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="examples/index.html">
-    Examples
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="user_guide/user_guide_overview.html">
-    User Guide
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="data/data_sources.html">
-    Data Sources
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="api/api_index.html">
+  <a class="nav-link nav-internal" href="api/index.html">
     API reference
   </a>
 </li>
 
-            <li class="nav-item dropdown">
-                <button class="btn dropdown-toggle nav-item" type="button"
-                data-bs-toggle="dropdown" aria-expanded="false"
-                aria-controls="pst-nav-more-links">
-                    More
-                </button>
-                <ul id="pst-nav-more-links" class="dropdown-menu">
-                    
-<li class=" ">
-  <a class="nav-link dropdown-item nav-internal" href="changelog.html">
-    What’s new
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="dev/index.html">
+    Developments
   </a>
 </li>
 
-                </ul>
-            </li>
-            
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
+    HydroMT core
+  </a>
+</li>
+
   </ul>
 </nav></div>
       
@@ -223,9 +214,29 @@
           
           
           
-          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+          <a href="https://deltares.github.io/Delft-FIAT/latest/" title="Delft-FIAT" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="_static/fiat.svg" class="icon-link-image" alt="Delft-FIAT"/></a>
         </li>
 </ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
       
     </div>
     
@@ -272,43 +283,36 @@
   <ul class="bd-navbar-elements navbar-nav">
     
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="installation.html">
-    Installation
+  <a class="nav-link nav-internal" href="overview/index.html">
+    Getting started
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="examples/index.html">
-    Examples
+  <a class="nav-link nav-internal" href="user_guide/index.html">
+    User guide
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="user_guide/user_guide_overview.html">
-    User Guide
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="data/data_sources.html">
-    Data Sources
-  </a>
-</li>
-
-
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="api/api_index.html">
+  <a class="nav-link nav-internal" href="api/index.html">
     API reference
   </a>
 </li>
 
 
 <li class="nav-item ">
-  <a class="nav-link nav-internal" href="changelog.html">
-    What’s new
+  <a class="nav-link nav-internal" href="dev/index.html">
+    Developments
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
+    HydroMT core
   </a>
 </li>
 
@@ -344,9 +348,29 @@
           
           
           
-          <a href="https://www.deltares.nl/en/" title="Deltares" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="_static/deltares-blue.svg" class="icon-link-image" alt="Deltares"/></a>
+          <a href="https://deltares.github.io/Delft-FIAT/latest/" title="Delft-FIAT" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><img src="_static/fiat.svg" class="icon-link-image" alt="Delft-FIAT"/></a>
         </li>
 </ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
         
       </div>
     
@@ -384,41 +408,81 @@
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#_"><strong>_</strong></a>
- | <a href="#B"><strong>B</strong></a>
- | <a href="#C"><strong>C</strong></a>
+ <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
-<h2 id="_">_</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel.__init__">__init__() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.build.html#hydromt_fiat.fiat.FiatModel.build">build() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-  </ul></td>
-</tr></table>
-
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.config.html#hydromt_fiat.fiat.FiatModel.config">config (hydromt_fiat.fiat.FiatModel property)</a>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.clip.html#hydromt_fiat.components.ExposureGeomsComponent.clip">clip() (hydromt_fiat.components.ExposureGeomsComponent method)</a>
+
+      <ul>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGridComponent.clip.html#hydromt_fiat.components.ExposureGridComponent.clip">(hydromt_fiat.components.ExposureGridComponent method)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.components.HazardComponent.clip.html#hydromt_fiat.components.HazardComponent.clip">(hydromt_fiat.components.HazardComponent method)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.FIATModel.clip.html#hydromt_fiat.FIATModel.clip">(hydromt_fiat.FIATModel method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.FIATModel.config.html#hydromt_fiat.FIATModel.config">config (hydromt_fiat.FIATModel property)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.components.ConfigComponent.html#hydromt_fiat.components.ConfigComponent">ConfigComponent (class in hydromt_fiat.components)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.components.ConfigComponent.data.html#hydromt_fiat.components.ConfigComponent.data">data (hydromt_fiat.components.ConfigComponent property)</a>
+
+      <ul>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.data.html#hydromt_fiat.components.ExposureGeomsComponent.data">(hydromt_fiat.components.ExposureGeomsComponent property)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGridComponent.data.html#hydromt_fiat.components.ExposureGridComponent.data">(hydromt_fiat.components.ExposureGridComponent property)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.components.HazardComponent.data.html#hydromt_fiat.components.HazardComponent.data">(hydromt_fiat.components.HazardComponent property)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.components.VulnerabilityComponent.data.html#hydromt_fiat.components.VulnerabilityComponent.data">(hydromt_fiat.components.VulnerabilityComponent property)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.workflows.exposure_add_columns.html#hydromt_fiat.workflows.exposure_add_columns">exposure_add_columns() (in module hydromt_fiat.workflows)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.FIATModel.exposure_geoms.html#hydromt_fiat.FIATModel.exposure_geoms">exposure_geoms (hydromt_fiat.FIATModel property)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.FIATModel.exposure_grid.html#hydromt_fiat.FIATModel.exposure_grid">exposure_grid (hydromt_fiat.FIATModel property)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.workflows.exposure_grid_setup.html#hydromt_fiat.workflows.exposure_grid_setup">exposure_grid_setup() (in module hydromt_fiat.workflows)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.crs.html#hydromt_fiat.fiat.FiatModel.crs">crs (hydromt_fiat.fiat.FiatModel property)</a>
+      <li><a href="_generated/hydromt_fiat.workflows.exposure_setup.html#hydromt_fiat.workflows.exposure_setup">exposure_setup() (in module hydromt_fiat.workflows)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.workflows.exposure_vulnerability_link.html#hydromt_fiat.workflows.exposure_vulnerability_link">exposure_vulnerability_link() (in module hydromt_fiat.workflows)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.html#hydromt_fiat.components.ExposureGeomsComponent">ExposureGeomsComponent (class in hydromt_fiat.components)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGridComponent.html#hydromt_fiat.components.ExposureGridComponent">ExposureGridComponent (class in hydromt_fiat.components)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -426,7 +490,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.html#hydromt_fiat.fiat.FiatModel">FiatModel (class in hydromt_fiat.fiat)</a>
+      <li><a href="_generated/hydromt_fiat.FIATModel.html#hydromt_fiat.FIATModel">FIATModel (class in hydromt_fiat)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -434,11 +498,21 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.geoms.html#hydromt_fiat.fiat.FiatModel.geoms">geoms (hydromt_fiat.fiat.FiatModel property)</a>
+      <li><a href="_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data">get_osm_data() (hydromt_fiat.drivers.OSMDriver static method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.FIATModel.hazard.html#hydromt_fiat.FIATModel.hazard">hazard (hydromt_fiat.FIATModel property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.get_config.html#hydromt_fiat.fiat.FiatModel.get_config">get_config() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.workflows.hazard_grid.html#hydromt_fiat.workflows.hazard_grid">hazard_grid() (in module hydromt_fiat.workflows)</a>
+</li>
+      <li><a href="_generated/hydromt_fiat.components.HazardComponent.html#hydromt_fiat.components.HazardComponent">HazardComponent (class in hydromt_fiat.components)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -446,7 +520,15 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.maps.html#hydromt_fiat.fiat.FiatModel.maps">maps (hydromt_fiat.fiat.FiatModel property)</a>
+      <li><a href="_generated/hydromt_fiat.workflows.max_monetary_damage.html#hydromt_fiat.workflows.max_monetary_damage">max_monetary_damage() (in module hydromt_fiat.workflows)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.drivers.OSMDriver.html#hydromt_fiat.drivers.OSMDriver">OSMDriver (class in hydromt_fiat.drivers)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -454,21 +536,27 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.read.html#hydromt_fiat.fiat.FiatModel.read">read() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.components.ConfigComponent.read.html#hydromt_fiat.components.ConfigComponent.read">read() (hydromt_fiat.components.ConfigComponent method)</a>
+
+      <ul>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.read.html#hydromt_fiat.components.ExposureGeomsComponent.read">(hydromt_fiat.components.ExposureGeomsComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.read_config.html#hydromt_fiat.fiat.FiatModel.read_config">read_config() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGridComponent.read.html#hydromt_fiat.components.ExposureGridComponent.read">(hydromt_fiat.components.ExposureGridComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.read_geoms.html#hydromt_fiat.fiat.FiatModel.read_geoms">read_geoms() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.HazardComponent.read.html#hydromt_fiat.components.HazardComponent.read">(hydromt_fiat.components.HazardComponent method)</a>
 </li>
+        <li><a href="_generated/hydromt_fiat.components.VulnerabilityComponent.read.html#hydromt_fiat.components.VulnerabilityComponent.read">(hydromt_fiat.components.VulnerabilityComponent method)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.drivers.OSMDriver.read.html#hydromt_fiat.drivers.OSMDriver.read">(hydromt_fiat.drivers.OSMDriver method)</a>
+</li>
+        <li><a href="_generated/hydromt_fiat.FIATModel.read.html#hydromt_fiat.FIATModel.read">(hydromt_fiat.FIATModel method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.read_maps.html#hydromt_fiat.fiat.FiatModel.read_maps">read_maps() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.FIATModel.region.html#hydromt_fiat.FIATModel.region">region (hydromt_fiat.FIATModel property)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.region.html#hydromt_fiat.fiat.FiatModel.region">region (hydromt_fiat.fiat.FiatModel property)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.res.html#hydromt_fiat.fiat.FiatModel.res">res (hydromt_fiat.fiat.FiatModel property)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.root.html#hydromt_fiat.fiat.FiatModel.root">root (hydromt_fiat.fiat.FiatModel property)</a>
+      <li><a href="_generated/hydromt_fiat.components.RegionComponent.html#hydromt_fiat.components.RegionComponent">RegionComponent (class in hydromt_fiat.components)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -476,33 +564,45 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.set_config.html#hydromt_fiat.fiat.FiatModel.set_config">set_config() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup">setup() (hydromt_fiat.components.ExposureGeomsComponent method)</a>
+
+      <ul>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup">(hydromt_fiat.components.ExposureGridComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.set_geoms.html#hydromt_fiat.fiat.FiatModel.set_geoms">set_geoms() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup">(hydromt_fiat.components.HazardComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.set_maps.html#hydromt_fiat.fiat.FiatModel.set_maps">set_maps() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.VulnerabilityComponent.setup.html#hydromt_fiat.components.VulnerabilityComponent.setup">(hydromt_fiat.components.VulnerabilityComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.set_root.html#hydromt_fiat.fiat.FiatModel.set_root">set_root() (hydromt_fiat.fiat.FiatModel method)</a>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.FIATModel.setup_config.html#hydromt_fiat.FIATModel.setup_config">setup_config() (hydromt_fiat.FIATModel method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_basemaps.html#hydromt_fiat.fiat.FiatModel.setup_basemaps">setup_basemaps() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html#hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage">setup_max_damage() (hydromt_fiat.components.ExposureGeomsComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_config.html#hydromt_fiat.fiat.FiatModel.setup_config">setup_config() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.FIATModel.setup_region.html#hydromt_fiat.FIATModel.setup_region">setup_region() (hydromt_fiat.FIATModel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column.html#hydromt_fiat.components.ExposureGeomsComponent.update_column">update_column() (hydromt_fiat.components.ExposureGeomsComponent method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_generated/hydromt_fiat.FIATModel.vulnerability.html#hydromt_fiat.FIATModel.vulnerability">vulnerability (hydromt_fiat.FIATModel property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_exposure_buildings.html#hydromt_fiat.fiat.FiatModel.setup_exposure_buildings">setup_exposure_buildings() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves">vulnerability_curves() (in module hydromt_fiat.workflows)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_global_settings.html#hydromt_fiat.fiat.FiatModel.setup_global_settings">setup_global_settings() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_hazard.html#hydromt_fiat.fiat.FiatModel.setup_hazard">setup_hazard() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_output.html#hydromt_fiat.fiat.FiatModel.setup_output">setup_output() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index.html#hydromt_fiat.fiat.FiatModel.setup_social_vulnerability_index">setup_social_vulnerability_index() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_vulnerability.html#hydromt_fiat.fiat.FiatModel.setup_vulnerability">setup_vulnerability() (hydromt_fiat.fiat.FiatModel method)</a>
-</li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv.html#hydromt_fiat.fiat.FiatModel.setup_vulnerability_from_csv">setup_vulnerability_from_csv() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.components.VulnerabilityComponent.html#hydromt_fiat.components.VulnerabilityComponent">VulnerabilityComponent (class in hydromt_fiat.components)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -510,16 +610,20 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.write.html#hydromt_fiat.fiat.FiatModel.write">write() (hydromt_fiat.fiat.FiatModel method)</a>
+      <li><a href="_generated/hydromt_fiat.components.ConfigComponent.write.html#hydromt_fiat.components.ConfigComponent.write">write() (hydromt_fiat.components.ConfigComponent method)</a>
+
+      <ul>
+        <li><a href="_generated/hydromt_fiat.components.ExposureGeomsComponent.write.html#hydromt_fiat.components.ExposureGeomsComponent.write">(hydromt_fiat.components.ExposureGeomsComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.write_config.html#hydromt_fiat.fiat.FiatModel.write_config">write_config() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.HazardComponent.write.html#hydromt_fiat.components.HazardComponent.write">(hydromt_fiat.components.HazardComponent method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.write_geoms.html#hydromt_fiat.fiat.FiatModel.write_geoms">write_geoms() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.components.VulnerabilityComponent.write.html#hydromt_fiat.components.VulnerabilityComponent.write">(hydromt_fiat.components.VulnerabilityComponent method)</a>
 </li>
-      <li><a href="_generated/hydromt_fiat.fiat.FiatModel.write_maps.html#hydromt_fiat.fiat.FiatModel.write_maps">write_maps() (hydromt_fiat.fiat.FiatModel method)</a>
+        <li><a href="_generated/hydromt_fiat.drivers.OSMDriver.write.html#hydromt_fiat.drivers.OSMDriver.write">(hydromt_fiat.drivers.OSMDriver method)</a>
 </li>
+        <li><a href="_generated/hydromt_fiat.FIATModel.write.html#hydromt_fiat.FIATModel.write">(hydromt_fiat.FIATModel method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -564,7 +668,7 @@
 
   <p class="copyright">
     
-      © Copyright Deltares.
+      © Copyright 2024, Deltares.
       <br/>
     
   </p>
@@ -573,7 +677,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.1.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
     <br/>
   </p>
 </div>
