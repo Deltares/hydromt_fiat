@@ -1,32 +1,10 @@
 [
-  { 
-    "name": "latest",
-    "version": "latest",
-    "url": "https://deltares.github.io/hydromt_fiat/latest/"
-  },
-  { 
-    "name": "experimental",
-    "version": "experimental",
-    "url": "https://deltares.github.io/hydromt_fiat/experimental/"
-  },
-  {
-    "name": "stable",
-    "version": "stable",
-    "url": "https://deltares.github.io/hydromt_fiat/stable/"
-  },
-  {
-    "name": "v0.5.3",
-    "version": "0.5.3",
-    "url": "https://deltares.github.io/hydromt_fiat/v0.5.3/"
-  },
-  {
-    "name": "v0.5.2",
-    "version": "0.5.2",
-    "url": "https://deltares.github.io/hydromt_fiat/v0.5.2/"
-  },
-  {
-    "name": "v0.5.1",
-    "version": "0.5.1",
-    "url": "https://deltares.github.io/hydromt_fiat/v0.5.1/"
-  }
+  {"name":"latest","version":"latest","url":"https://deltares.github.io/hydromt_fiat/latest/"},
+  {"name":"stable","version":"stable","url":"https://deltares.github.io/hydromt_fiat/stable/"},
+  {"name": "v0.5.6", "version": "0.5.6", "href": "https://deltares.github.io/Delft-FIAT/v0.5.6/"},
+  {"name": "v0.5.5", "version": "0.5.5", "href": "https://deltares.github.io/Delft-FIAT/v0.5.5/"},
+  {"name": "v0.5.4", "version": "0.5.4", "href": "https://deltares.github.io/Delft-FIAT/v0.5.4/"},
+  {"name": "v0.5.3", "version": "0.5.3", "href": "https://deltares.github.io/Delft-FIAT/v0.5.3/"},
+  {"name": "v0.5.2", "version": "0.5.2", "href": "https://deltares.github.io/Delft-FIAT/v0.5.2/"},
+  {"name": "v0.5.1", "version": "0.5.1", "href": "https://deltares.github.io/Delft-FIAT/v0.5.1/"}
 ]

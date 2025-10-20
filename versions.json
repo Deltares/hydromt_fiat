@@ -1,1 +1,9 @@
-{"versions":["latest","dev"]}
+[
+  { "name": "v0.5.1", "version": "0.5.1" },
+  { "name": "v0.5.2", "version": "0.5.2" },
+  { "name": "v0.5.3", "version": "0.5.3" },
+  { "name": "v0.5.4", "version": "0.5.4" },
+  { "name": "v0.5.5", "version": "0.5.5" },
+  { "name": "v0.5.6", "version": "0.5.6" },
+  { "name": "v0.5.7", "version": "0.5.7" }
+]
