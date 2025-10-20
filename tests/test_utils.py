@@ -55,6 +55,38 @@ def test_directory_tree(build_data_path: Path):
     assert "data_catalog.yml" in out
 
 
+def test_directory_tree_level(build_data_path: Path):
+    # Redirect the stdout to a buffer
+    s = io.StringIO()
+    sys.stdout = s
+
+    # Call the function
+    directory_tree(build_data_path, level=1)
+
+    # Reset the buffer to view the output
+    s.seek(0)
+    out = s.read()
+    # Assert the output
+    assert out.count("\n") == 10
+    assert "data_catalog.yml" in out
+
+
+def test_directory_tree_dirs_only(build_data_path: Path):
+    # Redirect the stdout to a buffer
+    s = io.StringIO()
+    sys.stdout = s
+
+    # Call the function
+    directory_tree(build_data_path, limit_to_directories=True)
+
+    # Reset the buffer to view the output
+    s.seek(0)
+    out = s.read()
+    # Assert the output
+    assert out.count("\n") == 7
+    assert "data_catalog.yml" not in out
+
+
 def test_standard_unit_equal():
     unit = Scalar(1.0, "m")
     scalar = standard_unit(unit)
