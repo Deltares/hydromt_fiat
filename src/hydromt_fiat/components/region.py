@@ -26,13 +26,6 @@ class RegionComponent(SpatialModelComponent):
     filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
-    region_component : str, optional
-        The name of the region component to use as reference for this component's
-        region. If None, the region will be set to the union of all geometries in
-        the data dictionary.
-    region_filename : str, optional
-        The path to use for writing the region data to a file. By default
-        "region.geojson".
     """
 
     def __init__(
@@ -40,15 +33,11 @@ class RegionComponent(SpatialModelComponent):
         model: Model,
         *,
         filename: str = "region.geojson",
-        region_component: str | None = None,
-        region_filename: str = "region.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame | gpd.GeoSeries] | None = None
         self._filename: str = filename
         super().__init__(
             model=model,
-            region_component=region_component,
-            region_filename=region_filename,
         )
 
     def _initialize(self, skip_read=False) -> None:

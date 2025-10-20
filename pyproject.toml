@@ -147,12 +147,7 @@ exclude_also = [
     # Don't complain if non-runnable code isn't run:
     "if 0:",
     "if __name__ == .__main__.:",
-
-    # Don't complain about abstract methods, they aren't run:
-    "@(abc\\.)?abstractmethod",
     ]
-omit = ["src/hydromt_fiat/data/fetch.py"]
-
 ignore_errors = true
 
 [tool.coverage.html]
@@ -170,8 +165,7 @@ exclude = ["docs/**"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D103", "D100", "D104"]
-"tests/conftest.py" = ["E402"]
-"src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
+"src/hydromt_fiat/__init__.py" = ["F401", "F403"]
 "src/hydromt_fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]

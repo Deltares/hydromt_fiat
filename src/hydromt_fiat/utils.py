@@ -39,18 +39,15 @@ def create_query(
     str
         A string containing the pandas dataframe query.
     """
-    query = ""
-    idx = 0
+    sub_queries = []
     for key, item in kwargs.items():
-        if idx != 0:
-            query += " and "
-        idx += 1
         if isinstance(item, (list, tuple)):
-            query += f"{key} in {str(item)}"
+            sub_queries.append(f"{key} in {str(item)}")
             continue
         if isinstance(item, str):
             item = f"'{item}'"
-        query += f"{key} == {str(item)}"
+        sub_queries.append(f"{key} == {str(item)}")
+    query = " and ".join(sub_queries)
     return query
 
 
