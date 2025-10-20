@@ -59,14 +59,16 @@ def fetch_data(
         database = json.load(f)
         base_url: str = database["url"]
         registry: dict[str, str] = database["data"]
+    # Set the cache directory, for at the very least the tarball
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
-
     cache_dir.mkdir(parents=True, exist_ok=True)
+
     if output_dir is None:
         output_dir = cache_dir
-    else:
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(output_dir)
+    if not output_dir.is_absolute():
+        output_dir = Path(Path.cwd(), output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Quick check whether the data can be found
     choices_raw = list(registry.keys())
