@@ -155,7 +155,11 @@ class RegionComponent(SpatialModelComponent):
         gdf.to_file(write_path, **kwargs)
 
     ## Set(up) methods
-    def set(self, geom: gpd.GeoDataFrame | gpd.GeoSeries) -> None:
+    def set(
+        self,
+        geom: gpd.GeoDataFrame | gpd.GeoSeries,
+        replace: bool = False,
+    ) -> None:
         """Add data to the region component.
 
         If a region is already present, the new region will be merged with in one
@@ -165,6 +169,10 @@ class RegionComponent(SpatialModelComponent):
         ----------
         geom : gpd.GeoDataFrame | gpd.GeoSeries
             New geometry data to add.
+        replace : bool, optional
+            Whether or not to replace the current region outright. If set to False,
+            a union is created between the existing and given geometries.
+            By default False.
         """
         self._initialize()
         if len(self.data) != 0:
@@ -183,7 +191,7 @@ class RegionComponent(SpatialModelComponent):
 
         # Make a union with the current region geodataframe
         cur = self._data.get(REGION)
-        if cur is not None and not geom.equals(cur):
+        if cur is not None and not geom.equals(cur) and not replace:
             geom = geom.union(cur)
 
         self._data[REGION] = geom

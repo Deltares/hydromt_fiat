@@ -77,7 +77,7 @@ def config_dummy(tmp_path: Path) -> dict:
     data = {
         "foo": "bar",
         "baz": {
-            "file1": Path(tmp_path, "tmp.txt").as_posix(),
+            "file1": Path(tmp_path, "tmp.txt"),
             "file2": "tmp/tmp.txt",
         },
         "spooky": {"ghost": [1, 2, 3]},

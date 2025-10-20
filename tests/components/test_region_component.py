@@ -21,15 +21,15 @@ def test_region_component_empty(mock_model: MagicMock):
 
 
 def test_region_component_set(
-    build_region_gdf: gpd.GeoDataFrame,
-    build_region_small_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
+    build_region_small: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
 
     # Add a geometry
-    component.set(build_region_gdf)
+    component.set(build_region)
 
     # Assert that there is data
     assert "region" in component.data
@@ -39,25 +39,25 @@ def test_region_component_set(
 
     # Empty the component and assert that crs is adjusted based on the model
     component._data = {}
-    assert build_region_small_gdf.crs.to_epsg() == 28992
-    component.set(build_region_small_gdf)
+    assert build_region_small.crs.to_epsg() == 28992
+    component.set(build_region_small)
     assert component.region.crs.to_epsg() == 4326
 
     # Assert that a GeoSeries is sufficient as input
     component._data = {}
     assert component.region is None
-    component.set(build_region_gdf.geometry)
+    component.set(build_region.geometry)
     assert component.region is not None
 
 
 def test_region_component_append(
     box_geometry: gpd.GeoDataFrame,
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
-    component.set(build_region_gdf)
+    component.set(build_region)
     assert isinstance(component.region.geometry[0], Polygon)
 
     # Add a polygon that will enter a union with the current region
@@ -68,9 +68,27 @@ def test_region_component_append(
     assert isinstance(component.region.geometry[0], MultiPolygon)
 
 
+def test_region_component_replace(
+    box_geometry: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
+    mock_model: MagicMock,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    component.set(build_region)
+    assert isinstance(component.region.geometry[0], Polygon)
+
+    # Add a polygon that will enter a union with the current region
+    component.set(box_geometry, replace=True)
+
+    # Assert
+    assert len(component.data) == 1
+    assert isinstance(component.region.geometry[0], Polygon)
+
+
 def test_region_component_read(
     tmp_path: Path,
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     # Setup the component
@@ -83,7 +101,7 @@ def test_region_component_read(
     assert component.region is None
 
     # Write the region gdf to the tmp directory
-    build_region_gdf.to_file(Path(tmp_path, "region.geojson"))
+    build_region.to_file(Path(tmp_path, "region.geojson"))
 
     # Re-read
     component.read()
@@ -112,14 +130,14 @@ def test_region_component_write_empty(
 
 def test_region_component_write_default(
     tmp_path: Path,
-    build_region_gdf: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     # Setup the component
     component = RegionComponent(model=mock_model)
 
     # Set something in the component
-    component.set(build_region_gdf)
+    component.set(build_region)
     # Write the data
     component.write()
     assert Path(tmp_path, "region.geojson").is_file()
@@ -132,7 +150,7 @@ def test_region_component_write_default(
 
 def test_region_component_write_crs(
     tmp_path: Path,
-    build_region_small_gdf: gpd.GeoDataFrame,
+    build_region_small: gpd.GeoDataFrame,
     mock_model: MagicMock,
 ):
     # Create new component
@@ -141,7 +159,7 @@ def test_region_component_write_crs(
     component = RegionComponent(model=mock_model)
 
     # Set the component with a geometry in a local projection
-    component.set(build_region_small_gdf)
+    component.set(build_region_small)
     assert component.region.crs.to_epsg() == 28992
 
     # Write and assert output

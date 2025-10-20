@@ -114,12 +114,7 @@ class FIATModel(Model):
 
         This will return a polygon covering the current region of the model.
         """
-        return self.region_component.region
-
-    @property
-    def region_component(self) -> RegionComponent:
-        """Access the region component."""
-        return self.components[REGION]
+        return self.components[REGION].region
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
@@ -145,6 +140,30 @@ class FIATModel(Model):
         if cfg is not None:
             cfg.write()
 
+    ## Mutating methods
+    @hydromt_step
+    def clip(
+        self,
+        region: Path | str | gpd.GeoDataFrame,
+    ) -> None:
+        """Clip the model based on a new (smaller) region.
+
+        Parameters
+        ----------
+        region : Path | str | gpd.GeoDataFrame
+            The region to be used for clipping. It can either be a path to a vector
+            file or a geopandas GeoDataFrame.
+        """
+        # First update the region to the new region, thereby replace
+        self.setup_region(region, replace=True)
+        logger.info(
+            f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
+        )
+        # Call the clip methods of the spatial components
+        self.exposure_geoms.clip(self.region, inplace=True)
+        self.exposure_grid.clip(self.region, buffer=1, inplace=True)
+        self.hazard.clip(self.region, buffer=1, inplace=True)
+
     ## Setup methods
     @hydromt_step
     def setup_config(
@@ -166,18 +185,32 @@ class FIATModel(Model):
     @hydromt_step
     def setup_region(
         self,
-        region: Path | str,
+        region: Path | str | gpd.GeoDataFrame,
+        replace: bool = False,
     ) -> None:
         """Set the region of the FIAT model.
 
         Parameters
         ----------
-        region : Path | str
-            Path to the region vector file.
+        region : Path | str | gpd.GeoDataFrame
+            Path to the region vector file or a loaded vector file that takes the form
+            of a geopandas GeoDataFrame.
+        replace : bool, optional
+            If False, a union is created between given and existing geometries.
+            By default False.
         """
-        region = Path(region)
-        logger.info(f"Setting region from '{region.as_posix()}'")
-        if not region.is_file():
-            raise FileNotFoundError(region.as_posix())
-        geom = gpd.read_file(region)
-        self.region_component.set(geom)
+        if isinstance(region, (Path, str)):
+            region = Path(region)
+            logger.info(f"Setting region from '{region.as_posix()}'")
+            if not region.is_file():
+                raise FileNotFoundError(region.as_posix())
+            geom = gpd.read_file(region)
+        elif isinstance(region, gpd.GeoDataFrame):
+            geom = region
+        else:
+            raise TypeError(
+                "Region should either be of type \
+`gpd.GeoDataframe` or `Path`/ `str`"
+            )
+        # Set the region in the region component
+        self.components[REGION].set(geom, replace=replace)
