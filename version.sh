@@ -136,7 +136,7 @@ add() {
     # Rebuild sorted version entries
     sorted_entries=()
     for v in "${sorted_versions[@]}"; do
-        sorted_entries+=("{\"name\": \"v$v\", \"version\": \"$v\", \"href\": \"$BASE_URL/v$v/\"}")
+        sorted_entries+=("{\"name\":\"v$v\",\"version\":\"$v\",\"href\":\"$BASE_URL/v$v/\"}")
     done
 
     # Combine all entries into valid JSON
