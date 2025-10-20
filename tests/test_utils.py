@@ -1,7 +1,15 @@
+import io
+import sys
+from pathlib import Path
+
 import numpy as np
 from barril.units import Scalar
 
-from hydromt_fiat.utils import create_query, standard_unit
+from hydromt_fiat.utils import (
+    create_query,
+    directory_tree,
+    standard_unit,
+)
 
 
 def test_create_query_single_type():
@@ -29,6 +37,22 @@ def test_create_query_iter_type():
         var2=[1, 2],
     )
     assert query == "var1 in ['value1', 'value2'] and var2 in [1, 2]"
+
+
+def test_directory_tree(build_data_path: Path):
+    # Redirect the stdout to a buffer
+    s = io.StringIO()
+    sys.stdout = s
+
+    # Call the function
+    directory_tree(build_data_path)
+
+    # Reset the buffer to view the output
+    s.seek(0)
+    out = s.read()
+    # Assert the output
+    assert out.count("\n") == 30
+    assert "data_catalog.yml" in out
 
 
 def test_standard_unit_equal():

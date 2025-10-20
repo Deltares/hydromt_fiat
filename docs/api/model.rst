@@ -34,7 +34,6 @@ Attributes
 
     FIATModel.config
     FIATModel.region
-    FIATModel.region_component
     FIATModel.vulnerability
     FIATModel.hazard
     FIATModel.exposure_geoms
@@ -61,3 +60,13 @@ Model setup methods
 
     FIATModel.setup_config
     FIATModel.setup_region
+
+.. _api_model_mutating_methods:
+
+Model mutating methods
+----------------------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    FIATModel.clip

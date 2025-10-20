@@ -59,6 +59,7 @@ HazardComponent
 
     HazardComponent.data
     HazardComponent.read
+    HazardComponent.clip
     HazardComponent.setup
     HazardComponent.write
 
@@ -70,6 +71,7 @@ ExposureGeomsComponent
 
     ExposureGeomsComponent.data
     ExposureGeomsComponent.read
+    ExposureGeomsComponent.clip
     ExposureGeomsComponent.setup
     ExposureGeomsComponent.setup_max_damage
     ExposureGeomsComponent.update_column
@@ -83,5 +85,6 @@ ExposureGridComponent
 
     ExposureGridComponent.data
     ExposureGridComponent.read
+    ExposureGridComponent.clip
     ExposureGridComponent.setup
     ExposureGeomsComponent.write
