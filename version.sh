@@ -2,7 +2,7 @@
 
 set -e
 
-BASE_URL="https://deltares.github.io/Delft-FIAT"
+BASE_URL="https://deltares.github.io/hydromt_fiat"
 CUR_DIR="$(dirname "$(realpath "$0")")"
 ROOT_DIR="$(realpath "$CUR_DIR")"
 
