@@ -478,7 +478,7 @@
 <span class="sd">        Additional keyword arguments to be passed down to the DataCatalog.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fiat_model&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fiat&quot;</span>
     <span class="c1"># supported model version should be filled by the plugins</span>
     <span class="c1"># e.g. _MODEL_VERSION = &quot;&gt;=1.0, &lt;1.1&quot;</span>
     <span class="n">_MODEL_VERSION</span> <span class="o">=</span> <span class="kc">None</span>
@@ -550,12 +550,7 @@
 
 <span class="sd">        This will return a polygon covering the current region of the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_component</span><span class="o">.</span><span class="n">region</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">region_component</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RegionComponent</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access the region component.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span><span class="o">.</span><span class="n">region</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">vulnerability</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VulnerabilityComponent</span><span class="p">:</span>
@@ -587,6 +582,33 @@
             <span class="n">cfg</span><span class="o">.</span><span class="n">write</span><span class="p">()</span></div>
 
 
+    <span class="c1">## Mutating methods</span>
+<div class="viewcode-block" id="FIATModel.clip">
+<a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.clip.html#hydromt_fiat.FIATModel.clip">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clip</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clip the model based on a new (smaller) region.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region : Path | str | gpd.GeoDataFrame</span>
+<span class="sd">            The region to be used for clipping. It can either be a path to a vector</span>
+<span class="sd">            file or a geopandas GeoDataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># First update the region to the new region, thereby replace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setup_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Clipping FIAT model with geometry with bbox </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">total_bounds</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Call the clip methods of the spatial components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposure_grid</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hazard</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
     <span class="c1">## Setup methods</span>
 <div class="viewcode-block" id="FIATModel.setup_config">
 <a class="viewcode-back" href="../../_generated/hydromt_fiat.FIATModel.setup_config.html#hydromt_fiat.FIATModel.setup_config">[docs]</a>
@@ -613,21 +635,35 @@
     <span class="nd">@hydromt_step</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">setup_region</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">region</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">region</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+        <span class="n">replace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the region of the FIAT model.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        region : Path | str</span>
-<span class="sd">            Path to the region vector file.</span>
+<span class="sd">        region : Path | str | gpd.GeoDataFrame</span>
+<span class="sd">            Path to the region vector file or a loaded vector file that takes the form</span>
+<span class="sd">            of a geopandas GeoDataFrame.</span>
+<span class="sd">        replace : bool, optional</span>
+<span class="sd">            If False, a union is created between given and existing geometries.</span>
+<span class="sd">            By default False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">region</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting region from &#39;</span><span class="si">{</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
-        <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">region_component</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="p">(</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting region from &#39;</span><span class="si">{</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">as_posix</span><span class="p">())</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">):</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">region</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Region should either be of type </span><span class="se">\</span>
+<span class="s2">`gpd.GeoDataframe` or `Path`/ `str`&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Set the region in the region component</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">replace</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

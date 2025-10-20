@@ -497,8 +497,9 @@
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Exposure costs table cannot be None&quot;</span><span class="p">)</span>
 
     <span class="c1"># Create a query from the kwargs</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="n">create_query</span><span class="p">(</span><span class="o">**</span><span class="n">select</span><span class="p">)</span>
-    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">select</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="n">create_query</span><span class="p">(</span><span class="o">**</span><span class="n">select</span><span class="p">)</span>
+        <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_cost_table</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Select kwargs (</span><span class="si">{</span><span class="n">select</span><span class="si">}</span><span class="s2">) resulted in no remaining data&quot;</span><span class="p">)</span>

@@ -57,7 +57,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html" />
-    <link rel="prev" title="hydromt_fiat.components.ExposureGeomsComponent.read" href="hydromt_fiat.components.ExposureGeomsComponent.read.html" />
+    <link rel="prev" title="hydromt_fiat.components.ExposureGeomsComponent.clip" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -391,7 +391,6 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region_component.html">hydromt_fiat.FIATModel.region_component</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability.html">hydromt_fiat.FIATModel.vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard.html">hydromt_fiat.FIATModel.hazard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
@@ -400,6 +399,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/components.html">Components</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -418,16 +418,19 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.write.html">hydromt_fiat.components.VulnerabilityComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.data.html">hydromt_fiat.components.HazardComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.read.html">hydromt_fiat.components.HazardComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.data.html">hydromt_fiat.components.ExposureGridComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 </ul>
@@ -516,7 +519,7 @@
 <h1>hydromt_fiat.components.ExposureGeomsComponent.setup<a class="headerlink" href="#hydromt-fiat-components-exposuregeomscomponent-setup" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGeomsComponent.setup">
-<span class="sig-prename descclassname"><span class="pre">ExposureGeomsComponent.</span></span><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_link_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type_fill</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_geom.html#ExposureGeomsComponent.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGeomsComponent.setup" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ExposureGeomsComponent.</span></span><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_link_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_type_fill</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_geom.html#ExposureGeomsComponent.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGeomsComponent.setup" title="Link to this definition">#</a></dt>
 <dd><p>Set up the exposure from a data source.</p>
 <p>Will link with the vulnerability data to set a curve for each
 exposure type.</p>
@@ -527,12 +530,12 @@ exposure type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>exposure_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of/ path to the raw exposure dataset.</p></li>
-<li><p><strong>exposure_type_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The name of column in the raw dataset that specifies the object type,
+<li><p><strong>exposure_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of/ path to the raw exposure dataset.</p></li>
+<li><p><strong>exposure_type_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of column in the raw dataset that specifies the object type,
 e.g. the occupancy type.</p></li>
-<li><p><strong>exposure_link_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The name of/ path to the dataset containing the mapping of the exposure
+<li><p><strong>exposure_link_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><em>None</em><em>, </em><em>optional</em>) – The name of/ path to the dataset containing the mapping of the exposure
 types to the vulnerability data, by default None.</p></li>
-<li><p><strong>exposure_type_fill</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – Value to which missing entries in the exposure type column will be mapped
+<li><p><strong>exposure_type_fill</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Value to which missing entries in the exposure type column will be mapped
 to, if provided. By default None.</p></li>
 </ul>
 </dd>
@@ -552,12 +555,12 @@ to, if provided. By default None.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.components.ExposureGeomsComponent.read.html"
+       href="hydromt_fiat.components.ExposureGeomsComponent.clip.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.components.ExposureGeomsComponent.read</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGeomsComponent.clip</p>
       </div>
     </a>
     <a class="right-next"

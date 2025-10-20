@@ -391,7 +391,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.region_component.html">hydromt_fiat.FIATModel.region_component</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.vulnerability.html">hydromt_fiat.FIATModel.vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.hazard.html">hydromt_fiat.FIATModel.hazard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
@@ -400,6 +399,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="components.html">Components</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -418,16 +418,19 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.VulnerabilityComponent.write.html">hydromt_fiat.components.VulnerabilityComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.data.html">hydromt_fiat.components.HazardComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.read.html">hydromt_fiat.components.HazardComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.data.html">hydromt_fiat.components.ExposureGridComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 </ul>
@@ -537,19 +540,16 @@
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.region.html#hydromt_fiat.FIATModel.region" title="hydromt_fiat.FIATModel.region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.region</span></code></a></p></td>
 <td><p>Return the model's region.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.region_component.html#hydromt_fiat.FIATModel.region_component" title="hydromt_fiat.FIATModel.region_component"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.region_component</span></code></a></p></td>
-<td><p>Access the region component.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.vulnerability.html#hydromt_fiat.FIATModel.vulnerability" title="hydromt_fiat.FIATModel.vulnerability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.vulnerability</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.vulnerability.html#hydromt_fiat.FIATModel.vulnerability" title="hydromt_fiat.FIATModel.vulnerability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.vulnerability</span></code></a></p></td>
 <td><p>Access the vulnerability component.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.hazard.html#hydromt_fiat.FIATModel.hazard" title="hydromt_fiat.FIATModel.hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.hazard</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.hazard.html#hydromt_fiat.FIATModel.hazard" title="hydromt_fiat.FIATModel.hazard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.hazard</span></code></a></p></td>
 <td><p>Access the hazard component.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.exposure_geoms.html#hydromt_fiat.FIATModel.exposure_geoms" title="hydromt_fiat.FIATModel.exposure_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.exposure_geoms</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.exposure_geoms.html#hydromt_fiat.FIATModel.exposure_geoms" title="hydromt_fiat.FIATModel.exposure_geoms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.exposure_geoms</span></code></a></p></td>
 <td><p>Access the exposure geoms component.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.exposure_grid.html#hydromt_fiat.FIATModel.exposure_grid" title="hydromt_fiat.FIATModel.exposure_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.exposure_grid</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.exposure_grid.html#hydromt_fiat.FIATModel.exposure_grid" title="hydromt_fiat.FIATModel.exposure_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.exposure_grid</span></code></a></p></td>
 <td><p>Access the exposure grid component.</p></td>
 </tr>
 </tbody>
@@ -577,8 +577,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_config.html#hydromt_fiat.FIATModel.setup_config" title="hydromt_fiat.FIATModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.setup_config</span></code></a>(**settings)</p></td>
 <td><p>Set config file entries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_region.html#hydromt_fiat.FIATModel.setup_region" title="hydromt_fiat.FIATModel.setup_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.setup_region</span></code></a>(region)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_region.html#hydromt_fiat.FIATModel.setup_region" title="hydromt_fiat.FIATModel.setup_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.setup_region</span></code></a>(region[, replace])</p></td>
 <td><p>Set the region of the FIAT model.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="model-mutating-methods">
+<span id="api-model-mutating-methods"></span><h2>Model mutating methods<a class="headerlink" href="#model-mutating-methods" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.clip.html#hydromt_fiat.FIATModel.clip" title="hydromt_fiat.FIATModel.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FIATModel.clip</span></code></a>(region)</p></td>
+<td><p>Clip the model based on a new (smaller) region.</p></td>
 </tr>
 </tbody>
 </table>
@@ -637,6 +648,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attributes">Attributes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#i-o-methods">I/O methods</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-setup-methods">Model setup methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-mutating-methods">Model mutating methods</a></li>
 </ul>
   </nav></div>
 

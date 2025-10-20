@@ -391,7 +391,6 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.html">hydromt_fiat.FIATModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.config.html">hydromt_fiat.FIATModel.config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region.html">hydromt_fiat.FIATModel.region</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.region_component.html">hydromt_fiat.FIATModel.region_component</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.vulnerability.html">hydromt_fiat.FIATModel.vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.hazard.html">hydromt_fiat.FIATModel.hazard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.exposure_geoms.html">hydromt_fiat.FIATModel.exposure_geoms</a></li>
@@ -400,6 +399,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.write.html">hydromt_fiat.FIATModel.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html">hydromt_fiat.FIATModel.setup_config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/components.html">Components</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -418,16 +418,19 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.write.html">hydromt_fiat.components.VulnerabilityComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.data.html">hydromt_fiat.components.HazardComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.read.html">hydromt_fiat.components.HazardComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.data.html">hydromt_fiat.components.ExposureGridComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 </ul>
@@ -516,7 +519,7 @@
 <h1>hydromt_fiat.components.ConfigComponent.data<a class="headerlink" href="#hydromt-fiat-components-configcomponent-data" title="Link to this heading">#</a></h1>
 <dl class="py property">
 <dt class="sig sig-object py" id="hydromt_fiat.components.ConfigComponent.data">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ConfigComponent.</span></span><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></em><a class="headerlink" href="#hydromt_fiat.components.ConfigComponent.data" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ConfigComponent.</span></span><span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a></em><a class="headerlink" href="#hydromt_fiat.components.ConfigComponent.data" title="Link to this definition">#</a></dt>
 <dd><p>Model config values.</p>
 </dd></dl>
 
