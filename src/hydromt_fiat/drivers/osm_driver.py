@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import ClassVar, Set
+from typing import Any, ClassVar, Set
 
 import geopandas as gpd
 import osmnx as ox
@@ -85,7 +85,7 @@ class OSMDriver(GeoDataFrameDriver):
             tags = self.options.get("tags")
 
         if tags:
-            tag = {uri: tags}
+            tag: dict[str, Any] = {uri: tags}
         else:
             tag = {uri: True}
         logger.info("Retrieving %s data from OSM API", uri)
@@ -119,7 +119,7 @@ class OSMDriver(GeoDataFrameDriver):
 
     @staticmethod
     def get_osm_data(
-        polygon: Polygon, tag: dict, geom_type: list[str] | None
+        polygon: Polygon, tag: dict[str, Any], geom_type: list[str] | None
     ) -> gpd.GeoDataFrame:
         """Retrieve OSM data with the OSMnx api.
 

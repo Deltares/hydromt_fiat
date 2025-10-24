@@ -4,6 +4,7 @@ import logging
 
 import geopandas as gpd
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from hydromt_fiat.utils import (
@@ -179,7 +180,11 @@ vulnerability data, these were removed"
 def exposure_add_columns(
     exposure_data: gpd.GeoDataFrame,
     columns: list[str],
-    values: int | float | list | np.ndarray,
+    values: int
+    | float
+    | str
+    | list[int | float | str]
+    | npt.NDArray[np.int64 | np.float64 | np.str_],
 ) -> gpd.GeoDataFrame:
     """Add columms to an existing exposure dataset.
 
@@ -189,7 +194,7 @@ def exposure_add_columns(
         The exposure dataset.
     columns : list[str]
         List of names to be added as columns.
-    values : int | float | list| np.ndarray
+    values : int | float | str | list | np.ndarray
         The value(s) be set.
 
     Returns

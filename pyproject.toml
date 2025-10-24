@@ -80,6 +80,7 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 dev = [
+    "mypy",
     "pre-commit",
     "ruff",
 ]
@@ -118,13 +119,6 @@ fiat = "hydromt_fiat.drivers.resolvers"
 "Bug Reports" = "https://github.com/Deltares/hydromt_fiat/issues"
 "Source" =  "https://github.com/Deltares/hydromt_fiat"
 
-[tool.make_env]
-channels = ["conda-forge"]
-deps_not_in_conda = [
-    "sphinx_autosummary_accessors",
-    "sphinx_design",
-]
-
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
 markers = [
@@ -153,17 +147,13 @@ exclude_also = [
     # Don't complain if non-runnable code isn't run:
     "if 0:",
     "if __name__ == .__main__.:",
-
-    # Don't complain about abstract methods, they aren't run:
-    "@(abc\\.)?abstractmethod",
     ]
-omit = ["src/hydromt_fiat/data/fetch.py"]
-
 ignore_errors = true
 
 [tool.coverage.html]
 directory = ".cov"
 
+## Linting and formatting
 [tool.ruff]
 line-length = 88
 
@@ -175,12 +165,27 @@ exclude = ["docs/**"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D103", "D100", "D104"]
-"tests/conftest.py" = ["E402"]
-"src/hydromt_fiat/__init__.py" = ["E402", "F401", "F403"]
+"src/hydromt_fiat/__init__.py" = ["F401", "F403"]
 "src/hydromt_fiat/**/__init__.py" = ["F403"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+## In depth code checking
+[tool.mypy]
+# TODO: Re-enable the tests
+exclude = ["tests/.*", "tmp/.*"]
+plugins = ["pydantic.mypy", "numpy.typing.mypy_plugin"]
+python_version = "3.13"
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+extra_checks = true
+disallow_subclassing_any = false
+disallow_untyped_decorators = false
+disallow_any_generics = true
 
 ## Project related stuff
 [tool.pixi.project]
@@ -195,6 +200,7 @@ install-pre-commit = "pre-commit install"
 
 # Repo related tasks
 lint = { cmd = ["pre-commit", "run", "--all"] }
+mypy = { cmd = ["mypy", "."] }
 
 # Docker related stuff (expand in future)
 docker-clean = { cmd = ["docker", "system", "prune", "-f"] }

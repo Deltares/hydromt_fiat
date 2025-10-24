@@ -36,8 +36,8 @@ class ConfigComponent(ModelComponent):
         *,
         filename: str = "settings.toml",
     ):
-        self._data: dict | None = None
-        self._filename: str = filename
+        self._data: dict[str, Any] | None = None
+        self._filename: Path | str = filename
         super().__init__(
             model,
         )
@@ -52,10 +52,11 @@ class ConfigComponent(ModelComponent):
 
     ## Properties
     @property
-    def data(self) -> dict:
+    def data(self) -> dict[str, Any]:
         """Model config values."""
         if self._data is None:
             self._initialize()
+        assert isinstance(self._data, dict)
         return self._data
 
     @property
