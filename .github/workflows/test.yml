@@ -48,6 +48,7 @@ jobs:
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
+          cache-write: false
 
       - name: Test
         run: |
