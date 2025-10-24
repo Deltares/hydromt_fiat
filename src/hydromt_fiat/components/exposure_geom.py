@@ -2,10 +2,11 @@
 
 import logging
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import geopandas as gpd
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import shapely.geometry as sg
 from hydromt.model import Model
@@ -49,7 +50,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         region_component: str | None = None,
         region_filename: str = "region.geojson",
     ):
-        self._data: dict[str : gpd.GeoDataFrame] = None
+        self._data: dict[str, gpd.GeoDataFrame] | None = None
         self._filename: str = filename
         super().__init__(
             model,
@@ -127,6 +128,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
             )
             or pathing_expand(self.root.path, filename=self._filename)
         )
+        if out is None:
+            return None
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
         for p, n in zip(*out):
@@ -184,7 +187,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
                 continue
 
             # Abuse the fact that a dictionary is mutable and passed by ref
-            entry = {}
+            entry: dict[str, Any] = {}
             cfg.append(entry)
 
             # Create the outgoing file path
@@ -234,14 +237,14 @@ class ExposureGeomsComponent(SpatialModelComponent):
         """
         data = {}
         if len(self.data) == 0:
-            return
+            return None
         # Loop through all the existing GeoDataFrames and clip them
         for key, gdf in self.data.items():
             data[key] = gdf.clip(geom)
         # If inplace is true, just set the new data and return None
         if inplace:
             self._data = data
-            return
+            return None
         return data
 
     def set(
@@ -367,7 +370,7 @@ use 'setup_region' before this method"
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
-        **select: dict,
+        **select: dict[str, Any],
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
 
@@ -430,7 +433,11 @@ with '{exposure_name}' as input or chose from already present geometries: \
         self,
         exposure_name: str,
         columns: list[str],
-        values: int | float | list | np.ndarray,
+        values: int
+        | float
+        | str
+        | list[int | float | str]
+        | npt.NDArray[np.int64 | np.float64 | np.str_],
     ) -> None:
         """Update an existing dataset by adding columns with values.
 
@@ -440,7 +447,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             The name of the existing dataset.
         columns : list[str]
             A list of the names of the columns.
-        values : int | float | list | np.ndarray
+        values : int | float | str | list | np.ndarray
             The correspoding values of the columns. Either a single value set for
             all columns, a list of values corresponding to the number of columns or
             a 2d array.

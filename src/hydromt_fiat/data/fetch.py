@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 import pooch
+from pooch.processors import ExtractorProcessor
 
 __all__ = ["fetch_data"]
 
@@ -18,8 +19,8 @@ PROCESSORS = {
 
 def unpack_processor(
     suffix: str,
-    extract_dir: str = "./",
-):
+    extract_dir: Path | str = "./",
+) -> ExtractorProcessor:
     """Select the right processor for unpacking."""
     if suffix not in PROCESSORS:
         return None
@@ -57,7 +58,7 @@ def fetch_data(
     with open(Path(__file__).parent / "registry.json", "r") as f:
         database = json.load(f)
         base_url: str = database["url"]
-        registry: dict[str:str] = database["data"]
+        registry: dict[str, str] = database["data"]
     # Set the cache directory, for at the very least the tarball
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
     cache_dir.mkdir(parents=True, exist_ok=True)

@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -130,15 +131,11 @@ class FIATModel(Model):
     @hydromt_step
     def write(self) -> None:
         """Write the FIAT model."""
-        components = list(self.components.keys())
-        cfg = None
-        for c in [self.components[name] for name in components]:
-            if isinstance(c, ConfigComponent):
-                cfg = c
-                continue
-            c.write()
-        if cfg is not None:
-            cfg.write()
+        names = list(self.components.keys())
+        names.remove("config")
+        for name in names:
+            self.components[name].write()
+        self.config.write()
 
     ## Mutating methods
     @hydromt_step
@@ -168,7 +165,7 @@ class FIATModel(Model):
     @hydromt_step
     def setup_config(
         self,
-        **settings: dict,
+        **settings: dict[str, Any],
     ) -> None:
         """Set config file entries.
 
