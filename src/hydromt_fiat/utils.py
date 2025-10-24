@@ -90,7 +90,7 @@ def directory_tree(
     level: int = -1,
     limit_to_directories: bool = False,
     length_limit: int = 1000,
-):
+) -> None:
     """Create a visual tree of the contents of a directory.
 
     With many thanks to this post:
@@ -103,24 +103,28 @@ def directory_tree(
     last = "└── "
 
     # Ensure typing
-    dir_path = Path(dir_path)  # accept string coerceable to Path
+    dir_path = Path(dir_path)
     files = 0
     directories = 0
 
+    # Nested function for looping through the file and directories
     def inner(dir_path: Path, prefix: str = "", level=-1):
         nonlocal files, directories
         if not level:
             return  # 0, stop iterating
+        # Only spit out directories
         if limit_to_directories:
             contents = [d for d in dir_path.iterdir() if d.is_dir()]
         else:
             contents = list(dir_path.iterdir())
         pointers = [tee] * (len(contents) - 1) + [last]
+        # Move recursively through the directories
         for pointer, path in zip(pointers, contents):
             if path.is_dir():
                 yield prefix + pointer + path.name
                 directories += 1
                 extension = branch if pointer == tee else space
+                # Move through all on level deeper
                 yield from inner(path, prefix=prefix + extension, level=level - 1)
             elif not limit_to_directories:
                 yield prefix + pointer + path.name

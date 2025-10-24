@@ -1,8 +1,8 @@
-.. _model_user_guide:
+.. _user_guide_components:
 
-==================
-Model & components
-==================
+================
+Model components
+================
 
 An overview of all the FIATModel components are presented in the table below:
 
@@ -18,9 +18,6 @@ An overview of all the FIATModel components are presented in the table below:
    * - :class:`ConfigComponent`
      - Handles the Delft-FIAT model configurations
      - TOML
-   * - :class:`RegionComponent`
-     - Contains the region polygon defining the model extent
-     - GeoJSON
    * - :class:`VulnerabilityComponent`
      - Handles the tabular vulnerability data, i.e. damage curves
      - CSV

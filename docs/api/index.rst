@@ -1,4 +1,4 @@
-.. _api_reference:
+.. _api_index:
 
 #############
 API reference
@@ -17,7 +17,7 @@ Here the essentials are listed to work with HydroMT-FIAT via the python API.
      - Everything concerning the FIATModel model class
    * - :ref:`api_components`
      - The components and their corresponding methods
-   * - :ref:`api_workflow_functions`
+   * - :ref:`api_workflows`
      - The workhorse functions of the components
    * - :ref:`api_drivers`
      - The custom HydroMT drivers of HydroMT-FIAT

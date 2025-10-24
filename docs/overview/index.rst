@@ -1,4 +1,4 @@
-.. _index_overview:
+.. _overview_index:
 
 ===============
 Getting started
@@ -9,7 +9,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: install_guide
+        :link: overview_install_guide
         :link-type: ref
 
         :octicon:`gear;10em`
@@ -18,7 +18,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: index_user_guide
+        :link: user_guide_index
         :link-type: ref
 
         :octicon:`book;10em`
@@ -36,7 +36,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: api_reference
+        :link: api_index
         :link-type: ref
 
         :octicon:`list-unordered;10em`

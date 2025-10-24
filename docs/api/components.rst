@@ -22,13 +22,10 @@ Initialize
     :toctree: ../_generated
 
     ConfigComponent
-    RegionComponent
     VulnerabilityComponent
     HazardComponent
     ExposureGeomsComponent
     ExposureGridComponent
-
-.. _api_component_setup_methods:
 
 ConfigComponent
 ---------------
@@ -87,4 +84,4 @@ ExposureGridComponent
     ExposureGridComponent.read
     ExposureGridComponent.clip
     ExposureGridComponent.setup
-    ExposureGeomsComponent.write
+    ExposureGridComponent.write

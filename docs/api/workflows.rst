@@ -8,7 +8,7 @@
         }
     </style>
 
-.. _api_workflow_functions:
+.. _api_workflows:
 
 Workflow functions
 ==================
