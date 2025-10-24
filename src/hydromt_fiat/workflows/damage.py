@@ -2,6 +2,7 @@
 
 import logging
 from itertools import product
+from typing import Any
 
 import geopandas as gpd
 import pandas as pd
@@ -27,7 +28,7 @@ def max_monetary_damage(
     exposure_type: str,
     vulnerability: pd.DataFrame,
     exposure_cost_link: pd.DataFrame | None = None,
-    **select: dict,
+    **select: dict[str, Any],
 ) -> gpd.GeoDataFrame:
     """Determine maximum monetary damage per object.
 

@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 import geopandas as gpd
 import xarray as xr
@@ -166,14 +167,14 @@ class HazardComponent(GridComponent):
         try:
             self.data.raster.set_spatial_dims()
         except ValueError:
-            return
+            return None
 
         # If so, clip the data
         data = self.data.raster.clip_geom(geom, buffer=buffer)
         # If inplace, just set the data and return nothing
         if inplace:
             self._data = data
-            return
+            return None
         return data
 
     @hydromt_step
@@ -185,7 +186,7 @@ class HazardComponent(GridComponent):
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
-        **settings: dict,
+        **settings: dict[str, Any],
     ) -> None:
         """Set up hazard maps.
 
@@ -215,9 +216,13 @@ class HazardComponent(GridComponent):
         logger.info("Setting up hazard raster data")
         if not isinstance(hazard_fnames, list):
             hazard_fnames = [hazard_fnames]
-        if risk and not return_periods:
+        if risk and return_periods is None:
             raise ValueError("Cannot perform risk analysis without return periods")
-        if risk and len(return_periods) != len(hazard_fnames):
+        if (
+            risk
+            and return_periods is not None
+            and len(return_periods) != len(hazard_fnames)
+        ):
             raise ValueError("Return periods do not match the number of hazard files")
 
         if self.model.region is None:

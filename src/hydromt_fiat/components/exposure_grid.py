@@ -168,14 +168,14 @@ class ExposureGridComponent(GridComponent):
         try:
             self.data.raster.set_spatial_dims()
         except ValueError:
-            return
+            return None
 
         # If so, clip the data
         data = self.data.raster.clip_geom(geom, buffer=buffer)
         # If inplace, just set the data and return nothing
         if inplace:
             self._data = data
-            return
+            return None
         return data
 
     @hydromt_step

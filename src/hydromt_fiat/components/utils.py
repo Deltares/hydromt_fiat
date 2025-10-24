@@ -36,9 +36,9 @@ def _relpath(
 
 
 def make_config_paths_relative(
-    data: dict,
+    data: dict[str, Any],
     root: Path,
-) -> dict:
+) -> dict[str, Any]:
     """Make the configurations path relative to the root.
 
     This only concerns itself with paths that are absolute and on
@@ -65,9 +65,9 @@ def make_config_paths_relative(
 
 
 def get_item(
-    parts: list,
-    current: dict,
-    root: Path | str | None = None,
+    parts: list[str],
+    current: dict[str, Any],
+    root: Path | str,
     fallback: Any | None = None,
     abs_path: bool = False,
 ) -> Any | None:
@@ -85,13 +85,16 @@ def get_item(
             if abs_path and isinstance(value, (Path, str)):
                 value = Path(root, value)
             return value
+    return None
 
 
-def pathing_expand(root: Path, filename: str | None = None) -> tuple[list] | None:
+def pathing_expand(
+    root: Path, filename: str | None = None
+) -> tuple[list[Path], list[str]] | None:
     """Sort the pathing on reading based on a wildcard."""
     # If the filename is None, do nothing
     if filename is None:
-        return
+        return None
     # Expand
     path_glob, _, regex = _expand_uri_placeholders(filename)
     p = list(Path(root).glob(path_glob))
@@ -104,14 +107,18 @@ def pathing_expand(root: Path, filename: str | None = None) -> tuple[list] | Non
     return p, n
 
 
-def pathing_config(p: list | Path | str | None) -> tuple[list] | None:
+def pathing_config(
+    p: list[Path] | Path | str | None,
+) -> tuple[list[Path], list[str]] | None:
     """Sort pathing based on config entries (i.e. a list)."""
+    if p is None:
+        return None
     # Handling legacy configs
     if not isinstance(p, list):
-        p = [p]
+        p = [Path(p)]
     # If no files return None
     if all([item is None for item in p]):
-        return
+        return None
     # Remove entries with no files and get the names of the remaining ones
     p = [Path(item) for item in p if item is not None]
     n = [item.stem for item in p]
