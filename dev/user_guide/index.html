@@ -56,7 +56,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Model &amp; components" href="model.html" />
+    <link rel="next" title="Model components" href="components.html" />
     <link rel="prev" title="Build Model" href="../_examples/build_cli.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -388,7 +388,7 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="model.html">Model &amp; components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Model components</a></li>
 </ul>
 </div>
 </nav></div>
@@ -447,7 +447,7 @@
                 <article class="bd-article">
                   
   <section id="user-guide">
-<span id="index-user-guide"></span><h1>User guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h1>
+<span id="user-guide-index"></span><h1>User guide<a class="headerlink" href="#user-guide" title="Link to this heading">#</a></h1>
 <p>The purpose of HydroMT-FIAT is of course to build a model that can be run by
 Delft-FIAT. This is done with the help of the <a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.html#hydromt_fiat.FIATModel" title="hydromt_fiat.FIATModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FIATModel</span></code></a>
 model class. This can be seen as the general manager of the model building process.
@@ -456,10 +456,13 @@ focuses on a single specific data entry needed by Delft-FIAT, e.g. one component
 exposure vector data, one for vulnerability data etc. As the FIATModel model class
 connects the components with each other, data build in e.g. the vulnerability component
 can be accessed and used by the exposure vector component.</p>
-<p>For more information and examples, please visit the following pages:</p>
+<p>A quick overview of all the components is presented on the following page:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="model.html#model-user-guide"><span class="std std-ref">Model and model components</span></a></p></li>
+<li><p><a class="reference internal" href="components.html#user-guide-components"><span class="std std-ref">Model components</span></a></p></li>
 </ul>
+<p>All of these components need (raw) input data when trying to set up data for Delft-FIAT.
+Most common is defining the data in a HydroMT <a class="reference external" href="https://deltares.github.io/hydromt/stable/guides/advanced_user/data_prepare_cat.html">data catalog</a> and use
+the created entry in the data catalog as input.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
@@ -484,11 +487,11 @@ can be accessed and used by the exposure vector component.</p>
       </div>
     </a>
     <a class="right-next"
-       href="model.html"
+       href="components.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Model &amp; components</p>
+        <p class="prev-next-title">Model components</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

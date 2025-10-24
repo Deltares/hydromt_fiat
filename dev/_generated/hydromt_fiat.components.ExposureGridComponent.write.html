@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>hydromt_fiat.components.RegionComponent &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.components.ExposureGridComponent.write &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.RegionComponent';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.ExposureGridComponent.write';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.components.VulnerabilityComponent" href="hydromt_fiat.components.VulnerabilityComponent.html" />
-    <link rel="prev" title="hydromt_fiat.components.ConfigComponent" href="hydromt_fiat.components.ConfigComponent.html" />
+    <link rel="next" title="Workflow functions" href="../api/workflows.html" />
+    <link rel="prev" title="hydromt_fiat.components.ExposureGridComponent.setup" href="hydromt_fiat.components.ExposureGridComponent.setup.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -404,7 +404,6 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/components.html">Components</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ConfigComponent.html">hydromt_fiat.components.ConfigComponent</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.RegionComponent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.VulnerabilityComponent.html">hydromt_fiat.components.VulnerabilityComponent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.html">hydromt_fiat.components.HazardComponent</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.html">hydromt_fiat.components.ExposureGeomsComponent</a></li>
@@ -432,7 +431,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGridComponent.write</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/workflows.html">Workflow functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -498,7 +497,7 @@
     
     <li class="breadcrumb-item"><a href="../api/components.html" class="nav-link">Components</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.components.RegionComponent</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.components.ExposureGridComponent.write</span></li>
   </ul>
 </nav>
 </div>
@@ -515,69 +514,23 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="hydromt-fiat-components-regioncomponent">
-<h1>hydromt_fiat.components.RegionComponent<a class="headerlink" href="#hydromt-fiat-components-regioncomponent" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="hydromt_fiat.components.RegionComponent">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.components.</span></span><span class="sig-name descname"><span class="pre">RegionComponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://deltares.github.io/hydromt/latest/_generated/hydromt.model.Model.html#hydromt.model.Model" title="(in HydroMT v1.2.0.dev0)"><span class="pre">Model</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'region.geojson'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/components/region.html#RegionComponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.RegionComponent" title="Link to this definition">#</a></dt>
-<dd><p>Custom component for region.</p>
+  <section id="hydromt-fiat-components-exposuregridcomponent-write">
+<h1>hydromt_fiat.components.ExposureGridComponent.write<a class="headerlink" href="#hydromt-fiat-components-exposuregridcomponent-write" title="Link to this heading">#</a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGridComponent.write">
+<span class="sig-prename descclassname"><span class="pre">ExposureGridComponent.</span></span><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdal_compliant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_grid.html#ExposureGridComponent.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGridComponent.write" title="Link to this definition">#</a></dt>
+<dd><p>Write the exposure grid data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>Model</em>) – HydroMT model instance.</p></li>
-<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The path to use for reading and writing of component data by default.
-by default “region.geojson” i.e. one file.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Filename relative to model root. If None, the value is either taken from
+the model configurations or the <cite>_filename</cite> attribute, by default None.</p></li>
+<li><p><strong>gdal_compliant</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, write grid data in a way that is compatible with GDAL,
+by default True.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Additional keyword arguments to be passed to the <cite>write_nc</cite> method.</p></li>
 </ul>
 </dd>
 </dl>
-<p class="rubric">Attributes</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounds</span></code></p></td>
-<td><p>Return the total bounds of the model region.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">crs</span></code></p></td>
-<td><p>Provide access to the CRS of the model region.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></p></td>
-<td><p>Model geometries.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_catalog</span></code></p></td>
-<td><p>Return the data catalog of the model this component is associated with.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model</span></code></p></td>
-<td><p>Return the model object this component is associated with.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">region</span></code></p></td>
-<td><p>Provide access to the underlying GeoDataFrame data of the model region.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root</span></code></p></td>
-<td><p>Return the root of the model this component is associated with.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p class="rubric">Methods</p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
-<tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code>([filename])</p></td>
-<td><p>Read model region data.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code>(geom[, replace])</p></td>
-<td><p>Add data to the region component.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_equal</span></code>(other)</p></td>
-<td><p>Test if two components are equal.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code>([filename, to_wgs84])</p></td>
-<td><p>Write model region data.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_region</span></code>(*[, filename, to_wgs84])</p></td>
-<td><p>Write the model region to file.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
 </dd></dl>
 
 </section>
@@ -593,20 +546,20 @@ by default “region.geojson” i.e. one file.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.components.ConfigComponent.html"
+       href="hydromt_fiat.components.ExposureGridComponent.setup.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.components.ConfigComponent</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.setup</p>
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.components.VulnerabilityComponent.html"
+       href="../api/workflows.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.components.VulnerabilityComponent</p>
+        <p class="prev-next-title">Workflow functions</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -629,7 +582,7 @@ by default “region.geojson” i.e. one file.</p></li>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.components.RegionComponent"><code class="docutils literal notranslate"><span class="pre">RegionComponent</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.components.ExposureGridComponent.write"><code class="docutils literal notranslate"><span class="pre">ExposureGridComponent.write()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -637,7 +590,7 @@ by default “region.geojson” i.e. one file.</p></li>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.components.RegionComponent.rst">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.components.ExposureGridComponent.write.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -653,7 +606,7 @@ by default “region.geojson” i.e. one file.</p></li>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_generated/hydromt_fiat.components.RegionComponent.rst.txt"
+      <li><a href="../_sources/_generated/hydromt_fiat.components.ExposureGridComponent.write.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>
