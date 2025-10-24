@@ -436,7 +436,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Set</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Set</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">osmnx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ox</span>
@@ -523,7 +523,7 @@
             <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">tags</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="n">tags</span><span class="p">}</span>
+            <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="n">tags</span><span class="p">}</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">tag</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving </span><span class="si">%s</span><span class="s2"> data from OSM API&quot;</span><span class="p">,</span> <span class="n">uri</span><span class="p">)</span>
@@ -563,7 +563,7 @@
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_osm_data</span><span class="p">(</span>
-        <span class="n">polygon</span><span class="p">:</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="n">polygon</span><span class="p">:</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve OSM data with the OSMnx api.</span>
 

@@ -462,13 +462,6 @@
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
 <span class="sd">        by default &quot;region.geojson&quot; i.e. one file.</span>
-<span class="sd">    region_component : str, optional</span>
-<span class="sd">        The name of the region component to use as reference for this component&#39;s</span>
-<span class="sd">        region. If None, the region will be set to the union of all geometries in</span>
-<span class="sd">        the data dictionary.</span>
-<span class="sd">    region_filename : str, optional</span>
-<span class="sd">        The path to use for writing the region data to a file. By default</span>
-<span class="sd">        &quot;region.geojson&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -476,15 +469,11 @@
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
-        <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-            <span class="n">region_component</span><span class="o">=</span><span class="n">region_component</span><span class="p">,</span>
-            <span class="n">region_filename</span><span class="o">=</span><span class="n">region_filename</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -503,7 +492,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">()</span>
-
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
     <span class="nd">@property</span>
@@ -626,11 +615,11 @@
         <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 
         <span class="c1"># Make a union with the current region geodataframe</span>
-        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">REGION</span><span class="p">)</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">REGION</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cur</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geom</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">replace</span><span class="p">:</span>
             <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span> <span class="o">=</span> <span class="n">geom</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">REGION</span><span class="p">]</span> <span class="o">=</span> <span class="n">geom</span></div>
 
 </pre></div>
 

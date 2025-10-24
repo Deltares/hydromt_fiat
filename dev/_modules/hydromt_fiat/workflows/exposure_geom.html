@@ -438,6 +438,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -621,7 +622,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">exposure_add_columns</span><span class="p">(</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
     <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="n">values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">values</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="o">|</span> <span class="nb">float</span>
+    <span class="o">|</span> <span class="nb">str</span>
+    <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add columms to an existing exposure dataset.</span>
 
@@ -631,7 +636,7 @@
 <span class="sd">        The exposure dataset.</span>
 <span class="sd">    columns : list[str]</span>
 <span class="sd">        List of names to be added as columns.</span>
-<span class="sd">    values : int | float | list| np.ndarray</span>
+<span class="sd">    values : int | float | str | list | np.ndarray</span>
 <span class="sd">        The value(s) be set.</span>
 
 <span class="sd">    Returns</span>

@@ -436,10 +436,11 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
@@ -485,7 +486,7 @@
         <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span> <span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="p">,</span>
@@ -565,6 +566,8 @@
             <span class="p">)</span>
             <span class="ow">or</span> <span class="n">pathing_expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
         <span class="p">)</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># Loop through the found files</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the exposure vector data..&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">):</span>
@@ -625,7 +628,7 @@
                 <span class="k">continue</span>
 
             <span class="c1"># Abuse the fact that a dictionary is mutable and passed by ref</span>
-            <span class="n">entry</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 
             <span class="c1"># Create the outgoing file path</span>
@@ -678,14 +681,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># Loop through all the existing GeoDataFrames and clip them</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
         <span class="c1"># If inplace is true, just set the new data and return None</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
-            <span class="k">return</span>
+            <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 
@@ -817,7 +820,7 @@
         <span class="n">exposure_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">exposure_cost_table_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">exposure_cost_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">select</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">select</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the maximum potential damage per object in an existing dataset.</span>
 
@@ -883,7 +886,11 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">exposure_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">values</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="o">|</span> <span class="nb">float</span>
+        <span class="o">|</span> <span class="nb">str</span>
+        <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]</span>
+        <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">str_</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update an existing dataset by adding columns with values.</span>
 
@@ -893,7 +900,7 @@
 <span class="sd">            The name of the existing dataset.</span>
 <span class="sd">        columns : list[str]</span>
 <span class="sd">            A list of the names of the columns.</span>
-<span class="sd">        values : int | float | list | np.ndarray</span>
+<span class="sd">        values : int | float | str | list | np.ndarray</span>
 <span class="sd">            The correspoding values of the columns. Either a single value set for</span>
 <span class="sd">            all columns, a list of values corresponding to the number of columns or</span>
 <span class="sd">            a 2d array.</span>
