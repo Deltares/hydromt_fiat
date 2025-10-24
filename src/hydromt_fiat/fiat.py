@@ -27,7 +27,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class FIATModel(Model):
-    """Read or write a FIAT model.
+    """Build, read and/ or write a FIAT model.
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ class FIATModel(Model):
         Additional keyword arguments to be passed down to the DataCatalog.
     """
 
-    name: str = "fiat_model"
+    name: str = "fiat"
     # supported model version should be filled by the plugins
     # e.g. _MODEL_VERSION = ">=1.0, <1.1"
     _MODEL_VERSION = None
@@ -91,27 +91,35 @@ class FIATModel(Model):
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the config component."""
+        """Access the config component."""
         return self.components["config"]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
-        """Return the exposure geoms component."""
+        """Access the exposure geoms component."""
         return self.components["exposure_geoms"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
-        """Return the exposure grid component."""
+        """Access the exposure grid component."""
         return self.components["exposure_grid"]
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return the hazard component."""
+        """Access the hazard component."""
         return self.components["hazard"]
 
     @property
+    def region(self) -> gpd.GeoDataFrame | None:
+        """Return the model's region.
+
+        This will return a polygon covering the current region of the model.
+        """
+        return self.components[REGION].region
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
-        """Return the vulnerability component."""
+        """Access the vulnerability component."""
         return self.components["vulnerability"]
 
     ## I/O
