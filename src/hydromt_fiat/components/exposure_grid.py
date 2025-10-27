@@ -5,7 +5,7 @@ from pathlib import Path
 
 import geopandas as gpd
 import xarray as xr
-from hydromt._io.writers import _write_nc
+from hydromt.io.writers import write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
@@ -121,10 +121,9 @@ class ExposureGridComponent(GridComponent):
 
         # Write it in a gdal compliant manner by default
         logger.info("Writing the exposure grid data..")
-        _write_nc(
-            {"grid": self.data},
-            write_path.as_posix(),
-            root=self.root.path,
+        write_nc(
+            self.data,
+            file_path=write_path,
             gdal_compliant=gdal_compliant,
             rename_dims=False,
             force_overwrite=self.root.mode.is_override_mode(),

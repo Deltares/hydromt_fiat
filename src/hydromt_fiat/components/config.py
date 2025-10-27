@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import tomlkit
-from hydromt._io.readers import _read_toml
+from hydromt.io.readers import read_toml
 from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
@@ -103,7 +103,7 @@ class ConfigComponent(ModelComponent):
         read_path = Path(self.root.path, filename)
         # Read the data (config)
         logger.info(f"Reading the config file at {read_path.as_posix()}")
-        self._data = _read_toml(read_path)
+        self._data = read_toml(read_path)
 
     @hydromt_step
     def write(
