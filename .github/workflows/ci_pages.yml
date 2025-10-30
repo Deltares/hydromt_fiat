@@ -1,9 +1,10 @@
 ---
-name: Versioning
+name: Pages versioning
 
 on:
   repository_dispatch:
-      types: [ docs-updated ]
+      types:
+        - docs-updated
   workflow_dispatch:
 
 jobs:
@@ -15,7 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
