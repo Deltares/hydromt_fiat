@@ -3,14 +3,18 @@ name: Build Documentation
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+    tags:
+      - v*
     paths:
       - docs/*
       - examples/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
   pull_request:
-    branches: [main]
+    branches:
+      - main
     paths:
       - docs/*
       - examples/*
@@ -29,7 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest"]
+        os:
+          - "ubuntu-latest"
         include:
           - os: ubuntu-latest
             label: linux-64
