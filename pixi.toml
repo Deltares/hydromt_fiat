@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "hydromt_fiat"
 description = "HydroMT plugin for Hydrological model for flood impact assessment and adaptation planning"
 authors = [
@@ -86,7 +86,7 @@ pycountry-convert = "*"
 
 [feature.dev.dependencies]
 pytest = "*"
-ruff = "0.6.8"
+ruff = "==0.6.8"
 pre-commit = "*"
 tqdm = "*"
 
