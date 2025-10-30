@@ -21,7 +21,7 @@ Important documentation in regard to HydroMT-FIAT.
 - `Delft-FIAT <Delft_FIAT_>`_
 - `HydroMT <HydroMT_>`_
 
-Attibution
+Attribution
 ----------
 HydroMT-FIAT relies on these excellent libraries:
 
