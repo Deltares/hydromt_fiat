@@ -6,8 +6,8 @@ from typing import Any, ClassVar, Set
 
 import geopandas as gpd
 import osmnx as ox
-from hydromt._typing import StrPath
 from hydromt.data_catalog.drivers import GeoDataFrameDriver
+from hydromt.typing import StrPath
 from osmnx._errors import InsufficientResponseError
 from pyproj.crs import CRS
 from shapely.geometry import Polygon
@@ -79,10 +79,11 @@ class OSMDriver(GeoDataFrameDriver):
         polygon = mask.geometry[0]
 
         # If tags and geom_types are none check if these are supplied as driver options
-        if self.options.get("geom_type") and not geom_type:
-            geom_type = self.options.get("geom_type")
-        if self.options.get("tags") and not tags:
-            tags = self.options.get("tags")
+        options = self.options.to_dict()
+        if options.get("geom_type") and not geom_type:
+            geom_type = options.get("geom_type")
+        if options.get("tags") and not tags:
+            tags = options.get("tags")
 
         if tags:
             tag: dict[str, Any] = {uri: tags}
