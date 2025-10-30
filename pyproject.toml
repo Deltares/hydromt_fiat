@@ -27,8 +27,8 @@ maintainers = [
 ]
 
 description = "HydroMT plugin for Delft-FIAT."
-readme = "README.md"
-license = {text = "GPL-3.0"}
+license = "GPL-3.0-or-later"
+readme = "README.rst"
 
 requires-python = ">=3.11"
 dependencies = [
@@ -44,7 +44,7 @@ dependencies = [
     "xarray",
 ]
 
-keywords = ["HydroMT", "FIAT", "Damage"]
+keywords = ["HydroMT", "FIAT", "Impact"]
 classifiers = [
 # How mature is this project? Common values are
 #   3 - Alpha
@@ -60,9 +60,6 @@ classifiers = [
 # Topic of the package
 'Topic :: Scientific/Engineering :: Hydrology',
 'Topic :: Scientific/Engineering :: GIS',
-
-# Pick your license as you wish (should match "license" above)
-'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
 
 # Language
 'Natural Language :: English',
@@ -80,6 +77,7 @@ classifiers = [
 
 [project.optional-dependencies] # Optional
 dev = [
+    "build",
     "mypy",
     "pre-commit",
     "ruff",
@@ -262,6 +260,7 @@ clean-docs-gen = { cmd = ["rm", "-rf", "docs/_generated"] }
 [tool.pixi.dependencies]
 numpy = "<2.3"
 pip = "*"
+uv = "*"
 
 [tool.pixi.pypi-dependencies]
 hydromt_fiat = { path = ".", editable = true }
