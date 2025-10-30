@@ -26,7 +26,7 @@ dependencies = [
     "tomli",
     "xarray",
     "pydantic",
-    "osmnx>=1,<2",
+    "osmnx>=2, <3",
     "census",
     "us",
     "xarray-spatial",

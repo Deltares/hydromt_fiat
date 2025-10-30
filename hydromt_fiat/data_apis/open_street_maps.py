@@ -25,7 +25,7 @@ def get_assets_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
         | (footprints.geometry.type == "MultiPolygon")
     ]
     footprints = footprints.reset_index()
-    footprints = footprints.loc[:, ["osmid", "geometry"]]
+    footprints = footprints.loc[:, ["geometry"]]
     return footprints
 
 
@@ -36,14 +36,14 @@ def get_roads_from_osm(
     if isinstance(road_types, str):
         road_types = [road_types]
 
-    tag = {"highway": road_types}  # this is the tag we use to find the correct OSM data
+    tags = {"highway": road_types}  # this is the tag we use to find the correct OSM data
 
     # Make sure that polygon is valid
     if not polygon.is_valid:
         polygon = polygon.buffer(0)
     try:
         roads = ox.features.features_from_polygon(
-            polygon, tags=tag
+            polygon, tags=tags
         )  # then we query the data
     except (ValueError, TypeError):
         logging.warning(
@@ -117,6 +117,7 @@ def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     buildings = ox.features.features_from_polygon(
         polygon, buildings
     )  # then we query the data
+
 
     if buildings.empty:
         logging.warning("No buildings data found from OSM")
