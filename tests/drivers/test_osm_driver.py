@@ -1,4 +1,5 @@
 import logging
+import re
 from pathlib import Path
 
 import geopandas as gpd
@@ -44,7 +45,8 @@ def test_osm_driver_get_osm_data_errors(
     geom_type = ["MultiPolygon", "Polygon"]
     tag = {"building": True}
     with pytest.raises(
-        TypeError, match="Given polygon is not of shapely.geometry.Polygon type"
+        TypeError,
+        match=re.escape("Given geometry is not a (multi)polygon"),
     ):
         OSMDriver.get_osm_data(build_region, tag=tag, geom_type=geom_type)
 

@@ -86,6 +86,9 @@ defaulting to exposure data object type"
     # Set the nodata fill
     if exposure_type_fill is not None:
         exposure_linking.loc[len(exposure_linking), :] = [None, exposure_type_fill]
+        exposure_linking[OBJECT_TYPE] = exposure_linking.loc[:, OBJECT_TYPE].fillna(
+            exposure_type_fill
+        )
 
     # Store the length of the data
     data_or_size = len(exposure_data)
@@ -104,7 +107,7 @@ defaulting to exposure data object type"
     if data_m_size != data_or_size:
         logger.warning(
             f"{data_or_size - data_m_size} features could not be internally linked, \
-these features are removed"
+these were removed"
         )
 
     # Return the data
