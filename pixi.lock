@@ -4449,7 +4449,7 @@ packages:
 - pypi: ./
   name: hydromt-fiat
   version: 1.0.0.dev0
-  sha256: bc6b91d9e6a71039326e43cc619cd96f61f680e3509d0cca33da0592be017690
+  sha256: 531869b054c1d09cbff815eae58abdb0250725e0abb25e54ce86abbdc294ae7e
   requires_dist:
   - barril
   - geopandas
