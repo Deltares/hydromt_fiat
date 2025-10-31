@@ -444,7 +444,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.data_catalog.drivers</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoDataFrameDriver</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">osmnx._errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">InsufficientResponseError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pyproj.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">CRS</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiPolygon</span><span class="p">,</span> <span class="n">Polygon</span>
 
 <span class="n">CACHE_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;hydromt_fiat&quot;</span> <span class="o">/</span> <span class="s2">&quot;osmnx&quot;</span>
 <span class="n">CACHE_DIR</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -563,13 +563,15 @@
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_osm_data</span><span class="p">(</span>
-        <span class="n">polygon</span><span class="p">:</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+        <span class="n">polygon</span><span class="p">:</span> <span class="n">MultiPolygon</span> <span class="o">|</span> <span class="n">Polygon</span><span class="p">,</span>
+        <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+        <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve OSM data with the OSMnx api.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        polygon : Polygon</span>
+<span class="sd">        polygon : MultiPolygon | Polygon</span>
 <span class="sd">            Area of interest.</span>
 <span class="sd">        tag : dict</span>
 <span class="sd">            OSM tag to filter data with, i.e. {&#39;building&#39;: True}.</span>
@@ -583,8 +585,8 @@
 <span class="sd">            GeoDataFrame with OSM data.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Given polygon is not of shapely.geometry.Polygon type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="p">(</span><span class="n">Polygon</span><span class="p">,</span> <span class="n">MultiPolygon</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Given geometry is not a (multi)polygon&quot;</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="n">footprints</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">features_from_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
