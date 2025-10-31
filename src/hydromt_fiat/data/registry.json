@@ -1,10 +1,10 @@
 {
     "data": {
-        "build-data.tar.gz": "795a2b50a7f81c30edf0c36a2b5db1a89d93c47f793437b6647e723fe1d4b123",
+        "build-data.tar.gz": "38fadec8cac254e9d3ad27fa4f4e90fb3acc674cfc08e0f8db7ac6bdc580fef2",
         "fiat-model-c.tar.gz": "27644885ee2a6226a39dd2bb75eedc8a0c2265d43aef40722612096652cd6e51",
         "fiat-model.tar.gz": "e36b170ad666332173f54515d6788b9a6c42b59c502de514562bb5836738789d",
         "osmnx.tar.gz": "3baee58a4ccaea5f1a523806b9f629d5f54a146ff475eb3514efd06531c54712"
     },
-    "url": "doi:10.5281/zenodo.17494885",
-    "version": "v0.1.10"
+    "url": "doi:10.5281/zenodo.17495611",
+    "version": "v0.1.9"
 }
