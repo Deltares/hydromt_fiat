@@ -51,7 +51,7 @@ def test_directory_tree(build_data_path: Path):
     s.seek(0)
     out = s.read()
     # Assert the output
-    assert out.count("\n") == 30
+    assert out.count("\n") == 34
     assert "data_catalog.yml" in out
 
 
