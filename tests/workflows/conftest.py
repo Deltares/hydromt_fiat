@@ -73,6 +73,14 @@ def vulnerability_data(build_data_catalog: DataCatalog) -> pd.DataFrame:
 
 
 @pytest.fixture
+def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
+    vulnerability_data = vulnerability_data.transpose()
+    vulnerability_data.columns = vulnerability_data.iloc[0]
+    vulnerability_data.drop(0, inplace=True)
+    return vulnerability_data
+
+
+@pytest.fixture
 def vulnerability_linking(build_data_catalog: DataCatalog) -> pd.DataFrame:
     df = build_data_catalog.get_dataframe("vulnerability_curves_linking")
     assert len(df) != 0
