@@ -22,7 +22,7 @@ Important documentation in regard to HydroMT-FIAT.
 - `HydroMT <HydroMT_>`_
 
 Attribution
-----------
+-----------
 HydroMT-FIAT relies on these excellent libraries:
 
 - barril
