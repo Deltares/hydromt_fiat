@@ -60,7 +60,11 @@ def spatial_joins(
 
     """
 
-    if isinstance(aggregation_area_fn, str) or isinstance(aggregation_area_fn, Path) or isinstance(aggregation_area_fn,pd.DataFrame):
+    if (
+        isinstance(aggregation_area_fn, str)
+        or isinstance(aggregation_area_fn, Path)
+        or isinstance(aggregation_area_fn, pd.DataFrame)
+    ):
         aggregation_area_fn = [aggregation_area_fn]
     if isinstance(label_names, str):
         label_names = [label_names]
@@ -73,7 +77,7 @@ def spatial_joins(
     if new_composite_area:
         exposure_gdf["ca_ID"] = range(0, len(exposure_gdf), 1)
         exposure_gdf_copy = exposure_gdf.copy()
-    
+
     for area, attribute_name, label_name in zip(
         aggregation_area_fn, attribute_names, label_names
     ):

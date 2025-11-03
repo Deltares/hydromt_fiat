@@ -36,7 +36,9 @@ def get_roads_from_osm(
     if isinstance(road_types, str):
         road_types = [road_types]
 
-    tags = {"highway": road_types}  # this is the tag we use to find the correct OSM data
+    tags = {
+        "highway": road_types
+    }  # this is the tag we use to find the correct OSM data
 
     # Make sure that polygon is valid
     if not polygon.is_valid:
@@ -117,7 +119,6 @@ def get_buildings_from_osm(polygon: Polygon) -> gpd.GeoDataFrame:
     buildings = ox.features.features_from_polygon(
         polygon, buildings
     )  # then we query the data
-
 
     if buildings.empty:
         logging.warning("No buildings data found from OSM")

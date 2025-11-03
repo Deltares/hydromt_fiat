@@ -273,19 +273,24 @@ class FiatModel(GridModel):
         if step_size:
             self.set_config("vulnerability.step_size", step_size)
 
-    def setup_vulnerability_from_csv(self, vulnerability_curves: Union[str, Path], vulnerability_identifiers_and_linking_fn: str, unit: str) -> None:
+    def setup_vulnerability_from_csv(
+        self,
+        vulnerability_curves: Union[str, Path],
+        vulnerability_identifiers_and_linking_fn: str,
+        unit: str,
+    ) -> None:
         """Setup the vulnerability curves from one or multiple csv files.
-            
+
         Each vulnerability curve CSV file must contain the following columns:
         - waterdepth: The inundation depth, which should be in the same unit (meters or feet) for all curves.
         - factor: The factor of damage per water depth.
 
         The linking file cv must contain the following columns:
-        - Fiat Damage Function Name: The name of the vulnerability curve file.  
-        - Exposure Link: The primary or secondary object type in the exposure data to link the vulnerability curve.  
-        - Damage Type: The type of damage. This can be structural, content or any other damage the user would like to assess.   
-        - Type: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification. 
-        
+        - Fiat Damage Function Name: The name of the vulnerability curve file.
+        - Exposure Link: The primary or secondary object type in the exposure data to link the vulnerability curve.
+        - Damage Type: The type of damage. This can be structural, content or any other damage the user would like to assess.
+        - Type: This is the occupancy type and may be the same as in the Exposure Link column but can also be a more descriptive classification.
+
         Parameters
         ----------
             vulnerability_curves:str
@@ -304,30 +309,42 @@ class FiatModel(GridModel):
                 self.logger,
             )
         # Read and set the vulnerability linking table
-        if vulnerability_identifiers_and_linking_fn.endswith(".csv") or vulnerability_identifiers_and_linking_fn.endswith(
-                ".xlsx"):
+        if vulnerability_identifiers_and_linking_fn.endswith(
+            ".csv"
+        ) or vulnerability_identifiers_and_linking_fn.endswith(".xlsx"):
             vulnerability_linking = pd.read_csv(
                 vulnerability_identifiers_and_linking_fn
             )
         else:
-            vulnerability_linking = self.data_catalog.get_dataframe(vulnerability_identifiers_and_linking_fn)
+            vulnerability_linking = self.data_catalog.get_dataframe(
+                vulnerability_identifiers_and_linking_fn
+            )
         self.vf_ids_and_linking_df = vulnerability_linking
-            
-        vf_names =  pd.DataFrame({"FIAT Damage Function Name": vulnerability_linking["FIAT Damage Function Name"], "new_name": vulnerability_linking["FIAT Damage Function Name"] + "_" + vulnerability_linking["Damage Type"]})
-        vf_names.set_index("FIAT Damage Function Name", inplace = True)
-        
-        
+
+        vf_names = pd.DataFrame(
+            {
+                "FIAT Damage Function Name": vulnerability_linking[
+                    "FIAT Damage Function Name"
+                ],
+                "new_name": vulnerability_linking["FIAT Damage Function Name"]
+                + "_"
+                + vulnerability_linking["Damage Type"],
+            }
+        )
+        vf_names.set_index("FIAT Damage Function Name", inplace=True)
+
         if os.path.exists(vulnerability_curves):
             self.vulnerability.from_csv(vulnerability_curves, vf_names)
         else:
-            vulnerability_curves = Path(self.data_catalog.get_source(vulnerability_curves).path)
+            vulnerability_curves = Path(
+                self.data_catalog.get_source(vulnerability_curves).path
+            )
             self.vulnerability.from_csv(vulnerability_curves, vf_names)
-        
+
         # Update config
         self.set_config("vulnerability.file", "vulnerability/vulnerability_curves.csv")
         self.set_config("vulnerability.unit", unit)
 
-        
     def setup_road_vulnerability(
         self,
         vertical_unit: str,
@@ -760,10 +777,12 @@ class FiatModel(GridModel):
             # ensure variable name is lowercase, since FIAT seems to be failing if not # TODO check with FIAT
             da_name = da_name.lower()
             da = da.rename(da_name)
-            
+
             # Check if map is rotated and if yes, reproject to a non-rotated grid
             if "xc" in da.coords:
-                self.logger.warning("Hazard map is rotated. It will be reprojected to a none rotated grid using nearest neighbor interpolation")
+                self.logger.warning(
+                    "Hazard map is rotated. It will be reprojected to a none rotated grid using nearest neighbor interpolation"
+                )
                 da = da.raster.reproject(dst_crs=da.rio.crs)
 
             # check masp projection, null data, and grids
@@ -1161,7 +1180,7 @@ class FiatModel(GridModel):
         equity.match_geo_ID()
         try:
             equity.download_shp_geom(year_data, county_numbers)
-        except:
+        except Exception:
             self.logger.warning(
                 "The census track shapefile could not be downloaded, potentially because the site is down. Aggregation areas and equity information will not be available in the FIAT model!"
             )

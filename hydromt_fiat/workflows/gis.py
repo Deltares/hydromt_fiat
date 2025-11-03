@@ -22,8 +22,8 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
     ----------
     gdf : gpd.GeoDataFrame
         The GeoDataFrame to which the area column will be added.
-    model_length_unit: 
-        The length unit of the model in meters or feet. 
+    model_length_unit:
+        The length unit of the model in meters or feet.
 
     Returns
     -------
@@ -41,21 +41,21 @@ def get_area(gdf: gpd.GeoDataFrame, model_length_unit: str) -> gpd.GeoDataFrame:
         # If the CRS is projected, calculate the area in the same CRS
         unit = gdf.crs.axis_info[0].unit_name
         gdf["area"] = gdf["geometry"].area
-    
+
     ureg = pint.UnitRegistry()
     unit = ureg(unit).units
     model_unit = ureg(model_length_unit).units
-    
-    
+
     if unit != model_unit:
         if model_unit == ureg("meters").units and unit == ureg("feets").units:
-            gdf["area"] = gdf["area"] * (Conversion.feet_to_meters.value)**2
+            gdf["area"] = gdf["area"] * (Conversion.feet_to_meters.value) ** 2
         elif model_unit == ureg("feets").units and unit == ureg("meters").units:
-            gdf["area"] = gdf["area"] * (Conversion.meters_to_feet.value)**2
+            gdf["area"] = gdf["area"] * (Conversion.meters_to_feet.value) ** 2
         else:
             raise ValueError(f"Unsupported unit: {unit}")
-    
+
     return gdf
+
 
 def sjoin_largest_area(
     left_gdf: gpd.GeoDataFrame, right_gdf: gpd.GeoDataFrame, id_col: str = "object_id"
@@ -278,7 +278,7 @@ def ground_elevation_from_dem(
     dem_da: xr.DataArray,
     exposure_geoms: gpd.GeoDataFrame,
     stats_func: Literal["mean", "min"] = "mean",
-    logger: logging.Logger = None
+    logger: logging.Logger = None,
 ) -> pd.Series:
     """Calculate the ground elevation from a DEM for the given exposure geometries.
 
@@ -290,7 +290,7 @@ def ground_elevation_from_dem(
         The exposure geometries as a GeoDataFrame.
     stats_func : Literal["mean", "min"], optional
         The statistic to calculate for the ground elevation, by default "mean".
-    
+
     Returns
     -------
     pd.Series
@@ -303,7 +303,7 @@ def ground_elevation_from_dem(
     da_exposure_id = dem_da.raster.rasterize(gdf, all_touched=True, nodata=0)
 
     # Calculate the zonal statistics using xrspatial
-    # NOTE this is much faster than using hydromt.raster.zonal_stats, but we need to 
+    # NOTE this is much faster than using hydromt.raster.zonal_stats, but we need to
     # deal with the fact that multiple buildings can fall into the same pixel
     df_elev = zonal_stats(
         da_exposure_id,
@@ -314,9 +314,7 @@ def ground_elevation_from_dem(
 
     # Reindex to match the exposure GeoDataFrame
     # and set the ground_elevtn column
-    gdf["ground_elevtn"] = df_elev.reindex(
-        gdf.index, fill_value=np.nan
-    )  
+    gdf["ground_elevtn"] = df_elev.reindex(gdf.index, fill_value=np.nan)
 
     # fill nan values for buildings that fall into the same pixel
     nan_geoms = gdf[gdf["ground_elevtn"].isna()]
@@ -326,9 +324,7 @@ def ground_elevation_from_dem(
             f"Found {len(nan_geoms)} geometries which were not rasterized. "
             "Filling based on geometry centroid."
         )
-        sampled_ids = da_exposure_id.raster.sample(
-            nan_geoms.geometry.centroid
-        )
+        sampled_ids = da_exposure_id.raster.sample(nan_geoms.geometry.centroid)
         # fill the ground_elevtn column with the sampled values
         valid_ids = np.isin(sampled_ids.values, gdf.index)
         gdf.loc[nan_geoms.index[valid_ids], "ground_elevtn"] = gdf.loc[
@@ -343,8 +339,12 @@ def ground_elevation_from_dem(
             f"Found {len(nan_geoms)} geometries with no ground elevation data. "
             "Filling with nearest neighbor."
         )
-        nearest_ids = _gdf1.sindex.nearest(nan_geoms.geometry, exclusive=True, return_all=False)
-        gdf.loc[nan_geoms.index, "ground_elevtn"] = _gdf1.loc[nearest_ids[1], "ground_elevtn"].values
+        nearest_ids = _gdf1.sindex.nearest(
+            nan_geoms.geometry, exclusive=True, return_all=False
+        )
+        gdf.loc[nan_geoms.index, "ground_elevtn"] = _gdf1.loc[
+            nearest_ids[1], "ground_elevtn"
+        ].values
         del _gdf1
 
     gdf.index = exposure_geoms.index  # Restore original index
