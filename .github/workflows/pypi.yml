@@ -41,7 +41,7 @@ jobs:
           name: source-distribution
           path: dist
 
-  test-built:
+  test-build:
     needs: build
     defaults:
       run:
@@ -86,7 +86,7 @@ jobs:
           pixi run hydromt --models
 
   upload-testpypi:
-    needs: test-built
+    needs: test-build
     if: github.event_name == 'push'
     environment:
       name: testpypi
@@ -108,7 +108,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
   upload-pypi:
-    needs: test-built
+    needs: test-build
     if: ${{ github.event_name == 'release' && !github.event.act  }}
     runs-on: ubuntu-latest
     environment:
