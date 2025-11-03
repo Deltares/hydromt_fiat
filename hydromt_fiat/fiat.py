@@ -4,46 +4,45 @@ import csv
 import glob
 import logging
 import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Union
-import xarray as xr
+
 import geopandas as gpd
 import hydromt
 import pandas as pd
 import tomli
 import tomli_w
+import xarray as xr
 from hydromt.models.model_grid import GridModel
+from hydromt.raster import full_from_transform
 from pyproj.crs import CRS
 from shapely.geometry import box
-import shutil
-import tempfile
 
-from hydromt.raster import full_from_transform
-from hydromt_fiat.api.data_types import Units
-from hydromt_fiat.util import DATADIR
+from hydromt_fiat.api.data_types import Currency, Units
 from hydromt_fiat.spatial_joins import SpatialJoins
+from hydromt_fiat.util import DATADIR
+from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
+from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
+from hydromt_fiat.workflows.equity_data import EquityData
 from hydromt_fiat.workflows.exposure_vector import ExposureVector
+from hydromt_fiat.workflows.gis import locate_from_exposure
 from hydromt_fiat.workflows.hazard import (
-    create_lists,
     check_lists_size,
-    read_maps,
+    check_map_uniqueness,
     check_maps_metadata,
     check_maps_rp,
-    check_map_uniqueness,
+    create_lists,
     create_risk_dataset,
+    read_maps,
 )
-from hydromt_fiat.workflows.equity_data import EquityData
 from hydromt_fiat.workflows.social_vulnerability_index import (
     SocialVulnerabilityIndex,
     list_of_states,
 )
+from hydromt_fiat.workflows.utils import get_us_county_numbers, rename_geoid_short
 from hydromt_fiat.workflows.vulnerability import Vulnerability
-from hydromt_fiat.workflows.aggregation_areas import join_exposure_aggregation_areas
-from hydromt_fiat.workflows.building_footprints import join_exposure_building_footprints
-from hydromt_fiat.workflows.gis import locate_from_exposure
-from hydromt_fiat.workflows.utils import get_us_county_numbers
-from hydromt_fiat.workflows.utils import rename_geoid_short
-from hydromt_fiat.api.data_types import Currency
 
 __all__ = ["FiatModel"]
 
@@ -811,10 +810,6 @@ class FiatModel(GridModel):
 
             self.grid.attrs = {
                 "rp": sorted_rp,
-                "type": params[
-                    "map_type_lst"
-                ],  # TODO: This parameter has to be changed in case that a list with different hazard types per map is provided
-                "name": sorted_names,
                 "analysis": "risk",
             }
 
