@@ -1,9 +1,8 @@
 """HydroMT-FIAT version."""
 
-main = 1
-major = 0
+major = 1
 minor = 0
-build = 0
+patch = 0
 suffix = ".dev"
 
-__version__ = f"{main}.{major}.{minor}{suffix}"
+__version__ = f"{major}.{minor}.{patch}{suffix}"
