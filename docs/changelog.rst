@@ -10,25 +10,27 @@ The format is based on `Keep a Changelog`_, and this project adheres to
 
 Unreleased
 ==========
-These contain the unreleased changes of HydroMT-FIAT
+These contain the unreleased changes of HydroMT-FIAT.
 
 Added
 -----
-- Model components for each specific data entry type (e.g. hazard or vulnerability)
+- Model components for each specific data entry (e.g. hazard or vulnerability)
 - OSM driver to request data from OSM using the data catalog
+- Support for Delft-FIAT version 1.x
 
 Changed
 -------
+- API
 - Moved from HydroMT-core 0.x to 1.x
 - Setup methods moved to the corresponding components
 
 Fixed
 -----
-- Support for generic data format
+- Support for generic data formats as input
 
 Removed
 -------
-- Removed support for specific data
+- Functionality catering to specific data formats from specific sources
 
 
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
