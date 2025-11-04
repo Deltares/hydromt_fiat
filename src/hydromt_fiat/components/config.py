@@ -101,6 +101,11 @@ class ConfigComponent(ModelComponent):
         filename = filename or self.filename
         self.filename = filename
         read_path = Path(self.root.path, filename)
+
+        # Check for the path
+        if not read_path.is_file():
+            return
+
         # Read the data (config)
         logger.info(f"Reading the config file at {read_path.as_posix()}")
         self._data = _read_toml(read_path)
@@ -123,8 +128,7 @@ class ConfigComponent(ModelComponent):
 
         # If no data, return
         if not self.data:
-            logger.warning("No data in config component, skip writing")
-            return
+            logger.warning("No data in config component, writing empty file..")
 
         # Path from signature or internal default
         # Hierarchy is 1) signature, 2) default

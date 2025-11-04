@@ -5,16 +5,16 @@ on:
     branches:
       - main
     paths:
-      - src/hydromt_fiat/*
-      - tests/*
+      - src/hydromt_fiat/**/*
+      - tests/**/*
       - pyproject.toml
       - pixi.lock
       - .github/workflows/ci_sonar.yml
       - sonar-project.properties
   pull_request:
     paths:
-      - src/hydromt_fiat/*
-      - tests/*
+      - src/hydromt_fiat/**/*
+      - tests/**/*
       - pyproject.toml
       - pixi.lock
       - .github/workflows/ci_sonar.yml

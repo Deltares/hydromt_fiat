@@ -2,8 +2,44 @@ import os
 from pathlib import Path
 
 import pytest
+from pooch.processors import ExtractorProcessor
 
 from hydromt_fiat.data import fetch_data
+from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor
+
+
+def test__fetch_registry_local():
+    # Call the function
+    db = _fetch_registry(local_registry=True)
+
+    # Assert the output
+    assert isinstance(db, dict)
+    assert "data" in db
+
+
+def test__fetch_registry_remote():
+    # Call the function
+    db = _fetch_registry(local_registry=False)
+
+    # Assert the output
+    assert isinstance(db, dict)
+    assert "data" in db
+
+
+def test__unpack_processor_known():
+    # Call the function
+    up = _unpack_processor(suffix="tar.gz")
+
+    # Assert the output
+    assert isinstance(up, ExtractorProcessor)
+
+
+def test__unpack_processor_unknown():
+    # Call the function
+    up = _unpack_processor(suffix="foo")
+
+    # Assert the output
+    assert up is None
 
 
 def test_fetch_data():

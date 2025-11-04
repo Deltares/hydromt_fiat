@@ -7,6 +7,9 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 include = ["hydromt_fiat*"]
 
+[tool.setuptools.package-data]
+hydromt_fiat = ["data/*"]
+
 [tool.setuptools.dynamic]
 version = {attr = "hydromt_fiat.version.__version__"}
 
@@ -116,9 +119,9 @@ fiat = "hydromt_fiat.drivers"
 fiat = "hydromt_fiat.drivers.resolvers"
 
 [project.urls]
-"Homepage" = "https://github.com/Deltares/hydromt_fiat"
-"Bug Reports" = "https://github.com/Deltares/hydromt_fiat/issues"
+"Homepage" = "https://deltares.github.io/hydromt_fiat/latest"
 "Source" =  "https://github.com/Deltares/hydromt_fiat"
+"Bug Reports" = "https://github.com/Deltares/hydromt_fiat/issues"
 
 ## Some stuff for pytest and coverage
 [tool.pytest.ini_options]
