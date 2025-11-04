@@ -43,7 +43,7 @@ class FIATModel(Model):
         Additional keyword arguments to be passed down to the DataCatalog.
     """
 
-    name: str = "fiat_model"
+    name: str = "fiat"
     # supported model version should be filled by the plugins
     # e.g. _MODEL_VERSION = ">=1.0, <1.1"
     _MODEL_VERSION = None

@@ -1,0 +1,54 @@
+---
+name: SonarQube scan and coverage
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/hydromt_fiat/*
+      - tests/*
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/ci_sonar.yml
+      - sonar-project.properties
+  pull_request:
+    paths:
+      - src/hydromt_fiat/*
+      - tests/*
+      - pyproject.toml
+      - pixi.lock
+      - .github/workflows/ci_sonar.yml
+      - sonar-project.properties
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    env:
+      PYVERSION: "313"
+
+    name: SonarQube
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup pixi
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
+        with:
+          pixi-version: "v0.58.0"
+          environments: test-py${{ env.PYVERSION }}
+          locked: false
+          cache: true
+          cache-write: false
+
+      - name: Test
+        run: |
+          pixi run -e test-py${{ env.PYVERSION }} test-cov
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

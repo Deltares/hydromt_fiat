@@ -10,7 +10,7 @@ from hydromt.data_catalog.drivers import GeoDataFrameDriver
 from hydromt.typing import StrPath
 from osmnx._errors import InsufficientResponseError
 from pyproj.crs import CRS
-from shapely.geometry import Polygon
+from shapely.geometry import MultiPolygon, Polygon
 
 CACHE_DIR = Path.home() / ".cache" / "hydromt_fiat" / "osmnx"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -120,13 +120,15 @@ class OSMDriver(GeoDataFrameDriver):
 
     @staticmethod
     def get_osm_data(
-        polygon: Polygon, tag: dict[str, Any], geom_type: list[str] | None
+        polygon: MultiPolygon | Polygon,
+        tag: dict[str, Any],
+        geom_type: list[str] | None,
     ) -> gpd.GeoDataFrame:
         """Retrieve OSM data with the OSMnx api.
 
         Parameters
         ----------
-        polygon : Polygon
+        polygon : MultiPolygon | Polygon
             Area of interest.
         tag : dict
             OSM tag to filter data with, i.e. {'building': True}.
@@ -140,8 +142,8 @@ class OSMDriver(GeoDataFrameDriver):
             GeoDataFrame with OSM data.
 
         """
-        if not isinstance(polygon, Polygon):
-            raise TypeError("Given polygon is not of shapely.geometry.Polygon type")
+        if not isinstance(polygon, (Polygon, MultiPolygon)):
+            raise TypeError("Given geometry is not a (multi)polygon")
 
         try:
             footprints = ox.features.features_from_polygon(polygon, tag)
