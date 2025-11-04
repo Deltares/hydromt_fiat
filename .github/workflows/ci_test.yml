@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths:
-      - src/hydromt_fiat/*
-      - tests/*
+      - src/hydromt_fiat/**/*
+      - tests/**/*
       - pixi.lock
       - pyproject.toml
       - .github/workflows/ci_test.yml
@@ -16,8 +16,8 @@ on:
     branches:
       - main
     paths:
-      - src/hydromt_fiat/*
-      - tests/*
+      - src/hydromt_fiat/**/*
+      - tests/**/*
       - pixi.lock
       - pyproject.toml
       - .github/workflows/ci_test.yml
