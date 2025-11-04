@@ -439,8 +439,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.max_monetary_damage.html">hydromt_fiat.workflows.max_monetary_damage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_grid_setup.html">hydromt_fiat.workflows.exposure_grid_setup</a></li>
 </ul>
 </details></li>
@@ -449,6 +449,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html">hydromt_fiat.drivers.OSMDriver.get_osm_data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.drivers.OSMDriver.read.html">hydromt_fiat.drivers.OSMDriver.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.drivers.OSMDriver.write.html">hydromt_fiat.drivers.OSMDriver.write</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="utility.html">Utility</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.data.fetch_data.html">hydromt_fiat.data.fetch_data</a></li>
 </ul>
 </details></li>
 </ul>
@@ -518,32 +522,59 @@
 </style><section id="workflow-functions">
 <span id="api-workflows"></span><h1>Workflow functions<a class="headerlink" href="#workflow-functions" title="Link to this heading">#</a></h1>
 <p>The underlying workflow methods of the components.</p>
+<section id="vulnerability">
+<h2>Vulnerability<a class="headerlink" href="#vulnerability" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.vulnerability_curves.html#hydromt_fiat.workflows.vulnerability_curves" title="hydromt_fiat.workflows.vulnerability_curves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.vulnerability_curves</span></code></a>(...[, ...])</p></td>
 <td><p>Create vulnerability curves from raw data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.hazard_grid.html#hydromt_fiat.workflows.hazard_grid" title="hydromt_fiat.workflows.hazard_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.hazard_grid</span></code></a>(grid_like, ...[, ...])</p></td>
+</tbody>
+</table>
+</div>
+</section>
+<section id="hazard">
+<h2>Hazard<a class="headerlink" href="#hazard" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.hazard_grid.html#hydromt_fiat.workflows.hazard_grid" title="hydromt_fiat.workflows.hazard_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.hazard_grid</span></code></a>(grid_like, ...[, ...])</p></td>
 <td><p>Parse hazard data files to xarray dataset.</p></td>
 </tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="exposure-geometry">
+<h2>Exposure (geometry)<a class="headerlink" href="#exposure-geometry" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_setup.html#hydromt_fiat.workflows.exposure_setup" title="hydromt_fiat.workflows.exposure_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.exposure_setup</span></code></a>(exposure_data, ...)</p></td>
 <td><p>Prep the raw exposure data for later fuctions/ methods.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_vulnerability_link.html#hydromt_fiat.workflows.exposure_vulnerability_link" title="hydromt_fiat.workflows.exposure_vulnerability_link"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.exposure_vulnerability_link</span></code></a>(...)</p></td>
 <td><p>Link the exposure data to the vulnerability data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_add_columns.html#hydromt_fiat.workflows.exposure_add_columns" title="hydromt_fiat.workflows.exposure_add_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.exposure_add_columns</span></code></a>(...)</p></td>
-<td><p>Add columms to an existing exposure dataset.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.max_monetary_damage.html#hydromt_fiat.workflows.max_monetary_damage" title="hydromt_fiat.workflows.max_monetary_damage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.max_monetary_damage</span></code></a>(exposure_data, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.max_monetary_damage.html#hydromt_fiat.workflows.max_monetary_damage" title="hydromt_fiat.workflows.max_monetary_damage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.max_monetary_damage</span></code></a>(exposure_data, ...)</p></td>
 <td><p>Determine maximum monetary damage per object.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_add_columns.html#hydromt_fiat.workflows.exposure_add_columns" title="hydromt_fiat.workflows.exposure_add_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.exposure_add_columns</span></code></a>(...)</p></td>
+<td><p>Add columms to an existing exposure dataset.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="exposure-grid">
+<h2>Exposure (grid)<a class="headerlink" href="#exposure-grid" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_grid_setup.html#hydromt_fiat.workflows.exposure_grid_setup" title="hydromt_fiat.workflows.exposure_grid_setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflows.exposure_grid_setup</span></code></a>(grid_like, ...)</p></td>
 <td><p>Read and transform exposure grid data.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+</section>
 </section>
 
 
@@ -584,6 +615,21 @@
                 <dialog id="pst-secondary-sidebar-modal"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vulnerability">Vulnerability</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hazard">Hazard</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-geometry">Exposure (geometry)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposure-grid">Exposure (grid)</a></li>
+</ul>
+  </nav></div>
 
   <div class="sidebar-secondary-item">
 
