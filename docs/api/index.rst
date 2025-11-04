@@ -21,6 +21,8 @@ Here the essentials are listed to work with HydroMT-FIAT via the python API.
      - The workhorse functions of the components
    * - :ref:`api_drivers`
      - The custom HydroMT drivers of HydroMT-FIAT
+   * - :ref:`api_utility`
+     - The utility functions of HydroMT-FIAT
 
 .. toctree::
     :maxdepth: 1
@@ -30,3 +32,4 @@ Here the essentials are listed to work with HydroMT-FIAT via the python API.
     components
     workflows
     drivers
+    utility
