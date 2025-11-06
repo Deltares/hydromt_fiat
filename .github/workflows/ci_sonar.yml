@@ -25,21 +25,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SonarQube Scan
-        if: ${{ github.event.client_payload.pr_flag }} == 'false'
+        if: ${{ github.event.client_payload.pr_flag == 'false' }}
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.branch.name: ${{ github.event.client_payload.brach }}
+            -Dsonar.branch.name=${{ github.event.client_payload.brach }}
 
       - name: SonarQube Scan (PR)
-        if: ${{ github.event.client_payload.pr_flag }} == "true"
+        if: ${{ github.event.client_payload.pr_flag == 'true' }}
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.pullrequest.branch: ${{ github.event.client_payload.brach }}
-            -Dsonar.pullrequest.base: ${{ github.event.client_payload.pr_base }}
-            -Dsonar.pullrequest.key: ${{ github.event.client_payload.pr_number }}
+            -Dsonar.pullrequest.branch=${{ github.event.client_payload.brach }}
+            -Dsonar.pullrequest.base=${{ github.event.client_payload.pr_base }}
+            -Dsonar.pullrequest.key=${{ github.event.client_payload.pr_number }}
