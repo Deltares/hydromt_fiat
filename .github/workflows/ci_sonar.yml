@@ -19,10 +19,10 @@ jobs:
           ref: ${{ github.event.client_payload.branch }}
 
       - name: Download coverage
-        uses: actions/download-artifact@v6
-        with:
-          name: code-coverage
-          path: coverage.xml
+        run: |
+          gh run download ${{ github.event.client_payload.run_id }} --name code-coverage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: SonarQube Scan
         if: ${{ github.event.client_payload.pr_flag }} == 'false'
