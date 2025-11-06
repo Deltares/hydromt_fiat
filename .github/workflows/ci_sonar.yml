@@ -31,7 +31,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.branch.name=${{ github.event.client_payload.brach }}
+            -Dsonar.branch.name=${{ github.event.client_payload.branch }}
 
       - name: SonarQube Scan (PR)
         if: ${{ github.event.client_payload.pr_flag == 'true' }}
@@ -40,6 +40,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.pullrequest.branch=${{ github.event.client_payload.brach }}
+            -Dsonar.pullrequest.branch=${{ github.event.client_payload.branch }}
             -Dsonar.pullrequest.base=${{ github.event.client_payload.pr_base }}
             -Dsonar.pullrequest.key=${{ github.event.client_payload.pr_number }}
