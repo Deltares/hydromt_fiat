@@ -46,10 +46,10 @@ jobs:
           event-type: sonarqube-trigger
           client-payload: |
             {
-              "branch": ${{ github.head_ref || github.ref_name }},
-              "pr_flag": ${{ github.event_name == 'pull_request' }},
-              "pr_base": ${{ github.event.pull_request.base.ref || '' }},
-              "pr_number": ${{ github.event.pull_request.number || '' }},
+              "branch": "${{ github.head_ref || github.ref_name }}",
+              "pr_flag": "${{ github.event_name == 'pull_request' }}",
+              "pr_base": "${{ github.event.pull_request.base.ref || '' }}",
+              "pr_number": "${{ github.event.pull_request.number || '' }}",
             }
 
   integration:
