@@ -15,7 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth:
+          ref: ${{ github.event.client_payload.repo.branch }}
 
       - name: Download coverage
         uses: actions/download-artifact@v6

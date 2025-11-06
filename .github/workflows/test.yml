@@ -37,6 +37,9 @@ jobs:
           name: code-coverage
           path: coverage.xml
 
+      - name: Get branch name
+        uses: ./.github/actions/get-branch
+
       - name: Signal SonarQube
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
         uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f
@@ -44,6 +47,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           event-type: sonarqube-trigger
+          client-payload: |
+            {
+              "repo": {
+                "name": "${{ github.repository }}",
+                "branch": "${{ github.ref }}"
+              }
+            }
 
   integration:
     defaults:
