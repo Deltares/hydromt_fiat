@@ -1,5 +1,5 @@
 ---
-name: Test Package
+name: Test Packages
 on:
   workflow_dispatch:
   push:
