@@ -49,10 +49,7 @@ jobs:
           event-type: sonarqube-trigger
           client-payload: |
             {
-              "repo": {
-                "name": "${{ github.repository }}",
-                "branch": "${{ github.ref }}"
-              }
+              "ref": "${{ github.head_ref }}"
             }
 
   integration:
