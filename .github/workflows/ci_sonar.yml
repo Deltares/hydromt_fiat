@@ -34,7 +34,7 @@ jobs:
             -Dsonar.branch.name: ${{ github.event.client_payload.brach }}
 
       - name: SonarQube Scan (PR)
-        if: ${{ github.event.client_payload.pr_flag }} == "true"
+        if: ${{ github.event.client_payload.pr_flag }} == 'true'
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
