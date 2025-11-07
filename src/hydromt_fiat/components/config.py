@@ -1,4 +1,4 @@
-"""The custum config component."""
+"""The config component."""
 
 import logging
 from pathlib import Path
@@ -18,7 +18,9 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """A Custom config component for FIAT models.
+    """Config component.
+
+    Container for all the settings of a Delft-FIAT model.
 
     Parameters
     ----------

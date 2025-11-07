@@ -1,4 +1,4 @@
-"""Custom region components."""
+"""The region components."""
 
 from logging import Logger, getLogger
 from pathlib import Path
@@ -17,7 +17,9 @@ logger: Logger = getLogger(f"hydromt.{__name__}")
 
 
 class RegionComponent(SpatialModelComponent):
-    """Custom component for region.
+    """Component for the region.
+
+    Contains a single geometry at most, i.e. the region.
 
     Parameters
     ----------

@@ -1,4 +1,4 @@
-"""The custom exposure geometries component."""
+"""The exposure geometries component."""
 
 import logging
 from pathlib import Path
@@ -24,7 +24,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ExposureGeomsComponent(SpatialModelComponent):
-    """Custom exposure geometries component.
+    """Exposure geometries component.
 
     Parameters
     ----------
