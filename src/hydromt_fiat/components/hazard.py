@@ -1,4 +1,4 @@
-"""The custom hazard component."""
+"""The hazard component."""
 
 import logging
 from pathlib import Path
@@ -20,7 +20,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class HazardComponent(GridComponent):
-    """Custom hazard component.
+    """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 

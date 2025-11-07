@@ -1,4 +1,4 @@
-"""The custom exposure grid component."""
+"""The exposure grid component."""
 
 import logging
 from pathlib import Path
@@ -19,7 +19,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ExposureGridComponent(GridComponent):
-    """Custom exposure grid component.
+    """Exposure grid component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 
