@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>hydromt_fiat.components.ExposureGridComponent.setup &#8212; hydromt_fiat  documentation</title>
+    <title>hydromt_fiat.components.ExposureGridComponent.clear &#8212; hydromt_fiat  documentation</title>
   
   
   
@@ -45,7 +45,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.ExposureGridComponent.setup';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.ExposureGridComponent.clear';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
@@ -56,8 +56,8 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Workflow functions" href="../api/workflows.html" />
-    <link rel="prev" title="hydromt_fiat.components.ExposureGridComponent.clip" href="hydromt_fiat.components.ExposureGridComponent.clip.html" />
+    <link rel="next" title="hydromt_fiat.components.ExposureGridComponent.clip" href="hydromt_fiat.components.ExposureGridComponent.clip.html" />
+    <link rel="prev" title="hydromt_fiat.components.ExposureGridComponent.write" href="hydromt_fiat.components.ExposureGridComponent.write.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -435,9 +435,9 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.data.html">hydromt_fiat.components.ExposureGridComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.read.html">hydromt_fiat.components.ExposureGridComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.write.html">hydromt_fiat.components.ExposureGridComponent.write</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clear.html">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/workflows.html">Workflow functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -507,7 +507,7 @@
     
     <li class="breadcrumb-item"><a href="../api/components.html" class="nav-link">Components</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.components.ExposureGridComponent.setup</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">hydromt_fiat.components.ExposureGridComponent.clear</span></li>
   </ul>
 </nav>
 </div>
@@ -524,21 +524,12 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="hydromt-fiat-components-exposuregridcomponent-setup">
-<h1>hydromt_fiat.components.ExposureGridComponent.setup<a class="headerlink" href="#hydromt-fiat-components-exposuregridcomponent-setup" title="Link to this heading">#</a></h1>
+  <section id="hydromt-fiat-components-exposuregridcomponent-clear">
+<h1>hydromt_fiat.components.ExposureGridComponent.clear<a class="headerlink" href="#hydromt-fiat-components-exposuregridcomponent-clear" title="Link to this heading">#</a></h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGridComponent.setup">
-<span class="sig-prename descclassname"><span class="pre">ExposureGridComponent.</span></span><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure_fnames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposure_link_fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_grid.html#ExposureGridComponent.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGridComponent.setup" title="Link to this definition">#</a></dt>
-<dd><p>Set up an exposure grid.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>exposure_fnames</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – Name of or path to exposure file(s).</p></li>
-<li><p><strong>exposure_link_fname</strong> (<em>Path</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Table containing the names of the exposure files and corresponding
-vulnerability curves. By default None</p></li>
-</ul>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGridComponent.clear">
+<span class="sig-prename descclassname"><span class="pre">ExposureGridComponent.</span></span><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_grid.html#ExposureGridComponent.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGridComponent.clear" title="Link to this definition">#</a></dt>
+<dd><p>Clear the exposure grid data.</p>
 </dd></dl>
 
 </section>
@@ -554,20 +545,20 @@ vulnerability curves. By default None</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="hydromt_fiat.components.ExposureGridComponent.clip.html"
+       href="hydromt_fiat.components.ExposureGridComponent.write.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.clip</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.write</p>
       </div>
     </a>
     <a class="right-next"
-       href="../api/workflows.html"
+       href="hydromt_fiat.components.ExposureGridComponent.clip.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Workflow functions</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.clip</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -590,7 +581,7 @@ vulnerability curves. By default None</p></li>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.components.ExposureGridComponent.setup"><code class="docutils literal notranslate"><span class="pre">ExposureGridComponent.setup()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hydromt_fiat.components.ExposureGridComponent.clear"><code class="docutils literal notranslate"><span class="pre">ExposureGridComponent.clear()</span></code></a></li>
 </ul>
   </nav></div>
 
@@ -598,7 +589,7 @@ vulnerability curves. By default None</p></li>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.components.ExposureGridComponent.setup.rst">
+    <a href="https://github.com/Deltares/hydromt_fiat/edit/main/docs/_generated/hydromt_fiat.components.ExposureGridComponent.clear.rst">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -614,7 +605,7 @@ vulnerability curves. By default None</p></li>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../_sources/_generated/hydromt_fiat.components.ExposureGridComponent.setup.rst.txt"
+      <li><a href="../_sources/_generated/hydromt_fiat.components.ExposureGridComponent.clear.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

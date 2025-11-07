@@ -432,7 +432,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for hydromt_fiat.components.exposure_grid</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The custom exposure grid component.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;The exposure grid component.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -455,7 +455,7 @@
 <div class="viewcode-block" id="ExposureGridComponent">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.html#hydromt_fiat.components.ExposureGridComponent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExposureGridComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom exposure grid component.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exposure grid component.</span>
 
 <span class="sd">    Inherits from the HydroMT-core GridComponent model-component.</span>
 
@@ -582,6 +582,15 @@
 
 
     <span class="c1">## Mutating methods</span>
+<div class="viewcode-block" id="ExposureGridComponent.clear">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.clear.html#hydromt_fiat.components.ExposureGridComponent.clear">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the exposure grid data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_grid</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="ExposureGridComponent.clip">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.clip.html#hydromt_fiat.components.ExposureGridComponent.clip">[docs]</a>
     <span class="nd">@hydromt_step</span>
@@ -623,6 +632,7 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 
+    <span class="c1">## Setup methods</span>
 <div class="viewcode-block" id="ExposureGridComponent.setup">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup">[docs]</a>
     <span class="nd">@hydromt_step</span>

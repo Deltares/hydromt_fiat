@@ -432,7 +432,7 @@
                 <article class="bd-article">
                   
   <h1>Source code for hydromt_fiat.components.hazard</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The custom hazard component.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;The hazard component.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -456,7 +456,7 @@
 <div class="viewcode-block" id="HazardComponent">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.html#hydromt_fiat.components.HazardComponent">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HazardComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom hazard component.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Hazard component.</span>
 
 <span class="sd">    Inherits from the HydroMT-core GridComponent model-component.</span>
 
@@ -581,6 +581,15 @@
 
 
     <span class="c1">## Mutating methods</span>
+<div class="viewcode-block" id="HazardComponent.clear">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.clear.html#hydromt_fiat.components.HazardComponent.clear">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the hazard data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_grid</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="HazardComponent.clip">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.clip.html#hydromt_fiat.components.HazardComponent.clip">[docs]</a>
     <span class="nd">@hydromt_step</span>
@@ -622,6 +631,7 @@
         <span class="k">return</span> <span class="n">data</span></div>
 
 
+    <span class="c1"># Setup methods</span>
 <div class="viewcode-block" id="HazardComponent.setup">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup">[docs]</a>
     <span class="nd">@hydromt_step</span>
