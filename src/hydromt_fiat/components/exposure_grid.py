@@ -141,6 +141,12 @@ class ExposureGridComponent(GridComponent):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the exposure grid data."""
+        self._data = None
+        self._initialize_grid(skip_read=True)
+
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,
@@ -178,6 +184,7 @@ class ExposureGridComponent(GridComponent):
             return None
         return data
 
+    ## Setup methods
     @hydromt_step
     def setup(
         self,

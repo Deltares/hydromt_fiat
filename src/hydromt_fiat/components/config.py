@@ -205,3 +205,10 @@ class ConfigComponent(ModelComponent):
                 current = current[part]
             else:
                 current[part] = value
+
+    ## Mutating methods
+    @hydromt_step
+    def clear(self):
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)

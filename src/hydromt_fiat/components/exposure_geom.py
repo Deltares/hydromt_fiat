@@ -213,6 +213,12 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the exposure geometry data."""
+        self._data = None
+        self._initialize(skip_read=True)
+
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,

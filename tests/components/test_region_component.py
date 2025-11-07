@@ -20,10 +20,28 @@ def test_region_component_empty(mock_model: MagicMock):
     assert component._filename == "region.geojson"
 
 
+def test_region_component_clear(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+
+    # Set the data like a dummy
+    component._data = {"region": build_region_small}
+    # Assert the current state
+    assert len(component.data) == 1
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data) == 0
+
+
 def test_region_component_set(
+    mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
     build_region_small: gpd.GeoDataFrame,
-    mock_model: MagicMock,
 ):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
@@ -51,9 +69,9 @@ def test_region_component_set(
 
 
 def test_region_component_append(
+    mock_model: MagicMock,
     box_geometry: gpd.GeoDataFrame,
     build_region: gpd.GeoDataFrame,
-    mock_model: MagicMock,
 ):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
@@ -69,9 +87,9 @@ def test_region_component_append(
 
 
 def test_region_component_replace(
+    mock_model: MagicMock,
     box_geometry: gpd.GeoDataFrame,
     build_region: gpd.GeoDataFrame,
-    mock_model: MagicMock,
 ):
     # Setup the component with the mock model
     component = RegionComponent(model=mock_model)
@@ -88,8 +106,8 @@ def test_region_component_replace(
 
 def test_region_component_read(
     tmp_path: Path,
-    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
 ):
     # Setup the component
     type(mock_model).root = PropertyMock(
@@ -130,8 +148,8 @@ def test_region_component_write_empty(
 
 def test_region_component_write_default(
     tmp_path: Path,
-    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = RegionComponent(model=mock_model)
@@ -150,8 +168,8 @@ def test_region_component_write_default(
 
 def test_region_component_write_crs(
     tmp_path: Path,
-    build_region_small: gpd.GeoDataFrame,
     mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
 ):
     # Create new component
     # Adjust the model crs to test the write capabilities
