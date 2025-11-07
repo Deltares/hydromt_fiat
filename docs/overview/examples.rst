@@ -4,6 +4,13 @@
 Examples
 ========
 
+This page contains examples regarding:
+
+- Preparing the necessary data
+- Building a data catalog
+- Building with HydroMT-FIAT
+- Updating with HydroMT-FIAT
+
 Building
 --------
 

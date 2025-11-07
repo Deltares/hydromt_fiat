@@ -12,20 +12,31 @@ exposure vector data, one for vulnerability data etc. As the FIATModel model cla
 connects the components with each other, data build in e.g. the vulnerability component
 can be accessed and used by the exposure vector component.
 
-A quick overview of all the components is presented on the following page:
+.. grid:: 4
+    :gutter: 1
 
-- :ref:`Model components <user_guide_components>`
+    .. grid-item-card::
+        :text-align: center
+        :link: user_guide_data_index
+        :link-type: ref
 
-All of these components need (raw) input data when trying to set up data for Delft-FIAT.
-Most common is defining the data in a HydroMT `data catalog <Data_Catalog_>`_ and use
-the created entry in the data catalog as input.
+        :octicon:`stack;5em`
+        +++
+        Data
 
+    .. grid-item-card::
+        :text-align: center
+        :link: user_guide_model_index
+        :link-type: ref
+
+        :octicon:`package;5em`
+        +++
+        Model (building)
 
 .. toctree::
    :caption: Table of Contents
    :maxdepth: 2
    :hidden:
 
-   components.rst
-
-.. _Data_Catalog: https://deltares.github.io/hydromt/stable/guides/advanced_user/data_prepare_cat.html
+   model/index.rst
+   data/index.rst

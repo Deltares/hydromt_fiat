@@ -27,7 +27,7 @@ Getting started
 
     .. grid-item-card::
         :text-align: center
-        :link: examples
+        :link: overview_examples
         :link-type: ref
 
         :octicon:`graph;10em`
@@ -50,3 +50,4 @@ Getting started
 
    install.rst
    examples.rst
+   faq.rst
