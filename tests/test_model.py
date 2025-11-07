@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -12,6 +13,7 @@ from hydromt_fiat.components import (
     HazardComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.components.vulnerability import VulnerabilityData
 
 
 def test_model_empty(tmp_path: Path):
@@ -41,6 +43,45 @@ def test_model_basic_read_write(tmp_path: Path):
     model.read()
 
     assert len(model.config.data) != 0
+
+
+def test_model_clear(  # Dont like this to much, as it is a bit of an integration test
+    tmp_path: Path,
+    build_region_small: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+    exposure_grid: xr.Dataset,
+    hazard: xr.Dataset,
+    vulnerability_curves: pd.DataFrame,
+):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Set data like a dummy
+    model.components["region"]._data = {"region": build_region_small}
+    model.config._data = {"model": {"type": "geom"}}
+    model.exposure_geoms._data = {"foo": exposure_vector}
+    model.exposure_grid._data = exposure_grid
+    model.hazard._data = hazard
+    model.vulnerability._data = VulnerabilityData(vulnerability_curves, pd.DataFrame())
+    # Assert the current state
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert model.crs.to_epsg() == 28992
+    assert len(model.config.data) == 1
+    assert len(model.exposure_geoms.data) == 1
+    assert len(model.exposure_grid.data.data_vars) == 4
+    assert len(model.hazard.data.data_vars) == 1
+    assert len(model.vulnerability.data.curves) == 1001
+
+    # Clear the model
+    model.clear()
+    # Assert the state afterwards
+    assert model.region is None
+    assert model.crs is None
+    assert len(model.config.data) == 0
+    assert len(model.exposure_geoms.data) == 0
+    assert len(model.exposure_grid.data.data_vars) == 0
+    assert len(model.hazard.data.data_vars) == 0
+    assert len(model.vulnerability.data.curves) == 0
 
 
 def test_model_clip(  # Dont like this to much, as it is a bit of an integration test

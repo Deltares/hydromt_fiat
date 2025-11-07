@@ -139,6 +139,16 @@ class FIATModel(Model):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the model.
+
+        All data from the components are deleted.
+        The region is deleted.
+        """
+        for component in self.components.values():
+            component.clear()
+
+    @hydromt_step
     def clip(
         self,
         region: Path | str | gpd.GeoDataFrame,

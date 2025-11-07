@@ -1,4 +1,4 @@
-"""The custom exposure geometries component."""
+"""The exposure geometries component."""
 
 import logging
 from pathlib import Path
@@ -24,7 +24,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ExposureGeomsComponent(SpatialModelComponent):
-    """Custom exposure geometries component.
+    """Exposure geometries component.
 
     Parameters
     ----------
@@ -212,6 +212,12 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self.model.config.set("exposure.geom", cfg)
 
     ## Mutating methods
+    @hydromt_step
+    def clear(self):
+        """Clear the exposure geometry data."""
+        self._data = None
+        self._initialize(skip_read=True)
+
     @hydromt_step
     def clip(
         self,

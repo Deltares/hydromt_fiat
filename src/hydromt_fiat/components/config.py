@@ -1,4 +1,4 @@
-"""The custum config component."""
+"""The config component."""
 
 import logging
 from pathlib import Path
@@ -18,7 +18,9 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """Custom config component for FIAT models.
+    """Config component.
+
+    Container for all the settings of a Delft-FIAT model.
 
     Parameters
     ----------
@@ -205,3 +207,10 @@ class ConfigComponent(ModelComponent):
                 current = current[part]
             else:
                 current[part] = value
+
+    ## Mutating methods
+    @hydromt_step
+    def clear(self):
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)

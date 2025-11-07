@@ -1,4 +1,4 @@
-"""The custom hazard component."""
+"""The hazard component."""
 
 import logging
 from pathlib import Path
@@ -20,7 +20,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class HazardComponent(GridComponent):
-    """Custom hazard component.
+    """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 
@@ -140,6 +140,12 @@ class HazardComponent(GridComponent):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the hazard data."""
+        self._data = None
+        self._initialize_grid(skip_read=True)
+
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,
@@ -177,6 +183,7 @@ class HazardComponent(GridComponent):
             return None
         return data
 
+    # Setup methods
     @hydromt_step
     def setup(
         self,

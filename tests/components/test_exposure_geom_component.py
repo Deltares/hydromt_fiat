@@ -22,6 +22,24 @@ def test_exposure_geom_component_empty(mock_model: MagicMock):
     assert isinstance(component.data, dict)
 
 
+def test_exposure_geoms_component_clear(
+    mock_model: MagicMock,
+    exposure_vector: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = ExposureGeomsComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector}
+    # Assert the current state, i.e. amount of rows
+    assert len(component.data) == 1
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data) == 0
+
+
 def test_exposure_geoms_component_clip(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
@@ -78,8 +96,8 @@ def test_exposure_geoms_component_clip_inplace(
 
 def test_exposure_geom_component_set(
     caplog: pytest.LogCaptureFixture,
-    build_region: gpd.GeoDataFrame,
     mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
@@ -134,8 +152,8 @@ def test_exposure_geom_component_region(
 
 
 def test_exposure_geom_component_read(
-    model_data_clipped_path: Path,
     mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
@@ -156,8 +174,8 @@ def test_exposure_geom_component_read(
 
 
 def test_exposure_geom_component_read_sig(
-    model_data_clipped_path: Path,
     mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
