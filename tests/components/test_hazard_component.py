@@ -24,6 +24,24 @@ def test_hazard_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
+def test_hazard_component_clear(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    # Assert the current state
+    assert len(component.data.data_vars) == 1
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data.data_vars) == 0
+
+
 def test_hazard_component_clip(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,

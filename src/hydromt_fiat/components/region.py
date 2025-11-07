@@ -143,7 +143,7 @@ class RegionComponent(SpatialModelComponent):
         # Write
         gdf.to_file(write_path, **kwargs)
 
-    ## Set(up) methods
+    ## Action methods
     def set(
         self,
         geom: gpd.GeoDataFrame | gpd.GeoSeries,
@@ -184,3 +184,9 @@ class RegionComponent(SpatialModelComponent):
             geom = geom.union(cur)
 
         self.data[REGION] = geom
+
+    ## Mutating methods
+    def clear(self):
+        """Clear the region."""
+        self._data = None
+        self._initialize(skip_read=True)

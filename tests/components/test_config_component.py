@@ -16,7 +16,7 @@ def test_config_component_init(mock_model: MagicMock):
     # Assert that the internal data is None
     assert component._data is None
 
-    # When asking for data property, it should return a tomlkit document
+    # When asking for data property, it should return a dict
     assert isinstance(component.data, dict)
     assert isinstance(component._data, dict)  # Same for internal
     assert len(component.data) == 0
@@ -32,6 +32,24 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     # Set the filename
     component.filename = "foo.toml"
     assert component.filename == "foo.toml"
+
+
+def test_config_component_clear(
+    mock_model: MagicMock,
+    config_dummy: dict,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Set data like a dummy
+    component._data = config_dummy
+    # Assert the current state
+    assert len(component.data) == 4
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data) == 0
 
 
 def test_config_component_get(
