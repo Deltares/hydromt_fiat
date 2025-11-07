@@ -36,6 +36,7 @@ ConfigComponent
     ConfigComponent.data
     ConfigComponent.read
     ConfigComponent.write
+    ConfigComponent.clear
 
 VulnerabilityComponent
 ----------------------
@@ -45,8 +46,9 @@ VulnerabilityComponent
 
     VulnerabilityComponent.data
     VulnerabilityComponent.read
-    VulnerabilityComponent.setup
     VulnerabilityComponent.write
+    VulnerabilityComponent.clear
+    VulnerabilityComponent.setup
 
 HazardComponent
 ---------------
@@ -56,9 +58,10 @@ HazardComponent
 
     HazardComponent.data
     HazardComponent.read
+    HazardComponent.write
+    HazardComponent.clear
     HazardComponent.clip
     HazardComponent.setup
-    HazardComponent.write
 
 ExposureGeomsComponent
 ----------------------
@@ -68,11 +71,12 @@ ExposureGeomsComponent
 
     ExposureGeomsComponent.data
     ExposureGeomsComponent.read
+    ExposureGeomsComponent.write
+    ExposureGeomsComponent.clear
     ExposureGeomsComponent.clip
     ExposureGeomsComponent.setup
     ExposureGeomsComponent.setup_max_damage
     ExposureGeomsComponent.update_column
-    ExposureGeomsComponent.write
 
 ExposureGridComponent
 ---------------------
@@ -82,6 +86,7 @@ ExposureGridComponent
 
     ExposureGridComponent.data
     ExposureGridComponent.read
+    ExposureGridComponent.write
+    ExposureGridComponent.clear
     ExposureGridComponent.clip
     ExposureGridComponent.setup
-    ExposureGridComponent.write

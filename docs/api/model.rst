@@ -69,4 +69,5 @@ Model mutating methods
 .. autosummary::
     :toctree: ../_generated
 
+    FIATModel.clear
     FIATModel.clip
