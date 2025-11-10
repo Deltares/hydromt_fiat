@@ -17,7 +17,6 @@ html[data-theme="light"] {
     --pst-color-navbar-link-hover: #fff;
     --pst-color-navbar-link-active: #fff;
 
-
     /* sphinx design */
     /* NOTE: does not work since v0.9 */
     --sd-color-card-border-hover: #080c80;
@@ -26,7 +25,14 @@ html[data-theme="light"] {
     --sd-color-tabs-underline-active: #080c80;
 }
 
-/* enlarge deltares & github icon size; only works with local/url svg files; not with fa icons */
+/* Enlarge deltares & github icon size; only works with local/url svg files; not with fa icons */
 img.icon-link-image {
     height: 2.5em !important;
+}
+
+/* Jupyter notebook output with a scrollbar */
+div.output_area pre {
+    max-height: 400px;  /* Adjust height as needed */
+    overflow-y: auto;
+    white-space: pre-wrap; /* Optional: wrap long lines */
 }
