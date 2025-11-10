@@ -7,7 +7,6 @@
 import os
 import shutil
 import sys
-from distutils.dir_util import copy_tree
 
 import hydromt_fiat
 
@@ -31,7 +30,7 @@ def remove_dir_content(path: str) -> None:
 if os.path.isdir("_examples"):
     remove_dir_content("_examples")
 os.makedirs("_examples")
-copy_tree("../examples", "_examples")
+shutil.copytree("../examples", "_examples", dirs_exist_ok=True)
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -40,6 +39,9 @@ project = "hydromt_fiat"
 copyright = "2024, Deltares"
 author = "Deltares"
 version = hydromt_fiat.__version__
+
+# Parse the version for the switcher
+doc_version = "latest" if "dev" in version else version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -75,56 +77,50 @@ todo_include_todos = False
 autoclass_content = "class"
 autodoc_member_order = "bysource"
 
-bare_version = hydromt_fiat.__version__
-doc_version = bare_version[: bare_version.find("dev") - 1]
-
 html_context = {
     "github_url": "https://github.com",
     "github_user": "Deltares",
     "github_repo": "hydromt_fiat",
     "github_version": "main",  # FIXME
     "doc_path": "docs",
-    "default_mode": "light",
+    "default_mode": "auto",
 }
 
 html_css_files = ["theme-deltares.css"]
 html_favicon = "_static/hydromt-icon.svg"
 html_logo = "_static/hydromt-icon.svg"
+html_show_sourcelink = False
 html_static_path = ["_static"]
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "show_nav_level": 1,
     "navbar_align": "content",
-    "use_edit_page_button": True,
+    "show_nav_level": 1,
+    "logo": {
+        "text": "HydroMT-FIAT",
+    },
+    "navbar_start": ["navbar-logo"],
+    "external_links": [
+        {
+            "name": "HydroMT",
+            "url": "https://deltares.github.io/hydromt/latest/index.html",
+        },
+    ],
+    "navbar_center": ["navbar-nav"],
+    "navbar_persistent": ["search-button"],
     "icon_links": [
         {
             "name": "GitHub",
             "url": "https://github.com/Deltares/hydromt_fiat",  # required
-            "icon": "https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg",
-            "type": "url",
-        },
-        {
-            "name": "Delft-FIAT",
-            "url": "https://deltares.github.io/Delft-FIAT/latest/",
-            "icon": "_static/fiat.svg",
-            "type": "local",
+            "icon": "fab fa-github",  # Font Awesome GitHub icon
+            "type": "fontawesome",
         },
     ],
-    "external_links": [
-        {
-            "name": "HydroMT core",
-            "url": "https://deltares.github.io/hydromt/latest/index.html",
-        },
-    ],
-    "logo": {
-        "text": "HydroMT-FIAT",
-    },
-    "navbar_end": ["navbar-icon-links", "version-switcher"],  # remove dark mode switch
     "switcher": {
         "json_url": "https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json",
         "version_match": doc_version,
     },
+    "navbar_end": ["theme-switcher", "navbar-icon-links", "version-switcher"],
 }
 
 remove_from_toctrees = ["_generated/*"]
@@ -141,10 +137,10 @@ man_pages = [
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    # "numpy": ("https://numpy.org/doc/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "scipy": ("https://docs.scipy.org/doc/scipy", None),
     # "numba": ("https://numba.pydata.org/numba-doc/latest", None),
-    # "matplotlib": ("https://matplotlib.org/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     # "dask": ("https://docs.dask.org/en/latest", None),
     "rasterio": ("https://rasterio.readthedocs.io/en/latest", None),
     "geopandas": ("https://geopandas.org/en/stable", None),

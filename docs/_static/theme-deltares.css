@@ -17,7 +17,6 @@ html[data-theme="light"] {
     --pst-color-navbar-link-hover: #fff;
     --pst-color-navbar-link-active: #fff;
 
-
     /* sphinx design */
     /* NOTE: does not work since v0.9 */
     --sd-color-card-border-hover: #080c80;

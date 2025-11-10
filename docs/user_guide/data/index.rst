@@ -9,4 +9,6 @@ Data
    :maxdepth: 2
    :hidden:
 
-   catalog.rst
+   vulnerability.rst
+   hazard.rst
+   exposure.rst
