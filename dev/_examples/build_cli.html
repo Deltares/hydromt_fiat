@@ -33,7 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=269fd0c7" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -253,10 +253,6 @@
     </div>
   
 
-  
-    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
-      <span class="fa-solid fa-outdent"></span>
-    </button>
   
 </div>
 
@@ -939,66 +935,66 @@ Options:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2025-11-10 12:00:34,811 - hydromt - log - INFO - HydroMT version: 1.2.0
-2025-11-10 12:00:34,812 - hydromt.cli.main - main - INFO - Building instance of fiat model at /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata.
-2025-11-10 12:00:34,812 - hydromt.cli.main - main - INFO - User settings:
-2025-11-10 12:00:34,871 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./build-data/data_catalog.yml
-2025-11-10 12:00:35,521 - hydromt.model.root - root - INFO - setting root to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata
-2025-11-10 12:00:35,521 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
-2025-11-10 12:00:35,521 - hydromt.model.model - model - INFO - build: setup_region
-2025-11-10 12:00:35,521 - hydromt.model.model - model - INFO - &lt;bound method FIATModel.setup_region of &lt;hydromt_fiat.fiat.FIATModel object at 0x7f6319aa4050&gt;&gt;.replace: False
-2025-11-10 12:00:35,521 - hydromt.model.model - model - INFO - &lt;bound method FIATModel.setup_region of &lt;hydromt_fiat.fiat.FIATModel object at 0x7f6319aa4050&gt;&gt;.region: ./build-data/region.geojson
-2025-11-10 12:00:35,521 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;build-data/region.geojson&#39;
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - build: vulnerability.setup
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7f6316aacd70&gt;&gt;.vulnerability_linking_fname: vulnerability_curves_linking
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7f6316aacd70&gt;&gt;.unit: m
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7f6316aacd70&gt;&gt;.index_name: water depth
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7f6316aacd70&gt;&gt;.vulnerability_fname: vulnerability_curves
-2025-11-10 12:00:35,528 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7f6316aacd70&gt;&gt;.continent: europe
-2025-11-10 12:00:35,528 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
-2025-11-10 12:00:35,528 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/vulnerability/jrc_damage_functions.csv
-2025-11-10 12:00:35,539 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/vulnerability/jrc_damage_functions_linking.csv
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - build: hazard.setup
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7f6316aacc20&gt;&gt;.hazard_type: water_depth
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7f6316aacc20&gt;&gt;.return_periods: None
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7f6316aacc20&gt;&gt;.risk: False
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7f6316aacc20&gt;&gt;.unit: m
-2025-11-10 12:00:35,654 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7f6316aacc20&gt;&gt;.hazard_fnames: flood_event
-2025-11-10 12:00:35,654 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
-2025-11-10 12:00:35,739 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Added water_depth hazard map: flood_event
-2025-11-10 12:00:35,739 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
-2025-11-10 12:00:35,744 - hydromt.model.model - model - INFO - build: exposure_geoms.setup
-2025-11-10 12:00:35,744 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_link_fname: buildings_link
-2025-11-10 12:00:35,744 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_type_fill: unknown
-2025-11-10 12:00:35,744 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_fname: buildings
-2025-11-10 12:00:35,744 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_type_column: gebruiksdoel
-2025-11-10 12:00:35,744 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up exposure geometries
-2025-11-10 12:00:35,791 - hydromt.data_catalog.drivers.geodataframe.pyogrio_driver - pyogrio_driver - WARNING - Overwriting crs of GeoDataFrame to EPSG:28992
-2025-11-10 12:00:35,794 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/buildings/buildings-jrc_map.csv
-2025-11-10 12:00:35,796 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Setting up the exposure data for further use
-2025-11-10 12:00:35,800 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Linking the exposure data with the vulnerability data
-2025-11-10 12:00:35,807 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - WARNING - &#39;fid&#39; column encountered in buildings, column will be removed
-2025-11-10 12:00:35,848 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting the model type to &#39;geom&#39;
-2025-11-10 12:00:35,848 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_max_damage
-2025-11-10 12:00:35,849 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_cost_link_fname: None
-2025-11-10 12:00:35,849 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_name: buildings
-2025-11-10 12:00:35,849 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_type: damage
-2025-11-10 12:00:35,849 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_cost_table_fname: damage_values
-2025-11-10 12:00:35,849 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.country: World
-2025-11-10 12:00:35,849 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up maximum potential damage for buildings
-2025-11-10 12:00:35,849 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/exposure/jrc_damage_values.csv
-2025-11-10 12:00:35,866 - hydromt.model.model - model - INFO - build: exposure_geoms.update_column
-2025-11-10 12:00:35,866 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.exposure_name: buildings
-2025-11-10 12:00:35,866 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.columns: [&#39;ground_flht&#39;, &#39;ground_elevtn&#39;, &#39;extract_method&#39;]
-2025-11-10 12:00:35,866 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7f6316aac980&gt;&gt;.values: [0, 0, &#39;centroid&#39;]
-2025-11-10 12:00:35,866 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Updating exposure data with [&#39;ground_flht&#39;, &#39;ground_elevtn&#39;, &#39;extract_method&#39;] columns
-2025-11-10 12:00:35,867 - hydromt.hydromt_fiat.components.region - region - INFO - Writing the model region file..
-2025-11-10 12:00:35,870 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the exposure vector data..
-2025-11-10 12:00:35,870 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/exposure/buildings.fgb
-2025-11-10 12:00:35,880 - hydromt.hydromt_fiat.components.exposure_grid - exposure_grid - INFO - No exposure grid data found, skip writing.
-2025-11-10 12:00:35,880 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Writing the hazard data..
-2025-11-10 12:00:35,890 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Writing the vulnerability tables..
-2025-11-10 12:00:35,897 - hydromt.hydromt_fiat.components.config - config - INFO - Writing the config file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/settings.toml
+2025-11-10 14:25:40,550 - hydromt - log - INFO - HydroMT version: 1.2.0
+2025-11-10 14:25:40,550 - hydromt.cli.main - main - INFO - Building instance of fiat model at /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata.
+2025-11-10 14:25:40,551 - hydromt.cli.main - main - INFO - User settings:
+2025-11-10 14:25:40,608 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./build-data/data_catalog.yml
+2025-11-10 14:25:41,245 - hydromt.model.root - root - INFO - setting root to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata
+2025-11-10 14:25:41,246 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
+2025-11-10 14:25:41,246 - hydromt.model.model - model - INFO - build: setup_region
+2025-11-10 14:25:41,246 - hydromt.model.model - model - INFO - &lt;bound method FIATModel.setup_region of &lt;hydromt_fiat.fiat.FIATModel object at 0x7fba70e2c050&gt;&gt;.replace: False
+2025-11-10 14:25:41,246 - hydromt.model.model - model - INFO - &lt;bound method FIATModel.setup_region of &lt;hydromt_fiat.fiat.FIATModel object at 0x7fba70e2c050&gt;&gt;.region: ./build-data/region.geojson
+2025-11-10 14:25:41,246 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;build-data/region.geojson&#39;
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - build: vulnerability.setup
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7fba6de30d70&gt;&gt;.vulnerability_linking_fname: vulnerability_curves_linking
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7fba6de30d70&gt;&gt;.unit: m
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7fba6de30d70&gt;&gt;.index_name: water depth
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7fba6de30d70&gt;&gt;.vulnerability_fname: vulnerability_curves
+2025-11-10 14:25:41,253 - hydromt.model.model - model - INFO - &lt;bound method VulnerabilityComponent.setup of &lt;hydromt_fiat.components.vulnerability.VulnerabilityComponent object at 0x7fba6de30d70&gt;&gt;.continent: europe
+2025-11-10 14:25:41,253 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
+2025-11-10 14:25:41,254 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/vulnerability/jrc_damage_functions.csv
+2025-11-10 14:25:41,264 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/vulnerability/jrc_damage_functions_linking.csv
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - build: hazard.setup
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7fba6de30c20&gt;&gt;.hazard_type: water_depth
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7fba6de30c20&gt;&gt;.return_periods: None
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7fba6de30c20&gt;&gt;.risk: False
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7fba6de30c20&gt;&gt;.unit: m
+2025-11-10 14:25:41,378 - hydromt.model.model - model - INFO - &lt;bound method HazardComponent.setup of &lt;hydromt_fiat.components.hazard.HazardComponent object at 0x7fba6de30c20&gt;&gt;.hazard_fnames: flood_event
+2025-11-10 14:25:41,378 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
+2025-11-10 14:25:41,463 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Added water_depth hazard map: flood_event
+2025-11-10 14:25:41,463 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
+2025-11-10 14:25:41,467 - hydromt.model.model - model - INFO - build: exposure_geoms.setup
+2025-11-10 14:25:41,467 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_link_fname: buildings_link
+2025-11-10 14:25:41,468 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_type_fill: unknown
+2025-11-10 14:25:41,468 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_fname: buildings
+2025-11-10 14:25:41,468 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_type_column: gebruiksdoel
+2025-11-10 14:25:41,468 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up exposure geometries
+2025-11-10 14:25:41,515 - hydromt.data_catalog.drivers.geodataframe.pyogrio_driver - pyogrio_driver - WARNING - Overwriting crs of GeoDataFrame to EPSG:28992
+2025-11-10 14:25:41,518 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/buildings/buildings-jrc_map.csv
+2025-11-10 14:25:41,520 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Setting up the exposure data for further use
+2025-11-10 14:25:41,525 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Linking the exposure data with the vulnerability data
+2025-11-10 14:25:41,531 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - WARNING - &#39;fid&#39; column encountered in buildings, column will be removed
+2025-11-10 14:25:41,573 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting the model type to &#39;geom&#39;
+2025-11-10 14:25:41,573 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_max_damage
+2025-11-10 14:25:41,574 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_cost_link_fname: None
+2025-11-10 14:25:41,574 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_name: buildings
+2025-11-10 14:25:41,574 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_type: damage
+2025-11-10 14:25:41,574 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_cost_table_fname: damage_values
+2025-11-10 14:25:41,574 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.setup_max_damage of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.country: World
+2025-11-10 14:25:41,574 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up maximum potential damage for buildings
+2025-11-10 14:25:41,574 - hydromt.data_catalog.drivers.dataframe.pandas_driver - pandas_driver - INFO - Reading using pandas driver from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/build-data/exposure/jrc_damage_values.csv
+2025-11-10 14:25:41,591 - hydromt.model.model - model - INFO - build: exposure_geoms.update_column
+2025-11-10 14:25:41,591 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.exposure_name: buildings
+2025-11-10 14:25:41,591 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.columns: [&#39;ground_flht&#39;, &#39;ground_elevtn&#39;, &#39;extract_method&#39;]
+2025-11-10 14:25:41,591 - hydromt.model.model - model - INFO - &lt;bound method ExposureGeomsComponent.update_column of &lt;hydromt_fiat.components.exposure_geom.ExposureGeomsComponent object at 0x7fba6de30980&gt;&gt;.values: [0, 0, &#39;centroid&#39;]
+2025-11-10 14:25:41,591 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Updating exposure data with [&#39;ground_flht&#39;, &#39;ground_elevtn&#39;, &#39;extract_method&#39;] columns
+2025-11-10 14:25:41,592 - hydromt.hydromt_fiat.components.region - region - INFO - Writing the model region file..
+2025-11-10 14:25:41,595 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the exposure vector data..
+2025-11-10 14:25:41,595 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/exposure/buildings.fgb
+2025-11-10 14:25:41,605 - hydromt.hydromt_fiat.components.exposure_grid - exposure_grid - INFO - No exposure grid data found, skip writing.
+2025-11-10 14:25:41,605 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Writing the hazard data..
+2025-11-10 14:25:41,616 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Writing the vulnerability tables..
+2025-11-10 14:25:41,622 - hydromt.hydromt_fiat.components.config - config - INFO - Writing the config file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/settings.toml
 </pre></div></div>
 </div>
 <div class="line-block">
@@ -1072,24 +1068,6 @@ modeldata
             </div>
             
             
-              
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-<div
-    id="pst-page-navigation-heading-2"
-    class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> On this page
-  </div>
-  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Using-the-HydroMT-cli.">Using the HydroMT cli.</a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>
