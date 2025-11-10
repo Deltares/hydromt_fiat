@@ -54,7 +54,7 @@ add() {
     local updated=false
 
     # Extract special entries
-    mapfile -t special_entries < <(jq -c '.[] | select(.version == "latest" or .version == "stable" or .version == "dev")' "$SWITCHER_JSON")
+    latest_entry=$(jq -c '.[] | select(.version == "latest")' "$SWITCHER_JSON")
 
     # Extract versioned entries
     mapfile -t version_entries < <(jq -c '.[] | select(.version != "latest" and .version != "stable" and .version != "dev")' "$SWITCHER_JSON")
@@ -129,6 +129,8 @@ add() {
             break
         fi
     done
+    # Set the stable entry
+    stable_entry="{\"name\":\"stable\",\"version\":\"$stable\",\"url\":\"$BASE_URL/stable/\"}"
 
     # Reverse the remaining versions
     # mapfile -t reversed_versions < <(printf "%s\n" "${sorted_versions[@]}" | tac)
@@ -142,9 +144,8 @@ add() {
     # Combine all entries into valid JSON
     {
         echo "["
-        for entry in "${special_entries[@]}"; do
-            echo "  $entry,"
-        done
+        echo "  $latest_entry,"
+        echo "  $stable_entry,"
         for i in "${!sorted_entries[@]}"; do
             echo -n "  ${sorted_entries[$i]}"
             if [ "$i" -lt "$((${#sorted_entries[@]} - 1))" ]; then
