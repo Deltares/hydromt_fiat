@@ -120,7 +120,12 @@ html_theme_options = {
         "json_url": "https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json",
         "version_match": doc_version,
     },
-    "navbar_end": ["theme-switcher", "navbar-icon-links", "version-switcher"],
+    "navbar_end": [
+        "theme-switcher",
+        "navbar-icon-links",
+        "version-switcher",
+    ],
+    "secondary_sidebar_items": {"**": []},
 }
 
 remove_from_toctrees = ["_generated/*"]

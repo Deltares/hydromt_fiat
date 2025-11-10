@@ -30,11 +30,6 @@ img.icon-link-image {
     height: 2.5em !important;
 }
 
-/* Set the page width to a slightly larger value to stretch the navbar */
-.bd-page-width {
-    max-width: 90rem; /* default is 88rem */
-}
-
 /* Jupyter notebook output with a scrollbar */
 div.output_area pre {
     max-height: 400px;  /* Adjust height as needed */
