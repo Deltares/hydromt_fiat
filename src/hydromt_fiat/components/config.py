@@ -1,14 +1,14 @@
-"""The custum config component."""
+"""The config component."""
 
 import logging
 from pathlib import Path
 from typing import Any, cast
 
 import tomlkit
-from hydromt.io.readers import read_toml
 from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.readers import read_toml
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
 
@@ -18,7 +18,9 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """A Custom config component for FIAT models.
+    """Config component.
+
+    Container for all the settings of a Delft-FIAT model.
 
     Parameters
     ----------
@@ -101,6 +103,11 @@ class ConfigComponent(ModelComponent):
         filename = filename or self.filename
         self.filename = filename
         read_path = Path(self.root.path, filename)
+
+        # Check for the path
+        if not read_path.is_file():
+            return
+
         # Read the data (config)
         logger.info(f"Reading the config file at {read_path.as_posix()}")
         self._data = read_toml(read_path)
@@ -123,8 +130,7 @@ class ConfigComponent(ModelComponent):
 
         # If no data, return
         if not self.data:
-            logger.warning("No data in config component, skip writing")
-            return
+            logger.warning("No data in config component, writing empty file..")
 
         # Path from signature or internal default
         # Hierarchy is 1) signature, 2) default
@@ -201,3 +207,10 @@ class ConfigComponent(ModelComponent):
                 current = current[part]
             else:
                 current[part] = value
+
+    ## Mutating methods
+    @hydromt_step
+    def clear(self):
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)

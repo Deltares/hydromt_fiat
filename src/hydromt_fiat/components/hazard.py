@@ -1,4 +1,4 @@
-"""The custom hazard component."""
+"""The hazard component."""
 
 import logging
 from pathlib import Path
@@ -6,10 +6,10 @@ from typing import Any
 
 import geopandas as gpd
 import xarray as xr
-from hydromt.io.writers import write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
@@ -20,7 +20,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class HazardComponent(GridComponent):
-    """Custom hazard component.
+    """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 
@@ -139,6 +139,12 @@ class HazardComponent(GridComponent):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the hazard data."""
+        self._data = None
+        self._initialize_grid(skip_read=True)
+
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,
@@ -176,6 +182,7 @@ class HazardComponent(GridComponent):
             return None
         return data
 
+    # Setup methods
     @hydromt_step
     def setup(
         self,

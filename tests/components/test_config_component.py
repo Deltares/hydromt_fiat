@@ -3,8 +3,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from hydromt.io.readers import read_toml
 from hydromt.model import ModelRoot
+from hydromt.readers import read_toml
 
 from hydromt_fiat.components import ConfigComponent
 
@@ -16,7 +16,7 @@ def test_config_component_init(mock_model: MagicMock):
     # Assert that the internal data is None
     assert component._data is None
 
-    # When asking for data property, it should return a tomlkit document
+    # When asking for data property, it should return a dict
     assert isinstance(component.data, dict)
     assert isinstance(component._data, dict)  # Same for internal
     assert len(component.data) == 0
@@ -32,6 +32,24 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     # Set the filename
     component.filename = "foo.toml"
     assert component.filename == "foo.toml"
+
+
+def test_config_component_clear(
+    mock_model: MagicMock,
+    config_dummy: dict,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Set data like a dummy
+    component._data = config_dummy
+    # Assert the current state
+    assert len(component.data) == 4
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data) == 0
 
 
 def test_config_component_get(
@@ -119,6 +137,29 @@ def test_config_component_read(
     assert component.data["exposure"]
 
 
+def test_config_component_read_none(
+    tmp_path: Path,
+    mock_model: MagicMock,
+):
+    # Set it to read mode
+    type(mock_model).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Assert its data currently none
+    assert component._data is None
+
+    # Read the data
+    component.read()
+
+    # Assert the read data
+    assert isinstance(component.data, dict)
+    assert len(component.data) == 0
+
+
 def test_config_component_write(
     tmp_path: Path,
     mock_model: MagicMock,
@@ -171,6 +212,6 @@ def test_config_component_write_warnings(
     component.write()
 
     # Assert the logging message
-    assert "No data in config component, skip writing" in caplog.text
-    # Assert no file has been written
-    assert not Path(tmp_path, component._filename).is_file()
+    assert "No data in config component, writing empty file.." in caplog.text
+    # Assert file has still been written
+    assert Path(tmp_path, component._filename).is_file()

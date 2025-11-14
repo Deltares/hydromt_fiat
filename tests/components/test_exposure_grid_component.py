@@ -24,6 +24,24 @@ def test_exposure_grid_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
+def test_exposure_grid_component_clear(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = ExposureGridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = exposure_grid
+    # Assert the current state
+    assert len(component.data.data_vars) == 4
+
+    # Call the clear method
+    component.clear()
+    # Assert the state after
+    assert len(component.data.data_vars) == 0
+
+
 def test_exposure_grid_component_clip(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,

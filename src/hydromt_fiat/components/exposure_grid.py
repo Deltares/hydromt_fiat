@@ -1,14 +1,14 @@
-"""The custom exposure grid component."""
+"""The exposure grid component."""
 
 import logging
 from pathlib import Path
 
 import geopandas as gpd
 import xarray as xr
-from hydromt.io.writers import write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
@@ -19,7 +19,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ExposureGridComponent(GridComponent):
-    """Custom exposure grid component.
+    """Exposure grid component.
 
     Inherits from the HydroMT-core GridComponent model-component.
 
@@ -140,6 +140,12 @@ class ExposureGridComponent(GridComponent):
 
     ## Mutating methods
     @hydromt_step
+    def clear(self):
+        """Clear the exposure grid data."""
+        self._data = None
+        self._initialize_grid(skip_read=True)
+
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,
@@ -177,6 +183,7 @@ class ExposureGridComponent(GridComponent):
             return None
         return data
 
+    ## Setup methods
     @hydromt_step
     def setup(
         self,
@@ -207,7 +214,7 @@ before setting up exposure grid"
         exposure_linking = None
         if exposure_link_fname is not None:
             exposure_linking = self.model.data_catalog.get_dataframe(
-                exposure_link_fname
+                exposure_link_fname,
             )
 
         # Sort the input out as iterator

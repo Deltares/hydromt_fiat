@@ -1,4 +1,4 @@
-"""Custom region components."""
+"""The region components."""
 
 from logging import Logger, getLogger
 from pathlib import Path
@@ -17,7 +17,9 @@ logger: Logger = getLogger(f"hydromt.{__name__}")
 
 
 class RegionComponent(SpatialModelComponent):
-    """Custom component for region.
+    """Component for the region.
+
+    Contains a single geometry at most, i.e. the region.
 
     Parameters
     ----------
@@ -143,7 +145,7 @@ class RegionComponent(SpatialModelComponent):
         # Write
         gdf.to_file(write_path, **kwargs)
 
-    ## Set(up) methods
+    ## Action methods
     def set(
         self,
         geom: gpd.GeoDataFrame | gpd.GeoSeries,
@@ -184,3 +186,9 @@ class RegionComponent(SpatialModelComponent):
             geom = geom.union(cur)
 
         self.data[REGION] = geom
+
+    ## Mutating methods
+    def clear(self):
+        """Clear the region."""
+        self._data = None
+        self._initialize(skip_read=True)
