@@ -5,10 +5,10 @@ from pathlib import Path
 
 import geopandas as gpd
 import xarray as xr
-from hydromt._io.writers import _write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
@@ -102,7 +102,8 @@ class ExposureGridComponent(GridComponent):
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `write_nc` method.
+            Additional keyword arguments to be passed to the `to_netcdf` method from
+            xarray.
         """
         # Check the state
         self.root._assert_write_mode()
@@ -121,15 +122,15 @@ class ExposureGridComponent(GridComponent):
 
         # Write it in a gdal compliant manner by default
         logger.info("Writing the exposure grid data..")
-        _write_nc(
-            {"grid": self.data},
-            write_path.as_posix(),
-            root=self.root.path,
+        write_nc(
+            self.data,
+            file_path=write_path,
             gdal_compliant=gdal_compliant,
             rename_dims=False,
             force_overwrite=self.root.mode.is_override_mode(),
             force_sn=False,
-            **kwargs,
+            progressbar=True,
+            to_netcdf_kwargs=kwargs,
         )
 
         # Update the config
@@ -215,7 +216,7 @@ before setting up exposure grid"
         exposure_linking = None
         if exposure_link_fname is not None:
             exposure_linking = self.model.data_catalog.get_dataframe(
-                exposure_link_fname
+                exposure_link_fname,
             )
 
         # Sort the input out as iterator
