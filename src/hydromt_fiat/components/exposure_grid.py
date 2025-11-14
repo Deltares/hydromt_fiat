@@ -102,7 +102,8 @@ class ExposureGridComponent(GridComponent):
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `write_nc` method.
+            Additional keyword arguments to be passed to the `to_netcdf` method from
+            xarray.
         """
         # Check the state
         self.root._assert_write_mode()
@@ -128,7 +129,8 @@ class ExposureGridComponent(GridComponent):
             rename_dims=False,
             force_overwrite=self.root.mode.is_override_mode(),
             force_sn=False,
-            **kwargs,
+            progressbar=True,
+            to_netcdf_kwargs=kwargs,
         )
 
         # Update the config
