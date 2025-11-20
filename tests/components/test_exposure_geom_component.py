@@ -283,6 +283,9 @@ def test_exposure_geom_component_setup(
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
 
+    # Assert entries in the config
+    assert component.model.config.get("model.type") == "geom"
+
 
 def test_exposure_geom_component_setup_errors(
     model: FIATModel,
@@ -333,7 +336,7 @@ def test_exposure_geom_component_setup_max(
     component.setup_max_damage(
         exposure_name="buildings",
         exposure_type="damage",
-        exposure_cost_table_fname="damage_values",
+        exposure_cost_table_fname="jrc_damage",
         country="World",
     )
 

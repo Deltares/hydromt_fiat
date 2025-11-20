@@ -15,7 +15,7 @@ from hydromt_fiat.data import fetch_data
 @pytest.fixture(scope="session")
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("build-data")
+    p = fetch_data("test-build-data")
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -59,6 +59,29 @@ def build_region_small(build_region_small_path: Path) -> gpd.GeoDataFrame:
 def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
     dc = DataCatalog(build_data_catalog_path)
     assert "buildings" in dc.sources
+    return dc
+
+
+## Global data
+@pytest.fixture(scope="session")
+def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
+    # Fetch the data
+    p = fetch_data("global-data")
+    assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def global_data_catalog_path(global_data_path: Path) -> Path:
+    p = Path(global_data_path, "data_catalog.yml")
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture(scope="session")
+def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
+    dc = DataCatalog(global_data_catalog_path)
+    assert "osm_buildings" in dc.sources
     return dc
 
 
@@ -188,8 +211,16 @@ def osm_data_path() -> Path:
 
 ## Models and mocked objects
 @pytest.fixture
-def model(tmp_path: Path, build_data_catalog_path: Path) -> FIATModel:
-    model = FIATModel(tmp_path, mode="w", data_libs=build_data_catalog_path)
+def model(
+    tmp_path: Path,
+    build_data_catalog_path: Path,
+    global_data_catalog_path: Path,
+) -> FIATModel:
+    model = FIATModel(
+        tmp_path,
+        mode="w",
+        data_libs=[build_data_catalog_path, global_data_catalog_path],
+    )
     return model
 
 

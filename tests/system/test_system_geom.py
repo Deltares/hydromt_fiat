@@ -11,10 +11,11 @@ from hydromt_fiat import FIATModel
     Version(__version__) < Version("1"),
     reason="At least Delft-FIAT version 1.0.0 is required.",
 )
-@pytest.mark.integration
-def test_model_geom_integration(
+@pytest.mark.system
+def test_system_geom_model(
     tmp_path: Path,
     build_data_catalog_path: Path,
+    global_data_catalog_path: Path,
     build_region_small: Path,
 ):
     ## HydroMT-FIAT
@@ -22,7 +23,7 @@ def test_model_geom_integration(
     model = FIATModel(
         root=tmp_path,
         mode="w+",
-        data_libs=build_data_catalog_path,
+        data_libs=[build_data_catalog_path, global_data_catalog_path],
     )
 
     # Add model type and region
@@ -31,14 +32,14 @@ def test_model_geom_integration(
 
     # Setup the vulnerability
     model.vulnerability.setup(
-        "vulnerability_curves",
-        "vulnerability_curves_linking",
+        "jrc_curves",
+        "jrc_curves_link",
         unit="m",
         continent="europe",
     )
 
     # Add an hazard layer
-    model.hazard_grid.setup(
+    model.hazard.setup(
         "flood_event",
         elevation_reference="dem",
     )
@@ -52,7 +53,7 @@ def test_model_geom_integration(
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
         exposure_type="damage",
-        exposure_cost_table_fname="damage_values",
+        exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
     # Needed for flood calculations

@@ -367,7 +367,7 @@ use 'setup_region' before this method"
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
-        self.model.config.set("model.model_type", "geom")
+        self.model.config.set("model.type", "geom")
 
     @hydromt_step
     def setup_max_damage(

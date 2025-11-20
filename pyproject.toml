@@ -253,12 +253,12 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"
 
 # Testing tasks
 [tool.pixi.feature.test.tasks]
-test = { cmd = ["pytest"] }
+test = { cmd = ["pytest", "--verbose"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov=hydromt_fiat",
     "--cov-report",
@@ -267,7 +267,7 @@ test-cov = { cmd = [
 test-cov-html = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov",
     "--cov-report",
@@ -277,6 +277,12 @@ test-integration = { cmd = [
     "pytest",
     "-m",
     "integration",
+    "--verbose",
+] }
+test-system = { cmd = [
+    "pytest",
+    "-m",
+    "system",
     "--verbose",
 ] }
 

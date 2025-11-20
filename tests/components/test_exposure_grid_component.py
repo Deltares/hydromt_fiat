@@ -218,7 +218,7 @@ def test_exposure_grid_component_setup(
     assert "industrial_content" in component.data.data_vars
 
     # Assert entries in the config
-    assert component.model.config.get("model.model_type") == "grid"
+    assert component.model.config.get("model.type") == "grid"
     assert not component.model.config.get("exposure.grid.settings.var_as_band")
 
 
