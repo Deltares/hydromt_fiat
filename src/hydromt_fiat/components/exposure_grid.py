@@ -251,4 +251,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set("model.model_type", "grid")
+        self.model.config.set("model.type", "grid")
