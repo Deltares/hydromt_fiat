@@ -34,7 +34,7 @@ class RegionComponent(SpatialModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "region.geojson",
+        filename: str = f"{REGION}.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame | gpd.GeoSeries] | None = None
         self._filename: str = filename

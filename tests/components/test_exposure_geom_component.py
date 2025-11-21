@@ -10,6 +10,13 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GEOM,
+    FILE,
+    GEOM,
+    MODEL_TYPE,
+)
 
 
 def test_exposure_geom_component_empty(mock_model: MagicMock):
@@ -17,7 +24,7 @@ def test_exposure_geom_component_empty(mock_model: MagicMock):
     component = ExposureGeomsComponent(model=mock_model)
 
     # Assert some basics
-    assert component._filename == "exposure/{name}.fgb"
+    assert component._filename == f"{EXPOSURE}/{{name}}.fgb"
     assert len(component.data) == 0
     assert isinstance(component.data, dict)
 
@@ -52,9 +59,35 @@ def test_exposure_geoms_component_clip(
     component._data = {"foo": exposure_vector}
     # Assert the current state, i.e. amount of rows
     assert component.data["foo"].shape[0] == 543
+    # Assert equal crs
+    assert exposure_vector.crs == build_region_small.crs
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small.to_crs(4326))
+    ds = component.clip(geom=build_region_small)
+    # Assert the output
+    assert ds["foo"].shape[0] == 12
+
+
+def test_exposure_geoms_component_clip_srs(
+    mock_model: MagicMock,
+    build_region_small: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = ExposureGeomsComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector}
+    # Assert the current state, i.e. amount of rows
+    assert component.data["foo"].shape[0] == 543
+
+    # Reproject the region
+    build_region_small.to_crs(4326, inplace=True)
+    # Assert that the crs is not equal
+    assert exposure_vector.crs != build_region_small.crs
+
+    # Call the clipping method using a smaller region
+    ds = component.clip(geom=build_region_small)
     # Assert the output
     assert ds["foo"].shape[0] == 12
 
@@ -88,7 +121,7 @@ def test_exposure_geoms_component_clip_inplace(
     assert component.data["foo"].shape[0] == 543
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small.to_crs(4326), inplace=True)
+    ds = component.clip(geom=build_region_small, inplace=True)
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data["foo"].shape[0] == 12
@@ -187,7 +220,7 @@ def test_exposure_geom_component_read_sig(
     assert component._data is None
 
     # Calling read to read in the data
-    component.read("exposure/{name}.fgb")
+    component.read(f"{EXPOSURE}/{{name}}.fgb")
 
     # Assert the output
     assert len(component._data) == 2
@@ -214,9 +247,9 @@ def test_exposure_geom_component_write(
     assert Path(tmp_path, component._filename.format(name="buildings2")).is_file()
 
     # Assert the config file entries
-    geom_cfg = mock_model_config.config.get("exposure.geom")
+    geom_cfg = mock_model_config.config.get(EXPOSURE_GEOM)
     assert len(geom_cfg) == 2
-    assert geom_cfg[0]["file"] == Path(tmp_path, "exposure/buildings.fgb")
+    assert geom_cfg[0][FILE] == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
 
 
 def test_exposure_geom_component_write_sig(
@@ -270,7 +303,7 @@ def test_exposure_geom_component_setup(
 
     # Assert that the data is empty
     assert len(component.data) == 0
-    assert "exposure" not in component.model.config.data
+    assert EXPOSURE not in component.model.config.data
 
     # Setup the data
     component.setup(
@@ -284,7 +317,7 @@ def test_exposure_geom_component_setup(
     assert len(component.data["buildings"]) != 0
 
     # Assert entries in the config
-    assert component.model.config.get("model.type") == "geom"
+    assert component.model.config.get(MODEL_TYPE) == GEOM
 
 
 def test_exposure_geom_component_setup_errors(
@@ -374,32 +407,32 @@ def test_exposure_geom_component_update_cols(
     component.set(exposure_vector_clipped_for_damamge, name="bag")
 
     # Assert max damage column is not present
-    assert "ground_flht" not in component.data["bag"].columns
+    assert "foo" not in component.data["bag"].columns
 
     # Call the setup method
     component.update_column(
         exposure_name="bag",
-        columns=["ground_flht"],
+        columns=["foo"],
         values=0,
     )
 
     # Assert that the data is there
-    assert "ground_flht" in component.data["bag"].columns
+    assert "foo" in component.data["bag"].columns
 
     # Assert that the data is NOT there
-    assert "ground_elevtn" not in component.data["bag"].columns
-    assert "extract_method" not in component.data["bag"].columns
+    assert "ref" not in component.data["bag"].columns
+    assert "method" not in component.data["bag"].columns
 
     # Set multiple at once
     component.update_column(
         exposure_name="bag",
-        columns=["ground_elevtn", "extract_method"],
+        columns=["ref", "method"],
         values=[0, "centroid"],
     )
 
     # Assert that the data is there
-    assert "ground_elevtn" in component.data["bag"].columns
-    assert "extract_method" in component.data["bag"].columns
+    assert "ref" in component.data["bag"].columns
+    assert "method" in component.data["bag"].columns
 
 
 def test_exposure_geom_component_update_cols_errors(
@@ -416,6 +449,6 @@ with 'bag' as input or chose from already present geometries: ",
     ):
         component.update_column(
             exposure_name="bag",
-            columns=["ground_flht"],
+            columns=["foo"],
             values=0,
         )

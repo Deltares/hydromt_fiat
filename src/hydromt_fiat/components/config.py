@@ -11,6 +11,7 @@ from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
+from hydromt_fiat.utils import SETTINGS
 
 __all__ = ["ConfigComponent"]
 
@@ -36,7 +37,7 @@ class ConfigComponent(ModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "settings.toml",
+        filename: str = f"{SETTINGS}.toml",
     ):
         self._data: dict[str, Any] | None = None
         self._filename: Path | str = filename
@@ -197,6 +198,12 @@ class ConfigComponent(ModelComponent):
             The value to set the config to.
         """
         self._initialize()
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                self.set(f"{key}.{subkey}", subvalue)
+                return
+        if value is None:  # Not allowed in toml files
+            return
         parts = key.split(".")
         num_parts = len(parts)
         current = cast(dict[str, Any], self._data)

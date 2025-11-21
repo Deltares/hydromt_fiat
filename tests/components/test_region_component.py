@@ -9,6 +9,7 @@ from pyproj.crs import CRS
 from shapely.geometry import MultiPolygon, Polygon
 
 from hydromt_fiat.components import RegionComponent
+from hydromt_fiat.utils import REGION
 
 
 def test_region_component_empty(mock_model: MagicMock):
@@ -17,7 +18,7 @@ def test_region_component_empty(mock_model: MagicMock):
 
     # assert that it is empty
     assert len(component.data) == 0
-    assert component._filename == "region.geojson"
+    assert component._filename == f"{REGION}.geojson"
 
 
 def test_region_component_clear(
@@ -28,7 +29,7 @@ def test_region_component_clear(
     component = RegionComponent(model=mock_model)
 
     # Set the data like a dummy
-    component._data = {"region": build_region_small}
+    component._data = {REGION: build_region_small}
     # Assert the current state
     assert len(component.data) == 1
 
@@ -50,7 +51,7 @@ def test_region_component_set(
     component.set(build_region)
 
     # Assert that there is data
-    assert "region" in component.data
+    assert REGION in component.data
     assert len(component.data) == 1
     assert component.region is not None
     assert len(component.region.columns) == 1
@@ -119,7 +120,7 @@ def test_region_component_read(
     assert component.region is None
 
     # Write the region gdf to the tmp directory
-    build_region.to_file(Path(tmp_path, "region.geojson"))
+    build_region.to_file(Path(tmp_path, f"{REGION}.geojson"))
 
     # Re-read
     component.read()
@@ -141,7 +142,7 @@ def test_region_component_write_empty(
     assert "No region data found, skip writing." in caplog.text
 
     # Write empty region GeoDataFrame
-    component._data = {"region": gpd.GeoDataFrame()}
+    component._data = {REGION: gpd.GeoDataFrame()}
     component.write()
     assert "Region is empty. Skipping..." in caplog.text
 
@@ -158,10 +159,10 @@ def test_region_component_write_default(
     component.set(build_region)
     # Write the data
     component.write()
-    assert Path(tmp_path, "region.geojson").is_file()
+    assert Path(tmp_path, f"{REGION}.geojson").is_file()
 
     # Write to separate directory
-    component.write(filename="geom/region.geojson")
+    component.write(filename=f"geom/{REGION}.geojson")
     assert Path(tmp_path, "geom").is_dir()
     component = None
 
@@ -182,10 +183,10 @@ def test_region_component_write_crs(
 
     # Write and assert output
     component.write()
-    gdf = gpd.read_file(Path(tmp_path, "region.geojson"))
+    gdf = gpd.read_file(Path(tmp_path, f"{REGION}.geojson"))
     assert gdf.crs.to_epsg() == 28992
     gdf = None
     # Check that the to_wgs84 works
     component.write(to_wgs84=True)
-    gdf = gpd.read_file(Path(tmp_path, "region.geojson"))
+    gdf = gpd.read_file(Path(tmp_path, f"{REGION}.geojson"))
     assert gdf.crs.to_epsg() == 4326

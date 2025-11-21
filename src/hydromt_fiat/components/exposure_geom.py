@@ -16,7 +16,19 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.utils import OBJECT_ID
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GEOM,
+    EXPOSURE_GEOM_FILE,
+    FILE,
+    GEOM,
+    MODEL_TYPE,
+    OBJECT_ID,
+    REGION,
+    SETTINGS,
+    SRS,
+    srs_representation,
+)
 
 __all__ = ["ExposureGeomsComponent"]
 
@@ -30,32 +42,24 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ----------
     model : Model
         HydroMT model instance (FIATModel)
-    filename : str, optional
-        The path to use for reading and writing of component data by default.
-        by default "exposure/{name}.fgb".
     region_component : str, optional
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
         the data dictionary.
-    region_filename : str, optional
-        The path to use for writing the region data to a file. By default
-        "region.geojson".
     """
 
     def __init__(
         self,
         model: Model,
         *,
-        filename: str = "exposure/{name}.fgb",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
-        self._filename: str = filename
+        self._filename: str = f"{EXPOSURE}/{{name}}.fgb"
         super().__init__(
             model,
             region_component=region_component,
-            region_filename=region_filename,
+            region_filename=f"{REGION}.geojson",
         )
 
     ## Private methods
@@ -123,13 +127,10 @@ class ExposureGeomsComponent(SpatialModelComponent):
         # Hierarchy: 1) signature, 2) settings file, 3) default
         out = (
             pathing_expand(self.root.path, filename=filename)
-            or pathing_config(
-                self.model.config.get("exposure.geom.file", abs_path=True)
-            )
+            or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
             or pathing_expand(self.root.path, filename=self._filename)
         )
-        if out is None:
-            return None
+        assert out is not None  # Yh..
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
         for p, n in zip(*out):
@@ -202,14 +203,17 @@ class ExposureGeomsComponent(SpatialModelComponent):
             if not write_dir.is_dir():
                 write_dir.mkdir(parents=True, exist_ok=True)
 
-            entry["file"] = write_path
-            entry["srs"] = ":".join(gdf.crs.to_authority())
+            entry[FILE] = write_path
+            # Due to header overloading, this is not solved properly in
+            # the configcomponent
+            if gdf.crs is not None:
+                entry[SETTINGS] = {SRS: srs_representation(gdf.crs)}
 
             # Write the entire thing to vector file
             gdf.to_file(write_path, **kwargs)
 
         # Set the config entries
-        self.model.config.set("exposure.geom", cfg)
+        self.model.config.set(EXPOSURE_GEOM, cfg)
 
     ## Mutating methods
     @hydromt_step
@@ -246,6 +250,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
             return None
         # Loop through all the existing GeoDataFrames and clip them
         for key, gdf in self.data.items():
+            if geom.crs and gdf.crs and gdf.crs != geom.crs:
+                geom = geom.to_crs(gdf.crs)
             data[key] = gdf.clip(geom)
         # If inplace is true, just set the new data and return None
         if inplace:
@@ -279,13 +285,7 @@ column will be removed"
             )
             geom.drop("fid", axis=1, inplace=True)
 
-        # Verify if a geom is set to model crs and if not sets geom to model crs
-        try:
-            model_crs = self.model.crs
-            if model_crs and model_crs != geom.crs:
-                geom.to_crs(model_crs.to_epsg(), inplace=True)
-        except AttributeError:
-            pass
+        # Set the data
         self._data[name] = geom
 
     ## Setup methods
@@ -351,13 +351,13 @@ use 'setup_region' before this method"
             )
 
         # Call the workflows function(s) to manipulate the data
-        exposure_vector = workflows.exposure_setup(
+        exposure_vector = workflows.exposure_geoms_setup(
             exposure_data=exposure_data,
             exposure_type_column=exposure_type_column,
             exposure_linking=exposure_linking,
             exposure_type_fill=exposure_type_fill,
         )
-        exposure_vector = workflows.exposure_vulnerability_link(
+        exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_vector,
             vulnerability=vulnerability.identifiers,
         )
@@ -367,7 +367,7 @@ use 'setup_region' before this method"
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
-        self.model.config.set("model.type", "geom")
+        self.model.config.set(MODEL_TYPE, GEOM)
 
     @hydromt_step
     def setup_max_damage(
@@ -468,7 +468,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             )
 
         # Call the workflow function
-        exposure_vector = workflows.exposure_add_columns(
+        exposure_vector = workflows.exposure_geoms_add_columns(
             self.data[exposure_name], columns=columns, values=values
         )
 
