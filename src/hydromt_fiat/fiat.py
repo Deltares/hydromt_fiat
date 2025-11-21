@@ -16,7 +16,16 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
-from hydromt_fiat.utils import REGION
+from hydromt_fiat.utils import (
+    CONFIG,
+    EXPOSURE,
+    GEOM,
+    GRID,
+    HAZARD,
+    REGION,
+    SETTINGS,
+    VULNERABILITY,
+)
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -51,7 +60,7 @@ class FIATModel(Model):
     def __init__(
         self,
         root: str | None = None,
-        config_fname: str = "settings.toml",
+        config_fname: str = f"{SETTINGS}.toml",
         *,
         mode: str = "r",
         data_libs: list[str] | str | None = None,
@@ -68,23 +77,23 @@ class FIATModel(Model):
 
         ## Setup components
         self.add_component(
-            "config",
+            CONFIG,
             ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
-            "exposure_geoms",
+            f"{EXPOSURE}_{GEOM}",
             ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "exposure_grid",
+            f"{EXPOSURE}_{GRID}",
             ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "hazard",
+            HAZARD,
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "vulnerability",
+            VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
 
@@ -92,27 +101,27 @@ class FIATModel(Model):
     @property
     def config(self) -> ConfigComponent:
         """Return the config component."""
-        return self.components["config"]
+        return self.components[CONFIG]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
         """Return the exposure geoms component."""
-        return self.components["exposure_geoms"]
+        return self.components[f"{EXPOSURE}_{GEOM}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
         """Return the exposure grid component."""
-        return self.components["exposure_grid"]
+        return self.components[f"{EXPOSURE}_{GRID}"]
 
     @property
     def hazard(self) -> HazardComponent:
         """Return the hazard component."""
-        return self.components["hazard"]
+        return self.components[HAZARD]
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Return the vulnerability component."""
-        return self.components["vulnerability"]
+        return self.components[VULNERABILITY]
 
     ## I/O
     @hydromt_step
@@ -124,7 +133,7 @@ class FIATModel(Model):
     def write(self) -> None:
         """Write the FIAT model."""
         names = list(self.components.keys())
-        names.remove("config")
+        names.remove(CONFIG)
         for name in names:
             self.components[name].write()
         self.config.write()

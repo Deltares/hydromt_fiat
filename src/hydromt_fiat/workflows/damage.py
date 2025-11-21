@@ -12,6 +12,7 @@ from hydromt_fiat.utils import (
     COST_TYPE,
     EXPOSURE_LINK,
     EXPOSURE_TYPE,
+    MAX,
     OBJECT_TYPE,
     SUBTYPE,
     create_query,
@@ -133,6 +134,6 @@ def max_monetary_damage(
         # Multiply by the area
         costs_per *= area
 
-        exposure_data[f"max_{exposure_type}{header}"] = costs_per.astype(float)
+        exposure_data[f"{MAX}_{exposure_type}{header}"] = costs_per.astype(float)
 
     return exposure_data

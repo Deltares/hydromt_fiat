@@ -12,6 +12,17 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GRID_FILE,
+    EXPOSURE_GRID_SETTINGS,
+    GRID,
+    MODEL_TYPE,
+    REGION,
+    SRS,
+    VAR_AS_BAND,
+    srs_representation,
+)
 
 __all__ = ["ExposureGridComponent"]
 
@@ -27,33 +38,25 @@ class ExposureGridComponent(GridComponent):
     ----------
     model : Model
         HydroMT model instance.
-    filename : str, optional
-        The path to use for reading and writing of component data by default.
-        By default "exposure/spatial.nc".
     region_component : str, optional
         The name of the region component to use as reference
         for this component's region. If None, the region will be set to the grid extent.
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
-    region_filename : str
-        The path to use for reading and writing of the region data by default.
-        By default "region.geojson".
     """
 
     def __init__(
         self,
         model: Model,
         *,
-        filename: str = "exposure/spatial.nc",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
     ):
         super().__init__(
             model,
-            filename=filename,
+            filename=f"{EXPOSURE}/spatial.nc",
             region_component=region_component,
-            region_filename=region_filename,
+            region_filename=f"{REGION}.geojson",
         )
 
     ## I/O methods
@@ -77,7 +80,7 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get("exposure.grid.file", abs_path=True)
+            or self.model.config.get(EXPOSURE_GRID_FILE, abs_path=True)
             or self._filename
         )
         # Read the data
@@ -115,14 +118,14 @@ class ExposureGridComponent(GridComponent):
         # Sort out the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
-            filename or self.model.config.get("exposure.grid.file") or self._filename
+            filename or self.model.config.get(EXPOSURE_GRID_FILE) or self._filename
         )
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
         logger.info("Writing the exposure grid data..")
         _write_nc(
-            {"grid": self.data},
+            {GRID: self.data},
             write_path.as_posix(),
             root=self.root.path,
             gdal_compliant=gdal_compliant,
@@ -133,11 +136,16 @@ class ExposureGridComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set("exposure.grid.file", write_path)
+        self.model.config.set(EXPOSURE_GRID_FILE, write_path)
         # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set("exposure.grid.settings.var_as_band", False)
+        self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", False)
         if len(self.data.data_vars) > 1:
-            self.model.config.set("exposure.grid.settings.var_as_band", True)
+            self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", True)
+        # Set the srs
+        self.model.config.set(
+            f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
+            srs_representation(self.data.raster.crs),
+        )
 
     ## Mutating methods
     @hydromt_step
@@ -251,4 +259,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set("model.type", "grid")
+        self.model.config.set(MODEL_TYPE, GRID)

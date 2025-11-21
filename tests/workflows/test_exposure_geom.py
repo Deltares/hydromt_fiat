@@ -5,19 +5,20 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from hydromt_fiat.utils import CURVE_ID, DAMAGE, FN, OBJECT_ID, OBJECT_TYPE
 from hydromt_fiat.workflows import (
-    exposure_add_columns,
-    exposure_setup,
-    exposure_vulnerability_link,
+    exposure_geoms_add_columns,
+    exposure_geoms_link_vulnerability,
+    exposure_geoms_setup,
 )
 
 
-def test_exposure_setup(
+def test_exposure_geoms_setup(
     buildings_data: gpd.GeoDataFrame,
     buildings_link_table: pd.DataFrame,
 ):
     # Simply call the function
-    exposure_vector = exposure_setup(
+    exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
@@ -25,17 +26,17 @@ def test_exposure_setup(
 
     # Assert the output
     assert len(exposure_vector) == 9
-    assert "object_type" in exposure_vector.columns
+    assert OBJECT_TYPE in exposure_vector.columns
     assert "industrial" in exposure_vector.object_type.values
 
 
-def test_exposure_setup_fill_nodata(
+def test_exposure_geoms_setup_fill_nodata(
     caplog: pytest.LogCaptureFixture,
     buildings_data: gpd.GeoDataFrame,
     buildings_link_table: pd.DataFrame,
 ):
     # Produce the warning by default
-    exposure_vector = exposure_setup(
+    exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
@@ -46,7 +47,7 @@ def test_exposure_setup_fill_nodata(
     assert len(exposure_vector) == 9
 
     # Fill the nodata in the linking with a known (irony) value
-    exposure_vector = exposure_setup(
+    exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
@@ -57,12 +58,12 @@ def test_exposure_setup_fill_nodata(
     assert len(exposure_vector) == 12
 
 
-def test_exposure_setup_no_table(
+def test_exposure_geoms_setup_no_table(
     caplog: pytest.LogCaptureFixture,
     buildings_data: gpd.GeoDataFrame,
 ):
     # Calling the workflow function without an exposure link table
-    exposure_vector = exposure_setup(
+    exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_type_column="gebruiksdoel",
     )
@@ -77,7 +78,7 @@ defaulting to exposure data object type"
     assert "industrial" not in exposure_vector.object_type.values
 
 
-def test_exposure_setup_errors(
+def test_exposure_geoms_setup_errors(
     buildings_data: gpd.GeoDataFrame,
     buildings_link_table: pd.DataFrame,
 ):
@@ -86,7 +87,7 @@ def test_exposure_setup_errors(
         KeyError,
         match="unknown_col not found in the exposure data",
     ):
-        _ = exposure_setup(
+        _ = exposure_geoms_setup(
             exposure_data=buildings_data,
             exposure_type_column="unknown_col",
         )
@@ -100,69 +101,69 @@ def test_exposure_setup_errors(
         KeyError,
         match="gebruiksdoel not found in the provided linking data",
     ):
-        _ = exposure_setup(
+        _ = exposure_geoms_setup(
             exposure_data=buildings_data,
             exposure_type_column="gebruiksdoel",
             exposure_linking=buildings_link_table,
         )
 
 
-def test_exposure_vulnerability_link(
+def test_exposure_geoms_link_vulnerability(
     exposure_geom_data_link: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Assert amount of columns in the exposure data
     assert len(exposure_geom_data_link.columns) == 11
     # Assert that these columns are absent
-    assert "object_id" not in exposure_geom_data_link.columns
-    assert "fn_damage_structure" not in exposure_geom_data_link.columns
+    assert OBJECT_ID not in exposure_geom_data_link.columns
+    assert f"{FN}_{DAMAGE}_structure" not in exposure_geom_data_link.columns
 
     # Call the workflow function
-    exposure_vector = exposure_vulnerability_link(
+    exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_geom_data_link,
         vulnerability=vulnerability_identifiers,
     )
 
     # Assert the output
     assert len(exposure_vector.columns) == 14
-    assert "object_id" in exposure_vector.columns
-    assert "fn_damage_structure" in exposure_vector.columns
+    assert OBJECT_ID in exposure_vector.columns
+    assert f"{FN}_{DAMAGE}_structure" in exposure_vector.columns
 
     # A simple that the curves set in the exposure data (linking) are present
     # in the vulnerability identifiers
-    for value in exposure_vector["fn_damage_structure"].unique():
-        assert value in vulnerability_identifiers["curve_id"].values
+    for value in exposure_vector[f"{FN}_{DAMAGE}_structure"].unique():
+        assert value in vulnerability_identifiers[CURVE_ID].values
 
 
-def test_exposure_vulnerability_link_subtype(
+def test_exposure_geoms_link_vulnerability_subtype(
     exposure_geom_data_link: gpd.GeoDataFrame,
     vulnerability_identifiers_alt: pd.DataFrame,
 ):
     # Assert amount of columns in the exposure data
     assert len(exposure_geom_data_link.columns) == 11
     # Assert that these columns are absent
-    assert "object_id" not in exposure_geom_data_link.columns
-    assert "fn_damage" not in exposure_geom_data_link.columns
+    assert OBJECT_ID not in exposure_geom_data_link.columns
+    assert f"{FN}_{DAMAGE}" not in exposure_geom_data_link.columns
 
     # Calling the workflow function wihtout subtyping
-    exposure_vector = exposure_vulnerability_link(
+    exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_geom_data_link,
         vulnerability=vulnerability_identifiers_alt,
     )
 
     # Assert the output
     assert len(exposure_vector.columns) == 13  # One column less
-    assert "object_id" in exposure_vector.columns
-    assert "fn_damage" in exposure_vector.columns  # Not fn_damage_*, but just base
+    assert OBJECT_ID in exposure_vector.columns
+    assert f"{FN}_{DAMAGE}" in exposure_vector.columns  # Not fn_damage_*, but just base
 
 
-def test_exposure_vulnerability_link_warnings(
+def test_exposure_geoms_link_vulnerability_warnings(
     caplog: pytest.LogCaptureFixture,
     exposure_geom_data_link: gpd.GeoDataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Fill the nodata in the linking with an unknown (more irony) value
-    exposure_vector = exposure_vulnerability_link(
+    exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_geom_data_link.replace("unknown", "known"),
         vulnerability=vulnerability_identifiers,
     )
@@ -172,7 +173,7 @@ def test_exposure_vulnerability_link_warnings(
     assert len(exposure_vector) == 9
 
 
-def test_exposure_add_columns(
+def test_exposure_geoms_add_columns(
     buildings_data: gpd.GeoDataFrame,
 ):
     # Assert that the columns are not there
@@ -182,7 +183,7 @@ def test_exposure_add_columns(
     id_before = id(buildings_data)
 
     # Call the workflow function
-    exposure_vector = exposure_add_columns(
+    exposure_vector = exposure_geoms_add_columns(
         buildings_data,
         columns=["col1", "col2"],
         values=10,
@@ -200,11 +201,11 @@ def test_exposure_add_columns(
     assert exposure_vector["col1"].mean() == 10
 
 
-def test_exposure_add_columns_list(
+def test_exposure_geoms_add_columns_list(
     buildings_data: gpd.GeoDataFrame,
 ):
     # Call the workflow function
-    exposure_vector = exposure_add_columns(
+    exposure_vector = exposure_geoms_add_columns(
         buildings_data,
         columns=["col1", "col2"],
         values=[10, 20],
@@ -215,7 +216,7 @@ def test_exposure_add_columns_list(
     assert exposure_vector["col2"].mean() == 20
 
 
-def test_exposure_add_columns_array(
+def test_exposure_geoms_add_columns_array(
     buildings_data: gpd.GeoDataFrame,
 ):
     # Create the data
@@ -226,7 +227,7 @@ def test_exposure_add_columns_array(
         ),
     )
     # Call the workflow function
-    exposure_vector = exposure_add_columns(
+    exposure_vector = exposure_geoms_add_columns(
         buildings_data,
         columns=["col1", "col2"],
         values=data,
@@ -237,7 +238,7 @@ def test_exposure_add_columns_array(
     assert int(exposure_vector["col2"].mean() * 10) == 155
 
 
-def test_exposure_add_columns_errors(
+def test_exposure_geoms_add_columns_errors(
     buildings_data: gpd.GeoDataFrame,
 ):
     # Create the data
@@ -255,7 +256,7 @@ def test_exposure_add_columns_errors(
             "Length of the columns (2) is not the same as the length of the values (3)."
         ),
     ):
-        _ = exposure_add_columns(
+        _ = exposure_geoms_add_columns(
             buildings_data,
             columns=["col1", "col2"],
             values=data,

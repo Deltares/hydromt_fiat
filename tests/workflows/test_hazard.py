@@ -2,13 +2,14 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from hydromt_fiat.workflows import hazard_grid
+from hydromt_fiat.utils import EVENT, RISK
+from hydromt_fiat.workflows import hazard_setup
 
 
-def test_hazard_grid_risk(hazard_event_data_highres: xr.DataArray):
+def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
     # test hazard risk
     hazard_data = {"flood_event_highres": hazard_event_data_highres}
-    ds = hazard_grid(
+    ds = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -18,15 +19,15 @@ def test_hazard_grid_risk(hazard_event_data_highres: xr.DataArray):
     assert isinstance(ds, xr.Dataset)
     assert "flood_event_highres" in ds.data_vars
     da = ds.flood_event_highres
-    assert ds.analysis == "risk"
+    assert ds.analysis == RISK
     assert da.name == "flood_event_highres"
-    assert da.return_period == 50000
+    assert da.rp == 50000
 
 
-def test_hazard_grid_event(hazard_event_data: xr.DataArray):
+def test_hazard_setup_event(hazard_event_data: xr.DataArray):
     # Test hazard event
     hazard_data = {"flood_event": hazard_event_data}
-    ds = hazard_grid(
+    ds = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -35,12 +36,12 @@ def test_hazard_grid_event(hazard_event_data: xr.DataArray):
     assert isinstance(ds, xr.Dataset)
     assert "flood_event" in ds.data_vars
     da = ds.flood_event
-    assert ds.analysis == "event"
+    assert ds.analysis == EVENT
     assert da.name == "flood_event"
-    assert "return_period" not in da.attrs.keys()
+    assert "rp" not in da.attrs.keys()
 
 
-def test_hazard_grid_reproj(
+def test_hazard_setup_reproj(
     hazard_event_data: xr.DataArray,
     hazard_event_data_highres: xr.DataArray,
 ):
@@ -50,7 +51,7 @@ def test_hazard_grid_reproj(
 
     # Setup with a grid_like
     hazard_data = {"event": hazard_event_data_highres}
-    ds = hazard_grid(
+    ds = hazard_setup(
         grid_like=hazard_event_data,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -62,10 +63,10 @@ def test_hazard_grid_reproj(
     assert ds.event.shape == (5, 4)  # Should be the same as the hazard event data
 
 
-def test_hazard_grid_unit_default(hazard_event_data: xr.DataArray):
+def test_hazard_setup_unit_default(hazard_event_data: xr.DataArray):
     # Call the workflow function
     hazard_data = {"event": hazard_event_data}
-    ds = hazard_grid(
+    ds = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -76,13 +77,13 @@ def test_hazard_grid_unit_default(hazard_event_data: xr.DataArray):
     assert np.isclose(avg_level, 1.7947)
 
 
-def test_hazard_grid_unit_differ(
+def test_hazard_setup_unit_differ(
     caplog: pytest.LogCaptureFixture,
     hazard_event_data: xr.DataArray,
 ):
     hazard_data = {"event": hazard_event_data}
     # Suppose it's in a different unit
-    ds = hazard_grid(
+    ds = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
