@@ -23,8 +23,8 @@ def buildings_link_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def exposure_cost_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("damage_values")
+def exposure_cost_table(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_damage")
     return df
 
 
@@ -66,8 +66,8 @@ def hazard_event_data_highres(
 
 
 @pytest.fixture
-def vulnerability_data(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves")
+def vulnerability_data(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves")
     assert len(df) != 0
     return df
 
@@ -81,15 +81,15 @@ def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
 
 
 @pytest.fixture
-def vulnerability_linking(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves_linking")
+def vulnerability_linking(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves_link")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking_alt(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves_linking_alt")
+def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves_link_alt")
     assert len(df) != 0
     return df
 
