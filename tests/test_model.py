@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 import pytest
 import xarray as xr
 
@@ -12,6 +13,8 @@ from hydromt_fiat.components import (
     HazardComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.components.vulnerability import VulnerabilityData
+from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
 
 
 def test_model_empty(tmp_path: Path):
@@ -19,8 +22,8 @@ def test_model_empty(tmp_path: Path):
     model = FIATModel(tmp_path)
 
     # Assert some basic statements
-    assert "config" in model.components
-    assert "region" in model.components
+    assert CONFIG in model.components
+    assert REGION in model.components
     assert model.region is None
     assert len(model.components) == 6
 
@@ -34,13 +37,52 @@ def test_model_basic_read_write(tmp_path: Path):
     # Write the model
     model.write()
     model = None
-    assert Path(tmp_path, "settings.toml").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
 
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
     model.read()
 
     assert len(model.config.data) != 0
+
+
+def test_model_clear(  # Dont like this to much, as it is a bit of an integration test
+    tmp_path: Path,
+    build_region_small: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+    exposure_grid: xr.Dataset,
+    hazard: xr.Dataset,
+    vulnerability_curves: pd.DataFrame,
+):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Set data like a dummy
+    model.components[REGION]._data = {REGION: build_region_small}
+    model.config._data = {MODEL: {TYPE: GEOM}}
+    model.exposure_geoms._data = {"foo": exposure_vector}
+    model.exposure_grid._data = exposure_grid
+    model.hazard._data = hazard
+    model.vulnerability._data = VulnerabilityData(vulnerability_curves, pd.DataFrame())
+    # Assert the current state
+    assert isinstance(model.region, gpd.GeoDataFrame)
+    assert model.crs.to_epsg() == 28992
+    assert len(model.config.data) == 1
+    assert len(model.exposure_geoms.data) == 1
+    assert len(model.exposure_grid.data.data_vars) == 4
+    assert len(model.hazard.data.data_vars) == 1
+    assert len(model.vulnerability.data.curves) == 1001
+
+    # Clear the model
+    model.clear()
+    # Assert the state afterwards
+    assert model.region is None
+    assert model.crs is None
+    assert len(model.config.data) == 0
+    assert len(model.exposure_geoms.data) == 0
+    assert len(model.exposure_grid.data.data_vars) == 0
+    assert len(model.hazard.data.data_vars) == 0
+    assert len(model.vulnerability.data.curves) == 0
 
 
 def test_model_clip(  # Dont like this to much, as it is a bit of an integration test
@@ -55,7 +97,7 @@ def test_model_clip(  # Dont like this to much, as it is a bit of an integration
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components["region"]._data = {"region": build_region}
+    model.components[REGION]._data = {REGION: build_region}
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -123,7 +165,7 @@ def test_model_setup_region_error(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Setup the region pointing to not a file
-    region_no = Path(tmp_path, "region.geojson")
+    region_no = Path(tmp_path, f"{REGION}.geojson")
     with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
         model.setup_region(region=region_no)
 

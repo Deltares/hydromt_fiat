@@ -1,4 +1,4 @@
-"""The custum config component."""
+"""The config component."""
 
 import logging
 from pathlib import Path
@@ -11,6 +11,7 @@ from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
+from hydromt_fiat.utils import SETTINGS
 
 __all__ = ["ConfigComponent"]
 
@@ -18,12 +19,14 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """A Custom config component for FIAT models.
+    """Config component.
+
+    Container for all the settings of a Delft-FIAT model.
 
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         A path relative to the root where the configuration file will
         be read and written if user does not provide a path themselves.
@@ -34,7 +37,7 @@ class ConfigComponent(ModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "settings.toml",
+        filename: str = f"{SETTINGS}.toml",
     ):
         self._data: dict[str, Any] | None = None
         self._filename: Path | str = filename
@@ -147,7 +150,7 @@ class ConfigComponent(ModelComponent):
             parent_dir.mkdir(parents=True)
 
         # Dump to a file
-        logger.info(f"Writing the config file to {write_path.as_posix()}")
+        logger.info(f"Writing the config data to {write_path.as_posix()}")
         with open(write_path, "w") as writer:
             tomlkit.dump(write_data, writer)
 
@@ -195,6 +198,12 @@ class ConfigComponent(ModelComponent):
             The value to set the config to.
         """
         self._initialize()
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                self.set(f"{key}.{subkey}", subvalue)
+                return
+        if value is None:  # Not allowed in toml files
+            return
         parts = key.split(".")
         num_parts = len(parts)
         current = cast(dict[str, Any], self._data)
@@ -205,3 +214,10 @@ class ConfigComponent(ModelComponent):
                 current = current[part]
             else:
                 current[part] = value
+
+    ## Mutating methods
+    @hydromt_step
+    def clear(self):
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)
