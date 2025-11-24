@@ -94,8 +94,9 @@ class HazardComponent(GridComponent):
             or self._filename
         )
         # Read the data
-        logger.info("Reading the hazard data..")
-        super().read(filename=filename, **kwargs)
+        read_path = Path(self.root.path, filename)
+        logger.info(f"Reading the hazard file at {read_path.as_posix()}")
+        super().read(filename=read_path, **kwargs)
 
     @hydromt_step
     def write(
@@ -131,7 +132,7 @@ class HazardComponent(GridComponent):
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info("Writing the hazard data..")
+        logger.info(f"Writing the hazard data to {write_path.as_posix()}")
         _write_nc(
             {GRID: self.data},
             write_path.as_posix(),

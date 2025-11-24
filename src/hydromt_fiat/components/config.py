@@ -150,7 +150,7 @@ class ConfigComponent(ModelComponent):
             parent_dir.mkdir(parents=True)
 
         # Dump to a file
-        logger.info(f"Writing the config file to {write_path.as_posix()}")
+        logger.info(f"Writing the config data to {write_path.as_posix()}")
         with open(write_path, "w") as writer:
             tomlkit.dump(write_data, writer)
 

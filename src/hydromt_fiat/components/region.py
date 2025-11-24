@@ -128,12 +128,12 @@ class RegionComponent(SpatialModelComponent):
         write_path = Path(self.root.path, filename)
 
         # Write the file(s)
-        logger.info("Writing the model region file..")
         gdf = self.data[REGION]
         if len(gdf) == 0:
             logger.warning("Region is empty. Skipping...")
             return
 
+        logger.info(f"Writing the model region file to {write_path.as_posix()}")
         # Create dir if not there
         if not write_path.parent.is_dir():
             write_path.parent.mkdir(parents=True, exist_ok=True)

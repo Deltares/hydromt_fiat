@@ -142,7 +142,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
         for p, n in zip(*out):
-            logger.info(f"Reading {n} at {p.as_posix()}")
+            logger.info(f"Reading the {n} geometry file at {p.as_posix()}")
             # Get the data
             geom = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
             # Check for data in csv file, this has to be merged
@@ -206,7 +206,9 @@ class ExposureGeomsComponent(SpatialModelComponent):
                 filename.format(name=name),
             )
 
-            logger.info(f"Writing file to {write_path.as_posix()}")
+            logger.info(
+                f"Writing the '{name}' geometry data to {write_path.as_posix()}",
+            )
 
             write_dir = write_path.parent
             if not write_dir.is_dir():
