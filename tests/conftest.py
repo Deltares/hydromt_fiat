@@ -240,3 +240,14 @@ def box_geometry() -> gpd.GeoDataFrame:
         crs=4326,
     )
     return geom
+
+
+@pytest.fixture
+def exposure_cost_link() -> pd.DataFrame:
+    df = pd.DataFrame(
+        data={
+            "object_type": ["residential", "commercial", "industrial", "unknown"],
+            "cost_type": ["residential", "commercial", "industrial", "unknown"],
+        }
+    )
+    return df

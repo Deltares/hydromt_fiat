@@ -226,6 +226,30 @@ def test_exposure_geom_component_read_sig(
     assert len(component._data) == 2
 
 
+def test_exposure_geom_component_read_csv(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+    exposure_vector_clipped_csv_path: Path,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config)
+
+    # Assert it's empty
+    assert component._data is None
+
+    # Calling read to read in the data
+    component.read(filename="{name}.fgb")
+
+    # Assert the output
+    assert len(component._data) == 1
+    assert len(component.data["foo"]) == 12
+    assert "object_id" in component.data["foo"].columns
+    assert "ref" in component.data["foo"].columns
+
+
 def test_exposure_geom_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -370,6 +394,32 @@ def test_exposure_geom_component_setup_max(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="jrc_damage",
+        country="World",
+    )
+
+    # Assert that the data is there
+    assert "max_damage_structure" in component.data["buildings"].columns
+
+
+def test_exposure_geom_component_setup_max_link(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+    exposure_cost_link_path: Path,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Assert max damage column is not present
+    assert "max_damage_structure" not in component.data["buildings"].columns
+
+    # Call the setup method
+    component.setup_max_damage(
+        exposure_name="buildings",
+        exposure_type="damage",
+        exposure_cost_table_fname="jrc_damage",
+        exposure_cost_link_fname=exposure_cost_link_path,
         country="World",
     )
 

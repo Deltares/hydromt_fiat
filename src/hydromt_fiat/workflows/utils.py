@@ -17,7 +17,7 @@ def _process_dataarray(da: xr.DataArray, da_name: str) -> xr.DataArray:
     # Check if map is rotated and if yes, reproject to a non-rotated grid
     if "xc" in da.coords:
         logger.warning(
-            "Hazard map is rotated. It will be reprojected"
+            "Hazard grid is rotated. It will be reprojected"
             " to a non rotated grid using nearest neighbor"
             "interpolation"
         )
