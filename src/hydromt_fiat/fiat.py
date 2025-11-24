@@ -6,6 +6,7 @@ from typing import Any
 
 import geopandas as gpd
 from hydromt.model import Model
+from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat.components import (
@@ -156,6 +157,8 @@ class FIATModel(Model):
     ) -> None:
         """Clip the model based on a new (smaller) region.
 
+        All grid-based components are clipped with a buffer of 1 cell.
+
         Parameters
         ----------
         region : Path | str | gpd.GeoDataFrame
@@ -168,9 +171,10 @@ class FIATModel(Model):
             f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
         )
         # Call the clip methods of the spatial components
-        self.exposure_geoms.clip(self.region, inplace=True)
-        self.exposure_grid.clip(self.region, buffer=1, inplace=True)
-        self.hazard.clip(self.region, buffer=1, inplace=True)
+        for name, component in self.components.items():
+            if not isinstance(component, SpatialModelComponent) or name == REGION:
+                continue
+            component.clip(self.region, inplace=True)
 
     ## Setup methods
     @hydromt_step

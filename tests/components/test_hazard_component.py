@@ -64,7 +64,7 @@ def test_hazard_component_clip(
     assert component.data.flood_event.shape == (34, 25)
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small)
+    ds = component.clip(geom=build_region_small, buffer=0)
     # Assert the output
     assert ds.flood_event.shape == (5, 4)
 
@@ -98,7 +98,7 @@ def test_hazard_component_clip_inplace(
     assert component.data.flood_event.shape == (34, 25)
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small, inplace=True)
+    ds = component.clip(geom=build_region_small, buffer=0, inplace=True)
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data.flood_event.shape == (5, 4)

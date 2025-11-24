@@ -66,7 +66,7 @@ def test_exposure_grid_component_clip(
     assert component.data.commercial_content.shape == (67, 50)
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small)
+    ds = component.clip(geom=build_region_small, buffer=0)
     # Assert the output
     assert ds.commercial_content.shape == (9, 9)
 
@@ -100,7 +100,7 @@ def test_exposure_grid_component_clip_inplace(
     assert component.data.commercial_content.shape == (67, 50)
 
     # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small, inplace=True)
+    ds = component.clip(geom=build_region_small, buffer=0, inplace=True)
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data.commercial_content.shape == (9, 9)

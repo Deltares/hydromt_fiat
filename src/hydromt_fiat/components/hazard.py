@@ -166,7 +166,7 @@ class HazardComponent(GridComponent):
     def clip(
         self,
         geom: gpd.GeoDataFrame,
-        buffer: int = 0,
+        buffer: int = 1,
         inplace: bool = False,
     ) -> xr.Dataset | None:
         """Clip the hazard data based on geometry.
@@ -176,7 +176,7 @@ class HazardComponent(GridComponent):
         geom : gpd.GeoDataFrame
             The area to clip the data to.
         buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 0.
+            A buffer of cells around the clipped area to keep, by default 1.
         inplace : bool, optional
             Whether to do the clipping in place or return a new xr.Dataset,
             by default False.
