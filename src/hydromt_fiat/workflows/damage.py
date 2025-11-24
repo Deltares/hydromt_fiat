@@ -12,6 +12,7 @@ from hydromt_fiat.utils import (
     COST_TYPE,
     EXPOSURE_LINK,
     EXPOSURE_TYPE,
+    MAX,
     OBJECT_TYPE,
     SUBTYPE,
     create_query,
@@ -110,11 +111,15 @@ def max_monetary_damage(
     ]
 
     # Link the cost type to the exposure data
+    data_or_size = len(exposure_data)  # For size check later
     exposure_data[COST_TYPE] = exposure_data[[OBJECT_TYPE]].merge(
         exposure_cost_link,
         on=OBJECT_TYPE,
         how="inner",
     )[COST_TYPE]
+
+    # Drop the data that cannnot be linked
+    exposure_data.dropna(subset=COST_TYPE, inplace=True)
 
     # Get the area, make sure its a projected crs
     old_crs = exposure_data.crs
@@ -133,6 +138,14 @@ def max_monetary_damage(
         # Multiply by the area
         costs_per *= area
 
-        exposure_data[f"max_{exposure_type}{header}"] = costs_per.astype(float)
+        exposure_data[f"{MAX}_{exposure_type}{header}"] = costs_per.astype(float)
+
+    # Check data length afterwards
+    data_m_size = len(exposure_data)
+    if data_or_size != data_m_size:
+        logger.warning(
+            f"{data_or_size - data_m_size} features could not be linked to the \
+damage values, these were removed"
+        )
 
     return exposure_data

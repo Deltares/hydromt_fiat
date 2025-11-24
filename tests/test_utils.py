@@ -1,7 +1,8 @@
 import numpy as np
 from barril.units import Scalar
+from pyproj.crs import CRS, CompoundCRS
 
-from hydromt_fiat.utils import create_query, standard_unit
+from hydromt_fiat.utils import create_query, srs_representation, standard_unit
 
 
 def test_create_query_single_type():
@@ -45,3 +46,32 @@ def test_standard_unit_length():
 
     assert np.isclose(scalar.value, 0.3048)
     assert scalar.unit == ""
+
+
+def test_srs_representation():
+    # Call the function
+    s = srs_representation(CRS.from_epsg(4326))
+
+    # Assert the output
+    assert s == "EPSG:4326"
+
+
+def test_srs_representation_none():
+    # Call the function
+    s = srs_representation(None)
+
+    # Assert the output
+    assert s is None
+
+
+def test_srs_representation_unknown():
+    # Call the function
+    s = srs_representation(
+        CompoundCRS(
+            name="foo",
+            components=[CRS.from_epsg(4326), CRS.from_epsg(7837)],
+        ),
+    )
+
+    # Assert the output
+    assert s.startswith("COMPOUNDCRS")

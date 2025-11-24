@@ -24,7 +24,7 @@ class RegionComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
@@ -34,7 +34,7 @@ class RegionComponent(SpatialModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "region.geojson",
+        filename: str = f"{REGION}.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame | gpd.GeoSeries] | None = None
         self._filename: str = filename
@@ -77,7 +77,8 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
@@ -105,10 +106,11 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         to_wgs84 : bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
-            before they are written.
+            before they are written. By default False.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -126,12 +128,12 @@ class RegionComponent(SpatialModelComponent):
         write_path = Path(self.root.path, filename)
 
         # Write the file(s)
-        logger.info("Writing the model region file..")
         gdf = self.data[REGION]
         if len(gdf) == 0:
             logger.warning("Region is empty. Skipping...")
             return
 
+        logger.info(f"Writing the model region file to {write_path.as_posix()}")
         # Create dir if not there
         if not write_path.parent.is_dir():
             write_path.parent.mkdir(parents=True, exist_ok=True)

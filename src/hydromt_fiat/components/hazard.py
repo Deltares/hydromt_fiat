@@ -13,6 +13,18 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import (
+    GRID,
+    HAZARD,
+    HAZARD_FILE,
+    HAZARD_RP,
+    HAZARD_SETTINGS,
+    MODEL_RISK,
+    REGION,
+    SRS,
+    VAR_AS_BAND,
+    srs_representation,
+)
 
 __all__ = ["HazardComponent"]
 
@@ -27,7 +39,7 @@ class HazardComponent(GridComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         By default "hazard.nc".
@@ -46,9 +58,9 @@ class HazardComponent(GridComponent):
         self,
         model: Model,
         *,
-        filename: str = "hazard.nc",
+        filename: str = f"{HAZARD}.nc",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
+        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
@@ -78,12 +90,13 @@ class HazardComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get("hazard.file", abs_path=True)
+            or self.model.config.get(HAZARD_FILE, abs_path=True)
             or self._filename
         )
         # Read the data
-        logger.info("Reading the hazard data..")
-        super().read(filename=filename, **kwargs)
+        read_path = Path(self.root.path, filename)
+        logger.info(f"Reading the hazard file at {read_path.as_posix()}")
+        super().read(filename=read_path, **kwargs)
 
     @hydromt_step
     def write(
@@ -115,13 +128,13 @@ class HazardComponent(GridComponent):
 
         # Sort out the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
-        filename = filename or self.model.config.get("hazard.file") or self._filename
+        filename = filename or self.model.config.get(HAZARD_FILE) or self._filename
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info("Writing the hazard data..")
+        logger.info(f"Writing the hazard data to {write_path.as_posix()}")
         _write_nc(
-            {"grid": self.data},
+            {GRID: self.data},
             write_path.as_posix(),
             root=self.root.path,
             gdal_compliant=gdal_compliant,
@@ -132,11 +145,16 @@ class HazardComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set("hazard.file", write_path)
+        self.model.config.set(HAZARD_FILE, write_path)
         # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set("hazard.settings.var_as_band", False)
+        self.model.config.set(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}", False)
         if len(self.data.data_vars) > 1:
-            self.model.config.set("hazard.settings.var_as_band", True)
+            self.model.config.set(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}", True)
+        # Set the srs
+        self.model.config.set(
+            f"{HAZARD_SETTINGS}.{SRS}",
+            srs_representation(self.data.raster.crs),
+        )
 
     ## Mutating methods
     @hydromt_step
@@ -149,7 +167,7 @@ class HazardComponent(GridComponent):
     def clip(
         self,
         geom: gpd.GeoDataFrame,
-        buffer: int = 0,
+        buffer: int = 1,
         inplace: bool = False,
     ) -> xr.Dataset | None:
         """Clip the hazard data based on geometry.
@@ -159,7 +177,7 @@ class HazardComponent(GridComponent):
         geom : gpd.GeoDataFrame
             The area to clip the data to.
         buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 0.
+            A buffer of cells around the clipped area to keep, by default 1.
         inplace : bool, optional
             Whether to do the clipping in place or return a new xr.Dataset,
             by default False.
@@ -213,8 +231,6 @@ class HazardComponent(GridComponent):
             The unit which the hazard data is in, by default 'm' (meters).
         **settings : dict
             Extra settings to be added under the hazard header.
-            For flood maps (water depth), elevation_reference set to either 'datum' \
-            or 'dem' is recommeneded.
 
         Returns
         -------
@@ -249,7 +265,7 @@ class HazardComponent(GridComponent):
         grid_like = self.data if self.data.sizes != {} else None
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_grid(
+        ds = workflows.hazard_setup(
             grid_like=grid_like,
             hazard_data=hazard_data,
             hazard_type=hazard_type,
@@ -262,10 +278,10 @@ class HazardComponent(GridComponent):
         self.set(ds)
 
         # Set the config entries
-        self.model.config.set("model.risk", risk)
+        self.model.config.set(MODEL_RISK, risk)
         if risk:
-            self.model.config.set("hazard.return_periods", return_periods)
+            self.model.config.set(HAZARD_RP, return_periods)
 
         # Set the extra settings
         for key, item in settings.items():
-            self.model.config.set(f"hazard.{key}", item)
+            self.model.config.set(f"{HAZARD}.{key}", item)
