@@ -10,6 +10,7 @@ from hydromt._io.writers import _write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
@@ -195,6 +196,39 @@ class HazardComponent(GridComponent):
 
         # If so, clip the data
         data = self.data.raster.clip_geom(geom, buffer=buffer)
+        # If inplace, just set the data and return nothing
+        if inplace:
+            self._data = data
+            return None
+        return data
+
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str,
+        inplace: bool = False,
+    ):
+        """_summary_.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            _description_
+        inplace : bool, optional
+            _description_, by default False
+        """
+        # Check for the crs's
+        if self.crs is None:
+            return
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        # No need for reprojecting if this is the case
+        if crs == self.crs:
+            return
+
+        # Reproject the data
+        data = self.data.raster.reproject(dst_crs=crs)
         # If inplace, just set the data and return nothing
         if inplace:
             self._data = data
