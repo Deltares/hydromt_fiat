@@ -26,7 +26,7 @@ class ConfigComponent(ModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         A path relative to the root where the configuration file will
         be read and written if user does not provide a path themselves.

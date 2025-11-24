@@ -41,25 +41,33 @@ class ExposureGeomsComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance (FIATModel)
+        HydroMT model instance (FIATModel).
+    filename : str, optional
+        The path to use for reading and writing of component data by default.
+        By default "exposure/{name}.fgb".
     region_component : str, optional
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
-        the data dictionary.
+        the data dictionary. By default None.
+    region_filename : str, optional
+        The path to use for writing the region data to a file. By default
+        "region.geojson".
     """
 
     def __init__(
         self,
         model: Model,
         *,
+        filename: str = f"{EXPOSURE}/{{name}}.fgb",
         region_component: str | None = None,
+        region_filename: str = f"{REGION}.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
-        self._filename: str = f"{EXPOSURE}/{{name}}.fgb"
+        self._filename: str = filename
         super().__init__(
             model,
             region_component=region_component,
-            region_filename=f"{REGION}.geojson",
+            region_filename=region_filename,
         )
 
     ## Private methods
@@ -114,8 +122,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
         filename : str, optional
             Filename relative to model root. should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used or, if present,
-            the files present in the model configurations.
+            If None, the value(s) is/ are either taken from the model configurations or
+            the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
@@ -159,9 +167,10 @@ class ExposureGeomsComponent(SpatialModelComponent):
         Parameters
         ----------
         filename : str, optional
-            Filename relative to model root. should contain a {name} placeholder
+            Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used.
+            If None, the value(s) is/ are either taken from the model configurations or
+            the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.

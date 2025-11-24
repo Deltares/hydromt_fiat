@@ -24,7 +24,7 @@ class RegionComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
@@ -77,7 +77,8 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
@@ -105,10 +106,11 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         to_wgs84 : bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
-            before they are written.
+            before they are written. By default False.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.

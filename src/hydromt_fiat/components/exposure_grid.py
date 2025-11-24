@@ -37,26 +37,34 @@ class ExposureGridComponent(GridComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
+    filename : str, optional
+        The path to use for reading and writing of component data by default.
+        By default "exposure/spatial.nc".
     region_component : str, optional
         The name of the region component to use as reference
         for this component's region. If None, the region will be set to the grid extent.
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
+    region_filename : str
+        The path to use for reading and writing of the region data by default.
+        By default "region.geojson".
     """
 
     def __init__(
         self,
         model: Model,
         *,
+        filename: str = f"{EXPOSURE}/spatial.nc",
         region_component: str | None = None,
+        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
-            filename=f"{EXPOSURE}/spatial.nc",
+            filename=filename,
             region_component=region_component,
-            region_filename=f"{REGION}.geojson",
+            region_filename=region_filename,
         )
 
     ## I/O methods
