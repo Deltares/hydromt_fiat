@@ -1,10 +1,12 @@
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.gis import full
 
 
 ## Data from the data catalog
@@ -136,3 +138,14 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
     df = pd.read_csv(p)
     assert len(df) != 0
     return df
+
+
+## Extra data structure
+@pytest.fixture(scope="session")
+def rotated_grid() -> xr.DataArray:
+    # Create coordinates
+    yc = xr.DataArray(data=np.array([[2.0, 1.5], [1.0, 0.5]]), dims=["y", "x"])
+    xc = xr.DataArray(data=np.array([[0.5, 1.5], [0.0, 1.0]]), dims=["y", "x"])
+    # Build using 'full' from core
+    da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
+    return da

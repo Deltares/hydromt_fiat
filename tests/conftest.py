@@ -169,9 +169,8 @@ def exposure_vector_clipped_for_damamge(
             "cost_type",
             "max_damage_structure",
             "max_damage_content",
-            "ground_flht",
-            "ground_elevtn",
-            "extract_method",
+            "ref",
+            "method",
         ],
         axis=1,
         inplace=True,
@@ -241,3 +240,14 @@ def box_geometry() -> gpd.GeoDataFrame:
         crs=4326,
     )
     return geom
+
+
+@pytest.fixture
+def exposure_cost_link() -> pd.DataFrame:
+    df = pd.DataFrame(
+        data={
+            "object_type": ["residential", "commercial", "industrial", "unknown"],
+            "cost_type": ["residential", "commercial", "industrial", "unknown"],
+        }
+    )
+    return df

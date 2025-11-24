@@ -1,8 +1,10 @@
 import platform
+import shutil
 from pathlib import Path
 from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
+import geopandas as gpd
 import pandas as pd
 import pytest
 from hydromt import DataCatalog
@@ -84,3 +86,48 @@ def config_dummy(tmp_path: Path) -> dict:
         "multi": [{"file": "tmp/tmp.txt"}, {"file": "boo.txt"}],
     }
     return data
+
+
+## Extra data paths
+@pytest.fixture
+def exposure_cost_link_path(
+    tmp_path: Path,
+    exposure_cost_link: pd.DataFrame,
+) -> Path:
+    p = Path(tmp_path, "cost_link.csv")
+    exposure_cost_link.to_csv(p, index=False)
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture
+def exposure_vector_clipped_csv_path(
+    tmp_path: Path,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+) -> Path:
+    p = Path(tmp_path, "foo.fgb")
+    # Seperate the geometry data
+    geom = exposure_vector_clipped.loc[:, ["object_id", "geometry"]]
+    geom.to_file(p)
+    assert p.is_file()
+    # Separate the tabular data
+    cols = exposure_vector_clipped.columns.values.tolist()
+    cols.remove("geometry")
+    data = exposure_vector_clipped.loc[:, cols]
+    data.to_csv(p.with_suffix(".csv"), index=False)
+    assert p.with_suffix(".csv").is_file()
+    return p
+
+
+@pytest.fixture
+def vulnerability_curves_only_path(
+    tmp_path: Path,
+    model_data_path: Path,
+) -> Path:
+    p = Path(tmp_path, "curves.csv")
+    shutil.copy2(
+        src=Path(model_data_path, "vulnerability", "curves.csv"),
+        dst=p,
+    )
+    assert p.is_file()
+    return p

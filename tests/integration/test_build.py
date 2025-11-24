@@ -3,6 +3,20 @@ from pathlib import Path
 import pytest
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.utils import (
+    CURVES,
+    DAMAGE,
+    EXPOSURE,
+    FN_CURVE,
+    GEOM,
+    GRID,
+    HAZARD,
+    MAX,
+    MODEL_TYPE,
+    REGION,
+    SETTINGS,
+    VULNERABILITY,
+)
 
 
 @pytest.mark.integration
@@ -21,7 +35,7 @@ def test_build_model_geom(
     )
 
     # Add model type and region
-    model.setup_config(**{"model.model_type": "geom"})
+    model.setup_config(**{MODEL_TYPE: GEOM})
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -35,7 +49,6 @@ def test_build_model_geom(
     # Add an hazard layer
     model.hazard.setup(
         "flood_event",
-        elevation_reference="dem",
     )
 
     # Setup the exposure geometry data
@@ -47,37 +60,37 @@ def test_build_model_geom(
     )
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        exposure_type=DAMAGE,
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
     # Needed for flood calculations
     model.exposure_geoms.update_column(
         exposure_name="buildings",
-        columns=["ground_flht", "ground_elevtn", "extract_method"],
-        values=[0, 0, "centroid"],
+        columns=["ref", "method"],
+        values=[0, "centroid"],
     )
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.get("model.type") == "geom"
+    assert model.config.get(MODEL_TYPE) == GEOM
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (5, 4)
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
-    assert "max_damage_structure" in model.exposure_geoms.data["buildings"].columns
+    assert f"{MAX}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
 
     # Write the model
     model.write()
 
     # Assert the written output (paths)
-    assert Path(tmp_path, "region.geojson").is_file()
-    assert Path(tmp_path, "settings.toml").is_file()
-    assert Path(tmp_path, "vulnerability", "curves.csv").is_file()
-    assert Path(tmp_path, "hazard.nc").is_file()
-    assert Path(tmp_path, "exposure", "buildings.fgb").is_file()
+    assert Path(tmp_path, f"{REGION}.geojson").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
+    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{HAZARD}.nc").is_file()
+    assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
 
 
 @pytest.mark.integration
@@ -96,7 +109,7 @@ def test_build_model_grid(
     )
 
     # Add model type and region
-    model.setup_config(**{"model.model_type": "grid"})
+    model.setup_config(**{MODEL_TYPE: GRID})
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -110,7 +123,6 @@ def test_build_model_grid(
     # Add an hazard layer
     model.hazard.setup(
         "flood_event",
-        elevation_reference="dem",
     )
 
     # Setup the exposure grid data
@@ -121,21 +133,21 @@ def test_build_model_grid(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.get("model.type") == "grid"
+    assert model.config.get(MODEL_TYPE) == GRID
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (5, 4)
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
-    assert model.exposure_grid.data["commercial_content"].attrs["fn_damage"] == "cm1"
+    assert model.exposure_grid.data["commercial_content"].attrs[FN_CURVE] == "cm1"
 
     # Write the model
     model.write()
 
     # Assert the written output (paths)
-    assert Path(tmp_path, "region.geojson").is_file()
-    assert Path(tmp_path, "settings.toml").is_file()
-    assert Path(tmp_path, "vulnerability", "curves.csv").is_file()
-    assert Path(tmp_path, "hazard.nc").is_file()
-    assert Path(tmp_path, "exposure", "spatial.nc").is_file()
+    assert Path(tmp_path, f"{REGION}.geojson").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
+    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{HAZARD}.nc").is_file()
+    assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()

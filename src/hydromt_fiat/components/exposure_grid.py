@@ -12,6 +12,17 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GRID_FILE,
+    EXPOSURE_GRID_SETTINGS,
+    GRID,
+    MODEL_TYPE,
+    REGION,
+    SRS,
+    VAR_AS_BAND,
+    srs_representation,
+)
 
 __all__ = ["ExposureGridComponent"]
 
@@ -26,7 +37,7 @@ class ExposureGridComponent(GridComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         By default "exposure/spatial.nc".
@@ -45,9 +56,9 @@ class ExposureGridComponent(GridComponent):
         self,
         model: Model,
         *,
-        filename: str = "exposure/spatial.nc",
+        filename: str = f"{EXPOSURE}/spatial.nc",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
+        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
@@ -77,12 +88,13 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get("exposure.grid.file", abs_path=True)
+            or self.model.config.get(EXPOSURE_GRID_FILE, abs_path=True)
             or self._filename
         )
         # Read the data
-        logger.info("Reading the exposure grid data..")
-        super().read(filename=filename, **kwargs)
+        read_path = Path(self.root.path, filename)
+        logger.info(f"Reading the exposure grid file at {read_path.as_posix()}")
+        super().read(filename=read_path, **kwargs)
 
     @hydromt_step
     def write(
@@ -115,14 +127,14 @@ class ExposureGridComponent(GridComponent):
         # Sort out the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
-            filename or self.model.config.get("exposure.grid.file") or self._filename
+            filename or self.model.config.get(EXPOSURE_GRID_FILE) or self._filename
         )
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info("Writing the exposure grid data..")
+        logger.info(f"Writing the exposure grid data to {write_path.as_posix()}")
         _write_nc(
-            {"grid": self.data},
+            {GRID: self.data},
             write_path.as_posix(),
             root=self.root.path,
             gdal_compliant=gdal_compliant,
@@ -133,11 +145,16 @@ class ExposureGridComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set("exposure.grid.file", write_path)
+        self.model.config.set(EXPOSURE_GRID_FILE, write_path)
         # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set("exposure.grid.settings.var_as_band", False)
+        self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", False)
         if len(self.data.data_vars) > 1:
-            self.model.config.set("exposure.grid.settings.var_as_band", True)
+            self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", True)
+        # Set the srs
+        self.model.config.set(
+            f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
+            srs_representation(self.data.raster.crs),
+        )
 
     ## Mutating methods
     @hydromt_step
@@ -150,7 +167,7 @@ class ExposureGridComponent(GridComponent):
     def clip(
         self,
         geom: gpd.GeoDataFrame,
-        buffer: int = 0,
+        buffer: int = 1,
         inplace: bool = False,
     ) -> xr.Dataset | None:
         """Clip the exposure data based on geometry.
@@ -160,7 +177,7 @@ class ExposureGridComponent(GridComponent):
         geom : gpd.GeoDataFrame
             The area to clip the data to.
         buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 0.
+            A buffer of cells around the clipped area to keep, by default 1.
         inplace : bool, optional
             Whether to do the clipping in place or return a new xr.Dataset,
             by default False.
@@ -251,4 +268,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set("model.type", "grid")
+        self.model.config.set(MODEL_TYPE, GRID)

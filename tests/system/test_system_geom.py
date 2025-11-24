@@ -5,6 +5,7 @@ from fiat import Configurations, GeomModel, __version__
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.utils import GEOM, MODEL_TYPE
 
 
 @pytest.mark.skipif(
@@ -27,7 +28,7 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(**{"model.model_type": "geom"})
+    model.setup_config(**{MODEL_TYPE: GEOM})
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -41,7 +42,6 @@ def test_system_geom_model(
     # Add an hazard layer
     model.hazard.setup(
         "flood_event",
-        elevation_reference="dem",
     )
 
     # Setup the exposure geometry data
@@ -59,8 +59,8 @@ def test_system_geom_model(
     # Needed for flood calculations
     model.exposure_geoms.update_column(
         exposure_name="buildings",
-        columns=["ground_flht", "ground_elevtn", "extract_method"],
-        values=[0, 0, "centroid"],
+        columns=["ref", "method"],
+        values=[0, "centroid"],
     )
 
     # Write the model
