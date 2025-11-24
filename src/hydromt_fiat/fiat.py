@@ -128,7 +128,7 @@ class FIATModel(Model):
     @hydromt_step
     def read(self) -> None:
         """Read the FIAT model."""
-        Model.read(self)
+        super().read()
 
     @hydromt_step
     def write(self) -> None:
