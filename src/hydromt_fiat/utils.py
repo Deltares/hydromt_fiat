@@ -4,7 +4,6 @@ import logging
 from typing import Any
 
 from barril.units import Scalar, UnitDatabase
-from pyproj.crs import CRS
 
 __all__ = ["create_query"]
 
@@ -121,26 +120,3 @@ the standard unit ({default_unit}) for {unit.category}"
     translate = unit / default_scalar
 
     return translate
-
-
-def srs_representation(
-    srs: CRS | None = None,
-) -> str | None:
-    """Create string representation of CRS object.
-
-    Parameters
-    ----------
-    srs : CRS | None, optional
-        The spatial reference system object, by default None.
-
-    Returns
-    -------
-    str | None
-        Either a string representing the srs or None.
-    """
-    if srs is None:
-        return None
-    auth = srs.to_authority()
-    if auth is None:
-        return srs.to_wkt()
-    return ":".join(srs.to_authority())

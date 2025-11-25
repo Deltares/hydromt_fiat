@@ -6,6 +6,7 @@ from typing import Any
 
 import geopandas as gpd
 import xarray as xr
+from hydromt._io.readers import _read_nc
 from hydromt._io.writers import _write_nc
 from hydromt.model import Model
 from hydromt.model.components import GridComponent
@@ -13,6 +14,8 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     GRID,
     HAZARD,
@@ -23,7 +26,6 @@ from hydromt_fiat.utils import (
     REGION,
     SRS,
     VAR_AS_BAND,
-    srs_representation,
 )
 
 __all__ = ["HazardComponent"]
@@ -86,6 +88,10 @@ class HazardComponent(GridComponent):
         **kwargs : dict
             Additional keyword arguments to be passed to the `read_nc` method.
         """
+        # Check the state
+        self.root._assert_read_mode()
+        self._initialize_grid(skip_read=True)
+
         # Sort the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
@@ -93,10 +99,21 @@ class HazardComponent(GridComponent):
             or self.model.config.get(HAZARD_FILE, abs_path=True)
             or self._filename
         )
+
         # Read the data
         read_path = Path(self.root.path, filename)
         logger.info(f"Reading the hazard file at {read_path.as_posix()}")
-        super().read(filename=read_path, **kwargs)
+        # Read with the (old) read function from hydromt-core
+        ncs = _read_nc(
+            read_path,
+            self.root.path,
+            single_var_as_array=False,
+            mask_and_scale=False,
+            **kwargs,
+        )
+        # Set the datasets
+        for ds in ncs.values():
+            self.set(ds)
 
     @hydromt_step
     def write(
@@ -133,6 +150,7 @@ class HazardComponent(GridComponent):
 
         # Write it in a gdal compliant manner by default
         logger.info(f"Writing the hazard data to {write_path.as_posix()}")
+        self._data = force_ns(self.data)  # Force north south before writing
         _write_nc(
             {GRID: self.data},
             write_path.as_posix(),
@@ -153,12 +171,12 @@ class HazardComponent(GridComponent):
         # Set the srs
         self.model.config.set(
             f"{HAZARD_SETTINGS}.{SRS}",
-            srs_representation(self.data.raster.crs),
+            crs_representation(self.data.raster.crs),
         )
 
     ## Mutating methods
     @hydromt_step
-    def clear(self):
+    def clear(self) -> None:
         """Clear the hazard data."""
         self._data = None
         self._initialize_grid(skip_read=True)
@@ -200,6 +218,45 @@ class HazardComponent(GridComponent):
             self._data = data
             return None
         return data
+
+    def set(
+        self,
+        data: xr.Dataset | xr.DataArray,
+        name: str | None = None,
+    ) -> None:
+        """Set data in the hazard component.
+
+        Parameters
+        ----------
+        data : xr.Dataset | xr.DataArray
+            The data to set.
+        name : str | None, optional
+            The name of the data when data is of type DataArray and the DataArray
+            has not name yet, by default None.
+        """
+        # Make sure the grid exists
+        self._initialize_grid()
+        assert self._data is not None
+
+        # First check the input and typing
+        if isinstance(data, xr.DataArray):
+            if data.name is None and name is None:
+                raise ValueError("DataArray can't be set without a name")
+            data.name = name
+            data = data.to_dataset()
+        if not isinstance(data, xr.Dataset):
+            raise TypeError(f"Wrong input data type: '{data.__class__.__name__}'")
+
+        # Force ns orientation
+        data = force_ns(data)
+        # Set thet data
+        if len(self._data) == 0:  # empty grid
+            self._data = data
+        else:
+            for dvar in data.data_vars:
+                if dvar in self._data:
+                    logger.warning(f"Replacing grid map: '{dvar}'")
+                self._data[dvar] = data[dvar]
 
     # Setup methods
     @hydromt_step

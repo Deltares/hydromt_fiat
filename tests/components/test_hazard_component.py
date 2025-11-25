@@ -104,6 +104,77 @@ def test_hazard_component_clip_inplace(
     assert component.data.flood_event.shape == (5, 4)
 
 
+def test_hazard_component_set(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+    # Assert nothing in the component
+    assert len(component.data.data_vars) == 0
+
+    # Set the data via the set method, providing a dataset
+    component.set(hazard)
+
+    # Assert the state
+    assert len(component.data.data_vars) == 1
+    assert "flood_event" in component.data.data_vars
+
+    # Set data as a dataarray
+    component.set(hazard["flood_event"], name="foo")
+
+    # Assert the state
+    assert len(component.data.data_vars) == 2
+    assert "foo" in component.data.data_vars
+
+
+def test_hazard_component_set_replace(
+    caplog: pytest.LogCaptureFixture,
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    caplog.set_level(logging.WARNING)
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+    # Assert nothing in the component
+    assert len(component.data.data_vars) == 0
+
+    # Set the data via the set method, providing a dataset
+    component.set(hazard)
+    component.set(hazard)
+
+    # Assert the logging message
+    assert "Replacing grid map: 'flood_event'" in caplog.text
+
+    # Assert the state
+    assert len(component.data.data_vars) == 1
+    assert "flood_event" in component.data.data_vars
+
+
+def test_hazard_component_set_errors(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = HazardComponent(model=mock_model)
+
+    # Dataarray without a name
+    da = hazard["flood_event"]
+    da.name = None
+    with pytest.raises(
+        ValueError,
+        match="DataArray can't be set without a name",
+    ):
+        component.set(da)
+
+    # Wrong input data type, nonsense like an integer
+    with pytest.raises(
+        TypeError,
+        match="Wrong input data type: 'int'",
+    ):
+        component.set(2)
+
+
 def test_hazard_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,

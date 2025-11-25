@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
@@ -104,6 +105,77 @@ def test_exposure_grid_component_clip_inplace(
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data.commercial_content.shape == (9, 9)
+
+
+def test_exposure_grid_component_set(
+    mock_model: MagicMock,
+    exposure_grid_clipped: xr.Dataset,
+):
+    # Set up the component
+    component = ExposureGridComponent(model=mock_model)
+    # Assert nothing in the component
+    assert len(component.data.data_vars) == 0
+
+    # Set the data via the set method, providing a dataset
+    component.set(exposure_grid_clipped)
+
+    # Assert the state
+    assert len(component.data.data_vars) == 4
+    assert "commercial_content" in component.data.data_vars
+
+    # Set data as a dataarray
+    component.set(exposure_grid_clipped["commercial_content"], name="foo")
+
+    # Assert the state
+    assert len(component.data.data_vars) == 5
+    assert "foo" in component.data.data_vars
+
+
+def test_exposure_grid_component_set_replace(
+    caplog: pytest.LogCaptureFixture,
+    mock_model: MagicMock,
+    exposure_grid_clipped: xr.Dataset,
+):
+    caplog.set_level(logging.WARNING)
+    # Set up the component
+    component = ExposureGridComponent(model=mock_model)
+    # Assert nothing in the component
+    assert len(component.data.data_vars) == 0
+
+    # Set the data via the set method, providing a dataset
+    component.set(exposure_grid_clipped)
+    component.set(exposure_grid_clipped)
+
+    # Assert the logging message
+    assert "Replacing grid map: 'commercial_content'" in caplog.text
+
+    # Assert the state
+    assert len(component.data.data_vars) == 4  # not 8
+    assert "commercial_content" in component.data.data_vars
+
+
+def test_exposure_grid_component_set_errors(
+    mock_model: MagicMock,
+    exposure_grid_clipped: xr.Dataset,
+):
+    # Set up the component
+    component = ExposureGridComponent(model=mock_model)
+
+    # Dataarray without a name
+    da = exposure_grid_clipped["commercial_content"]
+    da.name = None
+    with pytest.raises(
+        ValueError,
+        match="DataArray can't be set without a name",
+    ):
+        component.set(da)
+
+    # Wrong input data type, nonsense like an integer
+    with pytest.raises(
+        TypeError,
+        match="Wrong input data type: 'int'",
+    ):
+        component.set(2)
 
 
 def test_exposure_grid_component_read(
