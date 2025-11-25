@@ -17,7 +17,7 @@ def test_force_ns_flip(simple_raster: xr.DataArray):
     raster = simple_raster.raster.flipud()
     assert raster.raster.res[1] > 0
     # Call the function
-    da = force_ns(simple_raster)
+    da = force_ns(raster)
 
     # Assert the output
     assert da.raster.res[1] < 1
