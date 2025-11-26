@@ -4,15 +4,13 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import geopandas as gpd
-import xarray as xr
 from hydromt._io.readers import _read_nc
 from hydromt._io.writers import _write_nc
 from hydromt.model import Model
-from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components.grid import CustomGridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
@@ -33,7 +31,7 @@ __all__ = ["HazardComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardComponent(GridComponent):
+class HazardComponent(CustomGridComponent):
     """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -150,7 +148,8 @@ class HazardComponent(GridComponent):
 
         # Write it in a gdal compliant manner by default
         logger.info(f"Writing the hazard data to {write_path.as_posix()}")
-        self._data = force_ns(self.data)  # Force north south before writing
+        # Force north south before writing
+        self._data = force_ns(self.data)  # type: ignore[assignment]
         _write_nc(
             {GRID: self.data},
             write_path.as_posix(),
@@ -173,90 +172,6 @@ class HazardComponent(GridComponent):
             f"{HAZARD_SETTINGS}.{SRS}",
             crs_representation(self.data.raster.crs),
         )
-
-    ## Mutating methods
-    @hydromt_step
-    def clear(self) -> None:
-        """Clear the hazard data."""
-        self._data = None
-        self._initialize_grid(skip_read=True)
-
-    @hydromt_step
-    def clip(
-        self,
-        geom: gpd.GeoDataFrame,
-        buffer: int = 1,
-        inplace: bool = False,
-    ) -> xr.Dataset | None:
-        """Clip the hazard data based on geometry.
-
-        Parameters
-        ----------
-        geom : gpd.GeoDataFrame
-            The area to clip the data to.
-        buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 1.
-        inplace : bool, optional
-            Whether to do the clipping in place or return a new xr.Dataset,
-            by default False.
-
-        Returns
-        -------
-        xr.Dataset | None
-            Return a dataset if the inplace is False.
-        """
-        # Check whether it has the necessary dims
-        try:
-            self.data.raster.set_spatial_dims()
-        except ValueError:
-            return None
-
-        # If so, clip the data
-        data = self.data.raster.clip_geom(geom, buffer=buffer)
-        # If inplace, just set the data and return nothing
-        if inplace:
-            self._data = data
-            return None
-        return data
-
-    def set(
-        self,
-        data: xr.Dataset | xr.DataArray,
-        name: str | None = None,
-    ) -> None:
-        """Set data in the hazard component.
-
-        Parameters
-        ----------
-        data : xr.Dataset | xr.DataArray
-            The data to set.
-        name : str | None, optional
-            The name of the data when data is of type DataArray and the DataArray
-            has not name yet, by default None.
-        """
-        # Make sure the grid exists
-        self._initialize_grid()
-        assert self._data is not None
-
-        # First check the input and typing
-        if isinstance(data, xr.DataArray):
-            if data.name is None and name is None:
-                raise ValueError("DataArray can't be set without a name")
-            data.name = name
-            data = data.to_dataset()
-        if not isinstance(data, xr.Dataset):
-            raise TypeError(f"Wrong input data type: '{data.__class__.__name__}'")
-
-        # Force ns orientation
-        data = force_ns(data)
-        # Set thet data
-        if len(self._data) == 0:  # empty grid
-            self._data = data
-        else:
-            for dvar in data.data_vars:
-                if dvar in self._data:
-                    logger.warning(f"Replacing grid map: '{dvar}'")
-                self._data[dvar] = data[dvar]
 
     # Setup methods
     @hydromt_step

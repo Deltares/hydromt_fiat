@@ -4,8 +4,8 @@ import xarray as xr
 
 
 def force_ns(
-    ds: xr.Dataset | xr.DataArray,
-) -> xr.Dataset | xr.DataArray:
+    ds: xr.Dataset,
+) -> xr.Dataset:
     """Force a raster in north-south orientation.
 
     Parameters
