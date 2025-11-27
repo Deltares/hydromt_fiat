@@ -8,9 +8,9 @@ from .region import RegionComponent
 from .vulnerability import VulnerabilityComponent
 
 __all__ = [
+    "ConfigComponent",
     "ExposureGeomsComponent",
     "ExposureGridComponent",
-    "ConfigComponent",
     "HazardComponent",
     "RegionComponent",
     "VulnerabilityComponent",

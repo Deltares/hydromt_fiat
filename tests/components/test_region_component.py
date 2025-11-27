@@ -17,7 +17,7 @@ def test_region_component_empty(mock_model: MagicMock):
     component = RegionComponent(model=mock_model)
 
     # assert that it is empty
-    assert len(component.data) == 0
+    assert component.data is None
     assert component._filename == f"{REGION}.geojson"
 
 
@@ -29,14 +29,15 @@ def test_region_component_clear(
     component = RegionComponent(model=mock_model)
 
     # Set the data like a dummy
-    component._data = {REGION: build_region_small}
+    component._data = build_region_small
     # Assert the current state
-    assert len(component.data) == 1
+    assert component.data is not None
+    assert isinstance(component.data, gpd.GeoDataFrame)
 
     # Call the clear method
     component.clear()
     # Assert the state after
-    assert len(component.data) == 0
+    assert component.data is None
 
 
 def test_region_component_set(
@@ -51,22 +52,22 @@ def test_region_component_set(
     component.set(build_region)
 
     # Assert that there is data
-    assert REGION in component.data
-    assert len(component.data) == 1
+    assert isinstance(component.data, gpd.GeoDataFrame)
     assert component.region is not None
     assert len(component.region.columns) == 1
 
     # Empty the component and assert that crs is adjusted based on the model
-    component._data = {}
+    component._data = None
     assert build_region_small.crs.to_epsg() == 28992
     component.set(build_region_small)
     assert component.region.crs.to_epsg() == 4326
 
     # Assert that a GeoSeries is sufficient as input
-    component._data = {}
+    component._data = None
     assert component.region is None
     component.set(build_region.geometry)
     assert component.region is not None
+    assert isinstance(component.data, gpd.GeoDataFrame)
 
 
 def test_region_component_append(
@@ -116,7 +117,7 @@ def test_region_component_read(
     )
     component = RegionComponent(model=mock_model)
     component.read()
-    assert len(component.data) == 0
+    assert component.data is None
     assert component.region is None
 
     # Write the region gdf to the tmp directory
@@ -124,7 +125,7 @@ def test_region_component_read(
 
     # Re-read
     component.read()
-    assert len(component.data) == 1
+    assert component.data is not None
     assert component.region is not None
 
 
@@ -142,7 +143,7 @@ def test_region_component_write_empty(
     assert "No region data found, skip writing." in caplog.text
 
     # Write empty region GeoDataFrame
-    component._data = {REGION: gpd.GeoDataFrame()}
+    component._data = gpd.GeoDataFrame()
     component.write()
     assert "Region is empty. Skipping..." in caplog.text
 

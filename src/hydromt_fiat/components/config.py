@@ -161,7 +161,7 @@ class ConfigComponent(ModelComponent):
         fallback: Any | None = None,
         abs_path: bool = False,
     ) -> Any:
-        """Get a config value at key(s).
+        """Get a configurations value.
 
         Parameters
         ----------
@@ -187,7 +187,7 @@ class ConfigComponent(ModelComponent):
         return value
 
     def set(self, key: str, value: Any) -> None:
-        """Update the config dictionary at key(s) with values.
+        """Set an entry in the configurations.
 
         Parameters
         ----------

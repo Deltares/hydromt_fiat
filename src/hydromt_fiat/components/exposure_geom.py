@@ -16,6 +16,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     EXPOSURE,
     EXPOSURE_GEOM,
@@ -27,7 +28,6 @@ from hydromt_fiat.utils import (
     REGION,
     SETTINGS,
     SRS,
-    srs_representation,
 )
 
 __all__ = ["ExposureGeomsComponent"]
@@ -144,15 +144,15 @@ class ExposureGeomsComponent(SpatialModelComponent):
         for p, n in zip(*out):
             logger.info(f"Reading the {n} geometry file at {p.as_posix()}")
             # Get the data
-            geom = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
+            data = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
             # Check for data in csv file, this has to be merged
             # TODO this should be solved better with help of the config file
             csv_path = p.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                geom = geom.merge(csv_data, on=OBJECT_ID)
+                data = data.merge(csv_data, on=OBJECT_ID)
             # Set the data
-            self.set(geom=geom, name=n)
+            self.set(data=data, name=n)
 
     @hydromt_step
     def write(
@@ -199,27 +199,24 @@ class ExposureGeomsComponent(SpatialModelComponent):
             # Abuse the fact that a dictionary is mutable and passed by ref
             entry: dict[str, Any] = {}
             cfg.append(entry)
-
             # Create the outgoing file path
             write_path = Path(
                 self.root.path,
                 filename.format(name=name),
             )
-
-            logger.info(
-                f"Writing the '{name}' geometry data to {write_path.as_posix()}",
-            )
-
+            # Ensure the directory
             write_dir = write_path.parent
             if not write_dir.is_dir():
                 write_dir.mkdir(parents=True, exist_ok=True)
 
             entry[FILE] = write_path
             # Due to header overloading, this is not solved properly in
-            # the configcomponent
+            # the config component
             if gdf.crs is not None:
-                entry[SETTINGS] = {SRS: srs_representation(gdf.crs)}
-
+                entry[SETTINGS] = {SRS: crs_representation(gdf.crs)}
+            logger.info(
+                f"Writing the '{name}' geometry data to {write_path.as_posix()}",
+            )
             # Write the entire thing to vector file
             gdf.to_file(write_path, **kwargs)
 
@@ -272,32 +269,32 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
     def set(
         self,
-        geom: gpd.GeoDataFrame,
+        data: gpd.GeoDataFrame,
         name: str,
     ) -> None:
-        """Add data to the geom component.
+        """Set data in the exposure geom component.
 
         Arguments
         ---------
-        geom : gpd.GeoDataFrame
+        data : gpd.GeoDataFrame
             New geometry data to add.
         name : str
             Geometry name.
         """
         self._initialize()
         assert self._data is not None
-        if name in self._data and id(self._data.get(name)) != id(geom):
+        if name in self._data and id(self._data.get(name)) != id(data):
             logger.warning(f"Replacing geom: {name}")
 
-        if "fid" in geom.columns:
+        if "fid" in data.columns:
             logger.warning(
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            geom.drop("fid", axis=1, inplace=True)
+            data.drop("fid", axis=1, inplace=True)
 
         # Set the data
-        self._data[name] = geom
+        self._data[name] = data
 
     ## Setup methods
     @hydromt_step
