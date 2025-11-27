@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 import xarray as xr
 
-from hydromt_fiat.utils import CURVE, EXPOSURE_LINK, OBJECT_TYPE, SUBTYPE
+from hydromt_fiat.utils import CURVE, EXPOSURE_LINK, FN_CURVE, OBJECT_TYPE, SUBTYPE
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["exposure_grid_setup"]
@@ -85,11 +85,11 @@ defaulting to the name of the exposure layer"
             continue
 
         # Get the vulnerability curve ID
-        fn_damage = link[CURVE].values[0]
+        fn_curve = link[CURVE].values[0]
 
         # Process the arrays, .e.g make gdal compliant
         da = _process_dataarray(da=da, da_name=da_name)
-        da = da.assign_attrs({"fn_damage": fn_damage})
+        da = da.assign_attrs({FN_CURVE: fn_curve})
         exposure_dataarrays.append(da)
 
     if len(exposure_dataarrays) == 0:

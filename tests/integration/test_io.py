@@ -5,10 +5,22 @@ import numpy as np
 import pytest
 
 from hydromt_fiat import FIATModel
+from hydromt_fiat.utils import (
+    CURVES,
+    EXPOSURE,
+    EXPOSURE_GRID_SETTINGS,
+    GEOM,
+    HAZARD,
+    MODEL_TYPE,
+    REGION,
+    SETTINGS,
+    VAR_AS_BAND,
+    VULNERABILITY,
+)
 
 
 @pytest.mark.integration
-def test_fookin_io(tmp_path: Path, model_data_clipped_path: Path):
+def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     # Create the model to read
     model = FIATModel(root=model_data_clipped_path)
 
@@ -17,7 +29,7 @@ def test_fookin_io(tmp_path: Path, model_data_clipped_path: Path):
 
     # Assert its state
     assert len(model.config.data) == 4
-    assert model.config.get("model.model_type") == "geom"
+    assert model.config.get(MODEL_TYPE) == GEOM
     assert isinstance(model.region, gpd.GeoDataFrame)
     np.testing.assert_almost_equal(model.region.total_bounds[0], 85675, decimal=0)
     assert len(model.exposure_geoms.data) == 1
@@ -37,12 +49,12 @@ def test_fookin_io(tmp_path: Path, model_data_clipped_path: Path):
     model.write()
 
     # Assert the output
-    assert Path(tmp_path, "settings.toml").is_file()
-    assert Path(tmp_path, "region.geojson").is_file()
-    assert Path(tmp_path, "exposure", "buildings.fgb").is_file()
-    assert Path(tmp_path, "exposure", "spatial.nc").is_file()
-    assert Path(tmp_path, "hazard.nc").is_file()
-    assert Path(tmp_path, "vulnerability", "curves.csv").is_file()
-    assert Path(tmp_path, "vulnerability", "curves_id.csv").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
+    assert Path(tmp_path, f"{REGION}.geojson").is_file()
+    assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
+    assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
+    assert Path(tmp_path, f"{HAZARD}.nc").is_file()
+    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, VULNERABILITY, f"{CURVES}_id.csv").is_file()
     # Assert the addition of some settings set during I/O
-    assert model.config.get("exposure.grid.settings.var_as_band")
+    assert model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")

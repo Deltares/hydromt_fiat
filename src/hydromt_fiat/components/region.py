@@ -24,7 +24,7 @@ class RegionComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         by default "region.geojson" i.e. one file.
@@ -34,39 +34,39 @@ class RegionComponent(SpatialModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "region.geojson",
+        filename: str = f"{REGION}.geojson",
     ):
-        self._data: dict[str, gpd.GeoDataFrame | gpd.GeoSeries] | None = None
+        self._data: gpd.GeoDataFrame | None = None
         self._filename: str = filename
+        self._init: bool = False  # Prevention of recursion
         super().__init__(
             model=model,
         )
 
+    ## Private methods
     def _initialize(self, skip_read=False) -> None:
         """Initialize region."""
-        if self._data is None:
-            self._data = dict()
-            if self.root.is_reading_mode() and not skip_read:
-                self.read()
+        self._init = True
+        if self.root.is_reading_mode() and not skip_read:
+            self.read()
 
     ## Properties
     @property
-    def data(self) -> dict[str, gpd.GeoDataFrame | gpd.GeoSeries]:
-        """Model geometries.
-
-        Return dict of `geopandas.GeoDataFrame` or `geopandas.GeoSeries`.
-        """
-        if self._data is None:
-            self._initialize()
-        assert isinstance(self._data, dict)
-        return self._data
-
-    @property
     def _region_data(self) -> gpd.GeoDataFrame | None:
         # Use the total bounds of all geometries as region
-        if len(self.data) == 0:
+        if self.data is None:
             return None
-        return self.data[REGION]
+        return self.data
+
+    @property
+    def data(self) -> gpd.GeoDataFrame | None:
+        """Model geometries.
+
+        Return `geopandas.GeoDataFrame`.
+        """
+        if self._data is None and not self._init:
+            self._initialize()
+        return self._data
 
     ## I/O methods
     @hydromt_step
@@ -77,20 +77,25 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
+
+        # Sort the pathing
         f = filename or self._filename
         read_path = self.root.path / f
         if not read_path.is_file():
             return
+
+        # Read the data
         logger.info(f"Reading the model region file at {read_path.as_posix()}")
-        geom = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
-        self.set(geom=geom)
+        data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
+        self.set(data=data)
 
     @hydromt_step
     def write(
@@ -105,10 +110,11 @@ class RegionComponent(SpatialModelComponent):
         ----------
         filename : str, optional
             Filename relative to model root.
-            If None, the path that was provided at init will be used.
+            If None, the value is taken from the `_filename` attribute,
+            by default None.
         to_wgs84 : bool, optional
             If True, the geoms will be reprojected to WGS84(EPSG:4326)
-            before they are written.
+            before they are written. By default False.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -116,7 +122,7 @@ class RegionComponent(SpatialModelComponent):
         self.root._assert_write_mode()
 
         # If nothing to write, return
-        if REGION not in self.data:
+        if self.data is None:
             logger.info("No region data found, skip writing.")
             return
 
@@ -125,13 +131,13 @@ class RegionComponent(SpatialModelComponent):
         filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
-        # Write the file(s)
-        logger.info("Writing the model region file..")
-        gdf = self.data[REGION]
-        if len(gdf) == 0:
+        # Write the file
+        data = self.data
+        if len(data) == 0:
             logger.warning("Region is empty. Skipping...")
             return
 
+        logger.info(f"Writing the model region file to {write_path.as_posix()}")
         # Create dir if not there
         if not write_path.parent.is_dir():
             write_path.parent.mkdir(parents=True, exist_ok=True)
@@ -141,54 +147,52 @@ class RegionComponent(SpatialModelComponent):
             kwargs.get("driver") == "GeoJSON"
             or str(write_path).lower().endswith(".geojson")
         ):
-            gdf.to_crs(epsg=4326, inplace=True)
+            data.to_crs(epsg=4326, inplace=True)
         # Write
-        gdf.to_file(write_path, **kwargs)
-
-    ## Action methods
-    def set(
-        self,
-        geom: gpd.GeoDataFrame | gpd.GeoSeries,
-        replace: bool = False,
-    ) -> None:
-        """Add data to the region component.
-
-        If a region is already present, the new region will be merged with in one
-        already present in a union.
-
-        Parameters
-        ----------
-        geom : gpd.GeoDataFrame | gpd.GeoSeries
-            New geometry data to add.
-        replace : bool, optional
-            Whether or not to replace the current region outright. If set to False,
-            a union is created between the existing and given geometries.
-            By default False.
-        """
-        self._initialize()
-        if len(self.data) != 0:
-            logger.warning("Replacing/ updating region")
-
-        if isinstance(geom, gpd.GeoSeries):
-            geom = cast(gpd.GeoDataFrame, geom.to_frame())
-
-        # Verify if a geom is set to model crs and if not sets geom to model crs
-        model_crs = self.model.crs
-        if model_crs and model_crs != geom.crs:
-            geom.to_crs(model_crs.to_epsg(), inplace=True)
-
-        # Get rid of columns that aren't geometry
-        geom = geom["geometry"].to_frame()
-
-        # Make a union with the current region geodataframe
-        cur = self.data.get(REGION)
-        if cur is not None and not geom.equals(cur) and not replace:
-            geom = geom.union(cur)
-
-        self.data[REGION] = geom
+        data.to_file(write_path, **kwargs)
 
     ## Mutating methods
     def clear(self):
         """Clear the region."""
         self._data = None
         self._initialize(skip_read=True)
+
+    def set(
+        self,
+        data: gpd.GeoDataFrame | gpd.GeoSeries,
+        replace: bool = False,
+    ) -> None:
+        """Set a region.
+
+        If a region is already present, the new region will be merged with in one
+        already present in a union.
+
+        Parameters
+        ----------
+        data : gpd.GeoDataFrame | gpd.GeoSeries
+            New geometry data to add.
+        replace : bool, optional
+            Whether or not to replace the current region outright. If set to False,
+            a union is created between the existing and given geometries.
+            By default False.
+        """
+        if self.data is not None:
+            logger.warning("Replacing/ updating region")
+
+        if isinstance(data, gpd.GeoSeries):
+            data = cast(gpd.GeoDataFrame, data.to_frame())
+
+        # Verify if a geom is set to model crs and if not sets geom to model crs
+        model_crs = self.model.crs
+        if model_crs and model_crs != data.crs:
+            data.to_crs(model_crs.to_epsg(), inplace=True)
+
+        # Get rid of columns that aren't geometry
+        data = data["geometry"].to_frame()
+
+        # Make a union with the current region geodataframe
+        cur = self.data
+        if cur is not None and not data.equals(cur) and not replace:
+            data = data.union(cur)
+
+        self._data = data

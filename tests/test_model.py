@@ -14,6 +14,7 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
+from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
 
 
 def test_model_empty(tmp_path: Path):
@@ -21,8 +22,8 @@ def test_model_empty(tmp_path: Path):
     model = FIATModel(tmp_path)
 
     # Assert some basic statements
-    assert "config" in model.components
-    assert "region" in model.components
+    assert CONFIG in model.components
+    assert REGION in model.components
     assert model.region is None
     assert len(model.components) == 6
 
@@ -36,7 +37,7 @@ def test_model_basic_read_write(tmp_path: Path):
     # Write the model
     model.write()
     model = None
-    assert Path(tmp_path, "settings.toml").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
 
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
@@ -57,8 +58,8 @@ def test_model_clear(  # Dont like this to much, as it is a bit of an integratio
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components["region"]._data = {"region": build_region_small}
-    model.config._data = {"model": {"type": "geom"}}
+    model.components[REGION]._data = build_region_small
+    model.config._data = {MODEL: {TYPE: GEOM}}
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -96,7 +97,7 @@ def test_model_clip(  # Dont like this to much, as it is a bit of an integration
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components["region"]._data = {"region": build_region}
+    model.components[REGION]._data = build_region
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -164,7 +165,7 @@ def test_model_setup_region_error(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Setup the region pointing to not a file
-    region_no = Path(tmp_path, "region.geojson")
+    region_no = Path(tmp_path, f"{REGION}.geojson")
     with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
         model.setup_region(region=region_no)
 
