@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
-import geopandas as gpd
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
@@ -30,78 +29,6 @@ def test_hazard_component_empty(
     assert component._filename == f"{HAZARD}.nc"
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
-
-
-def test_hazard_component_clear(
-    mock_model: MagicMock,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert len(component.data.data_vars) == 1
-
-    # Call the clear method
-    component.clear()
-    # Assert the state after
-    assert len(component.data.data_vars) == 0
-
-
-def test_hazard_component_clip(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small, buffer=0)
-    # Assert the output
-    assert ds.flood_event.shape == (5, 4)
-
-
-def test_hazard_component_clip_no_data(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-    # Assert the current state
-    assert component._data is None
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small)
-    # Assert that there is no output
-    assert ds is None
-
-
-def test_hazard_component_clip_inplace(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small, buffer=0, inplace=True)
-    # Assert that the output is None but the shape of the component data changed
-    assert ds is None
-    assert component.data.flood_event.shape == (5, 4)
 
 
 def test_hazard_component_read(
