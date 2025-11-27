@@ -19,7 +19,7 @@ class CustomGridComponent(GridComponent):
 
     ## Mutating methods
     def clear(self) -> None:
-        """Clear the grid data."""
+        """Clear the gridded data."""
         self._data = None
         self._initialize_grid(skip_read=True)
 
@@ -29,7 +29,7 @@ class CustomGridComponent(GridComponent):
         buffer: int = 1,
         inplace: bool = False,
     ) -> xr.Dataset | None:
-        """Clip the grid data based on geometry.
+        """Clip the gridded data.
 
         Parameters
         ----------

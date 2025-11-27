@@ -162,7 +162,7 @@ class RegionComponent(SpatialModelComponent):
         data: gpd.GeoDataFrame | gpd.GeoSeries,
         replace: bool = False,
     ) -> None:
-        """Set data in the region component.
+        """Set a region.
 
         If a region is already present, the new region will be merged with in one
         already present in a union.
