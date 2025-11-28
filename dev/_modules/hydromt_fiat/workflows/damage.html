@@ -82,8 +82,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -170,6 +170,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -216,26 +223,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -249,6 +236,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -307,6 +298,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -345,26 +343,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -440,6 +418,7 @@
     <span class="n">COST_TYPE</span><span class="p">,</span>
     <span class="n">EXPOSURE_LINK</span><span class="p">,</span>
     <span class="n">EXPOSURE_TYPE</span><span class="p">,</span>
+    <span class="n">MAX</span><span class="p">,</span>
     <span class="n">OBJECT_TYPE</span><span class="p">,</span>
     <span class="n">SUBTYPE</span><span class="p">,</span>
     <span class="n">create_query</span><span class="p">,</span>
@@ -540,11 +519,15 @@
     <span class="p">]</span>
 
     <span class="c1"># Link the cost type to the exposure data</span>
+    <span class="n">data_or_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">)</span>  <span class="c1"># For size check later</span>
     <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[[</span><span class="n">OBJECT_TYPE</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
         <span class="n">exposure_cost_link</span><span class="p">,</span>
         <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_TYPE</span><span class="p">,</span>
         <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
     <span class="p">)[</span><span class="n">COST_TYPE</span><span class="p">]</span>
+
+    <span class="c1"># Drop the data that cannnot be linked</span>
+    <span class="n">exposure_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Get the area, make sure its a projected crs</span>
     <span class="n">old_crs</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span>
@@ -563,7 +546,15 @@
         <span class="c1"># Multiply by the area</span>
         <span class="n">costs_per</span> <span class="o">*=</span> <span class="n">area</span>
 
-        <span class="n">exposure_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;max_</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">exposure_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">MAX</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># Check data length afterwards</span>
+    <span class="n">data_m_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_or_size</span> <span class="o">!=</span> <span class="n">data_m_size</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_or_size</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">data_m_size</span><span class="si">}</span><span class="s2"> features could not be linked to the </span><span class="se">\</span>
+<span class="s2">damage values, these were removed&quot;</span>
+        <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">exposure_data</span></div>
 
@@ -584,6 +575,32 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

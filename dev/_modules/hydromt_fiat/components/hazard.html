@@ -82,8 +82,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -170,6 +170,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -216,26 +223,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -249,6 +236,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -307,6 +298,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -345,26 +343,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -432,15 +410,27 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt._io.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">_read_nc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt._io.writers</span><span class="w"> </span><span class="kn">import</span> <span class="n">_write_nc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridComponent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">CustomGridComponent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.raster_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">force_ns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">crs_representation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GRID</span><span class="p">,</span>
+    <span class="n">HAZARD</span><span class="p">,</span>
+    <span class="n">HAZARD_FILE</span><span class="p">,</span>
+    <span class="n">HAZARD_RP</span><span class="p">,</span>
+    <span class="n">HAZARD_SETTINGS</span><span class="p">,</span>
+    <span class="n">MODEL_RISK</span><span class="p">,</span>
+    <span class="n">REGION</span><span class="p">,</span>
+    <span class="n">SRS</span><span class="p">,</span>
+    <span class="n">VAR_AS_BAND</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HazardComponent&quot;</span><span class="p">]</span>
 
@@ -449,7 +439,7 @@
 
 <div class="viewcode-block" id="HazardComponent">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.html#hydromt_fiat.components.HazardComponent">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">HazardComponent</span><span class="p">(</span><span class="n">GridComponent</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HazardComponent</span><span class="p">(</span><span class="n">CustomGridComponent</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Hazard component.</span>
 
 <span class="sd">    Inherits from the HydroMT-core GridComponent model-component.</span>
@@ -457,7 +447,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    model : Model</span>
-<span class="sd">        HydroMT model instance.</span>
+<span class="sd">        HydroMT model instance (FIATModel).</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
 <span class="sd">        By default &quot;hazard.nc&quot;.</span>
@@ -476,9 +466,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hazard.nc&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">HAZARD</span><span class="si">}</span><span class="s2">.nc&quot;</span><span class="p">,</span>
         <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
+        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">REGION</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="p">,</span>
@@ -506,16 +496,32 @@
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments to be passed to the `read_nc` method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check the state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_assert_read_mode</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_grid</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
         <span class="c1"># Sort the filename</span>
         <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">filename</span>
-            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">HAZARD_FILE</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
         <span class="p">)</span>
+
         <span class="c1"># Read the data</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the hazard data..&quot;</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+        <span class="n">read_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading the hazard file at </span><span class="si">{</span><span class="n">read_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Read with the (old) read function from hydromt-core</span>
+        <span class="n">ncs</span> <span class="o">=</span> <span class="n">_read_nc</span><span class="p">(</span>
+            <span class="n">read_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">single_var_as_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">mask_and_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Set the datasets</span>
+        <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">ncs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HazardComponent.write">
@@ -550,13 +556,15 @@
 
         <span class="c1"># Sort out the filename</span>
         <span class="c1"># Hierarchy: 1) signature, 2) config file, 3) default</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">HAZARD_FILE</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
         <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
         <span class="c1"># Write it in a gdal compliant manner by default</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Writing the hazard data..&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing the hazard data to </span><span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Force north south before writing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">force_ns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># type: ignore[assignment]</span>
         <span class="n">_write_nc</span><span class="p">(</span>
-            <span class="p">{</span><span class="s2">&quot;grid&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">},</span>
+            <span class="p">{</span><span class="n">GRID</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">},</span>
             <span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">(),</span>
             <span class="n">root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
             <span class="n">gdal_compliant</span><span class="o">=</span><span class="n">gdal_compliant</span><span class="p">,</span>
@@ -567,62 +575,16 @@
         <span class="p">)</span>
 
         <span class="c1"># Update the config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.file&quot;</span><span class="p">,</span> <span class="n">write_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">HAZARD_FILE</span><span class="p">,</span> <span class="n">write_path</span><span class="p">)</span>
         <span class="c1"># Check for multiple bands, because gdal and netcdf..</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">HAZARD_SETTINGS</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">VAR_AS_BAND</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.settings.var_as_band&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
-
-
-    <span class="c1">## Mutating methods</span>
-<div class="viewcode-block" id="HazardComponent.clear">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.clear.html#hydromt_fiat.components.HazardComponent.clear">[docs]</a>
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the hazard data.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_grid</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="HazardComponent.clip">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.HazardComponent.clip.html#hydromt_fiat.components.HazardComponent.clip">[docs]</a>
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clip</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">geom</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
-        <span class="n">buffer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clip the hazard data based on geometry.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        geom : gpd.GeoDataFrame</span>
-<span class="sd">            The area to clip the data to.</span>
-<span class="sd">        buffer : int, optional</span>
-<span class="sd">            A buffer of cells around the clipped area to keep, by default 0.</span>
-<span class="sd">        inplace : bool, optional</span>
-<span class="sd">            Whether to do the clipping in place or return a new xr.Dataset,</span>
-<span class="sd">            by default False.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        xr.Dataset | None</span>
-<span class="sd">            Return a dataset if the inplace is False.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Check whether it has the necessary dims</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">set_spatial_dims</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="c1"># If so, clip the data</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">clip_geom</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="n">buffer</span><span class="p">)</span>
-        <span class="c1"># If inplace, just set the data and return nothing</span>
-        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">data</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">HAZARD_SETTINGS</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">VAR_AS_BAND</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Set the srs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">HAZARD_SETTINGS</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">SRS</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">crs_representation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span>
+        <span class="p">)</span></div>
 
 
     <span class="c1"># Setup methods</span>
@@ -657,8 +619,6 @@
 <span class="sd">            The unit which the hazard data is in, by default &#39;m&#39; (meters).</span>
 <span class="sd">        **settings : dict</span>
 <span class="sd">            Extra settings to be added under the hazard header.</span>
-<span class="sd">            For flood maps (water depth), elevation_reference set to either &#39;datum&#39; \</span>
-<span class="sd">            or &#39;dem&#39; is recommeneded.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -693,7 +653,7 @@
         <span class="n">grid_like</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sizes</span> <span class="o">!=</span> <span class="p">{}</span> <span class="k">else</span> <span class="kc">None</span>
 
         <span class="c1"># Parse hazard files to an xarray dataset</span>
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">hazard_grid</span><span class="p">(</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">hazard_setup</span><span class="p">(</span>
             <span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span>
             <span class="n">hazard_data</span><span class="o">=</span><span class="n">hazard_data</span><span class="p">,</span>
             <span class="n">hazard_type</span><span class="o">=</span><span class="n">hazard_type</span><span class="p">,</span>
@@ -706,13 +666,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
 
         <span class="c1"># Set the config entries</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.risk&quot;</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MODEL_RISK</span><span class="p">,</span> <span class="n">risk</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;hazard.return_periods&quot;</span><span class="p">,</span> <span class="n">return_periods</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">HAZARD_RP</span><span class="p">,</span> <span class="n">return_periods</span><span class="p">)</span>
 
         <span class="c1"># Set the extra settings</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hazard.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">HAZARD</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -732,6 +692,32 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

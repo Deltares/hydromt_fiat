@@ -85,8 +85,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -173,6 +173,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -219,26 +226,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -252,6 +239,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -308,6 +299,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -346,26 +344,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -431,12 +409,12 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/workflows.html">Workflow functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_setup.html">hydromt_fiat.workflows.vulnerability_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.hazard_setup.html">hydromt_fiat.workflows.hazard_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_setup.html">hydromt_fiat.workflows.exposure_geoms_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_link_vulnerability.html">hydromt_fiat.workflows.exposure_geoms_link_vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.max_monetary_damage.html">hydromt_fiat.workflows.max_monetary_damage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_add_columns.html">hydromt_fiat.workflows.exposure_geoms_add_columns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_grid_setup.html">hydromt_fiat.workflows.exposure_grid_setup</a></li>
 </ul>
 </details></li>
@@ -518,13 +496,13 @@
 <h1>hydromt_fiat.components.HazardComponent.clip<a class="headerlink" href="#hydromt-fiat-components-hazardcomponent-clip" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="hydromt_fiat.components.HazardComponent.clip">
-<span class="sig-prename descclassname"><span class="pre">HazardComponent.</span></span><span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><span class="pre">Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/hydromt_fiat/components/hazard.html#HazardComponent.clip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.HazardComponent.clip" title="Link to this definition">#</a></dt>
-<dd><p>Clip the hazard data based on geometry.</p>
+<span class="sig-prename descclassname"><span class="pre">HazardComponent.</span></span><span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.11.1)"><span class="pre">Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#hydromt_fiat.components.HazardComponent.clip" title="Link to this definition">#</a></dt>
+<dd><p>Clip the gridded data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>geom</strong> (<em>gpd.GeoDataFrame</em>) – The area to clip the data to.</p></li>
-<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – A buffer of cells around the clipped area to keep, by default 0.</p></li>
+<li><p><strong>buffer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – A buffer of cells around the clipped area to keep, by default 1.</p></li>
 <li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to do the clipping in place or return a new xr.Dataset,
 by default False.</p></li>
 </ul>
@@ -574,6 +552,32 @@ by default False.</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

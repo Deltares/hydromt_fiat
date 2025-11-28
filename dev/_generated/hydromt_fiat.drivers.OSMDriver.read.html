@@ -85,8 +85,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -173,6 +173,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -219,26 +226,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -252,6 +239,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -308,6 +299,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -346,26 +344,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -431,12 +409,12 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/workflows.html">Workflow functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.vulnerability_setup.html">hydromt_fiat.workflows.vulnerability_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.hazard_setup.html">hydromt_fiat.workflows.hazard_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_setup.html">hydromt_fiat.workflows.exposure_geoms_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_link_vulnerability.html">hydromt_fiat.workflows.exposure_geoms_link_vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.max_monetary_damage.html">hydromt_fiat.workflows.max_monetary_damage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_geoms_add_columns.html">hydromt_fiat.workflows.exposure_geoms_add_columns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.workflows.exposure_grid_setup.html">hydromt_fiat.workflows.exposure_grid_setup</a></li>
 </ul>
 </details></li>
@@ -575,6 +553,32 @@ i.e. [‘MultiPolygon’, ‘Polygon’], by default None.</p></li>
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

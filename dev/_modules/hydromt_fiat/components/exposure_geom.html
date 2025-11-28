@@ -82,8 +82,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -170,6 +170,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -216,26 +223,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -249,6 +236,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -307,6 +298,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -345,26 +343,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -444,7 +422,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pathing_config</span><span class="p">,</span> <span class="n">pathing_expand</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">OBJECT_ID</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">crs_representation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EXPOSURE</span><span class="p">,</span>
+    <span class="n">EXPOSURE_GEOM</span><span class="p">,</span>
+    <span class="n">EXPOSURE_GEOM_FILE</span><span class="p">,</span>
+    <span class="n">FILE</span><span class="p">,</span>
+    <span class="n">GEOM</span><span class="p">,</span>
+    <span class="n">MODEL_TYPE</span><span class="p">,</span>
+    <span class="n">OBJECT_ID</span><span class="p">,</span>
+    <span class="n">REGION</span><span class="p">,</span>
+    <span class="n">SETTINGS</span><span class="p">,</span>
+    <span class="n">SRS</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ExposureGeomsComponent&quot;</span><span class="p">]</span>
 
@@ -459,14 +449,14 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    model : Model</span>
-<span class="sd">        HydroMT model instance (FIATModel)</span>
+<span class="sd">        HydroMT model instance (FIATModel).</span>
 <span class="sd">    filename : str, optional</span>
 <span class="sd">        The path to use for reading and writing of component data by default.</span>
-<span class="sd">        by default &quot;exposure/{name}.fgb&quot;.</span>
+<span class="sd">        By default &quot;exposure/{name}.fgb&quot;.</span>
 <span class="sd">    region_component : str, optional</span>
 <span class="sd">        The name of the region component to use as reference for this component&#39;s</span>
 <span class="sd">        region. If None, the region will be set to the union of all geometries in</span>
-<span class="sd">        the data dictionary.</span>
+<span class="sd">        the data dictionary. By default None.</span>
 <span class="sd">    region_filename : str, optional</span>
 <span class="sd">        The path to use for writing the region data to a file. By default</span>
 <span class="sd">        &quot;region.geojson&quot;.</span>
@@ -476,9 +466,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;exposure/</span><span class="si">{name}</span><span class="s2">.fgb&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">EXPOSURE</span><span class="si">}</span><span class="s2">/</span><span class="se">{{</span><span class="s2">name</span><span class="se">}}</span><span class="s2">.fgb&quot;</span><span class="p">,</span>
         <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">,</span>
+        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">REGION</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
@@ -542,8 +532,8 @@
 <span class="sd">        filename : str, optional</span>
 <span class="sd">            Filename relative to model root. should contain a {name} placeholder</span>
 <span class="sd">            which will be used to determine the names/keys of the geometries.</span>
-<span class="sd">            if None, the path that was provided at init will be used or, if present,</span>
-<span class="sd">            the files present in the model configurations.</span>
+<span class="sd">            If None, the value(s) is/ are either taken from the model configurations or</span>
+<span class="sd">            the `_filename` attribute, by default None.</span>
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments that are passed to the</span>
 <span class="sd">            `geopandas.read_file` function.</span>
@@ -555,27 +545,24 @@
         <span class="c1"># Hierarchy: 1) signature, 2) settings file, 3) default</span>
         <span class="n">out</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">pathing_expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="n">pathing_config</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;exposure.geom.file&quot;</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="ow">or</span> <span class="n">pathing_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">EXPOSURE_GEOM_FILE</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
             <span class="ow">or</span> <span class="n">pathing_expand</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># Yh..</span>
         <span class="c1"># Loop through the found files</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading the exposure vector data..&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">out</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading the </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> geometry file at </span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># Get the data</span>
-            <span class="n">geom</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="c1"># Check for data in csv file, this has to be merged</span>
             <span class="c1"># TODO this should be solved better with help of the config file</span>
             <span class="n">csv_path</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">csv_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                 <span class="n">csv_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
-                <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_ID</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">csv_data</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_ID</span><span class="p">)</span>
             <span class="c1"># Set the data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="n">geom</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExposureGeomsComponent.write">
@@ -593,9 +580,10 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        filename : str, optional</span>
-<span class="sd">            Filename relative to model root. should contain a {name} placeholder</span>
+<span class="sd">            Filename relative to model root. Should contain a {name} placeholder</span>
 <span class="sd">            which will be used to determine the names/keys of the geometries.</span>
-<span class="sd">            if None, the path that was provided at init will be used.</span>
+<span class="sd">            If None, the value(s) is/ are either taken from the model configurations or</span>
+<span class="sd">            the `_filename` attribute, by default None.</span>
 <span class="sd">        **kwargs : dict</span>
 <span class="sd">            Additional keyword arguments that are passed to the</span>
 <span class="sd">            `geopandas.to_file` function.</span>
@@ -624,27 +612,29 @@
             <span class="c1"># Abuse the fact that a dictionary is mutable and passed by ref</span>
             <span class="n">entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">cfg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
-
             <span class="c1"># Create the outgoing file path</span>
             <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
                 <span class="n">filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
             <span class="p">)</span>
-
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing file to </span><span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
+            <span class="c1"># Ensure the directory</span>
             <span class="n">write_dir</span> <span class="o">=</span> <span class="n">write_path</span><span class="o">.</span><span class="n">parent</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">write_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
                 <span class="n">write_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">write_path</span>
-            <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;srs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">())</span>
-
+            <span class="n">entry</span><span class="p">[</span><span class="n">FILE</span><span class="p">]</span> <span class="o">=</span> <span class="n">write_path</span>
+            <span class="c1"># Due to header overloading, this is not solved properly in</span>
+            <span class="c1"># the config component</span>
+            <span class="k">if</span> <span class="n">gdf</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">entry</span><span class="p">[</span><span class="n">SETTINGS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">SRS</span><span class="p">:</span> <span class="n">crs_representation</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span><span class="p">)}</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Writing the &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; geometry data to </span><span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="c1"># Write the entire thing to vector file</span>
             <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">write_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c1"># Set the config entries</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;exposure.geom&quot;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EXPOSURE_GEOM</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span></div>
 
 
     <span class="c1">## Mutating methods</span>
@@ -687,6 +677,8 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="c1"># Loop through all the existing GeoDataFrames and clip them</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">geom</span><span class="o">.</span><span class="n">crs</span> <span class="ow">and</span> <span class="n">gdf</span><span class="o">.</span><span class="n">crs</span> <span class="ow">and</span> <span class="n">gdf</span><span class="o">.</span><span class="n">crs</span> <span class="o">!=</span> <span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
+                <span class="n">geom</span> <span class="o">=</span> <span class="n">geom</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
             <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
         <span class="c1"># If inplace is true, just set the new data and return None</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
@@ -697,38 +689,32 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">geom</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add data to the geom component.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set data in the exposure geom component.</span>
 
 <span class="sd">        Arguments</span>
 <span class="sd">        ---------</span>
-<span class="sd">        geom : gpd.GeoDataFrame</span>
+<span class="sd">        data : gpd.GeoDataFrame</span>
 <span class="sd">            New geometry data to add.</span>
 <span class="sd">        name : str</span>
 <span class="sd">            Geometry name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">()</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">id</span><span class="p">(</span><span class="n">geom</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">id</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Replacing geom: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s2">&quot;fid&quot;</span> <span class="ow">in</span> <span class="n">geom</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;fid&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&#39;fid&#39; column encountered in </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
 <span class="s2">column will be removed&quot;</span>
             <span class="p">)</span>
-            <span class="n">geom</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;fid&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;fid&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Verify if a geom is set to model crs and if not sets geom to model crs</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">model_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">crs</span>
-            <span class="k">if</span> <span class="n">model_crs</span> <span class="ow">and</span> <span class="n">model_crs</span> <span class="o">!=</span> <span class="n">geom</span><span class="o">.</span><span class="n">crs</span><span class="p">:</span>
-                <span class="n">geom</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">model_crs</span><span class="o">.</span><span class="n">to_epsg</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">geom</span>
+        <span class="c1"># Set the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
 
     <span class="c1">## Setup methods</span>
 <div class="viewcode-block" id="ExposureGeomsComponent.setup">
@@ -795,13 +781,13 @@
             <span class="p">)</span>
 
         <span class="c1"># Call the workflows function(s) to manipulate the data</span>
-        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_setup</span><span class="p">(</span>
+        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_setup</span><span class="p">(</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_data</span><span class="p">,</span>
             <span class="n">exposure_type_column</span><span class="o">=</span><span class="n">exposure_type_column</span><span class="p">,</span>
             <span class="n">exposure_linking</span><span class="o">=</span><span class="n">exposure_linking</span><span class="p">,</span>
             <span class="n">exposure_type_fill</span><span class="o">=</span><span class="n">exposure_type_fill</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_vulnerability_link</span><span class="p">(</span>
+        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_link_vulnerability</span><span class="p">(</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_vector</span><span class="p">,</span>
             <span class="n">vulnerability</span><span class="o">=</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
         <span class="p">)</span>
@@ -811,7 +797,7 @@
 
         <span class="c1"># Update the config</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting the model type to &#39;geom&#39;&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;model.model_type&quot;</span><span class="p">,</span> <span class="s2">&quot;geom&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MODEL_TYPE</span><span class="p">,</span> <span class="n">GEOM</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExposureGeomsComponent.setup_max_damage">
@@ -918,7 +904,7 @@
             <span class="p">)</span>
 
         <span class="c1"># Call the workflow function</span>
-        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_add_columns</span><span class="p">(</span>
+        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_add_columns</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">exposure_name</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span>
         <span class="p">)</span>
 
@@ -943,6 +929,32 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

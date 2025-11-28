@@ -85,8 +85,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -173,6 +173,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -219,26 +226,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -252,6 +239,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -308,6 +299,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -346,26 +344,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -431,12 +409,12 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="workflows.html">Workflow functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.vulnerability_curves.html">hydromt_fiat.workflows.vulnerability_curves</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.hazard_grid.html">hydromt_fiat.workflows.hazard_grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_setup.html">hydromt_fiat.workflows.exposure_setup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_vulnerability_link.html">hydromt_fiat.workflows.exposure_vulnerability_link</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.vulnerability_setup.html">hydromt_fiat.workflows.vulnerability_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.hazard_setup.html">hydromt_fiat.workflows.hazard_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_geoms_setup.html">hydromt_fiat.workflows.exposure_geoms_setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_geoms_link_vulnerability.html">hydromt_fiat.workflows.exposure_geoms_link_vulnerability</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.max_monetary_damage.html">hydromt_fiat.workflows.max_monetary_damage</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_add_columns.html">hydromt_fiat.workflows.exposure_add_columns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_geoms_add_columns.html">hydromt_fiat.workflows.exposure_geoms_add_columns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.workflows.exposure_grid_setup.html">hydromt_fiat.workflows.exposure_grid_setup</a></li>
 </ul>
 </details></li>
@@ -530,7 +508,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ConfigComponent.html#hydromt_fiat.components.ConfigComponent" title="hydromt_fiat.components.ConfigComponent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigComponent</span></code></a>(model, *[, filename])</p></td>
 <td><p>Config component.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.VulnerabilityComponent.html#hydromt_fiat.components.VulnerabilityComponent" title="hydromt_fiat.components.VulnerabilityComponent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VulnerabilityComponent</span></code></a>(model[, filename])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.VulnerabilityComponent.html#hydromt_fiat.components.VulnerabilityComponent" title="hydromt_fiat.components.VulnerabilityComponent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VulnerabilityComponent</span></code></a>(model, *[, filename])</p></td>
 <td><p>Vulnerability component.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.html#hydromt_fiat.components.HazardComponent" title="hydromt_fiat.components.HazardComponent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HazardComponent</span></code></a>(model, *[, filename, ...])</p></td>
@@ -603,10 +581,10 @@
 <td><p>Write the hazard data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.clear.html#hydromt_fiat.components.HazardComponent.clear" title="hydromt_fiat.components.HazardComponent.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HazardComponent.clear</span></code></a>()</p></td>
-<td><p>Clear the hazard data.</p></td>
+<td><p>Clear the gridded data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.clip.html#hydromt_fiat.components.HazardComponent.clip" title="hydromt_fiat.components.HazardComponent.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HazardComponent.clip</span></code></a>(geom[, buffer, inplace])</p></td>
-<td><p>Clip the hazard data based on geometry.</p></td>
+<td><p>Clip the gridded data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup" title="hydromt_fiat.components.HazardComponent.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HazardComponent.setup</span></code></a>(hazard_fnames[, ...])</p></td>
 <td><p>Set up hazard maps.</p></td>
@@ -661,10 +639,10 @@
 <td><p>Write the exposure grid data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.clear.html#hydromt_fiat.components.ExposureGridComponent.clear" title="hydromt_fiat.components.ExposureGridComponent.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposureGridComponent.clear</span></code></a>()</p></td>
-<td><p>Clear the exposure grid data.</p></td>
+<td><p>Clear the gridded data.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.clip.html#hydromt_fiat.components.ExposureGridComponent.clip" title="hydromt_fiat.components.ExposureGridComponent.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposureGridComponent.clip</span></code></a>(geom[, buffer, ...])</p></td>
-<td><p>Clip the exposure data based on geometry.</p></td>
+<td><p>Clip the gridded data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup" title="hydromt_fiat.components.ExposureGridComponent.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExposureGridComponent.setup</span></code></a>(exposure_fnames)</p></td>
 <td><p>Set up an exposure grid.</p></td>
@@ -709,6 +687,32 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>

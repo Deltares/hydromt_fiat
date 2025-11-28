@@ -82,8 +82,8 @@
   <input type="search"
          class="form-control"
          name="q"
-         placeholder="Search the docs ..."
-         aria-label="Search the docs ..."
+         placeholder="Search"
+         aria-label="Search"
          autocomplete="off"
          autocorrect="off"
          autocapitalize="off"
@@ -170,6 +170,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -216,26 +223,6 @@
         </li>
 </ul></div>
       
-        <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-2"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-2"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-2"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-2">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
-      
     </div>
     
   </div>
@@ -249,6 +236,10 @@
     </div>
   
 
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
   
 </div>
 
@@ -307,6 +298,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-external" href="https://deltares.github.io/Delft-FIAT/latest/index.html">
+    Delft-FIAT
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-external" href="https://deltares.github.io/hydromt/latest/index.html">
     HydroMT
   </a>
@@ -345,26 +343,6 @@
             <span class="sr-only">GitHub</span></a>
         </li>
 </ul></div>
-        
-          <div class="navbar-item">
-<div class="version-switcher__container dropdown pst-js-only">
-  <button id="pst-version-switcher-button-3"
-    type="button"
-    class="version-switcher__button btn btn-sm dropdown-toggle"
-    data-bs-toggle="dropdown"
-    aria-haspopup="listbox"
-    aria-controls="pst-version-switcher-list-3"
-    aria-label="Version switcher list"
-  >
-    Choose version  <!-- this text may get changed later by javascript -->
-    <span class="caret"></span>
-  </button>
-  <div id="pst-version-switcher-list-3"
-    class="version-switcher__menu dropdown-menu list-group-flush py-0"
-    role="listbox" aria-labelledby="pst-version-switcher-button-3">
-    <!-- dropdown will be populated by javascript on page load -->
-  </div>
-</div></div>
         
       </div>
     
@@ -434,17 +412,17 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">barril.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Scalar</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">standard_unit</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ANALYSIS</span><span class="p">,</span> <span class="n">EVENT</span><span class="p">,</span> <span class="n">RISK</span><span class="p">,</span> <span class="n">RP</span><span class="p">,</span> <span class="n">TYPE</span><span class="p">,</span> <span class="n">standard_unit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.workflows.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">_merge_dataarrays</span><span class="p">,</span> <span class="n">_process_dataarray</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard_grid&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;hazard_setup&quot;</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="hazard_grid">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.hazard_grid.html#hydromt_fiat.workflows.hazard_grid">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">hazard_grid</span><span class="p">(</span>
+<div class="viewcode-block" id="hazard_setup">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.hazard_setup.html#hydromt_fiat.workflows.hazard_setup">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hazard_setup</span><span class="p">(</span>
     <span class="n">grid_like</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">hazard_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">],</span>
     <span class="n">hazard_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -453,7 +431,7 @@
     <span class="n">risk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse hazard data files to xarray dataset.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and transform hazard data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -488,7 +466,7 @@
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">return_periods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;return_period&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_periods</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="n">RP</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_periods</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
         <span class="c1"># Set the event data arrays to the hazard grid component</span>
         <span class="n">da</span> <span class="o">=</span> <span class="n">da</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
@@ -500,11 +478,11 @@
     <span class="n">ds</span> <span class="o">=</span> <span class="n">_merge_dataarrays</span><span class="p">(</span><span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span> <span class="n">dataarrays</span><span class="o">=</span><span class="n">hazard_dataarrays</span><span class="p">)</span>
 
     <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span>
-        <span class="s2">&quot;analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span>
+        <span class="n">TYPE</span><span class="p">:</span> <span class="n">hazard_type</span><span class="p">,</span>
+        <span class="n">ANALYSIS</span><span class="p">:</span> <span class="n">EVENT</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">risk</span><span class="p">:</span>
-        <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;analysis&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;risk&quot;</span>
+        <span class="n">attrs</span><span class="p">[</span><span class="n">ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="n">RISK</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">ds</span></div>
@@ -526,6 +504,32 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+
+</div></div>
               
             
           </div>
