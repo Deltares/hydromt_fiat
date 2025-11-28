@@ -1,0 +1,39 @@
+steps: # Grouping of the steps of the recipe
+  # HydroMT-FIAT is highly dependent on a region
+  - setup_region:
+      region: ./test-build-data/region.geojson
+
+  # Setup the vulnerability in one go
+  - vulnerability.setup:
+      vulnerability_fname: jrc_curves
+      vulnerability_linking_fname: jrc_curves_link
+      unit: m
+      continent: europe
+
+  # Setup the hazard based on a flood map
+  - hazard.setup:
+      hazard_fnames: flood_event
+
+  # Setup the exposure based on a vector dataset
+  - exposure_geoms.setup:
+      exposure_fname: osm_buildings
+      exposure_type_column: building
+      exposure_link_fname: osm_buildings_link
+      exposure_type_fill: unknown
+
+  # Add the maximum damage to it
+  - exposure_geoms.setup_max_damage:
+      exposure_name: osm_buildings
+      exposure_type: damage
+      exposure_cost_table_fname: jrc_damage
+      country: World
+
+  # Add extra information so Delft-FIAT could run it
+  - exposure_geoms.update_column:
+      exposure_name: osm_buildings
+      columns:
+        - ref
+        - method
+      values:
+        - 0
+        - centroid
