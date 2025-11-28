@@ -182,12 +182,14 @@ class FIATModel(Model):
         self,
         crs: CRS | int | str | None = None,
     ) -> None:
-        """_summary_.
+        """Reproject the model to a specific coordinate system.
 
         Parameters
         ----------
-        srs : CRS | int | str | None, optional
-            _description_, by default None
+        crs : CRS | int | str | None, optional
+            The coordinate system to reproject to. If None, the model crs is used, which
+            is derived from the region, for reprojecting all spatial components.
+            By default None.
         """
         crs = crs or self.crs
         if crs is None:

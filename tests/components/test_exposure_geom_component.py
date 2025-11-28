@@ -138,18 +138,18 @@ def test_exposure_geom_component_set(
     assert len(component.data) == 0  # No data yet
 
     # Add a geometry dataset
-    component.set(geom=build_region, name="ds1")
+    component.set(data=build_region, name="ds1")
 
     # Assert that it's there
     assert len(component.data) == 1
     assert "ds1" in component.data
 
     # Overwrite with the same dataset, should produce no warning
-    component.set(geom=build_region, name="ds1")
+    component.set(data=build_region, name="ds1")
     assert "Replacing geom: ds1" not in caplog.text
 
     # Overwrite, but with a copy, should produce a warning
-    component.set(geom=build_region.copy(), name="ds1")
+    component.set(data=build_region.copy(), name="ds1")
     assert "Replacing geom: ds1" in caplog.text
 
 
@@ -163,7 +163,7 @@ def test_exposure_geom_component_region(
     assert component.region is None
 
     # Set a second dataset
-    component.set(geom=build_region, name="ds1")
+    component.set(data=build_region, name="ds1")
 
     # Assert the content
     assert component.region is not None
@@ -174,7 +174,7 @@ def test_exposure_geom_component_region(
     )
 
     # Add a second geometry to lying completely outside of the first one
-    component.set(geom=box_geometry, name="ds2")
+    component.set(data=box_geometry, name="ds2")
 
     # Assert the region is larger now, eye test
     np.testing.assert_array_almost_equal(

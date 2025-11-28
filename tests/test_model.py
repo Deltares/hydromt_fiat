@@ -58,7 +58,7 @@ def test_model_clear(  # Dont like this to much, as it is a bit of an integratio
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components[REGION]._data = {REGION: build_region_small}
+    model.components[REGION]._data = build_region_small
     model.config._data = {MODEL: {TYPE: GEOM}}
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
@@ -97,7 +97,7 @@ def test_model_clip(  # Dont like this to much, as it is a bit of an integration
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components[REGION]._data = {REGION: build_region}
+    model.components[REGION]._data = build_region
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
