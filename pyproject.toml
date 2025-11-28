@@ -169,9 +169,10 @@ ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 exclude = ["docs/**"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["D103", "D100", "D104"]
+"examples/*.ipynb" = ["E501"]
 "src/hydromt_fiat/__init__.py" = ["F401", "F403"]
 "src/hydromt_fiat/**/__init__.py" = ["F403"]
+"tests/**" = ["D103", "D100", "D104"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

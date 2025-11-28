@@ -102,10 +102,15 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "external_links": [
         {
+            "name": "Delft-FIAT",
+            "url": "https://deltares.github.io/Delft-FIAT/latest/index.html",
+        },
+        {
             "name": "HydroMT",
             "url": "https://deltares.github.io/hydromt/latest/index.html",
         },
     ],
+    "header_links_before_dropdown": 6,
     "navbar_center": ["navbar-nav"],
     "navbar_persistent": ["search-button"],
     "icon_links": [
@@ -123,9 +128,10 @@ html_theme_options = {
     "navbar_end": [
         "theme-switcher",
         "navbar-icon-links",
-        "version-switcher",
+        # "version-switcher",
     ],
-    "secondary_sidebar_items": {"**": []},
+    "search_bar_text": "Search",
+    "secondary_sidebar_items": ["version-switcher"],
 }
 
 remove_from_toctrees = ["_generated/*"]

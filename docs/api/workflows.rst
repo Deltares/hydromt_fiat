@@ -21,7 +21,7 @@ Vulnerability
 .. autosummary::
     :toctree: ../_generated
 
-    workflows.vulnerability_curves
+    workflows.vulnerability_setup
 
 Hazard
 ------
@@ -29,7 +29,7 @@ Hazard
 .. autosummary::
     :toctree: ../_generated
 
-    workflows.hazard_grid
+    workflows.hazard_setup
 
 Exposure (geometry)
 -------------------
@@ -37,10 +37,10 @@ Exposure (geometry)
 .. autosummary::
     :toctree: ../_generated
 
-    workflows.exposure_setup
-    workflows.exposure_vulnerability_link
+    workflows.exposure_geoms_setup
+    workflows.exposure_geoms_link_vulnerability
     workflows.max_monetary_damage
-    workflows.exposure_add_columns
+    workflows.exposure_geoms_add_columns
 
 Exposure (grid)
 ---------------
