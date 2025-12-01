@@ -7,6 +7,7 @@ from typing import cast
 import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
+from pyproj.crs import CRS
 
 from hydromt_fiat.utils import REGION
 
@@ -154,6 +155,28 @@ class RegionComponent(SpatialModelComponent):
         self._data = None
         self._initialize(skip_read=True)
 
+    def reproject(
+        self,
+        crs: CRS | int | str,
+    ) -> None:
+        """Reproject the model region.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            The coordinate system to reproject to.
+        """
+        # Set the crs
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        # Check for equal crs
+        if self.data is None or crs == self.crs:
+            return
+
+        # Reproject
+        self._data = self.data.to_crs(crs)
+
     def set(
         self,
         data: gpd.GeoDataFrame | gpd.GeoSeries,
@@ -180,9 +203,9 @@ class RegionComponent(SpatialModelComponent):
             data = cast(gpd.GeoDataFrame, data.to_frame())
 
         # Verify if a geom is set to model crs and if not sets geom to model crs
-        model_crs = self.model.crs
+        model_crs = self.crs
         if model_crs and model_crs != data.crs:
-            data.to_crs(model_crs.to_epsg(), inplace=True)
+            data.to_crs(model_crs, inplace=True)
 
         # Get rid of columns that aren't geometry
         data = data["geometry"].to_frame()

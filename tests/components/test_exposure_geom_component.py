@@ -127,6 +127,23 @@ def test_exposure_geoms_component_clip_inplace(
     assert component.data["foo"].shape[0] == 12
 
 
+def test_exposure_geom_component_reproject(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = {"ds1": build_region}
+    # Assert the current state
+    assert component.data["ds1"].crs.to_epsg() == 4326
+
+    # Call the reproject method
+    component.reproject(crs=28992)
+    # Assert the output
+    assert component.data["ds1"].crs.to_epsg() == 28992
+
+
 def test_exposure_geom_component_set(
     caplog: pytest.LogCaptureFixture,
     mock_model: MagicMock,

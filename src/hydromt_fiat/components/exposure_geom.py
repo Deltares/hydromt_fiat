@@ -12,6 +12,7 @@ import shapely.geometry as sg
 from hydromt.model import Model
 from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
@@ -262,6 +263,47 @@ class ExposureGeomsComponent(SpatialModelComponent):
                 geom = geom.to_crs(gdf.crs)
             data[key] = gdf.clip(geom)
         # If inplace is true, just set the new data and return None
+        if inplace:
+            self._data = data
+            return None
+        return data
+
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str,
+        inplace: bool = False,
+    ) -> dict[str, gpd.GeoDataFrame] | None:
+        """Reproject the exposure vector data.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            The coordinate system to reproject to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new dictionary
+            containing the GeoDataFrame's, by default False.
+
+        Returns
+        -------
+        dict[str, gpd.GeoDataFrame] | None
+            Return a dictionary of GeoDataFrame's is inplace is False.
+        """
+        # Set the crs
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        data = {}
+        # Go through the vector data
+        for name, gdf in self.data.items():
+            # If no crs, cant reproject
+            # If equal, do nothing
+            if gdf.crs is None or crs == gdf.crs:
+                data[name] = gdf
+                continue
+            data[name] = gdf.to_crs(crs)
+
+        # If inplace, just set the data and return nothing
         if inplace:
             self._data = data
             return None

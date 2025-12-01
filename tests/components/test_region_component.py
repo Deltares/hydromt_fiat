@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
+import numpy as np
 import pytest
 from hydromt.model import ModelRoot
 from pyproj.crs import CRS
@@ -40,6 +41,51 @@ def test_region_component_clear(
     assert component.data is None
 
 
+def test_region_component_reproject(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = build_region
+    # Assert the current state
+    assert component.crs.to_epsg() == 4326
+    np.testing.assert_almost_equal(
+        component.data.exterior[0].xy[0][0],
+        desired=4.384,
+        decimal=3,
+    )
+
+    # Reproject the region
+    component.reproject(crs=28992)
+    # Assert the state
+    assert component.crs.to_epsg() == 28992
+    np.testing.assert_almost_equal(
+        component.data.exterior[0].xy[0][0],
+        desired=86046.470,
+        decimal=3,
+    )
+
+
+def test_region_component_reproject_nothing(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = build_region
+    # Assert the current state
+    assert component.crs.to_epsg() == 4326
+    id_before = id(component.data)  # For checking if the same later
+
+    # Reproject with same CRS
+    component.reproject(crs=CRS.from_epsg(4326))
+    # Assert the id's are the same, i.e. nothing happened
+    assert id_before == id(component.data)
+
+
 def test_region_component_set(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -55,40 +101,32 @@ def test_region_component_set(
     assert isinstance(component.data, gpd.GeoDataFrame)
     assert component.region is not None
     assert len(component.region.columns) == 1
+    assert component.region.crs.to_epsg() == 4326
 
     # Empty the component and assert that crs is adjusted based on the model
     component._data = None
+    component.model.crs = None  # Normally this would reset the crs
     assert build_region_small.crs.to_epsg() == 28992
     component.set(build_region_small)
-    assert component.region.crs.to_epsg() == 4326
+    assert component.region.crs.to_epsg() == 28992
+
+
+def test_region_component_set_series(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    # Assert the current state
+    assert component.region is None
 
     # Assert that a GeoSeries is sufficient as input
-    component._data = None
-    assert component.region is None
     component.set(build_region.geometry)
     assert component.region is not None
     assert isinstance(component.data, gpd.GeoDataFrame)
 
 
-def test_region_component_append(
-    mock_model: MagicMock,
-    box_geometry: gpd.GeoDataFrame,
-    build_region: gpd.GeoDataFrame,
-):
-    # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
-    component.set(build_region)
-    assert isinstance(component.region.geometry[0], Polygon)
-
-    # Add a polygon that will enter a union with the current region
-    component.set(box_geometry)
-
-    # Assert
-    assert len(component.data) == 1
-    assert isinstance(component.region.geometry[0], MultiPolygon)
-
-
-def test_region_component_replace(
+def test_region_component_set_replace(
     mock_model: MagicMock,
     box_geometry: gpd.GeoDataFrame,
     build_region: gpd.GeoDataFrame,
@@ -104,6 +142,24 @@ def test_region_component_replace(
     # Assert
     assert len(component.data) == 1
     assert isinstance(component.region.geometry[0], Polygon)
+
+
+def test_region_component_set_union(
+    mock_model: MagicMock,
+    box_geometry: gpd.GeoDataFrame,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    component.set(build_region)
+    assert isinstance(component.region.geometry[0], Polygon)
+
+    # Add a polygon that will enter a union with the current region
+    component.set(box_geometry)
+
+    # Assert
+    assert len(component.data) == 1
+    assert isinstance(component.region.geometry[0], MultiPolygon)
 
 
 def test_region_component_read(
