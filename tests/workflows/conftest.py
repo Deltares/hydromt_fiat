@@ -1,10 +1,12 @@
 from pathlib import Path
 
 import geopandas as gpd
+import numpy as np
 import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.gis import full
 
 
 ## Data from the data catalog
@@ -23,8 +25,8 @@ def buildings_link_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
 
 
 @pytest.fixture(scope="session")
-def exposure_cost_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("damage_values")
+def exposure_cost_table(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_damage")
     return df
 
 
@@ -66,8 +68,8 @@ def hazard_event_data_highres(
 
 
 @pytest.fixture
-def vulnerability_data(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves")
+def vulnerability_data(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves")
     assert len(df) != 0
     return df
 
@@ -81,15 +83,15 @@ def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
 
 
 @pytest.fixture
-def vulnerability_linking(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves_linking")
+def vulnerability_linking(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves_link")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking_alt(build_data_catalog: DataCatalog) -> pd.DataFrame:
-    df = build_data_catalog.get_dataframe("vulnerability_curves_linking_alt")
+def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = global_data_catalog.get_dataframe("jrc_curves_link_alt")
     assert len(df) != 0
     return df
 
@@ -136,3 +138,14 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
     df = pd.read_csv(p)
     assert len(df) != 0
     return df
+
+
+## Extra data structure
+@pytest.fixture(scope="session")
+def rotated_grid() -> xr.DataArray:
+    # Create coordinates
+    yc = xr.DataArray(data=np.array([[2.0, 1.5], [1.0, 0.5]]), dims=["y", "x"])
+    xc = xr.DataArray(data=np.array([[0.5, 1.5], [0.0, 1.0]]), dims=["y", "x"])
+    # Build using 'full' from core
+    da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
+    return da

@@ -14,6 +14,7 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
+from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
 
 
 def test_model_empty(tmp_path: Path):
@@ -21,8 +22,8 @@ def test_model_empty(tmp_path: Path):
     model = FIATModel(tmp_path)
 
     # Assert some basic statements
-    assert "config" in model.components
-    assert "region" in model.components
+    assert CONFIG in model.components
+    assert REGION in model.components
     assert model.region is None
     assert len(model.components) == 6
 
@@ -36,7 +37,7 @@ def test_model_basic_read_write(tmp_path: Path):
     # Write the model
     model.write()
     model = None
-    assert Path(tmp_path, "settings.toml").is_file()
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
 
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
@@ -45,7 +46,7 @@ def test_model_basic_read_write(tmp_path: Path):
     assert len(model.config.data) != 0
 
 
-def test_model_clear(  # Dont like this to much, as it is a bit of an integration test
+def test_model_clear(  # Dont like this too much, as it is a bit of an integration test
     tmp_path: Path,
     build_region_small: gpd.GeoDataFrame,
     exposure_vector: gpd.GeoDataFrame,
@@ -57,8 +58,8 @@ def test_model_clear(  # Dont like this to much, as it is a bit of an integratio
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components["region"]._data = {"region": build_region_small}
-    model.config._data = {"model": {"type": "geom"}}
+    model.components[REGION]._data = build_region_small
+    model.config._data = {MODEL: {TYPE: GEOM}}
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -84,7 +85,7 @@ def test_model_clear(  # Dont like this to much, as it is a bit of an integratio
     assert len(model.vulnerability.data.curves) == 0
 
 
-def test_model_clip(  # Dont like this to much, as it is a bit of an integration test
+def test_model_clip(  # Dont like this too much, as it is a bit of an integration test
     tmp_path: Path,
     build_region: gpd.GeoDataFrame,
     build_region_small: gpd.GeoDataFrame,
@@ -96,7 +97,7 @@ def test_model_clip(  # Dont like this to much, as it is a bit of an integration
     model = FIATModel(tmp_path, mode="w")
 
     # Set data like a dummy
-    model.components["region"]._data = {"region": build_region}
+    model.components[REGION]._data = build_region
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -113,6 +114,84 @@ def test_model_clip(  # Dont like this to much, as it is a bit of an integration
     assert model.exposure_geoms.data["foo"].shape[0] == 12
     assert model.exposure_grid.data.commercial_content.shape == (11, 12)
     assert model.hazard.data.flood_event.shape == (7, 6)
+
+
+def test_model_reproject(
+    tmp_path: Path,
+    build_region: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+    exposure_grid: xr.Dataset,
+    hazard: xr.Dataset,
+):
+    # Setup the model
+    model = FIATModel(tmp_path, "w")
+
+    # Set data like a dummy
+    model.components[REGION]._data = build_region
+    model.exposure_geoms._data = {"foo": exposure_vector}
+    model.exposure_grid._data = exposure_grid
+    model.hazard._data = hazard
+    # Assert the current state
+    assert model.crs.to_epsg() == 4326
+    assert model.exposure_geoms.data["foo"].crs.to_epsg() == 28992
+    assert model.exposure_grid.data.raster.crs.to_epsg() == 28992
+    assert model.hazard.data.raster.crs.to_epsg() == 28992
+    id_before = id(model.region)
+
+    # Reproject the model, based on the region
+    model.reproject()
+    # Assert the state
+    assert model.crs.to_epsg() == 4326  # Same
+    assert model.exposure_geoms.data["foo"].crs.to_epsg() == 4326
+    assert model.exposure_grid.data.raster.crs.to_epsg() == 4326
+    assert model.hazard.data.raster.crs.to_epsg() == 4326
+    assert id_before == id(model.region)  # Nothing happened
+
+
+def test_model_reproject_sig(
+    tmp_path: Path,
+    build_region: gpd.GeoDataFrame,
+    exposure_vector: gpd.GeoDataFrame,
+    exposure_grid: xr.Dataset,
+    hazard: xr.Dataset,
+):
+    # Setup the model
+    model = FIATModel(tmp_path, "w")
+
+    # Set data like a dummy
+    model.components[REGION]._data = build_region
+    model.exposure_geoms._data = {"foo": exposure_vector}
+    model.exposure_grid._data = exposure_grid
+    model.hazard._data = hazard
+    # Assert the current state
+    assert model.crs.to_epsg() == 4326
+    assert model.exposure_geoms.data["foo"].crs.to_epsg() == 28992
+    assert model.exposure_grid.data.raster.crs.to_epsg() == 28992
+    assert model.hazard.data.raster.crs.to_epsg() == 28992
+    id_before = id(model.region)
+
+    # Reproject the model, based on the region
+    model.reproject(crs="EPSG:3857")
+    # Assert the state
+    assert model.crs.to_epsg() == 3857
+    assert model.exposure_geoms.data["foo"].crs.to_epsg() == 3857
+    assert model.exposure_grid.data.raster.crs.to_epsg() == 3857
+    assert model.hazard.data.raster.crs.to_epsg() == 3857
+    assert id_before != id(model.region)  # It reprojected
+
+
+def test_model_reproject_errors(
+    tmp_path: Path,
+):
+    # Setup the model
+    model = FIATModel(tmp_path, "w")
+
+    # Call the method without specifying a crs and having no region
+    with pytest.raises(
+        ValueError,
+        match="crs was not provided nor found in the model 'crs' attribute",
+    ):
+        model.reproject()
 
 
 def test_model_setup_config(tmp_path: Path):
@@ -164,7 +243,7 @@ def test_model_setup_region_error(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Setup the region pointing to not a file
-    region_no = Path(tmp_path, "region.geojson")
+    region_no = Path(tmp_path, f"{REGION}.geojson")
     with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
         model.setup_region(region=region_no)
 

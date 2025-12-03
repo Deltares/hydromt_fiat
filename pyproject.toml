@@ -128,6 +128,7 @@ fiat = "hydromt_fiat.drivers.resolvers"
 markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
     "serial",
+    "system: marks tests as system tests (deselect with '-m \"not system\"')",
 ]
 testpaths = [
     "tests",
@@ -224,12 +225,12 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
 # Installation
-install = { depends-on = ["install-pre-commit"] }
 install-pre-commit = "pre-commit install"
+install = { depends-on = ["install-pre-commit"] }
 
 # Linting and code checking
 lint = { cmd = ["pre-commit", "run", "--all"] }
-mypy = { cmd = ["mypy", "."] }
+mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
 
 # SBOM
 sbom = { cmd = [
@@ -253,12 +254,12 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"
 
 # Testing tasks
 [tool.pixi.feature.test.tasks]
-test = { cmd = ["pytest"] }
+test = { cmd = ["pytest", "--verbose"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov=hydromt_fiat",
     "--cov-report",
@@ -267,7 +268,7 @@ test-cov = { cmd = [
 test-cov-html = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov",
     "--cov-report",
@@ -277,6 +278,12 @@ test-integration = { cmd = [
     "pytest",
     "-m",
     "integration",
+    "--verbose",
+] }
+test-system = { cmd = [
+    "pytest",
+    "-m",
+    "system",
     "--verbose",
 ] }
 
