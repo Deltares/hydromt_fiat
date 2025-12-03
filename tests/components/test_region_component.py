@@ -58,9 +58,37 @@ def test_region_component_reproject(
     )
 
     # Reproject the region
-    component.reproject(crs=28992)
+    region = component.reproject(crs=28992)
     # Assert the state
-    assert component.crs.to_epsg() == 28992
+    assert region.crs.to_epsg() == 28992
+    np.testing.assert_almost_equal(
+        region.exterior[0].xy[0][0],
+        desired=86046.470,
+        decimal=3,
+    )
+
+
+def test_region_component_reproject_inplace(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component with the mock model
+    component = RegionComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = build_region
+    # Assert the current state
+    assert component.crs.to_epsg() == 4326
+    np.testing.assert_almost_equal(
+        component.data.exterior[0].xy[0][0],
+        desired=4.384,
+        decimal=3,
+    )
+
+    # Reproject the region
+    region = component.reproject(crs=28992, inplace=True)
+    # Assert the state
+    assert region is None
+    assert component.data.crs.to_epsg() == 28992
     np.testing.assert_almost_equal(
         component.data.exterior[0].xy[0][0],
         desired=86046.470,

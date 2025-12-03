@@ -158,13 +158,17 @@ class RegionComponent(SpatialModelComponent):
     def reproject(
         self,
         crs: CRS | int | str,
-    ) -> None:
+        inplace: bool = False,
+    ) -> gpd.GeoDataFrame | None:
         """Reproject the model region.
 
         Parameters
         ----------
         crs : CRS | int | str
             The coordinate system to reproject to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new GeoDataFrame.
+            By default False.
         """
         # Set the crs
         if not isinstance(crs, CRS):
@@ -172,10 +176,16 @@ class RegionComponent(SpatialModelComponent):
 
         # Check for equal crs
         if self.data is None or crs == self.crs:
-            return
+            return None
 
         # Reproject
-        self._data = self.data.to_crs(crs)
+        data = self.data.to_crs(crs)
+
+        # Check return or inplace
+        if inplace:
+            self._data = data
+            return None
+        return data
 
     def set(
         self,
