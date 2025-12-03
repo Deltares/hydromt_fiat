@@ -6,6 +6,7 @@ import geopandas as gpd
 import numpy as np
 import pytest
 from hydromt.model import ModelRoot
+from pyproj.crs import CRS
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
@@ -125,6 +126,72 @@ def test_exposure_geoms_component_clip_inplace(
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data["foo"].shape[0] == 12
+
+
+def test_exposure_geom_component_reproject(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = {"ds1": build_region}
+    # Assert the current state
+    assert component.data["ds1"].crs.to_epsg() == 4326
+    np.testing.assert_almost_equal(
+        component.data["ds1"].exterior[0].xy[0][0], desired=4.384, decimal=3
+    )
+
+    # Call the reproject method
+    ds = component.reproject(crs=28992)
+    # Assert the output
+    assert ds["ds1"].crs.to_epsg() == 28992
+    np.testing.assert_almost_equal(
+        ds["ds1"].exterior[0].xy[0][0], desired=86046.470, decimal=3
+    )
+
+
+def test_exposure_geom_component_reproject_inplace(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = {"ds1": build_region}
+    # Assert the current state
+    assert component.data["ds1"].crs.to_epsg() == 4326
+    np.testing.assert_almost_equal(
+        component.data["ds1"].exterior[0].xy[0][0], desired=4.384, decimal=3
+    )
+
+    # Call the reproject method
+    ds = component.reproject(crs=CRS.from_epsg(28992), inplace=True)
+    # Assert the output
+    assert ds is None
+    assert component.data["ds1"].crs.to_epsg() == 28992
+    np.testing.assert_almost_equal(
+        component.data["ds1"].exterior[0].xy[0][0], desired=86046.470, decimal=3
+    )
+
+
+def test_exposure_geom_component_reproject_nothing(
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = {"ds1": build_region}
+    # Assert the current state
+    assert component.data["ds1"].crs.to_epsg() == 4326
+    id_before = id(component.data["ds1"])
+
+    # Call the reproject method
+    ds = component.reproject(crs="EPSG:4326")
+    # Assert the output
+    assert ds["ds1"].crs.to_epsg() == 4326  # Still
+    assert id_before == id(ds["ds1"])  # Same dataset, nothing happened
 
 
 def test_exposure_geom_component_set(
