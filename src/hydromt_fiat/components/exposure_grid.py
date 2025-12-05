@@ -3,22 +3,33 @@
 import logging
 from pathlib import Path
 
-import geopandas as gpd
-import xarray as xr
 from hydromt.model import Model
-from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components.grid import CustomGridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GRID_FILE,
+    EXPOSURE_GRID_SETTINGS,
+    GRID,
+    MODEL_TYPE,
+    REGION,
+    SRS,
+    VAR_AS_BAND,
+)
 
 __all__ = ["ExposureGridComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class ExposureGridComponent(GridComponent):
+class ExposureGridComponent(CustomGridComponent):
     """Exposure grid component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -26,7 +37,7 @@ class ExposureGridComponent(GridComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
         By default "exposure/spatial.nc".
@@ -45,9 +56,9 @@ class ExposureGridComponent(GridComponent):
         self,
         model: Model,
         *,
-        filename: str = "exposure/spatial.nc",
+        filename: str = f"{EXPOSURE}/spatial.nc",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
+        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
@@ -71,18 +82,29 @@ class ExposureGridComponent(GridComponent):
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `read_nc` method.
+            Additional keyword arguments to be passed to the `open_dataset` function
+            from xarray.
         """
         # Sort the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get("exposure.grid.file", abs_path=True)
+            or self.model.config.get(EXPOSURE_GRID_FILE, abs_path=True)
             or self._filename
         )
         # Read the data
-        logger.info("Reading the exposure grid data..")
-        super().read(filename=filename, **kwargs)
+        read_path = Path(self.root.path, filename)
+        # Return on nothing found
+        if not read_path.is_file():
+            return
+        logger.info(f"Reading the exposure grid file at {read_path.as_posix()}")
+        # Read with the (old) read function from hydromt-core
+        ds = open_nc(
+            read_path,
+            **kwargs,
+        )
+        # Set the dataset
+        self.set(ds)
 
     @hydromt_step
     def write(
@@ -116,12 +138,14 @@ class ExposureGridComponent(GridComponent):
         # Sort out the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
-            filename or self.model.config.get("exposure.grid.file") or self._filename
+            filename or self.model.config.get(EXPOSURE_GRID_FILE) or self._filename
         )
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info("Writing the exposure grid data..")
+        logger.info(f"Writing the exposure grid data to {write_path.as_posix()}")
+        # Force north south before writing
+        self._data = force_ns(self.data)  # type: ignore[assignment]
         write_nc(
             self.data,
             file_path=write_path,
@@ -134,56 +158,16 @@ class ExposureGridComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set("exposure.grid.file", write_path)
+        self.model.config.set(EXPOSURE_GRID_FILE, write_path)
         # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set("exposure.grid.settings.var_as_band", False)
+        self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", False)
         if len(self.data.data_vars) > 1:
-            self.model.config.set("exposure.grid.settings.var_as_band", True)
-
-    ## Mutating methods
-    @hydromt_step
-    def clear(self):
-        """Clear the exposure grid data."""
-        self._data = None
-        self._initialize_grid(skip_read=True)
-
-    @hydromt_step
-    def clip(
-        self,
-        geom: gpd.GeoDataFrame,
-        buffer: int = 0,
-        inplace: bool = False,
-    ) -> xr.Dataset | None:
-        """Clip the exposure data based on geometry.
-
-        Parameters
-        ----------
-        geom : gpd.GeoDataFrame
-            The area to clip the data to.
-        buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 0.
-        inplace : bool, optional
-            Whether to do the clipping in place or return a new xr.Dataset,
-            by default False.
-
-        Returns
-        -------
-        xr.Dataset | None
-            Return a dataset if the inplace is False.
-        """
-        # Check whether it has the necessary dims
-        try:
-            self.data.raster.set_spatial_dims()
-        except ValueError:
-            return None
-
-        # If so, clip the data
-        data = self.data.raster.clip_geom(geom, buffer=buffer)
-        # If inplace, just set the data and return nothing
-        if inplace:
-            self._data = data
-            return None
-        return data
+            self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", True)
+        # Set the srs
+        self.model.config.set(
+            f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
+            crs_representation(self.data.raster.crs),
+        )
 
     ## Setup methods
     @hydromt_step
@@ -252,4 +236,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set("model.model_type", "grid")
+        self.model.config.set(MODEL_TYPE, GRID)

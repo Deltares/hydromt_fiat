@@ -128,6 +128,15 @@ def test_get_item_multi(
     assert res[0] == "tmp/tmp.txt"
 
 
+def test_get_item_none(
+    config_dummy: dict,
+):
+    # Call the function
+    res = get_item([], config_dummy, "")
+    # Assert the output
+    assert res is None
+
+
 def test_pathing_expand(
     model_data_clipped_path: Path,
 ):

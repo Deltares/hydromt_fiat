@@ -12,11 +12,24 @@ import shapely.geometry as sg
 from hydromt.model import Model
 from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.utils import OBJECT_ID
+from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    EXPOSURE_GEOM,
+    EXPOSURE_GEOM_FILE,
+    FILE,
+    GEOM,
+    MODEL_TYPE,
+    OBJECT_ID,
+    REGION,
+    SETTINGS,
+    SRS,
+)
 
 __all__ = ["ExposureGeomsComponent"]
 
@@ -29,14 +42,14 @@ class ExposureGeomsComponent(SpatialModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance (FIATModel)
+        HydroMT model instance (FIATModel).
     filename : str, optional
         The path to use for reading and writing of component data by default.
-        by default "exposure/{name}.fgb".
+        By default "exposure/{name}.fgb".
     region_component : str, optional
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
-        the data dictionary.
+        the data dictionary. By default None.
     region_filename : str, optional
         The path to use for writing the region data to a file. By default
         "region.geojson".
@@ -46,9 +59,9 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "exposure/{name}.fgb",
+        filename: str = f"{EXPOSURE}/{{name}}.fgb",
         region_component: str | None = None,
-        region_filename: str = "region.geojson",
+        region_filename: str = f"{REGION}.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
         self._filename: str = filename
@@ -110,8 +123,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
         filename : str, optional
             Filename relative to model root. should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used or, if present,
-            the files present in the model configurations.
+            If None, the value(s) is/ are either taken from the model configurations or
+            the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
@@ -123,27 +136,24 @@ class ExposureGeomsComponent(SpatialModelComponent):
         # Hierarchy: 1) signature, 2) settings file, 3) default
         out = (
             pathing_expand(self.root.path, filename=filename)
-            or pathing_config(
-                self.model.config.get("exposure.geom.file", abs_path=True)
-            )
+            or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
             or pathing_expand(self.root.path, filename=self._filename)
         )
-        if out is None:
-            return None
+        assert out is not None  # Yh..
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
         for p, n in zip(*out):
-            logger.info(f"Reading {n} at {p.as_posix()}")
+            logger.info(f"Reading the {n} geometry file at {p.as_posix()}")
             # Get the data
-            geom = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
+            data = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
             # Check for data in csv file, this has to be merged
             # TODO this should be solved better with help of the config file
             csv_path = p.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                geom = geom.merge(csv_data, on=OBJECT_ID)
+                data = data.merge(csv_data, on=OBJECT_ID)
             # Set the data
-            self.set(geom=geom, name=n)
+            self.set(data=data, name=n)
 
     @hydromt_step
     def write(
@@ -158,9 +168,10 @@ class ExposureGeomsComponent(SpatialModelComponent):
         Parameters
         ----------
         filename : str, optional
-            Filename relative to model root. should contain a {name} placeholder
+            Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            if None, the path that was provided at init will be used.
+            If None, the value(s) is/ are either taken from the model configurations or
+            the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -189,27 +200,29 @@ class ExposureGeomsComponent(SpatialModelComponent):
             # Abuse the fact that a dictionary is mutable and passed by ref
             entry: dict[str, Any] = {}
             cfg.append(entry)
-
             # Create the outgoing file path
             write_path = Path(
                 self.root.path,
                 filename.format(name=name),
             )
-
-            logger.info(f"Writing file to {write_path.as_posix()}")
-
+            # Ensure the directory
             write_dir = write_path.parent
             if not write_dir.is_dir():
                 write_dir.mkdir(parents=True, exist_ok=True)
 
-            entry["file"] = write_path
-            entry["srs"] = ":".join(gdf.crs.to_authority())
-
+            entry[FILE] = write_path
+            # Due to header overloading, this is not solved properly in
+            # the config component
+            if gdf.crs is not None:
+                entry[SETTINGS] = {SRS: crs_representation(gdf.crs)}
+            logger.info(
+                f"Writing the '{name}' geometry data to {write_path.as_posix()}",
+            )
             # Write the entire thing to vector file
             gdf.to_file(write_path, **kwargs)
 
         # Set the config entries
-        self.model.config.set("exposure.geom", cfg)
+        self.model.config.set(EXPOSURE_GEOM, cfg)
 
     ## Mutating methods
     @hydromt_step
@@ -246,6 +259,8 @@ class ExposureGeomsComponent(SpatialModelComponent):
             return None
         # Loop through all the existing GeoDataFrames and clip them
         for key, gdf in self.data.items():
+            if geom.crs and gdf.crs and gdf.crs != geom.crs:
+                geom = geom.to_crs(gdf.crs)
             data[key] = gdf.clip(geom)
         # If inplace is true, just set the new data and return None
         if inplace:
@@ -253,40 +268,75 @@ class ExposureGeomsComponent(SpatialModelComponent):
             return None
         return data
 
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str,
+        inplace: bool = False,
+    ) -> dict[str, gpd.GeoDataFrame] | None:
+        """Reproject the exposure vector data.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            The coordinate system to reproject to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new dictionary
+            containing the GeoDataFrame's, by default False.
+
+        Returns
+        -------
+        dict[str, gpd.GeoDataFrame] | None
+            Return a dictionary of GeoDataFrame's is inplace is False.
+        """
+        # Set the crs
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        data = {}
+        # Go through the vector data
+        for name, gdf in self.data.items():
+            # If no crs, cant reproject
+            # If equal, do nothing
+            if gdf.crs is None or crs == gdf.crs:
+                data[name] = gdf
+                continue
+            data[name] = gdf.to_crs(crs)
+
+        # If inplace, just set the data and return nothing
+        if inplace:
+            self._data = data
+            return None
+        return data
+
     def set(
         self,
-        geom: gpd.GeoDataFrame,
+        data: gpd.GeoDataFrame,
         name: str,
     ) -> None:
-        """Add data to the geom component.
+        """Set data in the exposure geom component.
 
         Arguments
         ---------
-        geom : gpd.GeoDataFrame
+        data : gpd.GeoDataFrame
             New geometry data to add.
         name : str
             Geometry name.
         """
         self._initialize()
         assert self._data is not None
-        if name in self._data and id(self._data.get(name)) != id(geom):
+        if name in self._data and id(self._data.get(name)) != id(data):
             logger.warning(f"Replacing geom: {name}")
 
-        if "fid" in geom.columns:
+        if "fid" in data.columns:
             logger.warning(
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            geom.drop("fid", axis=1, inplace=True)
+            data.drop("fid", axis=1, inplace=True)
 
-        # Verify if a geom is set to model crs and if not sets geom to model crs
-        try:
-            model_crs = self.model.crs
-            if model_crs and model_crs != geom.crs:
-                geom.to_crs(model_crs.to_epsg(), inplace=True)
-        except AttributeError:
-            pass
-        self._data[name] = geom
+        # Set the data
+        self._data[name] = data
 
     ## Setup methods
     @hydromt_step
@@ -350,13 +400,13 @@ use 'setup_region' before this method"
             )
 
         # Call the workflows function(s) to manipulate the data
-        exposure_vector = workflows.exposure_setup(
+        exposure_vector = workflows.exposure_geoms_setup(
             exposure_data=exposure_data,
             exposure_type_column=exposure_type_column,
             exposure_linking=exposure_linking,
             exposure_type_fill=exposure_type_fill,
         )
-        exposure_vector = workflows.exposure_vulnerability_link(
+        exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_vector,
             vulnerability=vulnerability.identifiers,
         )
@@ -366,7 +416,7 @@ use 'setup_region' before this method"
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
-        self.model.config.set("model.model_type", "geom")
+        self.model.config.set(MODEL_TYPE, GEOM)
 
     @hydromt_step
     def setup_max_damage(
@@ -467,7 +517,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
             )
 
         # Call the workflow function
-        exposure_vector = workflows.exposure_add_columns(
+        exposure_vector = workflows.exposure_geoms_add_columns(
             self.data[exposure_name], columns=columns, values=values
         )
 

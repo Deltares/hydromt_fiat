@@ -11,6 +11,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt.readers import read_toml
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
+from hydromt_fiat.utils import SETTINGS
 
 __all__ = ["ConfigComponent"]
 
@@ -25,7 +26,7 @@ class ConfigComponent(ModelComponent):
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         A path relative to the root where the configuration file will
         be read and written if user does not provide a path themselves.
@@ -36,7 +37,7 @@ class ConfigComponent(ModelComponent):
         self,
         model: Model,
         *,
-        filename: str = "settings.toml",
+        filename: str = f"{SETTINGS}.toml",
     ):
         self._data: dict[str, Any] | None = None
         self._filename: Path | str = filename
@@ -149,7 +150,7 @@ class ConfigComponent(ModelComponent):
             parent_dir.mkdir(parents=True)
 
         # Dump to a file
-        logger.info(f"Writing the config file to {write_path.as_posix()}")
+        logger.info(f"Writing the config data to {write_path.as_posix()}")
         with open(write_path, "w") as writer:
             tomlkit.dump(write_data, writer)
 
@@ -160,7 +161,7 @@ class ConfigComponent(ModelComponent):
         fallback: Any | None = None,
         abs_path: bool = False,
     ) -> Any:
-        """Get a config value at key(s).
+        """Get a configurations value.
 
         Parameters
         ----------
@@ -186,7 +187,7 @@ class ConfigComponent(ModelComponent):
         return value
 
     def set(self, key: str, value: Any) -> None:
-        """Update the config dictionary at key(s) with values.
+        """Set an entry in the configurations.
 
         Parameters
         ----------
@@ -197,6 +198,12 @@ class ConfigComponent(ModelComponent):
             The value to set the config to.
         """
         self._initialize()
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                self.set(f"{key}.{subkey}", subvalue)
+                return
+        if value is None:  # Not allowed in toml files
+            return
         parts = key.split(".")
         num_parts = len(parts)
         current = cast(dict[str, Any], self._data)

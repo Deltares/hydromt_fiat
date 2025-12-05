@@ -2,7 +2,6 @@ import logging
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
-import geopandas as gpd
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
@@ -10,6 +9,14 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import HazardComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.utils import (
+    HAZARD,
+    HAZARD_FILE,
+    HAZARD_RP,
+    HAZARD_SETTINGS,
+    MODEL_RISK,
+    VAR_AS_BAND,
+)
 
 
 def test_hazard_component_empty(
@@ -19,81 +26,9 @@ def test_hazard_component_empty(
     component = HazardComponent(model=mock_model)
 
     # Assert some very basic stuff
-    assert component._filename == "hazard.nc"
+    assert component._filename == f"{HAZARD}.nc"
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
-
-
-def test_hazard_component_clear(
-    mock_model: MagicMock,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert len(component.data.data_vars) == 1
-
-    # Call the clear method
-    component.clear()
-    # Assert the state after
-    assert len(component.data.data_vars) == 0
-
-
-def test_hazard_component_clip(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small)
-    # Assert the output
-    assert ds.flood_event.shape == (5, 4)
-
-
-def test_hazard_component_clip_no_data(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-    # Assert the current state
-    assert component._data is None
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small)
-    # Assert that there is no output
-    assert ds is None
-
-
-def test_hazard_component_clip_inplace(
-    mock_model: MagicMock,
-    build_region_small: gpd.GeoDataFrame,
-    hazard: xr.Dataset,
-):
-    # Set up the component
-    component = HazardComponent(model=mock_model)
-
-    # Set data like a dummy
-    component._data = hazard
-    # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
-
-    # Call the clipping method using a smaller region
-    ds = component.clip(geom=build_region_small, inplace=True)
-    # Assert that the output is None but the shape of the component data changed
-    assert ds is None
-    assert component.data.flood_event.shape == (5, 4)
 
 
 def test_hazard_component_read(
@@ -128,10 +63,28 @@ def test_hazard_component_read_sig(
     component = HazardComponent(model=mock_model_config)
 
     # Read data with the 'read' method
-    component.read("hazard.nc")
+    component.read(f"{HAZARD}.nc")
 
     # Assert the state
     assert len(component.data.data_vars) == 1
+
+
+def test_hazard_component_read_nothing(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+    # Setup the component
+    component = HazardComponent(model=mock_model_config)
+    # Assert current state
+    assert len(component.data) == 0
+
+    # Read the data (nothing)
+    component.read()
+    # Assert still no data
+    assert len(component.data) == 0
 
 
 def test_hazard_component_write(
@@ -148,11 +101,11 @@ def test_hazard_component_write(
     component.write()
 
     # Assert the output
-    assert Path(tmp_path, "hazard.nc").is_file()
+    assert Path(tmp_path, f"{HAZARD}.nc").is_file()
 
     # Assert the config file
-    assert component.model.config.get("hazard.file") == Path(tmp_path, "hazard.nc")
-    assert not component.model.config.get("hazard.settings.var_as_band")
+    assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, f"{HAZARD}.nc")
+    assert not component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
 
 def test_hazard_component_write_sig(
@@ -173,13 +126,11 @@ def test_hazard_component_write_sig(
     assert Path(tmp_path, "other", "baz.nc").is_file()
 
     # Assert the config file
-    assert component.model.config.get("hazard.file") == Path(
-        tmp_path, "other", "baz.nc"
-    )
-    assert component.model.config.get("hazard.settings.var_as_band")
+    assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, "other", "baz.nc")
+    assert component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
 
-def test_hazard_component_setup_event(
+def test_hazard_component_setup(
     caplog: pytest.LogCaptureFixture,
     model_with_region: FIATModel,
 ):
@@ -187,10 +138,10 @@ def test_hazard_component_setup_event(
     component = HazardComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
-    component.setup(hazard_fnames="flood_event", elevation_reference="dem")
+    component.setup(hazard_fnames="flood_event")
 
     assert "Added water_depth hazard map: flood_event" in caplog.text
-    assert model_with_region.config.get("hazard.elevation_reference") == "dem"
+    assert "flood_event" in component.data.data_vars
 
 
 def test_hazard_component_setup_multi(
@@ -203,8 +154,8 @@ def test_hazard_component_setup_multi(
     component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
 
     # Check if both ds are still there
-    assert "flood_event" in component.data.data_vars.keys()
-    assert "flood_event_highres" in component.data.data_vars.keys()
+    assert "flood_event" in component.data.data_vars
+    assert "flood_event_highres" in component.data.data_vars
 
 
 def test_hazard_component_setup_risk(
@@ -221,8 +172,8 @@ def test_hazard_component_setup_risk(
     )
 
     assert isinstance(component.data, xr.Dataset)
-    assert model_with_region.config.get("model.risk")
-    assert model_with_region.config.get("hazard.return_periods") == [50000]
+    assert model_with_region.config.get(MODEL_RISK)
+    assert model_with_region.config.get(HAZARD_RP) == [50000]
 
 
 def test_hazard_component_setup_errors(model: FIATModel):

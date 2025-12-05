@@ -7,6 +7,13 @@ from hydromt.model import ModelRoot
 from hydromt.readers import read_toml
 
 from hydromt_fiat.components import ConfigComponent
+from hydromt_fiat.utils import (
+    EXPOSURE,
+    GEOM,
+    MODEL,
+    SETTINGS,
+    TYPE,
+)
 
 
 def test_config_component_init(mock_model: MagicMock):
@@ -28,7 +35,7 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
 
     # Assert it's properties
     assert component.dir == tmp_path
-    assert component.filename == "settings.toml"
+    assert component.filename == f"{SETTINGS}.toml"
     # Set the filename
     component.filename = "foo.toml"
     assert component.filename == "foo.toml"
@@ -112,6 +119,43 @@ def test_config_component_set(
     assert component.data["baz"]["boo"] == 2
 
 
+def test_config_component_set_dict(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Set data
+    component.set("foo.bar", value="baz")
+    # Assert state
+    assert component.data["foo"]["bar"] == "baz"
+
+    # Set data via a dictionary
+    component.set("foo", value={"boo": 2})
+    # Assert state
+    assert component.data["foo"]["boo"] == 2
+    assert len(component.data["foo"]) == 2
+
+
+def test_config_component_set_none(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Set data
+    component.set("foo", value=None)
+    # Assert state
+    assert "foo" not in component.data
+
+    # Set data via a dictionary
+    component.set("foo", value={"bar": 2, "boo": None})
+    # Assert state
+    assert "bar" in component.data["foo"]
+    assert "boo" not in component.data["foo"]
+    assert len(component.data["foo"]) == 1
+
+
 def test_config_component_read(
     mock_model: MagicMock,
     model_data_clipped_path: Path,
@@ -133,8 +177,8 @@ def test_config_component_read(
     # Assert the read data
     assert isinstance(component.data, dict)
     assert len(component.data) == 4
-    assert component.data["model"]["model_type"] == "geom"
-    assert component.data["exposure"]
+    assert component.data[MODEL][TYPE] == GEOM
+    assert component.data[EXPOSURE]
 
 
 def test_config_component_read_none(

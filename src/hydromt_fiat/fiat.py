@@ -6,7 +6,9 @@ from typing import Any
 
 import geopandas as gpd
 from hydromt.model import Model
+from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat.components import (
     ConfigComponent,
@@ -16,7 +18,16 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
-from hydromt_fiat.utils import REGION
+from hydromt_fiat.utils import (
+    CONFIG,
+    EXPOSURE,
+    GEOM,
+    GRID,
+    HAZARD,
+    REGION,
+    SETTINGS,
+    VULNERABILITY,
+)
 
 # Set some global variables
 __all__ = ["FIATModel"]
@@ -51,7 +62,7 @@ class FIATModel(Model):
     def __init__(
         self,
         root: str | None = None,
-        config_fname: str = "settings.toml",
+        config_fname: str = f"{SETTINGS}.toml",
         *,
         mode: str = "r",
         data_libs: list[str] | str | None = None,
@@ -68,23 +79,23 @@ class FIATModel(Model):
 
         ## Setup components
         self.add_component(
-            "config",
+            CONFIG,
             ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
-            "exposure_geoms",
+            f"{EXPOSURE}_{GEOM}",
             ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "exposure_grid",
+            f"{EXPOSURE}_{GRID}",
             ExposureGridComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "hazard",
+            HAZARD,
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            "vulnerability",
+            VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
 
@@ -92,39 +103,39 @@ class FIATModel(Model):
     @property
     def config(self) -> ConfigComponent:
         """Return the config component."""
-        return self.components["config"]
+        return self.components[CONFIG]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
         """Return the exposure geoms component."""
-        return self.components["exposure_geoms"]
+        return self.components[f"{EXPOSURE}_{GEOM}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
         """Return the exposure grid component."""
-        return self.components["exposure_grid"]
+        return self.components[f"{EXPOSURE}_{GRID}"]
 
     @property
     def hazard(self) -> HazardComponent:
         """Return the hazard component."""
-        return self.components["hazard"]
+        return self.components[HAZARD]
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Return the vulnerability component."""
-        return self.components["vulnerability"]
+        return self.components[VULNERABILITY]
 
     ## I/O
     @hydromt_step
     def read(self) -> None:
         """Read the FIAT model."""
-        Model.read(self)
+        super().read()
 
     @hydromt_step
     def write(self) -> None:
         """Write the FIAT model."""
         names = list(self.components.keys())
-        names.remove("config")
+        names.remove(CONFIG)
         for name in names:
             self.components[name].write()
         self.config.write()
@@ -147,6 +158,8 @@ class FIATModel(Model):
     ) -> None:
         """Clip the model based on a new (smaller) region.
 
+        All grid-based components are clipped with a buffer of 1 cell.
+
         Parameters
         ----------
         region : Path | str | gpd.GeoDataFrame
@@ -159,9 +172,35 @@ class FIATModel(Model):
             f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
         )
         # Call the clip methods of the spatial components
-        self.exposure_geoms.clip(self.region, inplace=True)
-        self.exposure_grid.clip(self.region, buffer=1, inplace=True)
-        self.hazard.clip(self.region, buffer=1, inplace=True)
+        for name, component in self.components.items():
+            if not isinstance(component, SpatialModelComponent) or name == REGION:
+                continue
+            component.clip(self.region, inplace=True)
+
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str | None = None,
+    ) -> None:
+        """Reproject the model to a specific coordinate system.
+
+        Parameters
+        ----------
+        crs : CRS | int | str | None, optional
+            The coordinate system to reproject to. If None, the model crs is used, which
+            is derived from the region, for reprojecting all spatial components.
+            By default None.
+        """
+        crs = crs or self.crs
+        if crs is None:
+            raise ValueError(
+                "crs was not provided nor found in the model 'crs' attribute"
+            )
+        # Call the reproject methods of the spatial components
+        for _, component in self.components.items():
+            if not isinstance(component, SpatialModelComponent):
+                continue
+            component.reproject(crs, inplace=True)
 
     ## Setup methods
     @hydromt_step

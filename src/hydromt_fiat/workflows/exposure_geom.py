@@ -11,21 +11,22 @@ from hydromt_fiat.utils import (
     CURVE_ID,
     EXPOSURE_LINK,
     EXPOSURE_TYPE,
+    FN,
     OBJECT_ID,
     OBJECT_TYPE,
     SUBTYPE,
 )
 
 __all__ = [
-    "exposure_add_columns",
-    "exposure_setup",
-    "exposure_vulnerability_link",
+    "exposure_geoms_add_columns",
+    "exposure_geoms_setup",
+    "exposure_geoms_link_vulnerability",
 ]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def exposure_setup(
+def exposure_geoms_setup(
     exposure_data: gpd.GeoDataFrame,
     exposure_type_column: str,
     *,
@@ -114,7 +115,7 @@ these were removed"
     return exposure_data
 
 
-def exposure_vulnerability_link(
+def exposure_geoms_link_vulnerability(
     exposure_data: gpd.GeoDataFrame,
     vulnerability: pd.DataFrame,
 ) -> gpd.GeoDataFrame:
@@ -147,7 +148,7 @@ def exposure_vulnerability_link(
     for header in header_list:
         link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE_ID]]
         link.rename(
-            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"fn_{header}"},
+            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )
@@ -160,7 +161,7 @@ def exposure_vulnerability_link(
 
     # Remove the features that don't have any linking to the vulnerability
     exposure_data.dropna(
-        subset=[f"fn_{item}" for item in header_list],
+        subset=[f"{FN}_{item}" for item in header_list],
         how="all",
         inplace=True,
     )
@@ -180,7 +181,7 @@ vulnerability data, these were removed"
     return exposure_data
 
 
-def exposure_add_columns(
+def exposure_geoms_add_columns(
     exposure_data: gpd.GeoDataFrame,
     columns: list[str],
     values: int
