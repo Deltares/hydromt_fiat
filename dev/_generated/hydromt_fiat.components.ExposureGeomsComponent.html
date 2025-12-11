@@ -369,6 +369,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clear.html">hydromt_fiat.FIATModel.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.reproject.html">hydromt_fiat.FIATModel.reproject</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/components.html">Components</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -391,12 +392,14 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clear.html">hydromt_fiat.components.HazardComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.reproject.html">hydromt_fiat.components.HazardComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clear.html">hydromt_fiat.components.ExposureGeomsComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.reproject.html">hydromt_fiat.components.ExposureGeomsComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
@@ -405,6 +408,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.write.html">hydromt_fiat.components.ExposureGridComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clear.html">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.reproject.html">hydromt_fiat.components.ExposureGridComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 </details></li>
@@ -551,25 +555,28 @@ the data dictionary. By default None.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html#hydromt_fiat.components.ExposureGeomsComponent.read" title="hydromt_fiat.components.ExposureGeomsComponent.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>([filename])</p></td>
 <td><p>Read exposure geometry files.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code>(data, name)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.reproject.html#hydromt_fiat.components.ExposureGeomsComponent.reproject" title="hydromt_fiat.components.ExposureGeomsComponent.reproject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reproject</span></code></a>(crs[, inplace])</p></td>
+<td><p>Reproject the exposure vector data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code>(data, name)</p></td>
 <td><p>Set data in the exposure geom component.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup</span></code></a>(exposure_fname, exposure_type_column, *)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup</span></code></a>(exposure_fname, exposure_type_column, *)</p></td>
 <td><p>Set up the exposure from a data source.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html#hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_max_damage</span></code></a>(exposure_name, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html#hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_max_damage</span></code></a>(exposure_name, ...[, ...])</p></td>
 <td><p>Set up the maximum potential damage per object in an existing dataset.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_equal</span></code>(other)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_equal</span></code>(other)</p></td>
 <td><p>Test if two components are equal.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html#hydromt_fiat.components.ExposureGeomsComponent.update_column" title="hydromt_fiat.components.ExposureGeomsComponent.update_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_column</span></code></a>(exposure_name, columns, values)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html#hydromt_fiat.components.ExposureGeomsComponent.update_column" title="hydromt_fiat.components.ExposureGeomsComponent.update_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_column</span></code></a>(exposure_name, columns, values)</p></td>
 <td><p>Update an existing dataset by adding columns with values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html#hydromt_fiat.components.ExposureGeomsComponent.write" title="hydromt_fiat.components.ExposureGeomsComponent.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([filename])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html#hydromt_fiat.components.ExposureGeomsComponent.write" title="hydromt_fiat.components.ExposureGeomsComponent.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([filename])</p></td>
 <td><p>Write exposure geometries to a vector file.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_region</span></code>(*[, filename, to_wgs84])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_region</span></code>(*[, filename, to_wgs84])</p></td>
 <td><p>Write the model region to file.</p></td>
 </tr>
 </tbody>

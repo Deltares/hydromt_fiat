@@ -56,7 +56,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="hydromt_fiat.components.ExposureGridComponent.setup" href="hydromt_fiat.components.ExposureGridComponent.setup.html" />
+    <link rel="next" title="hydromt_fiat.components.ExposureGridComponent.reproject" href="hydromt_fiat.components.ExposureGridComponent.reproject.html" />
     <link rel="prev" title="hydromt_fiat.components.ExposureGridComponent.clear" href="hydromt_fiat.components.ExposureGridComponent.clear.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -369,6 +369,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clear.html">hydromt_fiat.FIATModel.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.reproject.html">hydromt_fiat.FIATModel.reproject</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../api/components.html">Components</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -391,12 +392,14 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clear.html">hydromt_fiat.components.HazardComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.reproject.html">hydromt_fiat.components.HazardComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clear.html">hydromt_fiat.components.ExposureGeomsComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.reproject.html">hydromt_fiat.components.ExposureGeomsComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
@@ -405,6 +408,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.write.html">hydromt_fiat.components.ExposureGridComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clear.html">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.reproject.html">hydromt_fiat.components.ExposureGridComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 </details></li>
@@ -496,7 +500,7 @@
 <h1>hydromt_fiat.components.ExposureGridComponent.clip<a class="headerlink" href="#hydromt-fiat-components-exposuregridcomponent-clip" title="Link to this heading">#</a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGridComponent.clip">
-<span class="sig-prename descclassname"><span class="pre">ExposureGridComponent.</span></span><span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.11.1)"><span class="pre">Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#hydromt_fiat.components.ExposureGridComponent.clip" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ExposureGridComponent.</span></span><span class="sig-name descname"><span class="pre">clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html#geopandas.GeoDataFrame" title="(in GeoPandas v1.1.1)"><span class="pre">GeoDataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.12.0)"><span class="pre">Dataset</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#hydromt_fiat.components.ExposureGridComponent.clip" title="Link to this definition">#</a></dt>
 <dd><p>Clip the gridded data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -538,11 +542,11 @@ by default False.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="hydromt_fiat.components.ExposureGridComponent.setup.html"
+       href="hydromt_fiat.components.ExposureGridComponent.reproject.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.setup</p>
+        <p class="prev-next-title">hydromt_fiat.components.ExposureGridComponent.reproject</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

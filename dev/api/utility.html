@@ -369,6 +369,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.clear.html">hydromt_fiat.FIATModel.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.FIATModel.reproject.html">hydromt_fiat.FIATModel.reproject</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="components.html">Components</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -391,12 +392,14 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.clear.html">hydromt_fiat.components.HazardComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.reproject.html">hydromt_fiat.components.HazardComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.clear.html">hydromt_fiat.components.ExposureGeomsComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.reproject.html">hydromt_fiat.components.ExposureGeomsComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
@@ -405,6 +408,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.write.html">hydromt_fiat.components.ExposureGridComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.clear.html">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.reproject.html">hydromt_fiat.components.ExposureGridComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 </details></li>
@@ -490,8 +494,13 @@
                 <article class="bd-article">
                   
   <style>
-    h2 {
+    /* Default (light mode) */
+    html[data-theme="light"] h2 {
         border-bottom: 1px solid #000;
+    }
+    /* Dark mode */
+    html[data-theme="dark"] h2 {
+        border-bottom: 1px solid #d1d5db;
     }
 </style><section id="utility">
 <span id="api-utility"></span><h1>Utility<a class="headerlink" href="#utility" title="Link to this heading">#</a></h1>

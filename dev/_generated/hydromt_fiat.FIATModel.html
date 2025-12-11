@@ -369,6 +369,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html">hydromt_fiat.FIATModel.setup_region</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clear.html">hydromt_fiat.FIATModel.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.clip.html">hydromt_fiat.FIATModel.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.FIATModel.reproject.html">hydromt_fiat.FIATModel.reproject</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/components.html">Components</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -391,12 +392,14 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.write.html">hydromt_fiat.components.HazardComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clear.html">hydromt_fiat.components.HazardComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.clip.html">hydromt_fiat.components.HazardComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.reproject.html">hydromt_fiat.components.HazardComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.HazardComponent.setup.html">hydromt_fiat.components.HazardComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.data.html">hydromt_fiat.components.ExposureGeomsComponent.data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html">hydromt_fiat.components.ExposureGeomsComponent.read</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html">hydromt_fiat.components.ExposureGeomsComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clear.html">hydromt_fiat.components.ExposureGeomsComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html">hydromt_fiat.components.ExposureGeomsComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.reproject.html">hydromt_fiat.components.ExposureGeomsComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup.html">hydromt_fiat.components.ExposureGeomsComponent.setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html">hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.update_column.html">hydromt_fiat.components.ExposureGeomsComponent.update_column</a></li>
@@ -405,6 +408,7 @@
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.write.html">hydromt_fiat.components.ExposureGridComponent.write</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clear.html">hydromt_fiat.components.ExposureGridComponent.clear</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.clip.html">hydromt_fiat.components.ExposureGridComponent.clip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.reproject.html">hydromt_fiat.components.ExposureGridComponent.reproject</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hydromt_fiat.components.ExposureGridComponent.setup.html">hydromt_fiat.components.ExposureGridComponent.setup</a></li>
 </ul>
 </details></li>
@@ -566,22 +570,25 @@
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.read.html#hydromt_fiat.FIATModel.read" title="hydromt_fiat.FIATModel.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>()</p></td>
 <td><p>Read the FIAT model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html#hydromt_fiat.FIATModel.setup_config" title="hydromt_fiat.FIATModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**settings)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.reproject.html#hydromt_fiat.FIATModel.reproject" title="hydromt_fiat.FIATModel.reproject"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reproject</span></code></a>([crs])</p></td>
+<td><p>Reproject the model to a specific coordinate system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.setup_config.html#hydromt_fiat.FIATModel.setup_config" title="hydromt_fiat.FIATModel.setup_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_config</span></code></a>(**settings)</p></td>
 <td><p>Set config file entries.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html#hydromt_fiat.FIATModel.setup_region" title="hydromt_fiat.FIATModel.setup_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_region</span></code></a>(region[, replace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.setup_region.html#hydromt_fiat.FIATModel.setup_region" title="hydromt_fiat.FIATModel.setup_region"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_region</span></code></a>(region[, replace])</p></td>
 <td><p>Set the region of the FIAT model.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_equal</span></code>(other)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_equal</span></code>(other)</p></td>
 <td><p>Test if two models are equal, based on their components.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(*[, model_out, write, steps, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>(*[, model_out, write, steps, ...])</p></td>
 <td><p>Single method to update a model based the settings in <cite>steps</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.write.html#hydromt_fiat.FIATModel.write" title="hydromt_fiat.FIATModel.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.FIATModel.write.html#hydromt_fiat.FIATModel.write" title="hydromt_fiat.FIATModel.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>()</p></td>
 <td><p>Write the FIAT model.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_data_catalog</span></code>([root, data_lib_path, ...])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_data_catalog</span></code>([root, data_lib_path, ...])</p></td>
 <td><p>Write the data catalog to data_lib_path.</p></td>
 </tr>
 </tbody>
