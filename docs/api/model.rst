@@ -3,8 +3,13 @@
 .. raw:: html
 
     <style>
-        h2 {
+        /* Default (light mode) */
+        html[data-theme="light"] h2 {
             border-bottom: 1px solid #000;
+        }
+        /* Dark mode */
+        html[data-theme="dark"] h2 {
+            border-bottom: 1px solid #d1d5db;
         }
     </style>
 
@@ -71,3 +76,4 @@ Model mutating methods
 
     FIATModel.clear
     FIATModel.clip
+    FIATModel.reproject

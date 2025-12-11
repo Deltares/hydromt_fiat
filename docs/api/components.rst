@@ -66,6 +66,7 @@ HazardComponent
     HazardComponent.write
     HazardComponent.clear
     HazardComponent.clip
+    HazardComponent.reproject
     HazardComponent.setup
 
 ExposureGeomsComponent
@@ -79,6 +80,7 @@ ExposureGeomsComponent
     ExposureGeomsComponent.write
     ExposureGeomsComponent.clear
     ExposureGeomsComponent.clip
+    ExposureGeomsComponent.reproject
     ExposureGeomsComponent.setup
     ExposureGeomsComponent.setup_max_damage
     ExposureGeomsComponent.update_column
@@ -94,4 +96,5 @@ ExposureGridComponent
     ExposureGridComponent.write
     ExposureGridComponent.clear
     ExposureGridComponent.clip
+    ExposureGridComponent.reproject
     ExposureGridComponent.setup

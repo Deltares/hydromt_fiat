@@ -6,6 +6,8 @@ from abc import abstractmethod
 import geopandas as gpd
 import xarray as xr
 from hydromt.model.components import GridComponent
+from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat.gis.raster_utils import force_ns
 
@@ -18,11 +20,13 @@ class CustomGridComponent(GridComponent):
     """Base class for FIAT grid based components."""
 
     ## Mutating methods
+    @hydromt_step
     def clear(self) -> None:
         """Clear the gridded data."""
         self._data = None
         self._initialize_grid(skip_read=True)
 
+    @hydromt_step
     def clip(
         self,
         geom: gpd.GeoDataFrame,
@@ -53,6 +57,45 @@ class CustomGridComponent(GridComponent):
 
         # If so, clip the data
         data = self.data.raster.clip_geom(geom, buffer=buffer)
+        # If inplace, just set the data and return nothing
+        if inplace:
+            self._data = data
+            return None
+        return data
+
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str,
+        inplace: bool = False,
+    ) -> xr.Dataset | None:
+        """Reproject the gridded data.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            The coordinate system to reproject to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new xr.Dataset,
+            by default False.
+
+        Returns
+        -------
+        xr.Dataset | None
+            Return a dataset if the inplace is False.
+        """
+        # Check for the crs's
+        if self.crs is None:
+            return None
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        # No need for reprojecting if this is the case
+        if crs == self.crs:
+            return None
+
+        # Reproject the data
+        data = self.data.raster.reproject(dst_crs=crs)
         # If inplace, just set the data and return nothing
         if inplace:
             self._data = data

@@ -8,6 +8,7 @@ import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat.components import (
     ConfigComponent,
@@ -120,7 +121,7 @@ class FIATModel(Model):
         return self.components[HAZARD]
 
     @property
-    def region(self) -> gpd.GeoDataFrame | None:
+    def region(self) -> gpd.GeoDataFrame:
         """Return the model's region.
 
         This will return a polygon covering the current region of the model.
@@ -183,6 +184,31 @@ class FIATModel(Model):
             if not isinstance(component, SpatialModelComponent) or name == REGION:
                 continue
             component.clip(self.region, inplace=True)
+
+    @hydromt_step
+    def reproject(
+        self,
+        crs: CRS | int | str | None = None,
+    ) -> None:
+        """Reproject the model to a specific coordinate system.
+
+        Parameters
+        ----------
+        crs : CRS | int | str | None, optional
+            The coordinate system to reproject to. If None, the model crs is used, which
+            is derived from the region, for reprojecting all spatial components.
+            By default None.
+        """
+        crs = crs or self.crs
+        if crs is None:
+            raise ValueError(
+                "crs was not provided nor found in the model 'crs' attribute"
+            )
+        # Call the reproject methods of the spatial components
+        for _, component in self.components.items():
+            if not isinstance(component, SpatialModelComponent):
+                continue
+            component.reproject(crs, inplace=True)
 
     ## Setup methods
     @hydromt_step

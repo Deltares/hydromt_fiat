@@ -2,8 +2,10 @@ import logging
 from unittest.mock import MagicMock
 
 import geopandas as gpd
+import numpy as np
 import pytest
 import xarray as xr
+from pyproj.crs import CRS
 
 from hydromt_fiat.components.grid import CustomGridComponent
 
@@ -81,6 +83,81 @@ def test_custom_grid_component_clip_inplace(
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data.flood_event.shape == (5, 4)
+
+
+def test_custom_grid_component_reproject(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = CustomGridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    # Assert the current state
+    assert component.data.flood_event.shape == (34, 25)
+    assert component.crs.to_epsg() == 28992
+    np.testing.assert_almost_equal(component.data.x.values[0], 85250)
+
+    # Reproject the data
+    ds = component.reproject(crs=4326)
+
+    # Assert the output
+    assert not component.data.equals(ds)
+    assert component.crs.to_epsg() == 28992
+    assert ds.raster.crs.to_epsg() == 4326
+    assert ds.flood_event.shape == (28, 33)
+    np.testing.assert_almost_equal(ds.longitude.values[0], 4.371, decimal=3)
+
+
+def test_custom_grid_component_reproject_inplace(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = CustomGridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    # Assert the current state
+    assert component.data.flood_event.shape == (34, 25)
+    assert component.crs.to_epsg() == 28992
+
+    # Reproject inplace
+    ds = component.reproject(crs=CRS.from_epsg(4326), inplace=True)
+
+    # Assert the output/ state
+    assert ds is None
+    assert component.crs.to_epsg() == 4326
+    assert component.data.flood_event.shape == (28, 33)
+
+
+def test_custom_grid_component_reproject_nothing(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = CustomGridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+    id_before = id(component.data)  # To check later
+
+    # Reproject with the same crs
+    ds = component.reproject(crs="EPSG:28992")
+    # Assert the state/ output
+    assert ds is None
+    assert id_before == id(component.data)
+
+    # Same yields true when the data crs is None
+    component._data = component._data.drop("spatial_ref")
+    id_before = id(component.data)  # To check later
+
+    # Reproject with the same crs
+    ds = component.reproject(crs="EPSG:4326")
+    # Assert the state/ output
+    assert ds is None
+    assert id_before == id(component.data)
 
 
 def test_custom_grid_component_set(

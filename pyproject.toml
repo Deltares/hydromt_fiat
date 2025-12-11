@@ -226,13 +226,12 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
 # Installation
-install-mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
 install-pre-commit = "pre-commit install"
-install = { depends-on = ["install-mypy", "install-pre-commit"] }
+install = { depends-on = ["install-pre-commit"] }
 
 # Linting and code checking
 lint = { cmd = ["pre-commit", "run", "--all"] }
-mypy = { cmd = ["mypy", "."] }
+mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
 
 # SBOM
 sbom = { cmd = [
