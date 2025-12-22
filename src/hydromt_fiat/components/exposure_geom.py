@@ -385,9 +385,8 @@ use 'setup_region' before this method"
             # TODO Replace with custom error class
             raise RuntimeError("Use `setup_vulnerability` before this method")
 
-        # Guarantee typing
-        exposure_fname = Path(exposure_fname)
-        name = exposure_fname.stem
+        # Get the name based on the stem of a path
+        name = Path(exposure_fname).stem
 
         # Get ze data
         exposure_data = self.model.data_catalog.get_geodataframe(

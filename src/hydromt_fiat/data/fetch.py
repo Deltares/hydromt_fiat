@@ -105,7 +105,7 @@ def fetch_data(
         path=cache_dir,  # store archive to cache
         base_url=base_url,
         registry=registry,
-        retry_if_failed=5,
+        retry_if_failed=10,
     )
 
     # Set the way of unpacking it

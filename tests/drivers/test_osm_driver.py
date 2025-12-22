@@ -174,6 +174,13 @@ def test_osm_driver_datacatalog(
     gdf = gpd.read_file(fp)
     assert gdf.columns.to_list() == ["building", "geometry"]
 
+
+def test_osm_driver_datacatalog_yml_entry(
+    build_region: gpd.GeoDataFrame,
+    build_data_catalog_path: Path,
+    osm_data_path: Path,
+):
+    dc = DataCatalog(build_data_catalog_path)
     # Add datacatalog source as dict
     data_source_dict = {
         "osm_roads": {
