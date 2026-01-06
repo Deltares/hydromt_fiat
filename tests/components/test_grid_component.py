@@ -15,8 +15,9 @@ CustomGridComponent.__abstractmethods__ = set()
 
 pytestmark = pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data available"
+    reason="No internet or local data available",
 )
+
 
 def test_custom_grid_component_clear(
     mock_model: MagicMock,

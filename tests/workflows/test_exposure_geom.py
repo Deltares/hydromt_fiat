@@ -15,8 +15,9 @@ from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 pytestmark = pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data available"
+    reason="No internet or local data available",
 )
+
 
 def test_exposure_geoms_setup(
     buildings_data: gpd.GeoDataFrame,

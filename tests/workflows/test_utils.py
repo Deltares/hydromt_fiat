@@ -38,6 +38,7 @@ def test__process_dataarray_rotated(
     assert "Hazard grid is rotated." in caplog.text
     assert "xc" not in da.coords
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",

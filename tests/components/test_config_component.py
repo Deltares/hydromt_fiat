@@ -156,6 +156,7 @@ def test_config_component_set_none(
     assert "boo" not in component.data["foo"]
     assert len(component.data["foo"]) == 1
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",

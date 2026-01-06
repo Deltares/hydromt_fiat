@@ -139,6 +139,7 @@ def test_get_item_none(
     # Assert the output
     assert res is None
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -163,6 +164,7 @@ def test_pathing_expand(
     # Assert the output
     assert len(paths) == 0
     assert len(names) == 0
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,

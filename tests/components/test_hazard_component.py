@@ -31,6 +31,7 @@ def test_hazard_component_empty(
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -54,6 +55,7 @@ def test_hazard_component_read(
     # Assert the state
     assert component._data is not None
     assert len(component.data.data_vars) == 1
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -93,6 +95,7 @@ def test_hazard_component_read_nothing(
     # Assert still no data
     assert len(component.data) == 0
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -116,6 +119,7 @@ def test_hazard_component_write(
     # Assert the config file
     assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, f"{HAZARD}.nc")
     assert not component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -142,6 +146,7 @@ def test_hazard_component_write_sig(
     assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, "other", "baz.nc")
     assert component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -159,6 +164,7 @@ def test_hazard_component_setup(
     assert "Added water_depth hazard map: flood_event" in caplog.text
     assert "flood_event" in component.data.data_vars
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -175,6 +181,7 @@ def test_hazard_component_setup_multi(
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars
     assert "flood_event_highres" in component.data.data_vars
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -196,6 +203,7 @@ def test_hazard_component_setup_risk(
     assert isinstance(component.data, xr.Dataset)
     assert model_with_region.config.get(MODEL_RISK)
     assert model_with_region.config.get(HAZARD_RP) == [50000]
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,

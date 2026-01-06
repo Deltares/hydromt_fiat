@@ -30,6 +30,7 @@ def test_exposure_geom_component_empty(mock_model: MagicMock):
     assert len(component.data) == 0
     assert isinstance(component.data, dict)
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -50,6 +51,7 @@ def test_exposure_geoms_component_clear(
     component.clear()
     # Assert the state after
     assert len(component.data) == 0
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -74,6 +76,7 @@ def test_exposure_geoms_component_clip(
     ds = component.clip(geom=build_region_small)
     # Assert the output
     assert ds["foo"].shape[0] == 12
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -101,6 +104,7 @@ def test_exposure_geoms_component_clip_srs(
     ds = component.clip(geom=build_region_small)
     # Assert the output
     assert ds["foo"].shape[0] == 12
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -144,6 +148,7 @@ def test_exposure_geoms_component_clip_inplace(
     assert ds is None
     assert component.data["foo"].shape[0] == 12
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -169,6 +174,7 @@ def test_exposure_geom_component_reproject(
     np.testing.assert_almost_equal(
         ds["ds1"].exterior[0].xy[0][0], desired=86046.470, decimal=3
     )
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -197,6 +203,7 @@ def test_exposure_geom_component_reproject_inplace(
         component.data["ds1"].exterior[0].xy[0][0], desired=86046.470, decimal=3
     )
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -218,6 +225,7 @@ def test_exposure_geom_component_reproject_nothing(
     # Assert the output
     assert ds["ds1"].crs.to_epsg() == 4326  # Still
     assert id_before == id(ds["ds1"])  # Same dataset, nothing happened
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -247,6 +255,7 @@ def test_exposure_geom_component_set(
     # Overwrite, but with a copy, should produce a warning
     component.set(data=build_region.copy(), name="ds1")
     assert "Replacing geom: ds1" in caplog.text
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -282,6 +291,7 @@ def test_exposure_geom_component_region(
         decimal=3,
     )
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -307,6 +317,7 @@ def test_exposure_geom_component_read(
     assert len(component._data) == 1
     assert "buildings" in component.data
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -329,6 +340,7 @@ def test_exposure_geom_component_read_sig(
 
     # Assert the output
     assert len(component._data) == 2
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -356,6 +368,7 @@ def test_exposure_geom_component_read_csv(
     assert len(component.data["foo"]) == 12
     assert "object_id" in component.data["foo"].columns
     assert "ref" in component.data["foo"].columns
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -385,6 +398,7 @@ def test_exposure_geom_component_write(
     geom_cfg = mock_model_config.config.get(EXPOSURE_GEOM)
     assert len(geom_cfg) == 2
     assert geom_cfg[0][FILE] == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -432,6 +446,7 @@ def test_exposure_geom_component_write_warnings(
     component.write()
     assert "empty_ds is empty. Skipping..." in caplog.text
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -459,6 +474,7 @@ def test_exposure_geom_component_setup(
 
     # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GEOM
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -496,6 +512,7 @@ def test_exposure_geom_component_setup_errors(
             exposure_link_fname="bag_link",
         )
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -522,6 +539,7 @@ def test_exposure_geom_component_setup_max(
 
     # Assert that the data is there
     assert "max_damage_structure" in component.data["buildings"].columns
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -552,6 +570,7 @@ def test_exposure_geom_component_setup_max_link(
     # Assert that the data is there
     assert "max_damage_structure" in component.data["buildings"].columns
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -574,6 +593,7 @@ with 'bag' as input or chose from already present geometries: ",
             exposure_cost_table_fname="jrc_damage_values",
             country="World",
         )
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -615,6 +635,7 @@ def test_exposure_geom_component_update_cols(
     # Assert that the data is there
     assert "ref" in component.data["bag"].columns
     assert "method" in component.data["bag"].columns
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,

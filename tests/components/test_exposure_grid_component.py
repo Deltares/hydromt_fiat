@@ -33,6 +33,7 @@ def test_exposure_grid_component_empty(
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -53,6 +54,7 @@ def test_exposure_grid_component_read(
     # No config so it wont read anything
     assert len(component.data.data_vars) == 4
     assert "industrial_content" in component.data.data_vars
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -93,6 +95,7 @@ def test_exposure_grid_component_read_nothing(
     # Assert still no data
     assert len(component.data) == 0
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -121,6 +124,7 @@ def test_exposure_grid_component_write(
     )
     assert component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -145,6 +149,7 @@ def test_exposure_grid_component_write_config(
     assert Path(tmp_path, "foo.nc").is_file()
     # Assert the config
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
@@ -172,6 +177,7 @@ def test_exposure_grid_component_write_sig(
         "baz.nc",
     )
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -196,6 +202,7 @@ def test_exposure_grid_component_setup(
     assert component.model.config.get(MODEL_TYPE) == GRID
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
+
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
     reason="No internet or local data cache available",
@@ -216,6 +223,7 @@ def test_exposure_grid_component_setup_multi(
     assert "industrial_content" in component.data.data_vars
     assert "industrial_structure" in component.data.data_vars
     assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
+
 
 @pytest.mark.skipif(
     not HAS_INTERNET and not HAS_LOCAL_DATA,
