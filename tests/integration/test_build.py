@@ -17,13 +17,8 @@ from hydromt_fiat.utils import (
     SETTINGS,
     VULNERABILITY,
 )
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 @pytest.mark.integration
 def test_build_model_geom(
     tmp_path: Path,
@@ -98,10 +93,6 @@ def test_build_model_geom(
     assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 @pytest.mark.integration
 def test_build_model_grid(
     tmp_path: Path,

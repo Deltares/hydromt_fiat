@@ -15,7 +15,6 @@ from hydromt_fiat.components import (
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
 from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
 def test_model_empty(tmp_path: Path):
@@ -47,10 +46,6 @@ def test_model_basic_read_write(tmp_path: Path):
     assert len(model.config.data) != 0
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_clear(  # Dont like this too much, as it is a bit of an integration test
     tmp_path: Path,
     build_region_small: gpd.GeoDataFrame,
@@ -90,10 +85,6 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     assert len(model.vulnerability.data.curves) == 0
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_clip(  # Dont like this too much, as it is a bit of an integration test
     tmp_path: Path,
     build_region: gpd.GeoDataFrame,
@@ -125,10 +116,6 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     assert model.hazard.data.flood_event.shape == (7, 6)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_reproject(
     tmp_path: Path,
     build_region: gpd.GeoDataFrame,
@@ -161,10 +148,6 @@ def test_model_reproject(
     assert id_before == id(model.region)  # Nothing happened
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_reproject_sig(
     tmp_path: Path,
     build_region: gpd.GeoDataFrame,
@@ -231,10 +214,6 @@ def test_model_setup_config(tmp_path: Path):
     assert model.config.get("global.srs") == {"value": "EPSG:4326"}
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_setup_region(tmp_path: Path, build_region_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
@@ -247,10 +226,6 @@ def test_model_setup_region(tmp_path: Path, build_region_path: Path):
     assert len(model.region) == 1
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_setup_region_from_gdf(tmp_path: Path, build_region: gpd.GeoDataFrame):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
@@ -280,10 +255,6 @@ def test_model_setup_region_error(tmp_path: Path):
         model.setup_region(region=2)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_model_properties(model_with_region: FIATModel):
     # Setup an empty fiat model
     model = model_with_region

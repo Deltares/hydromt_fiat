@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from hydromt_fiat.components.utils import (
     _mount,
     _relpath,
@@ -10,7 +8,6 @@ from hydromt_fiat.components.utils import (
     pathing_config,
     pathing_expand,
 )
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
 def test__mount():
@@ -140,10 +137,6 @@ def test_get_item_none(
     assert res is None
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_pathing_expand(
     model_data_clipped_path: Path,
 ):
@@ -166,10 +159,6 @@ def test_pathing_expand(
     assert len(names) == 0
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_pathing_expand_none(
     model_data_clipped_path: Path,
 ):

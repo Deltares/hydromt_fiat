@@ -42,10 +42,19 @@ HAS_INTERNET = _has_internet()
 HAS_LOCAL_DATA = _has_local_data()
 
 
+@pytest.fixture
+def requires_internet():
+    """Skip test if no internet connection."""
+    if not HAS_INTERNET:
+        pytest.skip("No internet connection available")
+
+
 ## Build data
 @pytest.fixture(scope="session")
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
+    if not HAS_INTERNET and not HAS_LOCAL_DATA:
+        pytest.skip("No internet or local data cache available")
     p = fetch_data("test-build-data")
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
@@ -96,6 +105,8 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 ## Global data
 @pytest.fixture(scope="session")
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
+    if not HAS_INTERNET and not HAS_LOCAL_DATA:
+        pytest.skip("No internet or local data cache available")
     # Fetch the data
     p = fetch_data("global-data")
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
@@ -119,6 +130,8 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 ## Model data
 @pytest.fixture(scope="session")
 def model_data_path() -> Path:
+    if not HAS_INTERNET and not HAS_LOCAL_DATA:
+        pytest.skip("No internet or local data cache available")
     # Fetch the data
     p = fetch_data("fiat-model")
     assert len(list(p.iterdir())) != 0
@@ -176,6 +189,8 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 ## Model data (clipped)
 @pytest.fixture(scope="session")
 def model_data_clipped_path() -> Path:
+    if not HAS_INTERNET and not HAS_LOCAL_DATA:
+        pytest.skip("No internet or local data cache available")
     # Fetch the data
     p = fetch_data("fiat-model-c")
     assert len(list(p.iterdir())) != 0
@@ -233,6 +248,8 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 ## OSM data
 @pytest.fixture(scope="session")
 def osm_data_path() -> Path:
+    if not HAS_INTERNET and not HAS_LOCAL_DATA:
+        pytest.skip("No internet or local data cache available")
     # Fetch the data
     p = fetch_data("osmnx")
     assert len(list(p.iterdir())) != 0

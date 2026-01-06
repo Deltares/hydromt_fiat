@@ -17,7 +17,6 @@ from hydromt_fiat.utils import (
     MODEL_RISK,
     VAR_AS_BAND,
 )
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
 def test_hazard_component_empty(
@@ -32,10 +31,6 @@ def test_hazard_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -57,10 +52,6 @@ def test_hazard_component_read(
     assert len(component.data.data_vars) == 1
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -96,10 +87,6 @@ def test_hazard_component_read_nothing(
     assert len(component.data) == 0
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -121,10 +108,6 @@ def test_hazard_component_write(
     assert not component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_write_sig(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -147,10 +130,6 @@ def test_hazard_component_write_sig(
     assert component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_setup(
     caplog: pytest.LogCaptureFixture,
     model_with_region: FIATModel,
@@ -165,10 +144,6 @@ def test_hazard_component_setup(
     assert "flood_event" in component.data.data_vars
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_setup_multi(
     model_with_region: FIATModel,
 ):
@@ -183,10 +158,6 @@ def test_hazard_component_setup_multi(
     assert "flood_event_highres" in component.data.data_vars
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_setup_risk(
     model_with_region: FIATModel,
 ):
@@ -205,10 +176,6 @@ def test_hazard_component_setup_risk(
     assert model_with_region.config.get(HAZARD_RP) == [50000]
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_hazard_component_setup_errors(model: FIATModel):
     # Setup the component
     component = HazardComponent(model=model)

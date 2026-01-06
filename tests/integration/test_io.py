@@ -17,13 +17,8 @@ from hydromt_fiat.utils import (
     VAR_AS_BAND,
     VULNERABILITY,
 )
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 @pytest.mark.integration
 def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     # Create the model to read

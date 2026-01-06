@@ -11,7 +11,6 @@ from shapely.geometry import MultiPolygon, Polygon
 
 from hydromt_fiat.components import RegionComponent
 from hydromt_fiat.utils import REGION
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
 def test_region_component_empty(mock_model: MagicMock):
@@ -23,10 +22,6 @@ def test_region_component_empty(mock_model: MagicMock):
     assert component._filename == f"{REGION}.geojson"
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_clear(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
@@ -46,10 +41,6 @@ def test_region_component_clear(
     assert component.data is None
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_reproject(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -77,10 +68,6 @@ def test_region_component_reproject(
     )
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_reproject_inplace(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -109,10 +96,6 @@ def test_region_component_reproject_inplace(
     )
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_reproject_nothing(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -131,10 +114,6 @@ def test_region_component_reproject_nothing(
     assert id_before == id(component.data)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_set(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -160,10 +139,6 @@ def test_region_component_set(
     assert component.region.crs.to_epsg() == 28992
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_set_series(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -179,10 +154,6 @@ def test_region_component_set_series(
     assert isinstance(component.data, gpd.GeoDataFrame)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_set_replace(
     mock_model: MagicMock,
     box_geometry: gpd.GeoDataFrame,
@@ -201,10 +172,6 @@ def test_region_component_set_replace(
     assert isinstance(component.region.geometry[0], Polygon)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_set_union(
     mock_model: MagicMock,
     box_geometry: gpd.GeoDataFrame,
@@ -223,10 +190,6 @@ def test_region_component_set_union(
     assert isinstance(component.region.geometry[0], MultiPolygon)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_read(
     tmp_path: Path,
     mock_model: MagicMock,
@@ -269,10 +232,6 @@ def test_region_component_write_empty(
     assert "Region is empty. Skipping..." in caplog.text
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_write_default(
     tmp_path: Path,
     mock_model: MagicMock,
@@ -293,10 +252,6 @@ def test_region_component_write_default(
     component = None
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_region_component_write_crs(
     tmp_path: Path,
     mock_model: MagicMock,

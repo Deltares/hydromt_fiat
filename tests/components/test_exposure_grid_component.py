@@ -19,7 +19,6 @@ from hydromt_fiat.utils import (
     VAR_AS_BAND,
     VULNERABILITY,
 )
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
 def test_exposure_grid_component_empty(
@@ -34,10 +33,6 @@ def test_exposure_grid_component_empty(
     assert isinstance(component.data, xr.Dataset)
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -56,10 +51,6 @@ def test_exposure_grid_component_read(
     assert "industrial_content" in component.data.data_vars
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -96,10 +87,6 @@ def test_exposure_grid_component_read_nothing(
     assert len(component.data) == 0
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -125,10 +112,6 @@ def test_exposure_grid_component_write(
     assert component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_write_config(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -151,10 +134,6 @@ def test_exposure_grid_component_write_config(
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_write_sig(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -178,10 +157,6 @@ def test_exposure_grid_component_write_sig(
     )
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_setup(
     model_exposure_setup: FIATModel,
 ):
@@ -203,10 +178,6 @@ def test_exposure_grid_component_setup(
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_setup_multi(
     model_exposure_setup: FIATModel,
 ):
@@ -225,10 +196,6 @@ def test_exposure_grid_component_setup_multi(
     assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_exposure_grid_component_setup_errors(
     mocker: MockerFixture,
     model: FIATModel,
