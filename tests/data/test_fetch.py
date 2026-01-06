@@ -4,9 +4,8 @@ from pathlib import Path
 import pytest
 from pooch.processors import ExtractorProcessor
 
-from hydromt_fiat.data import fetch_data
 from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
+from tests.conftest import HAS_INTERNET, fetch_test_data
 
 
 def test__fetch_registry_local():
@@ -44,13 +43,9 @@ def test__unpack_processor_unknown():
     assert up is None
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_fetch_data():
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c")
+    path = fetch_test_data(data="fiat-model-c")
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -64,13 +59,9 @@ def test_fetch_data():
     assert Path(data_dir, "settings.toml").is_file()
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_fetch_data_directory(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir=tmp_path)
+    path = fetch_test_data(data="fiat-model-c", output_dir=tmp_path)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -84,13 +75,9 @@ def test_fetch_data_directory(tmp_path: Path):
     assert Path(data_dir, "settings.toml").is_file()
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_fetch_data_no_subdir(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir=tmp_path, sub_dir=False)
+    path = fetch_test_data(data="fiat-model-c", output_dir=tmp_path, sub_dir=False)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -102,17 +89,13 @@ def test_fetch_data_no_subdir(tmp_path: Path):
     assert Path(tmp_path, "settings.toml").is_file()
 
 
-@pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data cache available",
-)
 def test_fetch_data_relative(tmp_path: Path):
     # Set the cwd
     cur_cwd = Path.cwd()
     os.chdir(tmp_path)
 
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir="data", sub_dir=False)
+    path = fetch_test_data(data="fiat-model-c", output_dir="data", sub_dir=False)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -134,4 +117,4 @@ def test_fetch_data_errors():
         ValueError,
         match="Choose one of the following: ",
     ):
-        fetch_data(data="foobar")
+        fetch_test_data(data="foobar")
