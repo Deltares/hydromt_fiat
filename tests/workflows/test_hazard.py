@@ -4,7 +4,12 @@ import xarray as xr
 
 from hydromt_fiat.utils import EVENT, RISK
 from hydromt_fiat.workflows import hazard_setup
+from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
+pytestmark = pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data available"
+)
 
 def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
     # test hazard risk

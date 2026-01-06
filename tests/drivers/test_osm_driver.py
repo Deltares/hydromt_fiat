@@ -11,6 +11,12 @@ from osmnx._errors import InsufficientResponseError
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.drivers import OSMDriver
+from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
+
+pytestmark = pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data available"
+)
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])

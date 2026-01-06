@@ -8,10 +8,15 @@ import xarray as xr
 from pyproj.crs import CRS
 
 from hydromt_fiat.components.grid import CustomGridComponent
+from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 # Overwrite the abstractmethods to be able to initialize it
 CustomGridComponent.__abstractmethods__ = set()
 
+pytestmark = pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data available"
+)
 
 def test_custom_grid_component_clear(
     mock_model: MagicMock,

@@ -4,8 +4,13 @@ import pytest
 import xarray as xr
 
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
+from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
 
+@pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data cache available",
+)
 def test__process_dataarray(
     hazard_event_data: xr.DataArray,
 ):
@@ -33,7 +38,10 @@ def test__process_dataarray_rotated(
     assert "Hazard grid is rotated." in caplog.text
     assert "xc" not in da.coords
 
-
+@pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data cache available",
+)
 def test__merge_dataarrays(
     caplog: pytest.LogCaptureFixture,
     hazard_event_data: xr.DataArray,

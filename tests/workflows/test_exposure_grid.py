@@ -6,7 +6,12 @@ import xarray as xr
 
 from hydromt_fiat.utils import EXPOSURE_LINK, FN_CURVE, OBJECT_TYPE
 from hydromt_fiat.workflows import exposure_grid_setup
+from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
 
+pytestmark = pytest.mark.skipif(
+    not HAS_INTERNET and not HAS_LOCAL_DATA,
+    reason="No internet or local data available"
+)
 
 def test_exposure_grid_setup(
     exposure_grid_data_ind: xr.DataArray,

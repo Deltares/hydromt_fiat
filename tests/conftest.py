@@ -1,3 +1,4 @@
+import socket
 from pathlib import Path
 
 import geopandas as gpd
@@ -9,6 +10,36 @@ from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
+
+
+## Checking internet connection and local data availability
+def _has_internet() -> bool:
+    """Check if internet is available."""
+    try:
+        socket.create_connection(("8.8.8.8", 53), timeout=2)
+        return True
+    except (socket.timeout, socket.error):
+        return False
+
+
+def _has_local_data() -> bool:
+    cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
+    data_dirs = [
+        "fiat-model",
+        "fiat-model-c",
+        "global-data",
+        "test-build-data",
+        "osmnx",
+    ]
+    for data in data_dirs:
+        data_path = Path(cache_dir, data)
+        if not data_path.is_dir():
+            return False
+    return True
+
+
+HAS_INTERNET = _has_internet()
+HAS_LOCAL_DATA = _has_local_data()
 
 
 ## Build data
