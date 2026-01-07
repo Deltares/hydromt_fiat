@@ -6,12 +6,6 @@ import pytest
 
 from hydromt_fiat.utils import DAMAGE, MAX
 from hydromt_fiat.workflows import max_monetary_damage
-from tests.conftest import HAS_INTERNET, HAS_LOCAL_DATA
-
-pytestmark = pytest.mark.skipif(
-    not HAS_INTERNET and not HAS_LOCAL_DATA,
-    reason="No internet or local data available",
-)
 
 
 def test_max_monetary_damage(
