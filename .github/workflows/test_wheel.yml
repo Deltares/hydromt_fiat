@@ -54,7 +54,7 @@ jobs:
 
       - name: Test
         run: | # same cmd as pixi run test-cov
-          python -m pytest -m not (integration or system) --verbose --cov=hydromt_fiat --cov-report xml
+          python -m pytest --verbose --cov=hydromt_fiat --cov-report xml -m "not integration and not system"
 
       - name: Upload coverage
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
