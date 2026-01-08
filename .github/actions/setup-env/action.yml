@@ -1,0 +1,69 @@
+name: Setup Environment from src or wheel
+description: Setup pixi environment and optionally install wheel
+
+inputs:
+  os:             { required: true }
+  python-version: { required: true }
+  use-wheel:      { required: false, default: "false"}
+  artifact-name:  { required: false, default: "releases" }
+
+outputs:
+  env-name:
+    description: "Pixi environment name"
+    value: ${{ steps.env_name.outputs.env-name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Generate Pixi environment name
+      id: env_name
+      shell: bash -l {0}
+      run: |
+        USE_WHEEL="${{ inputs.use-wheel }}"
+        if [ "${USE_WHEEL}" = "true" ]; then
+          ENV_NAME="py${{ inputs.python-version }}"
+        else
+          ENV_NAME="test-py${{ inputs.python-version }}"
+        fi
+
+        echo "env-name=$ENV_NAME" >> "$GITHUB_OUTPUT"
+        echo "Pixi environment: $ENV_NAME"
+
+    - name: Download built wheel
+      if: ${{ inputs.use-wheel == 'true' }}
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: dist
+
+    - name: Verify wheel exists
+      if: ${{ inputs.use-wheel == 'true' }}
+      shell: bash -l {0}
+      run: |
+        shopt -s nullglob
+        wheels=(dist/*.whl)
+
+        if [ ${#wheels[@]} -eq 0 ]; then
+          echo "ERROR: use-wheel=true but no .whl file found in dist/"
+          ls -la dist || true
+          exit 1
+        fi
+
+        echo "Found wheel: ${wheels[0]}"
+
+    - name: Setup pixi env
+      uses: prefix-dev/setup-pixi@v0.9.3
+      with:
+        pixi-version: "v0.59.0"
+        environments: ${{ steps.env_name.outputs.env-name }}
+        frozen: true
+        cache: true
+        cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+    - name: Install wheel
+      if: ${{ inputs.use-wheel == 'true' }}
+      shell: bash -l {0}
+      run: |
+        pixi run -e ${{ steps.env_name.outputs.env-name }} rm -rf hydromt_fiat
+        WHEEL=$(ls dist/*.whl)
+        pixi run -e ${{ steps.env_name.outputs.env-name }} python -m pip install "${WHEEL}[all]" --force-reinstall
