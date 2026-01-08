@@ -11,9 +11,6 @@ on:
 jobs:
   unit:
     runs-on: ${{ inputs.os }}
-    defaults:
-      run:
-        shell: bash -e -l {0}
     timeout-minutes: 30
 
     steps:
@@ -26,35 +23,24 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: dist
 
-      - name: Verify wheel exists
-        shell: bash -l {0}
-        run: |
-          shopt -s nullglob
-          wheels=(dist/*.whl)
-
-          if [ ${#wheels[@]} -eq 0 ]; then
-            echo "ERROR: use-wheel=true but no .whl file found in dist/"
-            ls -la dist || true
-            exit 1
-          fi
-
-          echo "Found wheel: ${wheels[0]}"
-
-      - name: Setup python
-        uses: actions/setup-python@v6
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: ${{ inputs.python-version }}
+          pixi-version: "v0.59.0"
+          environments: system-py${{ inputs.python-version }}
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Install wheel
         shell: bash -l {0}
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          python -m pip install "${WHEEL}[all]"
+          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
 
       - name: Test
-        run: | # same cmd as pixi run test-cov
-          python -m pytest --verbose --cov=hydromt_fiat --cov-report xml -m "not integration and not system"
+        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-cov
 
       - name: Upload coverage
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
@@ -80,11 +66,7 @@ jobs:
             }
 
   integration:
-    defaults:
-      run:
-        shell: bash -e -l {0}
     runs-on: ${{ inputs.os }}
-    needs: unit
     timeout-minutes: 30
 
     steps:
@@ -97,32 +79,54 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: dist
 
-      - name: Verify wheel exists
-        shell: bash -l {0}
-        run: |
-          shopt -s nullglob
-          wheels=(dist/*.whl)
-
-          if [ ${#wheels[@]} -eq 0 ]; then
-            echo "ERROR: use-wheel=true but no .whl file found in dist/"
-            ls -la dist || true
-            exit 1
-          fi
-
-          echo "Found wheel: ${wheels[0]}"
-
-      - name: Setup python
-        uses: actions/setup-python@v6
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.9.3
         with:
-          python-version: ${{ inputs.python-version }}
+          pixi-version: "v0.59.0"
+          environments: system-py${{ inputs.python-version }}
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Install wheel
         shell: bash -l {0}
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          python -m pip install "${WHEEL}[all]"
+          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
 
       - name: Test
-        run: | # same cmd as pixi run test-integration
-          python -m pytest -m integration --verbose
+        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-integration
+
+  system:
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download built wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Setup pixi env
+        uses: prefix-dev/setup-pixi@v0.9.3
+        with:
+          pixi-version: "v0.59.0"
+          environments: system-py${{ inputs.python-version }}
+          locked: false
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
+
+      - name: Test
+        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-system
