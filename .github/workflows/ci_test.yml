@@ -26,19 +26,9 @@ on:
       - pyproject.toml
       - .github/workflows/ci_test.yml
       - .github/workflows/test.yml
-
 jobs:
   test:
-    name: "${{ matrix.os }} - py${{ matrix.python-version }}"
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-latest", "windows-latest"]
-        python-version: ["311", "312", "313"]
-
     uses: ./.github/workflows/test.yml
     with:
-      os: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
       use-wheel: ${{ inputs.use-wheel }}
       artifact-name: ${{ inputs.artifact-name }}

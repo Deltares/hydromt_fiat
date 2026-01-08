@@ -3,14 +3,17 @@ name: Test
 on:
   workflow_call:
     inputs:
-      os:               { type: string, required: true }
-      python-version:   { type: string, required: true }
       use-wheel:        { type: boolean, required: false, default: false}
       artifact-name:    { type: string,  required: false, default: "releases" }
 
 jobs:
   unit:
-    runs-on: ${{ inputs.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["311", "312", "313"]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -e -l {0}
@@ -24,8 +27,8 @@ jobs:
         id: setup_env
         uses: ./.github/actions/setup-env
         with:
-          os: ${{ inputs.os }}
-          python-version: ${{ inputs.python-version }}
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
           use-wheel: ${{ inputs.use-wheel }}
           artifact-name: ${{ inputs.artifact-name }}
 
@@ -34,14 +37,14 @@ jobs:
           pixi run --no-install -e ${{ steps.setup_env.outputs.env-name }} test-cov
 
       - name: Upload coverage
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '313'
         uses: actions/upload-artifact@v5
         with:
           name: code-coverage
           path: coverage.xml
 
       - name: Signal SonarQube
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '313'
         uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -57,12 +60,18 @@ jobs:
             }
 
   integration:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["311", "312", "313"]
     defaults:
       run:
         shell: bash -e -l {0}
-    runs-on: ${{ inputs.os }}
+    runs-on: ${{ matrix.os }}
     needs: unit
     timeout-minutes: 30
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -71,8 +80,8 @@ jobs:
         id: setup_env
         uses: ./.github/actions/setup-env
         with:
-          os: ${{ inputs.os }}
-          python-version: ${{ inputs.python-version }}
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
           use-wheel: ${{ inputs.use-wheel }}
           artifact-name: ${{ inputs.artifact-name }}
 
