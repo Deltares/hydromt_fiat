@@ -292,7 +292,7 @@ test-system = { cmd = [
 [tool.pixi.dependencies]
 numpy = "<2.3"
 
-[tool.pixi.envs.dependencies]
+[tool.pixi.feature.envs.dependencies]
 pip = "*"
 uv = "*"
 
