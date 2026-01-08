@@ -37,7 +37,7 @@ jobs:
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
+          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
 
       - name: Test
         run: pixi run --no-install -e system-py${{ inputs.python-version }} test-cov
@@ -93,7 +93,7 @@ jobs:
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
+          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
 
       - name: Test
         run: pixi run --no-install -e system-py${{ inputs.python-version }} test-integration
@@ -126,7 +126,7 @@ jobs:
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} python -m pip install "${WHEEL}[all]"
+          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
 
       - name: Test
         run: pixi run --no-install -e system-py${{ inputs.python-version }} test-system

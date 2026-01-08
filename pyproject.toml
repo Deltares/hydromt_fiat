@@ -281,8 +281,6 @@ test-integration = { cmd = [
     "integration",
     "--verbose",
 ] }
-
-[tool.pixi.feature.delft_fiat.tasks]
 test-system = { cmd = [
     "pytest",
     "-m",
@@ -304,7 +302,7 @@ hydromt_fiat = { path = ".", editable = true }
 [tool.pixi.feature.examples.dependencies]
 pandoc = "*"
 
-[tool.pixi.feature.delft_fiat.dependencies]
+[tool.pixi.feature.test.dependencies]
 delft_fiat = ">=0.4.0"
 gdal = ">=3.9.1"
 
@@ -323,12 +321,12 @@ python = "3.11.*"
 default = { features = ["py313", "envs", "dev", "docs", "examples", "test"], solve-group="py313" }
 docs = { features = ["envs", "docs", "examples"], solve-group="py313" }
 slim = { features = [], solve-group="py313" }
-test-py313 = { features = ["py313", "envs", "test", "delft_fiat"], solve-group="py313" }
-test-py312 = { features = ["py312", "envs", "test", "delft_fiat"], solve-group="py312" }
-test-py311 = { features = ["py311", "envs", "test", "delft_fiat"], solve-group="py311" }
-# envs below are for testing the release artefacts and therefore only contain the dependencies: python, deflt_fiat and envs.
+test-py313 = { features = ["py313", "envs", "test"], solve-group="py313" }
+test-py312 = { features = ["py312", "envs", "test"], solve-group="py312" }
+test-py311 = { features = ["py311", "envs", "test"], solve-group="py311" }
+# envs below are for testing the release artifacts and therefore only contain the dependencies: python, test and envs.
 # `pip install whl[all]` into these environments to test the generated whl files.
 # https://pixi.prefix.dev/v0.62.1/workspace/multi_environment/#feature-environment-set-definitions
-system-py313 = { features = ["py313", "delft_fiat", "envs"], no-default-feature=true }
-system-py312 = { features = ["py312", "delft_fiat", "envs"], no-default-feature=true }
-system-py311 = { features = ["py311", "delft_fiat", "envs"], no-default-feature=true }
+system-py313 = { features = ["py313", "test", "envs"], no-default-feature=true }
+system-py312 = { features = ["py312", "test", "envs"], no-default-feature=true }
+system-py311 = { features = ["py311", "test", "envs"], no-default-feature=true }
