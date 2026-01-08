@@ -108,6 +108,7 @@ test = [
     "pytest-mock",
     "responses",
 ]
+all = ["hydromt_fiat[dev,docs,examples,test]"]
 
 [project.entry-points."hydromt.models"]
 fiat = "hydromt_fiat.fiat"

@@ -1,0 +1,127 @@
+---
+name: Test
+on:
+  workflow_call:
+    inputs:
+      python-version: { type: string, required: true }
+      os: { type: string, required: true }
+      artifact-name: { type: string, required: true }
+
+jobs:
+  unit:
+    runs-on: ${{ inputs.os }}
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download built wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Verify wheel exists
+        shell: bash -l {0}
+        run: |
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+
+          if [ ${#wheels[@]} -eq 0 ]; then
+            echo "ERROR: use-wheel=true but no .whl file found in dist/"
+            ls -la dist || true
+            exit 1
+          fi
+
+          echo "Found wheel: ${wheels[0]}"
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          python -m pip install "${WHEEL}[all]"
+
+      - name: Test
+        run: | # same cmd as pixi run test-cov
+          python -m pytest -m not (integration or system) --verbose --cov=hydromt_fiat --cov-report xml
+
+      - name: Upload coverage
+        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
+        uses: actions/upload-artifact@v6
+        with:
+          name: code-coverage
+          path: coverage.xml
+
+      - name: Signal SonarQube
+        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
+        uses: peter-evans/repository-dispatch@v4.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          event-type: sonarqube-trigger
+          client-payload: |
+            {
+              "run_id": "${{ github.run_id }}",
+              "branch": "${{ github.head_ref || github.ref_name }}",
+              "pr_flag": "${{ github.event_name == 'pull_request' }}",
+              "pr_base": "${{ github.event.pull_request.base.ref || '' }}",
+              "pr_number": "${{ github.event.pull_request.number || '' }}"
+            }
+
+  integration:
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    runs-on: ${{ inputs.os }}
+    needs: unit
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download built wheel
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist
+
+      - name: Verify wheel exists
+        shell: bash -l {0}
+        run: |
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+
+          if [ ${#wheels[@]} -eq 0 ]; then
+            echo "ERROR: use-wheel=true but no .whl file found in dist/"
+            ls -la dist || true
+            exit 1
+          fi
+
+          echo "Found wheel: ${wheels[0]}"
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install wheel
+        shell: bash -l {0}
+        run: |
+          rm -rf src
+          WHEEL=$(ls dist/*.whl)
+          python -m pip install "${WHEEL}[all]"
+
+      - name: Test
+        run: | # same cmd as pixi run test-integration
+          python -m pytest -m integration --verbose
