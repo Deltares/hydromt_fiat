@@ -281,6 +281,8 @@ test-integration = { cmd = [
     "integration",
     "--verbose",
 ] }
+
+[tool.pixi.feature.delft_fiat.tasks]
 test-system = { cmd = [
     "pytest",
     "-m",
