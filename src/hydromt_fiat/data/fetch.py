@@ -51,8 +51,8 @@ def _unpack_processor(
 def fetch_data(
     data: str,
     local_registry: bool = True,
-    sub_dir: bool = True,
     retries: int = 10,
+    sub_dir: bool = True,
     output_dir: Path | str | None = None,
 ) -> Path:
     """Fetch data by simply calling the function.
@@ -64,6 +64,8 @@ def fetch_data(
     local_registry : bool, optional
         If True, the registry is taken from the current library location.
         Otherwise, it is taken from the remote 'main' branch on github, by default True.
+    retries : int, optional
+        The number of retries when downloading the data, by default 10.
     sub_dir : bool
         Whether to place the fetched data in a sub directory of the same name.
         I.e. if  the (tarred) dataset is named 'custom-data' a directory named
