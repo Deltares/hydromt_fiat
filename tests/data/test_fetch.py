@@ -117,7 +117,6 @@ def test_fetch_data_relative(tmp_path: Path):
     os.chdir(cur_cwd)
 
 
-
 def test_fetch_data_errors():
     # Call the function while requesting something that isnt there
     with pytest.raises(
