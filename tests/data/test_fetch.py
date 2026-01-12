@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 from pooch.processors import ExtractorProcessor
 
-from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor
-from tests.conftest import HAS_INTERNET, fetch_test_data
+from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor, fetch_data
+from tests.conftest import check_connection
 
 
 def test__fetch_registry_local():
@@ -17,7 +17,7 @@ def test__fetch_registry_local():
     assert "data" in db
 
 
-@pytest.mark.skipif(not HAS_INTERNET, reason="No internet connection available")
+@check_connection
 def test__fetch_registry_remote():
     # Call the function
     db = _fetch_registry(local_registry=False)
@@ -42,10 +42,10 @@ def test__unpack_processor_unknown():
     # Assert the output
     assert up is None
 
-
+@check_connection
 def test_fetch_data():
     # Call the function in it's default state
-    path = fetch_test_data(data="fiat-model-c")
+    path = fetch_data(data="fiat-model-c", retries=1)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -58,10 +58,10 @@ def test_fetch_data():
     assert Path(data_dir, "exposure").is_dir()
     assert Path(data_dir, "settings.toml").is_file()
 
-
+@check_connection
 def test_fetch_data_directory(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_test_data(data="fiat-model-c", output_dir=tmp_path)
+    path = fetch_data(data="fiat-model-c", output_dir=tmp_path, retries=1)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -74,10 +74,10 @@ def test_fetch_data_directory(tmp_path: Path):
     assert Path(data_dir, "exposure").is_dir()
     assert Path(data_dir, "settings.toml").is_file()
 
-
+@check_connection
 def test_fetch_data_no_subdir(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_test_data(data="fiat-model-c", output_dir=tmp_path, sub_dir=False)
+    path = fetch_data(data="fiat-model-c", output_dir=tmp_path, sub_dir=False, retries=1)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -88,14 +88,14 @@ def test_fetch_data_no_subdir(tmp_path: Path):
     assert Path(tmp_path, "exposure").is_dir()
     assert Path(tmp_path, "settings.toml").is_file()
 
-
+@check_connection
 def test_fetch_data_relative(tmp_path: Path):
     # Set the cwd
     cur_cwd = Path.cwd()
     os.chdir(tmp_path)
 
     # Call the function in it's default state
-    path = fetch_test_data(data="fiat-model-c", output_dir="data", sub_dir=False)
+    path = fetch_data(data="fiat-model-c", output_dir="data", sub_dir=False, retries=1)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -110,11 +110,11 @@ def test_fetch_data_relative(tmp_path: Path):
     # Change the cwd back
     os.chdir(cur_cwd)
 
-
+@check_connection
 def test_fetch_data_errors():
     # Call the function while requesting something that isnt there
     with pytest.raises(
         ValueError,
         match="Choose one of the following: ",
     ):
-        fetch_test_data(data="foobar")
+        fetch_data(data="foobar")

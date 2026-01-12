@@ -1,4 +1,3 @@
-import socket
 from pathlib import Path
 
 import geopandas as gpd
@@ -6,54 +5,33 @@ import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
 
 
-## Checking internet connection and local data availability
-def _has_internet() -> bool:
-    """Check if internet is available."""
-    try:
-        socket.create_connection(("8.8.8.8", 53), timeout=2)
-        return True
-    except (socket.timeout, socket.error):
-        return False
+def check_connection(fn):
+    def inner(*args, **kwargs):
+        try:
+            r = fn(*args, **kwargs)
+        except RequestException as e:
+            raise ConnectionError(
+                "Failed to download hydromt test data, check your connection"
+            ) from e
+        else:
+            return r
 
-
-def _has_local_data() -> bool:
-    cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
-    data_dirs = [
-        "fiat-model",
-        "fiat-model-c",
-        "global-data",
-        "test-build-data",
-        "osmnx",
-    ]
-    for data in data_dirs:
-        data_path = Path(cache_dir, data)
-        if not data_path.is_dir():
-            return False
-    return True
-
-
-HAS_INTERNET = _has_internet()
-HAS_LOCAL_DATA = _has_local_data()
-
-
-def fetch_test_data(data, **kwargs) -> Path:
-    if not HAS_INTERNET and not HAS_LOCAL_DATA:
-        pytest.skip("No internet or local data cache available")
-    p = fetch_data(data, **kwargs)
-    return p
+    return inner
 
 
 ## Build data
 @pytest.fixture(scope="session")
+@check_connection
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_test_data("test-build-data")
+    p = fetch_data("test-build-data", retries=1)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -102,9 +80,10 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 
 ## Global data
 @pytest.fixture(scope="session")
+@check_connection
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_test_data("global-data")
+    p = fetch_data("global-data", retries=1)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -125,9 +104,10 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 
 ## Model data
 @pytest.fixture(scope="session")
+@check_connection
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_test_data("fiat-model")
+    p = fetch_data("fiat-model", retries=1)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -182,9 +162,10 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 
 ## Model data (clipped)
 @pytest.fixture(scope="session")
+@check_connection
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_test_data("fiat-model-c")
+    p = fetch_data("fiat-model-c", retries=1)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -239,9 +220,10 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 
 ## OSM data
 @pytest.fixture(scope="session")
+@check_connection
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_test_data("osmnx")
+    p = fetch_data("osmnx", retries=1)
     assert len(list(p.iterdir())) != 0
     return p
 

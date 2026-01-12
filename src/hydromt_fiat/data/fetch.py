@@ -52,6 +52,7 @@ def fetch_data(
     data: str,
     local_registry: bool = True,
     sub_dir: bool = True,
+    retries: int = 10,
     output_dir: Path | str | None = None,
 ) -> Path:
     """Fetch data by simply calling the function.
@@ -105,7 +106,7 @@ def fetch_data(
         path=cache_dir,  # store archive to cache
         base_url=base_url,
         registry=registry,
-        retry_if_failed=10,
+        retry_if_failed=retries,
     )
 
     # Set the way of unpacking it
