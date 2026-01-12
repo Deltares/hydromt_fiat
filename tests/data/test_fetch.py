@@ -42,10 +42,10 @@ def test__unpack_processor_unknown():
     # Assert the output
     assert up is None
 
-@check_connection
+
 def test_fetch_data():
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", retries=1)
+    path = check_connection(fetch_data)(data="fiat-model-c", retries=1)
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -58,10 +58,12 @@ def test_fetch_data():
     assert Path(data_dir, "exposure").is_dir()
     assert Path(data_dir, "settings.toml").is_file()
 
-@check_connection
+
 def test_fetch_data_directory(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir=tmp_path, retries=1)
+    path = check_connection(fetch_data)(
+        data="fiat-model-c", output_dir=tmp_path, retries=1
+    )
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -74,10 +76,12 @@ def test_fetch_data_directory(tmp_path: Path):
     assert Path(data_dir, "exposure").is_dir()
     assert Path(data_dir, "settings.toml").is_file()
 
-@check_connection
+
 def test_fetch_data_no_subdir(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir=tmp_path, sub_dir=False, retries=1)
+    path = check_connection(fetch_data)(
+        data="fiat-model-c", output_dir=tmp_path, sub_dir=False, retries=1
+    )
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -88,14 +92,16 @@ def test_fetch_data_no_subdir(tmp_path: Path):
     assert Path(tmp_path, "exposure").is_dir()
     assert Path(tmp_path, "settings.toml").is_file()
 
-@check_connection
+
 def test_fetch_data_relative(tmp_path: Path):
     # Set the cwd
     cur_cwd = Path.cwd()
     os.chdir(tmp_path)
 
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", output_dir="data", sub_dir=False, retries=1)
+    path = check_connection(fetch_data)(
+        data="fiat-model-c", output_dir="data", sub_dir=False, retries=1
+    )
 
     # Get the cache dir location
     cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
@@ -110,11 +116,12 @@ def test_fetch_data_relative(tmp_path: Path):
     # Change the cwd back
     os.chdir(cur_cwd)
 
-@check_connection
+
+
 def test_fetch_data_errors():
     # Call the function while requesting something that isnt there
     with pytest.raises(
         ValueError,
         match="Choose one of the following: ",
     ):
-        fetch_data(data="foobar")
+        check_connection(fetch_data)(data="foobar", retries=1)
