@@ -1,5 +1,5 @@
 ---
-name: Test Cache
+name: Create Test Cache
 on:
   schedule:
     - cron: "0 8 * * 1"

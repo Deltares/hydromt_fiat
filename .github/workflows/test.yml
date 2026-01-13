@@ -79,6 +79,12 @@ jobs:
           cache: true
           cache-write: false
 
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.cache/hydromt_fiat
+          key: test-data
+
       - name: Test
         run: |
           pixi run -e test-py${{ inputs.python-version }} test-integration
