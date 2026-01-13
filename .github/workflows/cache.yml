@@ -1,0 +1,50 @@
+---
+name: Test Cache
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  cache:
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+    name: cache
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download
+        run: |
+          mkdir -p $HOME/.cache/hydromt_fiat
+          gh release download test-data \
+            --pattern "*.tar.gz" \
+            --dir $HOME/.cache/hydromt_fiat
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Untar
+        run: |
+          for file in $HOME/.cache/hydromt_fiat/*.tar.gz; do
+            dirname=$(basename "$file" .tar.gz)
+            target_dir="$HOME/.cache/hydromt_fiat/$dirname"
+            mkdir -p "$target_dir"
+            tar -xzf "$file" -C "$target_dir"
+          done
+
+      - name: Upload cache
+        uses: actions/cache/save@v5
+        with:
+          path: $HOME/.cache/hydromt_fiat
+          key: test-data
