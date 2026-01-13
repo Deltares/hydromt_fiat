@@ -43,8 +43,15 @@ jobs:
             tar -xzf "$file" -C "$target_dir"
           done
 
+      - name: Validate cache
+        run: |
+          if [ ! "$(ls -A ~/.cache/hydromt_fiat)" ]; then
+            echo "Cache directory is empty. Exiting."
+            exit 1
+          fi
+
       - name: Upload cache
         uses: actions/cache/save@v5
         with:
-          path: $HOME/.cache/hydromt_fiat
+          path: ~/.cache/hydromt_fiat
           key: test-data
