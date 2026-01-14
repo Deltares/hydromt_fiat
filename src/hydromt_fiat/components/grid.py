@@ -11,12 +11,12 @@ from pyproj.crs import CRS
 
 from hydromt_fiat.gis.raster_utils import force_ns
 
-__all__ = ["CustomGridComponent"]
+__all__ = ["GridCustomComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class CustomGridComponent(GridComponent):
+class GridCustomComponent(GridComponent):
     """Base class for FIAT grid based components."""
 
     ## Mutating methods

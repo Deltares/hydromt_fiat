@@ -1,5 +1,5 @@
 ---
-name: Test Cache
+name: Create Test Cache
 on:
   schedule:
     - cron: "0 8 * * 1"
@@ -27,25 +27,25 @@ jobs:
 
       - name: Download
         run: |
-          mkdir -p $HOME/.cache/hydromt_fiat
+          mkdir -p .cache
           gh release download test-data \
             --pattern "*.tar.gz" \
-            --dir $HOME/.cache/hydromt_fiat
+            --dir .cache
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Untar
         run: |
-          for file in $HOME/.cache/hydromt_fiat/*.tar.gz; do
+          for file in .cache/*.tar.gz; do
             dirname=$(basename "$file" .tar.gz)
-            target_dir="$HOME/.cache/hydromt_fiat/$dirname"
+            target_dir=".cache/$dirname"
             mkdir -p "$target_dir"
             tar -xzf "$file" -C "$target_dir"
           done
 
       - name: Validate cache
         run: |
-          if [ ! "$(ls -A ~/.cache/hydromt_fiat)" ]; then
+          if [ ! "$(ls -A .cache)" ]; then
             echo "Cache directory is empty. Exiting."
             exit 1
           fi
@@ -53,5 +53,6 @@ jobs:
       - name: Upload cache
         uses: actions/cache/save@v5
         with:
-          path: ~/.cache/hydromt_fiat
+          path: .cache
           key: test-data
+          enableCrossOsArchive: true
