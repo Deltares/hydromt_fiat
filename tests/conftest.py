@@ -10,12 +10,14 @@ from shapely.geometry import box
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
 
+CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
+
 
 ## Build data
 @pytest.fixture(scope="session")
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("test-build-data")
+    p = fetch_data("test-build-data", cache_dir=CACHE_DIR)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -66,7 +68,7 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 @pytest.fixture(scope="session")
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("global-data")
+    p = fetch_data("global-data", cache_dir=CACHE_DIR)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -89,7 +91,7 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 @pytest.fixture(scope="session")
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model")
+    p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -146,7 +148,7 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 @pytest.fixture(scope="session")
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c")
+    p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -203,7 +205,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 @pytest.fixture(scope="session")
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("osmnx")
+    p = fetch_data("osmnx", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
