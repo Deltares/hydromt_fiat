@@ -10,7 +10,7 @@ from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components.grid import CustomGridComponent
+from hydromt_fiat.components.grid import GridCustomComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
@@ -20,7 +20,6 @@ from hydromt_fiat.utils import (
     HAZARD_RP,
     HAZARD_SETTINGS,
     MODEL_RISK,
-    REGION,
     SRS,
     VAR_AS_BAND,
 )
@@ -30,7 +29,7 @@ __all__ = ["HazardComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardComponent(CustomGridComponent):
+class HazardComponent(GridCustomComponent):
     """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -48,9 +47,6 @@ class HazardComponent(CustomGridComponent):
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
-    region_filename : str
-        The path to use for reading and writing of the region data by default.
-        By default "region.geojson".
     """
 
     def __init__(
@@ -59,13 +55,11 @@ class HazardComponent(CustomGridComponent):
         *,
         filename: str = f"{HAZARD}.nc",
         region_component: str | None = None,
-        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
             filename=filename,
             region_component=region_component,
-            region_filename=region_filename,
         )
 
     ## I/O methods

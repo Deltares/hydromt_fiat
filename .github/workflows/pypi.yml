@@ -1,6 +1,5 @@
 ---
 name: Pypi release
-
 on:
   release:
     types:
@@ -16,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -58,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
@@ -114,7 +113,6 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/hydromt-fiat
-
     permissions:
       id-token: write
 

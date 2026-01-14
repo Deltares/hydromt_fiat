@@ -47,9 +47,6 @@ class ExposureGeomsComponent(GeomsCustomComponent):
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
         the data dictionary. By default None.
-    region_filename : str, optional
-        The path to use for writing the region data to a file. By default
-        "region.geojson".
     """
 
     def __init__(
