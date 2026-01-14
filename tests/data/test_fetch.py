@@ -6,7 +6,7 @@ from pooch.processors import ExtractorProcessor
 
 from hydromt_fiat.data import fetch_data
 from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor
-from tests.conftest import CACHE_DIR
+from tests.conftest import CACHE_DIR, check_connection
 
 
 def test__fetch_registry_local():
@@ -18,6 +18,7 @@ def test__fetch_registry_local():
     assert "data" in db
 
 
+@check_connection
 def test__fetch_registry_remote():
     # Call the function
     db = _fetch_registry(local_registry=False)
@@ -45,7 +46,9 @@ def test__unpack_processor_unknown():
 
 def test_fetch_data():
     # Call the function in it's default state
-    path = fetch_data(data="fiat-model-c", cache_dir=CACHE_DIR)
+    path = check_connection(fetch_data)(
+        data="fiat-model-c", retries=1, cache_dir=CACHE_DIR
+    )
 
     # Get the cache dir location
     data_dir = Path(CACHE_DIR, "fiat-model-c")
@@ -65,6 +68,7 @@ def test_fetch_data_no_subdir(tmp_path: Path):
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir=tmp_path,
+        retries=1,
     )
 
     # Assert the output
@@ -85,6 +89,7 @@ def test_fetch_data_relative_output_dir(tmp_path: Path):
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir="data",
+        retries=1,
     )
 
     # Get the cache dir location
@@ -106,4 +111,4 @@ def test_fetch_data_errors():
         ValueError,
         match="Choose one of the following: ",
     ):
-        fetch_data(data="foobar")
+        check_connection(fetch_data)(data="foobar", retries=1)
