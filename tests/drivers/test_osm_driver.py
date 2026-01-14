@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 import geopandas as gpd
+import osmnx as ox
 import pandas as pd
 import pytest
 from hydromt import DataCatalog
@@ -11,6 +12,9 @@ from osmnx._errors import InsufficientResponseError
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.drivers import OSMDriver
+from tests.conftest import CACHE_DIR
+
+ox.settings.cache_folder = CACHE_DIR / "osmnx"
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])
