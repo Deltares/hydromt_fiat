@@ -1,6 +1,5 @@
 ---
 name: Pypi release
-
 on:
   release:
     types:

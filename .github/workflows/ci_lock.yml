@@ -1,10 +1,8 @@
 ---
 name: Update lockfile
-
 permissions:
   contents: write
   pull-requests: write
-
 on:
   workflow_dispatch:
   schedule:
@@ -16,7 +14,6 @@ jobs:
       run:
         shell: bash -e -l {0}
     timeout-minutes: 30
-
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +22,6 @@ jobs:
         include:
           - os: ubuntu-latest
             label: linux-64
-
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
 

@@ -51,7 +51,9 @@ def _unpack_processor(
 def fetch_data(
     data: str,
     local_registry: bool = True,
+    retries: int = 10,
     sub_dir: bool = True,
+    cache_dir: Path | str | None = None,
     output_dir: Path | str | None = None,
 ) -> Path:
     """Fetch data by simply calling the function.
@@ -63,13 +65,19 @@ def fetch_data(
     local_registry : bool, optional
         If True, the registry is taken from the current library location.
         Otherwise, it is taken from the remote 'main' branch on github, by default True.
-    sub_dir : bool
+    retries : int, optional
+        The number of retries when downloading the data, by default 10.
+    sub_dir : bool, optional
         Whether to place the fetched data in a sub directory of the same name.
         I.e. if  the (tarred) dataset is named 'custom-data' a directory named
         'custom-data' is created in which the data are placed. By default True.
-    output_dir : Path | str | None
-        The output directory to store the data.
+    cache_dir : Path | str, optional
+        The directory in which the tarball is stored.
+        If None, the tarball is stored in ~/.cache/hydromt_fiat. By default None.
+    output_dir : Path | str, optional
+        The output directory to store the unpacked data.
         If None, the data will be stored in ~/.cache/hydromt_fiat/<data>.
+        By default None.
 
     Returns
     -------
@@ -82,16 +90,13 @@ def fetch_data(
     database = _fetch_registry(local_registry=local_registry)
     base_url: str = database["url"]
     registry: dict[str, str] = database["data"]
-    # Set the cache directory, for at the very least the tarball
-    cache_dir = Path("~", ".cache", "hydromt_fiat").expanduser()
+    # Set the cache directory, for the tarball
+    cache_dir = cache_dir or Path("~", ".cache", "hydromt_fiat").expanduser()
+    cache_dir = Path(Path.cwd(), cache_dir)
     cache_dir.mkdir(parents=True, exist_ok=True)
-
-    if output_dir is None:
-        output_dir = cache_dir
-    output_dir = Path(output_dir)
-    if not output_dir.is_absolute():
-        output_dir = Path(Path.cwd(), output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Set the output directory
+    output_dir = output_dir or cache_dir
+    output_dir = Path(Path.cwd(), output_dir)
 
     # Quick check whether the data can be found
     choices_raw = list(registry.keys())
@@ -105,16 +110,15 @@ def fetch_data(
         path=cache_dir,  # store archive to cache
         base_url=base_url,
         registry=registry,
-        retry_if_failed=10,
+        retry_if_failed=retries,
     )
 
     # Set the way of unpacking it
     suffix = choices_raw[idx].split(".", 1)[1]
-    extract_dir = output_dir
     if sub_dir:
-        extract_dir = Path(extract_dir, data)
-    processor = _unpack_processor(suffix, extract_dir=extract_dir)
+        output_dir = Path(output_dir, data)
+    processor = _unpack_processor(suffix, extract_dir=output_dir)
     # Retrieve the data
     retriever.fetch(choices_raw[idx], processor=processor)
 
-    return extract_dir
+    return output_dir

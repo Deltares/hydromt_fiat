@@ -26,7 +26,6 @@ from hydromt_fiat.utils import (
     GEOM,
     MODEL_TYPE,
     OBJECT_ID,
-    REGION,
     SETTINGS,
     SRS,
 )
@@ -50,9 +49,6 @@ class ExposureGeomsComponent(SpatialModelComponent):
         The name of the region component to use as reference for this component's
         region. If None, the region will be set to the union of all geometries in
         the data dictionary. By default None.
-    region_filename : str, optional
-        The path to use for writing the region data to a file. By default
-        "region.geojson".
     """
 
     def __init__(
@@ -61,14 +57,12 @@ class ExposureGeomsComponent(SpatialModelComponent):
         *,
         filename: str = f"{EXPOSURE}/{{name}}.fgb",
         region_component: str | None = None,
-        region_filename: str = f"{REGION}.geojson",
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
         self._filename: str = filename
         super().__init__(
             model,
             region_component=region_component,
-            region_filename=region_filename,
         )
 
     ## Private methods
