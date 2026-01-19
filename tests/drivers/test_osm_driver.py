@@ -11,14 +11,15 @@ from hydromt.data_catalog.sources import GeoDataFrameSource
 from osmnx._errors import InsufficientResponseError
 from pytest_mock import MockerFixture
 
-from hydromt_fiat.drivers import OSMDriver
+from hydromt_fiat.drivers import OSMDriver, osm_driver
+from hydromt_fiat.drivers.osm_driver import osm_request
 from tests.conftest import CACHE_DIR
 
 ox.settings.cache_folder = CACHE_DIR / "osmnx"
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])
-def test_osm_driver_get_osm_data(
+def test_osm_request(
     caplog: pytest.LogCaptureFixture,
     tag_name: str,
     build_region: gpd.geodataframe,
@@ -29,81 +30,77 @@ def test_osm_driver_get_osm_data(
         if tag_name == "highway"
         else ["MultiPolygon", "Polygon"]
     )
-    tag = {tag_name: True}
+    tags = {tag_name: True}
     polygon = build_region.geometry[0]
     caplog.set_level(logging.INFO)
 
-    osm_data = OSMDriver.get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
+    osm_data = osm_request(polygon=polygon, tags=tags, geom_type=geom_type)
     assert isinstance(osm_data, gpd.GeoDataFrame)
-    assert f"Total number of {tag_name} found from OSM:" in caplog.text
+    assert f"Number of ['{tag_name}'] items found from OSM:" in caplog.text
     assert not osm_data.empty
-    assert osm_data.columns.to_list() == ["geometry", tag_name]
+    assert osm_data.columns.to_list() == [tag_name, "geometry"]
     assert osm_data.intersects(polygon).all()
 
 
-def test_osm_driver_get_osm_data_errors(
+def test_osm_request_errors(
     caplog: pytest.LogCaptureFixture,
     build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
     geom_type = ["MultiPolygon", "Polygon"]
-    tag = {"building": True}
+    tags = {"building": True}
     with pytest.raises(
         TypeError,
         match=re.escape("Given geometry is not a (multi)polygon"),
     ):
-        OSMDriver.get_osm_data(build_region, tag=tag, geom_type=geom_type)
+        osm_request(build_region, tags=tags, geom_type=geom_type)
 
     caplog.set_level(logging.ERROR)
-    tag = {"buildin": True}
+    tags = {"buildin": True}
     with pytest.raises(
         InsufficientResponseError,
         match="No matching features. Check query location, tags, and log.",
     ):
-        OSMDriver.get_osm_data(
-            polygon=build_region.geometry[0], tag=tag, geom_type=geom_type
-        )
+        osm_request(polygon=build_region.geometry[0], tags=tags, geom_type=geom_type)
 
-    assert f"No OSM data retrieved with the following tags: {tag}" in caplog.text
+    assert f"No OSM data retrieved with the following tags: {tags}" in caplog.text
 
 
-def test_osm_driver_get_osm_data_empty(
+def test_osm_reqeust_empty(
     caplog: pytest.LogCaptureFixture,
     mocker: MockerFixture,
     build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
     geom_type = ["MultiPolygon", "Polygon"]
-    tag = {"building": True}
+    tags = {"building": True}
     caplog.set_level(logging.WARNING)
     mocker.patch(
         "hydromt_fiat.drivers.osm_driver.ox.features.features_from_polygon",
         returns=gpd.GeoDataFrame(),
     )
-    osm_data = OSMDriver.get_osm_data(
-        build_region.geometry[0], tag=tag, geom_type=geom_type
-    )
+    osm_data = osm_request(build_region.geometry[0], tags=tags, geom_type=geom_type)
     assert not osm_data
-    assert "No building features found for polygon" in caplog.text
+    assert "No ['building'] features found for polygon" in caplog.text
 
 
 def test_osm_driver_read_raise_errors(
     build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
-    osm_driver = OSMDriver()
+    driver = OSMDriver()
     with pytest.raises(
         ValueError, match="Cannot use multiple uris for reading OSM data."
     ):
-        osm_driver.read(uris=["uri1", "uri2"], mask=build_region)
+        driver.read(uris=["uri1", "uri2"], mask=build_region)
 
     with pytest.raises(ValueError, match="Mask is required to retrieve OSM data"):
-        osm_driver.read(uris=["building"], mask=None)
+        driver.read(uris=["building"], mask=None)
 
     mask = [1, 2, 3, 4]
     err_msg = f"Wrong type: {type(mask)} -> should be GeoDataFrame or GeoSeries"
     with pytest.raises(TypeError, match=err_msg):
-        osm_driver.read(uris=["uri"], mask=mask)
+        driver.read(uris=["uri"], mask=mask)
 
 
 def test_osm_driver_read(
@@ -112,17 +109,17 @@ def test_osm_driver_read(
     build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
-    osm_driver = OSMDriver()
-    mock_method = mocker.patch.object(OSMDriver, "get_osm_data")
-    osm_driver.read(uris=["building"], mask=build_region)
+    driver = OSMDriver()
+    mock_method = mocker.patch.object(osm_driver, "osm_request")
+    driver.read(uris=["building"], mask=build_region)
     mock_method.assert_called_with(
-        polygon=build_region.geometry[0], tag={"building": True}, geom_type=None
+        polygon=build_region.geometry[0], tags={"building": True}, geom_type=None
     )
     # Test with a mask geodataframe containing two geometries
     mask = build_region.copy()
     mask = pd.concat([mask, build_region])
     caplog.set_level(logging.WARNING)
-    osm_driver.read(uris=["building"], mask=mask)
+    driver.read(uris=["building"], mask=mask)
     assert (
         "Received multiple geometries for mask, geometries will be dissolved into"
         " single geometry." in caplog.text
@@ -135,10 +132,10 @@ def test_osm_driver_write(
     build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
-    osm_driver = OSMDriver()
+    driver = OSMDriver()
     # Test with supported extension
     fp = tmp_path / "test_data.fgb"
-    osm_driver.write(path=fp, gdf=build_region)
+    driver.write(path=fp, gdf=build_region)
     assert fp.exists
     gdf = gpd.read_file(fp)
     assert gdf.equals(build_region)
@@ -146,7 +143,7 @@ def test_osm_driver_write(
     # Test with unsupported extension
     fp = tmp_path / "test_data.csv"
     caplog.set_level(logging.WARNING)
-    p = osm_driver.write(path=fp, gdf=build_region)
+    p = driver.write(path=fp, gdf=build_region)
     assert "driver osm has no support for extension .csv" in caplog.text
     assert Path(p).suffix == ".fgb"
     assert Path(p).exists

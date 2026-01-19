@@ -19,6 +19,60 @@ ox.settings.cache_folder = CACHE_DIR
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
+def osm_request(
+    polygon: MultiPolygon | Polygon,
+    tags: dict[str, Any],
+    geom_type: list[str] | None = None,
+    reduce: bool = True,
+) -> gpd.GeoDataFrame:
+    """Retrieve OSM data with the OSMnx api.
+
+    Parameters
+    ----------
+    polygon : MultiPolygon | Polygon
+        Area of interest.
+    tags : dict
+        OSM tag to filter data with, i.e. {'building': True}.
+    geom_type : list[str], optional
+        List of geometry types to filter data with,
+        i.e. ['MultiPolygon', 'Polygon'].
+    reduce : bool, optional
+        Whether or not to reduce the output geodataframe to the columns corresponding
+        to the tags and (of course) the geometry column. By default True.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        GeoDataFrame with OSM data.
+
+    """
+    if not isinstance(polygon, (Polygon, MultiPolygon)):
+        raise TypeError("Given geometry is not a (multi)polygon")
+
+    try:
+        items = ox.features.features_from_polygon(polygon, tags)
+    except InsufficientResponseError as err:
+        logger.error(f"No OSM data retrieved with the following tags: {tags}")
+        raise err
+
+    tag_keys = list(tags.keys())
+
+    if items.empty:
+        logger.warning(f"No {tag_keys} features found for polygon")
+        return None
+
+    logger.info(f"Number of {tag_keys} items found from OSM: {len(items)}")
+
+    if geom_type is not None:
+        items = items.loc[items.geometry.type.isin(geom_type)]
+
+    # Remove multi index
+    items = items.reset_index(drop=True)
+    if reduce:
+        return items[[*tag_keys, "geometry"]]
+    return items
+
+
 class OSMDriver(GeoDataFrameDriver):
     """Driver to read OSM data with the OSMnx API."""
 
@@ -31,11 +85,11 @@ class OSMDriver(GeoDataFrameDriver):
         uris: list[str],
         mask: gpd.GeoDataFrame | gpd.GeoSeries,
         *,
-        tags: list[str] | None = None,
+        tags: dict[str, Any] | None = None,
         geom_type: list[str] | None = None,
         **kwargs,
     ) -> gpd.GeoDataFrame:
-        """Read OSM data with the OSMnx API.
+        """Read OSM data with the OSMnx api.
 
         Parameters
         ----------
@@ -43,7 +97,7 @@ class OSMDriver(GeoDataFrameDriver):
             List containing single OSM asset type.
         mask : gpd.GeoDataFrame | gpd.GeoSeries
             GeoDataFrame containing the region of interest.
-        tags : list[str], optional
+        tags : dict[str, Any], optional
             Additional tags to filter the OSM data by, by default None.
         geom_type : list[str], optional
             List of geometry types to filter data with,
@@ -80,17 +134,16 @@ class OSMDriver(GeoDataFrameDriver):
 
         # If tags and geom_types are none check if these are supplied as driver options
         options = self.options.to_dict()
-        if options.get("geom_type") and not geom_type:
-            geom_type = options.get("geom_type")
-        if options.get("tags") and not tags:
-            tags = options.get("tags")
+        geom_type = geom_type or options.get("geom_type")
+        tags = {uri: tags or options.get("tags") or True}
 
-        if tags:
-            tag: dict[str, Any] = {uri: tags}
-        else:
-            tag = {uri: True}
+        # Get and return the data
         logger.info("Retrieving %s data from OSM API", uri)
-        return self.get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
+        return osm_request(
+            polygon=polygon,
+            tags=tags,
+            geom_type=geom_type,
+        )
 
     def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs) -> StrPath:
         """Write OSMNx data to file.
@@ -117,51 +170,3 @@ class OSMDriver(GeoDataFrameDriver):
             path = path.parent / (path.stem + ".fgb")
         gdf.to_file(path, **kwargs)
         return path
-
-    @staticmethod
-    def get_osm_data(
-        polygon: MultiPolygon | Polygon,
-        tag: dict[str, Any],
-        geom_type: list[str] | None,
-    ) -> gpd.GeoDataFrame:
-        """Retrieve OSM data with the OSMnx api.
-
-        Parameters
-        ----------
-        polygon : MultiPolygon | Polygon
-            Area of interest.
-        tag : dict
-            OSM tag to filter data with, i.e. {'building': True}.
-        geom_type : list[str] | None
-            List of geometry types to filter data with,
-            i.e. ['MultiPolygon', 'Polygon'].
-
-        Returns
-        -------
-        gpd.GeoDataFrame
-            GeoDataFrame with OSM data.
-
-        """
-        if not isinstance(polygon, (Polygon, MultiPolygon)):
-            raise TypeError("Given geometry is not a (multi)polygon")
-
-        try:
-            footprints = ox.features.features_from_polygon(polygon, tag)
-        except InsufficientResponseError as err:
-            logger.error(f"No OSM data retrieved with the following tags: {tag}")
-            raise err
-
-        tag_key = list(tag.keys())[0]
-
-        if footprints.empty:
-            logger.warning(f"No {tag_key} features found for polygon")
-            return None
-
-        logger.info(f"Total number of {tag_key} found from OSM: {len(footprints)}")
-
-        if geom_type:
-            footprints = footprints.loc[footprints.geometry.type.isin(geom_type)]
-
-        # Remove multi index
-        footprints = footprints.reset_index(drop=True)
-        return footprints[["geometry", tag_key]]
