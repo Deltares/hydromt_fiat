@@ -1,0 +1,58 @@
+---
+name: Create Test Cache
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  cache:
+    defaults:
+      run:
+        shell: bash -e -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+    name: cache
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download
+        run: |
+          mkdir -p .cache
+          gh release download test-data \
+            --pattern "*.tar.gz" \
+            --dir .cache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Untar
+        run: |
+          for file in .cache/*.tar.gz; do
+            dirname=$(basename "$file" .tar.gz)
+            target_dir=".cache/$dirname"
+            mkdir -p "$target_dir"
+            tar -xzf "$file" -C "$target_dir"
+          done
+
+      - name: Validate cache
+        run: |
+          if [ ! "$(ls -A .cache)" ]; then
+            echo "Cache directory is empty. Exiting."
+            exit 1
+          fi
+
+      - name: Upload cache
+        uses: actions/cache/save@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true

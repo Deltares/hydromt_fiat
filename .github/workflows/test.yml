@@ -15,16 +15,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.58.0"
+          pixi-version: "v0.62.2"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
 
       - name: Test
         run: |
@@ -62,16 +69,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.58.0"
+          pixi-version: "v0.62.2"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
           cache-write: false
+
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
 
       - name: Test
         run: |

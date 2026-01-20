@@ -69,6 +69,24 @@ def test_hazard_component_read_sig(
     assert len(component.data.data_vars) == 1
 
 
+def test_hazard_component_read_nothing(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+    # Setup the component
+    component = HazardComponent(model=mock_model_config)
+    # Assert current state
+    assert len(component.data) == 0
+
+    # Read the data (nothing)
+    component.read()
+    # Assert still no data
+    assert len(component.data) == 0
+
+
 def test_hazard_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,

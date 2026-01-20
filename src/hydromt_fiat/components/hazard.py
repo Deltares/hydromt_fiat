@@ -4,24 +4,22 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from hydromt._io.readers import _read_nc
-from hydromt._io.writers import _write_nc
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
+from hydromt.readers import open_nc
+from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components.grid import CustomGridComponent
+from hydromt_fiat.components.grid import GridCustomComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
-    GRID,
     HAZARD,
     HAZARD_FILE,
     HAZARD_RP,
     HAZARD_SETTINGS,
     MODEL_RISK,
-    REGION,
     SRS,
     VAR_AS_BAND,
 )
@@ -31,7 +29,7 @@ __all__ = ["HazardComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardComponent(CustomGridComponent):
+class HazardComponent(GridCustomComponent):
     """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -49,9 +47,6 @@ class HazardComponent(CustomGridComponent):
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
-    region_filename : str
-        The path to use for reading and writing of the region data by default.
-        By default "region.geojson".
     """
 
     def __init__(
@@ -60,13 +55,11 @@ class HazardComponent(CustomGridComponent):
         *,
         filename: str = f"{HAZARD}.nc",
         region_component: str | None = None,
-        region_filename: str = f"{REGION}.geojson",
     ):
         super().__init__(
             model,
             filename=filename,
             region_component=region_component,
-            region_filename=region_filename,
         )
 
     ## I/O methods
@@ -84,7 +77,8 @@ class HazardComponent(CustomGridComponent):
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `read_nc` method.
+            Additional keyword arguments to be passed to the `open_dataset` function
+            from xarray.
         """
         # Check the state
         self.root._assert_read_mode()
@@ -100,18 +94,17 @@ class HazardComponent(CustomGridComponent):
 
         # Read the data
         read_path = Path(self.root.path, filename)
+        # Return on nothing found
+        if not read_path.is_file():
+            return
         logger.info(f"Reading the hazard file at {read_path.as_posix()}")
         # Read with the (old) read function from hydromt-core
-        ncs = _read_nc(
+        ds = open_nc(
             read_path,
-            self.root.path,
-            single_var_as_array=False,
-            mask_and_scale=False,
             **kwargs,
         )
-        # Set the datasets
-        for ds in ncs.values():
-            self.set(ds)
+        # Set the dataset
+        self.set(ds)
 
     @hydromt_step
     def write(
@@ -131,7 +124,8 @@ class HazardComponent(CustomGridComponent):
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `write_nc` method.
+            Additional keyword arguments to be passed to the `to_netcdf` method from
+            xarray.
         """
         # Check the state
         self.root._assert_write_mode()
@@ -150,15 +144,15 @@ class HazardComponent(CustomGridComponent):
         logger.info(f"Writing the hazard data to {write_path.as_posix()}")
         # Force north south before writing
         self._data = force_ns(self.data)  # type: ignore[assignment]
-        _write_nc(
-            {GRID: self.data},
-            write_path.as_posix(),
-            root=self.root.path,
+        write_nc(
+            self.data,
+            file_path=write_path,
             gdal_compliant=gdal_compliant,
             rename_dims=False,
             force_overwrite=self.root.mode.is_override_mode(),
             force_sn=False,
-            **kwargs,
+            progressbar=True,
+            to_netcdf_kwargs=kwargs,
         )
 
         # Update the config

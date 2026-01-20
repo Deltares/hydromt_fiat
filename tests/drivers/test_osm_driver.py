@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 import geopandas as gpd
+import osmnx as ox
 import pandas as pd
 import pytest
 from hydromt import DataCatalog
@@ -11,6 +12,9 @@ from osmnx._errors import InsufficientResponseError
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.drivers import OSMDriver
+from tests.conftest import CACHE_DIR
+
+ox.settings.cache_folder = CACHE_DIR / "osmnx"
 
 
 @pytest.mark.parametrize("tag_name", ["building", "highway", "landuse", "amenity"])
@@ -174,6 +178,13 @@ def test_osm_driver_datacatalog(
     gdf = gpd.read_file(fp)
     assert gdf.columns.to_list() == ["building", "geometry"]
 
+
+def test_osm_driver_datacatalog_yml_entry(
+    build_region: gpd.GeoDataFrame,
+    build_data_catalog_path: Path,
+    osm_data_path: Path,
+):
+    dc = DataCatalog(build_data_catalog_path)
     # Add datacatalog source as dict
     data_source_dict = {
         "osm_roads": {
