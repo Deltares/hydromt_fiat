@@ -24,7 +24,7 @@ jobs:
           path: dist
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.59.0"
           environments: system-py${{ inputs.python-version }}
@@ -51,7 +51,7 @@ jobs:
 
       - name: Signal SonarQube
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
-        uses: peter-evans/repository-dispatch@v4.0.1
+        uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
@@ -80,7 +80,7 @@ jobs:
           path: dist
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.59.0"
           environments: system-py${{ inputs.python-version }}
@@ -113,7 +113,7 @@ jobs:
           path: dist
 
       - name: Setup pixi env
-        uses: prefix-dev/setup-pixi@v0.9.3
+        uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.59.0"
           environments: system-py${{ inputs.python-version }}
