@@ -29,16 +29,8 @@ jobs:
     env:
       branch_name: ${{ github.head_ref || github.ref_name }}
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
+    name: linux-64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code

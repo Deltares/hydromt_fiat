@@ -29,13 +29,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - "ubuntu-latest"
-          - "windows-latest"
-        python-version:
-          - "311"
-          - "312"
-          - "313"
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["311", "312", "313"]
         include:
           - os: ubuntu-latest
             label: linux-64
