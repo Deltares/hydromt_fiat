@@ -93,7 +93,6 @@ docs = [
 	"pydata-sphinx-theme",
     "sphinx>=8.2.0",
     "sphinx_design",
-    "sphinx_autosummary_accessors",
 ]
 examples = [
     "cartopy",
