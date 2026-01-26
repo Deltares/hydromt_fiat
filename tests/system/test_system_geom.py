@@ -1,15 +1,23 @@
 from pathlib import Path
 
 import pytest
-from fiat import Configurations, GeomModel, __version__
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.utils import GEOM, MODEL_TYPE
 
+try:
+    from fiat import Configurations, GeomModel, __version__
+
+    HAS_FIAT = True
+
+except ImportError:
+    __version__ = "0.0.0"
+    HAS_FIAT = False
+
 
 @pytest.mark.skipif(
-    Version(__version__) < Version("1"),
+    not HAS_FIAT or Version(__version__) < Version("1"),
     reason="At least Delft-FIAT version 1.0.0 is required.",
 )
 @pytest.mark.system

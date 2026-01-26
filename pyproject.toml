@@ -93,7 +93,6 @@ docs = [
 	"pydata-sphinx-theme",
     "sphinx>=8.2.0",
     "sphinx_design",
-    "sphinx_autosummary_accessors",
 ]
 examples = [
     "cartopy",
@@ -303,6 +302,10 @@ pandoc = "*"
 delft_fiat = ">=0.4.0"
 gdal = ">=3.9.1"
 
+[tool.pixi.feature.wheel.dependencies]
+pip = "*"
+uv = "*"
+
 # Extra python environments
 [tool.pixi.feature.py313.dependencies]
 python = "3.13.*"
@@ -318,6 +321,7 @@ python = "3.11.*"
 default = { features = ["py313", "dev", "docs", "examples", "test"] }
 docs = { features = ["docs", "examples"] }
 slim = { features = [] }
-test-py313 = {features = ["py313", "test"]}
-test-py312 = {features = ["py312", "test"]}
-test-py311 = {features = ["py311", "test"]}
+test-py313 = { features = ["py313", "test"] }
+test-py312 = { features = ["py312", "test"] }
+test-py311 = { features = ["py311", "test"] }
+wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
