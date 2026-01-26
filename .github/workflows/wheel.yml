@@ -17,53 +17,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Download built wheel
+      - name: Download source distribution
         uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact-name }}
           path: dist
 
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.59.0"
-          environments: system-py${{ inputs.python-version }}
+          pixi-version: "v0.63.2"
+          environments: wheel
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          cache-write: false
 
       - name: Install wheel
         shell: bash -l {0}
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
+          pixi run -e wheel uv pip install "${WHEEL}"
 
       - name: Test
-        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-cov
-
-      - name: Upload coverage
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
-        uses: actions/upload-artifact@v6
-        with:
-          name: code-coverage
-          path: coverage.xml
-
-      - name: Signal SonarQube
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '3.13'
-        uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: sonarqube-trigger
-          client-payload: |
-            {
-              "run_id": "${{ github.run_id }}",
-              "branch": "${{ github.head_ref || github.ref_name }}",
-              "pr_flag": "${{ github.event_name == 'pull_request' }}",
-              "pr_base": "${{ github.event.pull_request.base.ref || '' }}",
-              "pr_number": "${{ github.event.pull_request.number || '' }}"
-            }
+        run: pixi run --no-install -e wheel test-cov
 
   integration:
     runs-on: ${{ inputs.os }}
@@ -73,30 +57,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Download built wheel
+      - name: Download source distribution
         uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact-name }}
           path: dist
 
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.59.0"
-          environments: system-py${{ inputs.python-version }}
+          pixi-version: "v0.63.2"
+          environments: wheel
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          cache-write: false
 
       - name: Install wheel
         shell: bash -l {0}
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
+          pixi run -e wheel uv pip install "${WHEEL}"
 
       - name: Test
-        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-integration
+        run: pixi run --no-install -e wheel test-integration
 
   system:
     runs-on: ${{ inputs.os }}
@@ -106,27 +97,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Download built wheel
+      - name: Download source distribution
         uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact-name }}
           path: dist
 
+      - name: Download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .cache
+          key: test-data
+          enableCrossOsArchive: true
+
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.59.0"
-          environments: system-py${{ inputs.python-version }}
+          pixi-version: "v0.63.2"
+          environments: wheel
           locked: false
           cache: true
-          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          cache-write: false
 
       - name: Install wheel
         shell: bash -l {0}
         run: |
           rm -rf src
           WHEEL=$(ls dist/*.whl)
-          pixi run -e system-py${{ inputs.python-version }} uv pip install "${WHEEL}[all]"
+          pixi run -e wheel uv pip install "${WHEEL}"
 
       - name: Test
-        run: pixi run --no-install -e system-py${{ inputs.python-version }} test-system
+        run: pixi run --no-install -e wheel test-system
