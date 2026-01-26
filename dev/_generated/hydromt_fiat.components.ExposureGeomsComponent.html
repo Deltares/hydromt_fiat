@@ -41,8 +41,8 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_generated/hydromt_fiat.components.ExposureGeomsComponent';</script>
@@ -500,7 +500,7 @@
 <h1>hydromt_fiat.components.ExposureGeomsComponent<a class="headerlink" href="#hydromt-fiat-components-exposuregeomscomponent" title="Link to this heading">#</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="hydromt_fiat.components.ExposureGeomsComponent">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.components.</span></span><span class="sig-name descname"><span class="pre">ExposureGeomsComponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://deltares.github.io/hydromt/latest/_generated/hydromt.model.Model.html#hydromt.model.Model" title="(in HydroMT v1.2.0.dev0)"><span class="pre">Model</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'exposure/{name}.fgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_component</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'region.geojson'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_geom.html#ExposureGeomsComponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGeomsComponent" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">hydromt_fiat.components.</span></span><span class="sig-name descname"><span class="pre">ExposureGeomsComponent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://deltares.github.io/hydromt/latest/_generated/hydromt.model.Model.html#hydromt.model.Model" title="(in HydroMT v1.3.0.dev0)"><span class="pre">Model</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'exposure/{name}.fgb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_component</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hydromt_fiat/components/exposure_geom.html#ExposureGeomsComponent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hydromt_fiat.components.ExposureGeomsComponent" title="Link to this definition">#</a></dt>
 <dd><p>Exposure geometries component.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -511,8 +511,6 @@ By default “exposure/{name}.fgb”.</p></li>
 <li><p><strong>region_component</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the region component to use as reference for this component’s
 region. If None, the region will be set to the union of all geometries in
 the data dictionary. By default None.</p></li>
-<li><p><strong>region_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The path to use for writing the region data to a file. By default
-“region.geojson”.</p></li>
 </ul>
 </dd>
 </dl>
@@ -534,10 +532,13 @@ the data dictionary. By default None.</p></li>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">model</span></code></p></td>
 <td><p>Return the model object this component is associated with.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">region</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">name_in_model</span></code></p></td>
+<td><p>Find the name of the component in the parent model components.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">region</span></code></p></td>
 <td><p>Provide access to the underlying GeoDataFrame data of the model region.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root</span></code></p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">root</span></code></p></td>
 <td><p>Return the root of the model this component is associated with.</p></td>
 </tr>
 </tbody>
@@ -551,6 +552,12 @@ the data dictionary. By default None.</p></li>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.clip.html#hydromt_fiat.components.ExposureGeomsComponent.clip" title="hydromt_fiat.components.ExposureGeomsComponent.clip"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip</span></code></a>(geom[, inplace])</p></td>
 <td><p>Clip the exposure vector data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code>()</p></td>
+<td><p>Clean up all open datasets.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finish_write</span></code>()</p></td>
+<td><p>Finish the write functionality after cleanup was called for all components in the model.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.read.html#hydromt_fiat.components.ExposureGeomsComponent.read" title="hydromt_fiat.components.ExposureGeomsComponent.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>([filename])</p></td>
 <td><p>Read exposure geometry files.</p></td>
@@ -576,7 +583,7 @@ the data dictionary. By default None.</p></li>
 <tr class="row-even"><td><p><a class="reference internal" href="hydromt_fiat.components.ExposureGeomsComponent.write.html#hydromt_fiat.components.ExposureGeomsComponent.write" title="hydromt_fiat.components.ExposureGeomsComponent.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>([filename])</p></td>
 <td><p>Write exposure geometries to a vector file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_region</span></code>(*[, filename, to_wgs84])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_region</span></code>([filename, to_wgs84, ...])</p></td>
 <td><p>Write the model region to file.</p></td>
 </tr>
 </tbody>
@@ -679,7 +686,7 @@ the data dictionary. By default None.</p></li>
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>

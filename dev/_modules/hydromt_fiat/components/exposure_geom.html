@@ -40,8 +40,8 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
-    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/components/exposure_geom';</script>
@@ -432,7 +432,6 @@
     <span class="n">GEOM</span><span class="p">,</span>
     <span class="n">MODEL_TYPE</span><span class="p">,</span>
     <span class="n">OBJECT_ID</span><span class="p">,</span>
-    <span class="n">REGION</span><span class="p">,</span>
     <span class="n">SETTINGS</span><span class="p">,</span>
     <span class="n">SRS</span><span class="p">,</span>
 <span class="p">)</span>
@@ -458,9 +457,6 @@
 <span class="sd">        The name of the region component to use as reference for this component&#39;s</span>
 <span class="sd">        region. If None, the region will be set to the union of all geometries in</span>
 <span class="sd">        the data dictionary. By default None.</span>
-<span class="sd">    region_filename : str, optional</span>
-<span class="sd">        The path to use for writing the region data to a file. By default</span>
-<span class="sd">        &quot;region.geojson&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -469,14 +465,12 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">EXPOSURE</span><span class="si">}</span><span class="s2">/</span><span class="se">{{</span><span class="s2">name</span><span class="se">}}</span><span class="s2">.fgb&quot;</span><span class="p">,</span>
         <span class="n">region_component</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">region_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">REGION</span><span class="si">}</span><span class="s2">.geojson&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="p">,</span>
             <span class="n">region_component</span><span class="o">=</span><span class="n">region_component</span><span class="p">,</span>
-            <span class="n">region_filename</span><span class="o">=</span><span class="n">region_filename</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1">## Private methods</span>
@@ -810,9 +804,8 @@
             <span class="c1"># TODO Replace with custom error class</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Use `setup_vulnerability` before this method&quot;</span><span class="p">)</span>
 
-        <span class="c1"># Guarantee typing</span>
-        <span class="n">exposure_fname</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fname</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">exposure_fname</span><span class="o">.</span><span class="n">stem</span>
+        <span class="c1"># Get the name based on the stem of a path</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fname</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
 
         <span class="c1"># Get ze data</span>
         <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_geodataframe</span><span class="p">(</span>
@@ -1033,7 +1026,7 @@
         <div class="footer-item">
 
   <p class="sphinx-version">
-    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     <br/>
   </p>
 </div>
