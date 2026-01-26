@@ -12,7 +12,7 @@ from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components.geom import GeomsCustomComponent
+from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
@@ -33,7 +33,7 @@ __all__ = ["ExposureGeomsComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class ExposureGeomsComponent(GeomsCustomComponent):
+class ExposureGeomsComponent(GeomsComponent):
     """Exposure geometries component.
 
     Parameters

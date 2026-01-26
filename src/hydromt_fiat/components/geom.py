@@ -11,13 +11,15 @@ from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
-__all__ = ["GeomsCustomComponent"]
+__all__ = ["GeomsComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class GeomsCustomComponent(SpatialModelComponent):
+class GeomsComponent(SpatialModelComponent):
     """Base class for FIAT geometry based components."""
+
+    _build = True
 
     def __init__(
         self,

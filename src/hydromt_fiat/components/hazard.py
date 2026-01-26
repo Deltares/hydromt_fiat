@@ -10,7 +10,7 @@ from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components.grid import GridCustomComponent
+from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
@@ -29,7 +29,7 @@ __all__ = ["HazardComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class HazardComponent(GridCustomComponent):
+class HazardComponent(GridComponent):
     """Hazard component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -56,9 +56,9 @@ class HazardComponent(GridCustomComponent):
         filename: str = f"{HAZARD}.nc",
         region_component: str | None = None,
     ):
+        self._filename = filename
         super().__init__(
             model,
-            filename=filename,
             region_component=region_component,
         )
 
@@ -82,7 +82,7 @@ class HazardComponent(GridCustomComponent):
         """
         # Check the state
         self.root._assert_read_mode()
-        self._initialize_grid(skip_read=True)
+        self._initialize(skip_read=True)
 
         # Sort the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
