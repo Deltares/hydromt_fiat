@@ -33,6 +33,8 @@ class ConfigComponent(ModelComponent):
         By default 'settings.toml'.
     """
 
+    _build = True
+
     def __init__(
         self,
         model: Model,

@@ -25,7 +25,7 @@ def test_model_empty(tmp_path: Path):
     assert CONFIG in model.components
     assert REGION in model.components
     assert model.region is None
-    assert len(model.components) == 6
+    assert len(model.components) == 7
 
 
 def test_model_basic_read_write(tmp_path: Path):

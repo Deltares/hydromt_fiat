@@ -4,27 +4,117 @@ import logging
 from abc import abstractmethod
 
 import geopandas as gpd
+import shapely.geometry as sg
 import xarray as xr
-from hydromt.model.components import GridComponent
+from hydromt.model import Model
+from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
 from hydromt_fiat.gis.raster_utils import force_ns
 
-__all__ = ["GridCustomComponent"]
+__all__ = ["GridComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class GridCustomComponent(GridComponent):
+class GridComponent(SpatialModelComponent):
     """Base class for FIAT grid based components."""
+
+    _build = True
+
+    def __init__(
+        self,
+        model: Model,
+        *,
+        region_component: str | None = None,
+    ):
+        self._data: xr.Dataset | None = None
+        super().__init__(
+            model=model,
+            region_component=region_component,
+            region_filename=None,
+        )
+
+    ## Private methods
+    def _initialize(self, skip_read: bool = False) -> None:
+        """Initialize the internal dataset."""
+        if self._data is None:
+            self._data = xr.Dataset()
+            if self.root.is_reading_mode() and not skip_read:
+                self.read()
+
+    ## Properties
+    @property
+    def _region_data(self) -> gpd.GeoDataFrame | None:
+        """Returns the geometry of the model area of interest."""
+        if len(self.data) > 0:
+            return gpd.GeoDataFrame(geometry=[sg.box(*self.bounds)], crs=self.crs)
+        logger.warning("Region could not be derived from the data.")
+        return None
+
+    @property
+    def bounds(self) -> tuple[float] | None:
+        """Return the bounding box of the data."""
+        if len(self.data) > 0:
+            return self.data.raster.bounds
+        logger.warning("Bounding box could not be derived from the data.")
+        return None
+
+    @property
+    def crs(self) -> CRS | None:
+        """Return the data CRS."""
+        if self.data.raster is None or self.data.raster.crs is None:
+            logger.warning("CRS of data could not be determined.")
+            return None
+        return CRS(self.data.raster.crs)
+
+    @property
+    def data(self) -> xr.Dataset:
+        """Return the data.
+
+        Return
+        ------
+        xr.Dataset
+        """
+        if self._data is None:
+            self._initialize()
+        assert self._data is not None
+        return self._data
+
+    @property
+    def res(self) -> tuple[float] | None:
+        """Returns the resolution of the model grid."""
+        if len(self.data) > 0:
+            return self.data.raster.res
+        logger.warning("Resolution could not be derived from the data.")
+        return None
+
+    @property
+    def transform(self) -> tuple[float] | None:
+        """Returns spatial transform of the model grid."""
+        if len(self.data) > 0:
+            return self.data.raster.transform
+        logger.warning("Transform could not be derived from the data.")
+        return None
+
+    ## I/O methods
+    @abstractmethod
+    def read(self):
+        """Read method."""
+        ...
+
+    @abstractmethod
+    def write(self):
+        """Write method."""
+        ...
 
     ## Mutating methods
     @hydromt_step
     def clear(self) -> None:
         """Clear the gridded data."""
         self._data = None
-        self._initialize_grid(skip_read=True)
+        self._initialize(skip_read=True)
 
     @hydromt_step
     def clip(
@@ -118,7 +208,7 @@ class GridCustomComponent(GridComponent):
             has not name yet, by default None.
         """
         # Make sure the grid exists
-        self._initialize_grid()
+        self._initialize()
         assert self._data is not None
 
         # First check the input and typing
@@ -140,9 +230,3 @@ class GridCustomComponent(GridComponent):
                 if dvar in self._data:
                     logger.warning(f"Replacing grid map: '{dvar}'")
                 self._data[dvar] = data[dvar]
-
-    ## Setup methods
-    @abstractmethod
-    def setup(self, *args, **kwargs) -> None:
-        """Set up method."""
-        ...
