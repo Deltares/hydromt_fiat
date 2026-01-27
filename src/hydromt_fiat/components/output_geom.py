@@ -55,7 +55,7 @@ class OutputGeomsComponent(GeomsComponent):
         raise NotImplementedError("")
 
     @hydromt_step
-    def aggregate(
+    def aggregate_grid(
         self,
         name: str,
         res: float | int,
