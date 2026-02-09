@@ -5,6 +5,8 @@ on:
     inputs:
       os:               { type: string, required: true }
       python-version:   { type: string, required: true }
+permissions:
+  actions: write
 
 jobs:
   unit:
