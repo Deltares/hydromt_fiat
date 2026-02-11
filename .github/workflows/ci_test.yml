@@ -24,6 +24,9 @@ on:
       - pyproject.toml
       - .github/workflows/ci_test.yml
       - .github/workflows/test.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   test:
