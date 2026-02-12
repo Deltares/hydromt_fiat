@@ -42,7 +42,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
     ----------
     model : Model
         HydroMT model instance (FIATModel).
-    filename : str, optional
+    filename : Path | str, optional
         The path to use for reading and writing of component data by default.
         By default "exposure/{name}.fgb".
     region_component : str, optional
@@ -55,18 +55,21 @@ class ExposureGeomsComponent(SpatialModelComponent):
         self,
         model: Model,
         *,
-        filename: str = f"{EXPOSURE}/{{name}}.fgb",
+        filename: Path | str = f"{EXPOSURE}/{{name}}.fgb",
         region_component: str | None = None,
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
-        self._filename: str = filename
+        self._filename: Path | str = filename
         super().__init__(
             model,
             region_component=region_component,
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize exposure geoms data structure (dict)."""
         if self._data is None:
             self._data = dict()
@@ -105,7 +108,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
     @hydromt_step
     def read(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         r"""Read exposure geometry files.
@@ -114,7 +117,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
             If None, the value(s) is/ are either taken from the model configurations or
@@ -152,7 +155,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
     @hydromt_step
     def write(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         """Write exposure geometries to a vector file.
@@ -161,7 +164,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
             If None, the value(s) is/ are either taken from the model configurations or
@@ -180,6 +183,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
         # Sort the filename
         # Hierarchy: 1) Signature, 2) default
         filename = filename or self._filename
+        filename = Path(filename).as_posix()
 
         # The entries for the config
         cfg = []
@@ -220,7 +224,7 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
     ## Mutating methods
     @hydromt_step
-    def clear(self):
+    def clear(self) -> None:
         """Clear the exposure geometry data."""
         self._data = None
         self._initialize(skip_read=True)
@@ -419,7 +423,7 @@ use 'setup_region' before this method"
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
-        **select: dict[str, Any],
+        **select,
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
 

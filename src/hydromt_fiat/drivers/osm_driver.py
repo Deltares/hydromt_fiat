@@ -92,7 +92,12 @@ class OSMDriver(GeoDataFrameDriver):
         logger.info("Retrieving %s data from OSM API", uri)
         return self.get_osm_data(polygon=polygon, tag=tag, geom_type=geom_type)
 
-    def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs) -> StrPath:
+    def write(
+        self,
+        path: StrPath,
+        gdf: gpd.GeoDataFrame,
+        **kwargs,
+    ) -> StrPath:
         """Write OSMNx data to file.
 
         Parameters

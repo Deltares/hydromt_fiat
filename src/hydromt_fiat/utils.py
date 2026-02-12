@@ -1,7 +1,6 @@
 """HydroMT-FIAT utility."""
 
 import logging
-from typing import Any
 
 from barril.units import Scalar, UnitDatabase
 
@@ -63,9 +62,7 @@ UNIT_DATABASE = UnitDatabase.GetSingleton()
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def create_query(
-    **kwargs: dict[str, Any],
-) -> str:
+def create_query(**kwargs) -> str:
     """Generate a query for a pandas DataFrame.
 
     Parameters

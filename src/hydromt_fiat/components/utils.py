@@ -89,13 +89,14 @@ def get_item(
 
 
 def pathing_expand(
-    root: Path, filename: str | None = None
+    root: Path, filename: Path | str | None = None
 ) -> tuple[list[Path], list[str]] | None:
     """Sort the pathing on reading based on a wildcard."""
     # If the filename is None, do nothing
     if filename is None:
         return None
     # Expand
+    filename = Path(filename).as_posix()
     path_glob, _, regex = _expand_uri_placeholders(filename)
     p = list(Path(root).glob(path_glob))
     n = []

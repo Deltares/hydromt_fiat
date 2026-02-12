@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Any
 
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
@@ -66,14 +65,14 @@ class HazardComponent(GridCustomComponent):
     @hydromt_step
     def read(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         """Read the hazard data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
@@ -109,7 +108,7 @@ class HazardComponent(GridCustomComponent):
     @hydromt_step
     def write(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -117,7 +116,7 @@ class HazardComponent(GridCustomComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
@@ -177,7 +176,7 @@ class HazardComponent(GridCustomComponent):
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
-        **settings: dict[str, Any],
+        **settings,
     ) -> None:
         """Set up hazard maps.
 

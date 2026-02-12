@@ -44,7 +44,10 @@ class RegionComponent(SpatialModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize region."""
         self._init = True
         if self.root.is_reading_mode() and not skip_read:
@@ -69,12 +72,16 @@ class RegionComponent(SpatialModelComponent):
         return self._data
 
     ## I/O methods
-    def read(self, filename: str | None = None, **kwargs) -> None:
+    def read(
+        self,
+        filename: Path | str | None = None,
+        **kwargs,
+    ) -> None:
         """Read model region data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root.
             If None, the value is taken from the `_filename` attribute,
             by default None.
@@ -150,7 +157,7 @@ class RegionComponent(SpatialModelComponent):
         data.to_file(write_path, **kwargs)
 
     ## Mutating methods
-    def clear(self):
+    def clear(self) -> None:
         """Clear the region."""
         self._data = None
         self._initialize(skip_read=True)
