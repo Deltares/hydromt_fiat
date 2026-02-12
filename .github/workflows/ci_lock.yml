@@ -14,16 +14,8 @@ jobs:
       run:
         shell: bash -e -l {0}
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
+    name: linux-64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -32,6 +24,7 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
+          pixi-version: "v0.59.0"
           run-install: false
 
       - name: Update lockfile

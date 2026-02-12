@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - release/**
     paths:
       - src/hydromt_fiat/**/*
       - tests/**/*
@@ -15,6 +16,7 @@ on:
   pull_request:
     branches:
       - main
+      - release/**
     paths:
       - src/hydromt_fiat/**/*
       - tests/**/*
@@ -22,6 +24,9 @@ on:
       - pyproject.toml
       - .github/workflows/ci_test.yml
       - .github/workflows/test.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   test:
@@ -29,13 +34,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - "ubuntu-latest"
-          - "windows-latest"
-        python-version:
-          - "311"
-          - "312"
-          - "313"
+        os: ["ubuntu-latest", "windows-latest"]
+        python-version: ["311", "312", "313"]
         include:
           - os: ubuntu-latest
             label: linux-64
