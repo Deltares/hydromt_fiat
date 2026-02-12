@@ -86,7 +86,7 @@ class GeomsComponent(SpatialModelComponent):
 
     ## Mutating methods
     @hydromt_step
-    def clear(self):
+    def clear(self) -> None:
         """Clear the geometry data."""
         self._data = None
         self._initialize(skip_read=True)

@@ -39,7 +39,7 @@ class ConfigComponent(ModelComponent):
         self,
         model: Model,
         *,
-        filename: str = f"{SETTINGS}.toml",
+        filename: Path | str = f"{SETTINGS}.toml",
     ):
         self._data: dict[str, Any] | None = None
         self._filename: Path | str = filename
@@ -48,7 +48,10 @@ class ConfigComponent(ModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize the model config."""
         if self._data is None:
             self._data = {}
@@ -188,7 +191,18 @@ class ConfigComponent(ModelComponent):
         # Return the value
         return value
 
-    def set(self, key: str, value: Any) -> None:
+    ## Mutating methods
+    @hydromt_step
+    def clear(self) -> None:
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)
+
+    def set(
+        self,
+        key: str,
+        value: Any,
+    ) -> None:
         """Set an entry in the configurations.
 
         Parameters
@@ -216,10 +230,3 @@ class ConfigComponent(ModelComponent):
                 current = current[part]
             else:
                 current[part] = value
-
-    ## Mutating methods
-    @hydromt_step
-    def clear(self):
-        """Clear the config data."""
-        self._data = None
-        self._initialize(skip_read=True)

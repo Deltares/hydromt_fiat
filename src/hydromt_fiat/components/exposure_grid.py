@@ -65,14 +65,14 @@ class ExposureGridComponent(GridComponent):
     @hydromt_step
     def read(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         """Read the exposure grid data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
@@ -107,7 +107,7 @@ class ExposureGridComponent(GridComponent):
     @hydromt_step
     def write(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -115,7 +115,7 @@ class ExposureGridComponent(GridComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         gdal_compliant : bool, optional

@@ -108,7 +108,7 @@ def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 
 @pytest.fixture
 def exposure_geom_data_link(
-    exposure_vector_clipped_for_damamge: gpd.geodataframe,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
     exposure_vector_clipped_for_damamge.drop(
         [
