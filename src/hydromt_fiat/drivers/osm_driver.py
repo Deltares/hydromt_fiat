@@ -145,7 +145,12 @@ class OSMDriver(GeoDataFrameDriver):
             geom_type=geom_type,
         )
 
-    def write(self, path: StrPath, gdf: gpd.GeoDataFrame, **kwargs) -> StrPath:
+    def write(
+        self,
+        path: StrPath,
+        gdf: gpd.GeoDataFrame,
+        **kwargs,
+    ) -> StrPath:
         """Write OSMNx data to file.
 
         Parameters

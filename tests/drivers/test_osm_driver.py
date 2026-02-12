@@ -22,7 +22,7 @@ ox.settings.cache_folder = CACHE_DIR / "osmnx"
 def test_osm_request(
     caplog: pytest.LogCaptureFixture,
     tag_name: str,
-    build_region: gpd.geodataframe,
+    build_region: gpd.GeoDataFrame,
     osm_data_path: Path,
 ):
     geom_type = (
