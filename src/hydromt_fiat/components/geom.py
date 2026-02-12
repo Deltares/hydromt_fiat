@@ -35,10 +35,13 @@ class GeomsComponent(SpatialModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize geoms data structure (dict)."""
         if self._data is None:
-            self._data = dict()
+            self._data = {}
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
 

@@ -43,7 +43,7 @@ class OutputGeomsComponent(GeomsComponent):
         Parameters
         ----------
         filename : str, optional
-            The path to the file, by default None
+            The path to the file, by default None.
         """
         logger.info("Reading model geometry outputs.")
         filename = filename or self.model.config.get("output.geom.name")
@@ -52,7 +52,9 @@ class OutputGeomsComponent(GeomsComponent):
 
     def write(self):
         """Write method."""
-        raise NotImplementedError("")
+        raise NotImplementedError(
+            f"Writing not available for {self.__class__.__name__}",
+        )
 
     @hydromt_step
     def aggregate_grid(
