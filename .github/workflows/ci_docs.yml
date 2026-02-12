@@ -20,6 +20,9 @@ on:
       - examples/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   docs:
@@ -45,26 +48,19 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
-      # if we're not publishing we don't have to write them, so we might as well
-      # save ourself a bunch of IO time
-      - name: Generate dummy docs
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          pixi run -e docs docs-dummy
-
       - name: Generate docs
-        if: ${{ github.event_name != 'pull_request' && !github.event.act }}
+        if: ${{ !github.event.act }}
         run: |
           pixi run -e docs docs-html
           echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
-      # - name: Upload to GitHub Pages
-      #   if: ${{ github.event_name != 'pull_request' && !github.event.act }}
-      #   uses: peaceiris/actions-gh-pages@v3.9.3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./docs/_build/html
-      #     exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
-      #     destination_dir: ./${{ env.DOC_VERSION }}
-      #     keep_files: false
-      #     full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages
+      - name: Upload to GitHub Pages
+        if: ${{ !github.event.act }}
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html
+          exclude_assets: .buildinfo,_sources/*,_examples/*.ipynb
+          destination_dir: ./${{ env.DOC_VERSION }}
+          keep_files: false
+          full_commit_message: Deploy ${{ env.DOC_VERSION }} to GitHub Pages

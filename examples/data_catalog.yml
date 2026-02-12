@@ -1,10 +1,10 @@
 meta:
-  version: v2024.4
+  version: v2025.2
   name: hydromt-fiat_test-data
 
-bag:
+buildings:
   data_type: GeoDataFrame
-  uri: buildings/bag.fgb
+  uri: buildings/buildings.fgb
   driver:
     name: pyogrio
     filesystem: local
@@ -12,9 +12,61 @@ bag:
     crs: 28992
     url: https://service.pdok.nl/lv/bag/atom/bag.xml
 
-bag_link:
+buildings_link:
   data_type: DataFrame
-  uri: buildings/bag-jrc_map.csv
+  uri: buildings/buildings-jrc_map.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    notes: Made by dalmijn
+
+commercial_content:
+  data_type: RasterDataset
+  uri: exposure/commercial_content.tif
+  driver:
+    name: rasterio
+    filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
+  metadata:
+    category: exposure
+    crs: 28992
+    notes: Made by Deltares
+
+commercial_structure:
+  data_type: RasterDataset
+  uri: exposure/commercial_structure.tif
+  driver:
+    name: rasterio
+    filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
+  metadata:
+    category: exposure
+    crs: 28992
+    notes: Made by Deltares
+
+damage_values:
+  data_type: DataFrame
+  uri: exposure/jrc_damage_values.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: exposure
+    notes: Base damage values from the JRC publicated Excel from the tab "MaxDamage-Data", processed into a handy format for HydroMT-FIAT.
+    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+    paper_doi: https://dx.doi.org/10.2760/16510
+
+exposure_grid_link:
+  data_type: DataFrame
+  uri: exposure/exp-jrc_map.csv
   driver:
     name: pandas
     filesystem: local
@@ -36,9 +88,9 @@ flood_event:
     crs: 28992
     notes: Made by Rijkswaterstaat/ Deltares
 
-flood_50000:
+flood_event_highres:
   data_type: RasterDataset
-  uri: floodmaps/rp_50000.tif
+  uri: floodmaps/event_highres.tif
   driver:
     name: rasterio
     filesystem: local
@@ -51,41 +103,35 @@ flood_50000:
     crs: 28992
     notes: Made by Rijkswaterstaat/ Deltares
 
-jrc_damage_values:
-  data_type: DataFrame
-  uri: vulnerability/jrc_base_damage_values.csv
+industrial_content:
+  data_type: RasterDataset
+  uri: exposure/industrial_content.tif
   driver:
-    name: pandas
+    name: rasterio
     filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
   metadata:
-    category: vulnerability
-    notes: Base damage values from the JRC publicated Excel from the tab "MaxDamage-Data", processed into a handy format for HydroMT-FIAT.
-    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
-    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
-    paper_doi: https://dx.doi.org/10.2760/16510
+    category: exposure
+    crs: 28992
+    notes: Made by Deltares
 
-jrc_vulnerability_curves:
-  data_type: DataFrame
-  uri: vulnerability/jrc_damage_functions.csv
+industrial_structure:
+  data_type: RasterDataset
+  uri: exposure/industrial_structure.tif
   driver:
-    name: pandas
+    name: rasterio
     filesystem: local
+    options:
+      chunks:
+        x: 1500
+        y: 1500
   metadata:
-    category: vulnerability
-    notes: JRC depth-damage functions for flooding, processed into a handy format for HydroMT-FIAT.
-    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
-    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
-    paper_doi: https://dx.doi.org/10.2760/16510
-
-jrc_vulnerability_curves_linking:
-  data_type: DataFrame
-  uri: vulnerability/jrc_damage_functions_linking.csv
-  driver:
-    name: pandas
-    filesystem: local
-  metadata:
-    category: vulnerability
-    notes: Default linking table for the JRC damage functions (e.g., the residential damage function links to residential buildings).
+    category: exposure
+    crs: 28992
+    notes: Made by Deltares
 
 osm_buildings:
   uri: building
@@ -97,6 +143,15 @@ osm_buildings:
       geom_type:
         - MultiPolygon
         - Polygon
+
+osm_link:
+  data_type: DataFrame
+  uri: buildings/osm-jrc_map.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    notes: Made by S. Rautenbach
 
 osm_roads:
   uri: highway
@@ -135,3 +190,36 @@ osm_amenity:
       geom_type:
         - MultiPolygon
         - Polygon
+
+vulnerability_curves:
+  data_type: DataFrame
+  uri: vulnerability/jrc_damage_functions.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: JRC depth-damage functions for flooding, processed into a handy format for HydroMT-FIAT.
+    url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+    paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+    paper_doi: https://dx.doi.org/10.2760/16510
+
+vulnerability_curves_linking:
+  data_type: DataFrame
+  uri: vulnerability/jrc_damage_functions_linking.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: Default linking table for the JRC damage functions (e.g., the residential damage function links to residential buildings).
+
+vulnerability_curves_linking_alt:
+  data_type: DataFrame
+  uri: vulnerability/jrc_damage_functions_linking_no_subtype.csv
+  driver:
+    name: pandas
+    filesystem: local
+  metadata:
+    category: vulnerability
+    notes: Same as 'vulnerability_curves_linking' but with no subtyping.

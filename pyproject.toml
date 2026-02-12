@@ -168,9 +168,10 @@ ignore = ["B904", "D105", "D211", "D213", "D301", "E712", "E741"]
 exclude = ["docs/**"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["D103", "D100", "D104"]
+"examples/*.ipynb" = ["E501"]
 "src/hydromt_fiat/__init__.py" = ["F401", "F403"]
 "src/hydromt_fiat/**/__init__.py" = ["F403"]
+"tests/**" = ["D103", "D100", "D104"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -249,7 +250,7 @@ sbom = { cmd = [
 docs-dummy = {cmd = ["sphinx-build", "./docs", "./docs/_build", "-b", "dummy", "-W"] }
 docs-html = { cmd = ["sphinx-build", "-M", "html", "docs", "docs/_build", "-W"] }
 docs-html-rebuild = { depends-on = ["clean-docs", "docs-html"] }
-serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"] }
+serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "./docs/_build/html"] }
 
 # Testing tasks
 [tool.pixi.feature.test.tasks]
