@@ -8,13 +8,11 @@ import geopandas as gpd
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-import shapely.geometry as sg
 from hydromt.model import Model
-from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
-from pyproj.crs import CRS
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
@@ -35,7 +33,7 @@ __all__ = ["ExposureGeomsComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class ExposureGeomsComponent(SpatialModelComponent):
+class ExposureGeomsComponent(GeomsComponent):
     """Exposure geometries component.
 
     Parameters
@@ -58,51 +56,11 @@ class ExposureGeomsComponent(SpatialModelComponent):
         filename: Path | str = f"{EXPOSURE}/{{name}}.fgb",
         region_component: str | None = None,
     ):
-        self._data: dict[str, gpd.GeoDataFrame] | None = None
         self._filename: Path | str = filename
         super().__init__(
             model,
             region_component=region_component,
         )
-
-    ## Private methods
-    def _initialize(
-        self,
-        skip_read: bool = False,
-    ) -> None:
-        """Initialize exposure geoms data structure (dict)."""
-        if self._data is None:
-            self._data = dict()
-            if self.root.is_reading_mode() and not skip_read:
-                self.read()
-
-    ## Properties
-    @property
-    def _region_data(self) -> gpd.GeoDataFrame | None:
-        # Use the total bounds of all geometries as region
-        if len(self.data) == 0:
-            return None
-        bounds = np.column_stack([geom.total_bounds for geom in self.data.values()])
-        total_bounds = (
-            bounds[0, :].min(),
-            bounds[1, :].min(),
-            bounds[2, :].max(),
-            bounds[3, :].max(),
-        )
-        region = gpd.GeoDataFrame(geometry=[sg.box(*total_bounds)], crs=self.model.crs)
-
-        return region
-
-    @property
-    def data(self) -> dict[str, gpd.GeoDataFrame | gpd.GeoSeries]:
-        """Model geometries.
-
-        Return dict of `geopandas.GeoDataFrame` or `geopandas.GeoSeries`.
-        """
-        if self._data is None:
-            self._initialize()
-        assert self._data is not None
-        return self._data
 
     ## I/O methods
     @hydromt_step
@@ -131,26 +89,28 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
         # Sort the filenames
         # Hierarchy: 1) signature, 2) settings file, 3) default
-        out = (
+        files = (
             pathing_expand(self.root.path, filename=filename)
             or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
             or pathing_expand(self.root.path, filename=self._filename)
         )
-        assert out is not None  # Yh..
+        assert files is not None  # Yh..
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
-        for p, n in zip(*out):
-            logger.info(f"Reading the {n} geometry file at {p.as_posix()}")
+        for read_path, name in zip(*files):
+            if not read_path.is_file():
+                continue
+            logger.info(f"Reading the {name} geometry file at {read_path.as_posix()}")
             # Get the data
-            data = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
+            data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             # Check for data in csv file, this has to be merged
             # TODO this should be solved better with help of the config file
-            csv_path = p.with_suffix(".csv")
+            csv_path = read_path.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
                 data = data.merge(csv_data, on=OBJECT_ID)
             # Set the data
-            self.set(data=data, name=n)
+            self.set(data=data, name=name)
 
     @hydromt_step
     def write(
@@ -221,120 +181,6 @@ class ExposureGeomsComponent(SpatialModelComponent):
 
         # Set the config entries
         self.model.config.set(EXPOSURE_GEOM, cfg)
-
-    ## Mutating methods
-    @hydromt_step
-    def clear(self) -> None:
-        """Clear the exposure geometry data."""
-        self._data = None
-        self._initialize(skip_read=True)
-
-    @hydromt_step
-    def clip(
-        self,
-        geom: gpd.GeoDataFrame,
-        inplace: bool = False,
-    ) -> dict[str, gpd.GeoDataFrame] | None:
-        """Clip the exposure vector data.
-
-        Geometry needs to be in the same crs (or lack thereof) as the data.
-
-        Parameters
-        ----------
-        geom : gpd.GeoDataFrame
-            The area to clip the data to.
-        inplace : bool, optional
-            Whether to do the clipping in place or return a new dictionary containing
-            the GeoDataFrames, by default False.
-
-        Returns
-        -------
-        dict[str, gpd.GeoDataFrame] | None
-            Return a dataset if the inplace is False.
-        """
-        data = {}
-        if len(self.data) == 0:
-            return None
-        # Loop through all the existing GeoDataFrames and clip them
-        for key, gdf in self.data.items():
-            if geom.crs and gdf.crs and gdf.crs != geom.crs:
-                geom = geom.to_crs(gdf.crs)
-            data[key] = gdf.clip(geom)
-        # If inplace is true, just set the new data and return None
-        if inplace:
-            self._data = data
-            return None
-        return data
-
-    @hydromt_step
-    def reproject(
-        self,
-        crs: CRS | int | str,
-        inplace: bool = False,
-    ) -> dict[str, gpd.GeoDataFrame] | None:
-        """Reproject the exposure vector data.
-
-        Parameters
-        ----------
-        crs : CRS | int | str
-            The coordinate system to reproject to.
-        inplace : bool, optional
-            Whether to do the reprojection in place or return a new dictionary
-            containing the GeoDataFrame's, by default False.
-
-        Returns
-        -------
-        dict[str, gpd.GeoDataFrame] | None
-            Return a dictionary of GeoDataFrame's is inplace is False.
-        """
-        # Set the crs
-        if not isinstance(crs, CRS):
-            crs = CRS.from_user_input(crs)
-
-        data = {}
-        # Go through the vector data
-        for name, gdf in self.data.items():
-            # If no crs, cant reproject
-            # If equal, do nothing
-            if gdf.crs is None or crs == gdf.crs:
-                data[name] = gdf
-                continue
-            data[name] = gdf.to_crs(crs)
-
-        # If inplace, just set the data and return nothing
-        if inplace:
-            self._data = data
-            return None
-        return data
-
-    def set(
-        self,
-        data: gpd.GeoDataFrame,
-        name: str,
-    ) -> None:
-        """Set data in the exposure geom component.
-
-        Arguments
-        ---------
-        data : gpd.GeoDataFrame
-            New geometry data to add.
-        name : str
-            Geometry name.
-        """
-        self._initialize()
-        assert self._data is not None
-        if name in self._data and id(self._data.get(name)) != id(data):
-            logger.warning(f"Replacing geom: {name}")
-
-        if "fid" in data.columns:
-            logger.warning(
-                f"'fid' column encountered in {name}, \
-column will be removed"
-            )
-            data.drop("fid", axis=1, inplace=True)
-
-        # Set the data
-        self._data[name] = data
 
     ## Setup methods
     @hydromt_step

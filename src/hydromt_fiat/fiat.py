@@ -14,6 +14,8 @@ from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
     HazardComponent,
+    OutputGeomsComponent,
+    OutputGridComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -23,6 +25,7 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
+    OUTPUT,
     REGION,
     SETTINGS,
     VULNERABILITY,
@@ -94,6 +97,14 @@ class FIATModel(Model):
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
+            f"{OUTPUT}_{GEOM}",
+            OutputGeomsComponent(model=self),
+        )
+        self.add_component(
+            f"{OUTPUT}_{GRID}",
+            OutputGridComponent(model=self),
+        )
+        self.add_component(
             VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
@@ -120,6 +131,16 @@ class FIATModel(Model):
         return self.components[HAZARD]
 
     @property
+    def output_geoms(self) -> OutputGeomsComponent:
+        """Return the output geoms component."""
+        return self.components[f"{OUTPUT}_{GEOM}"]
+
+    @property
+    def output_grid(self) -> OutputGridComponent:
+        """Return the output grid component."""
+        return self.components[f"{OUTPUT}_{GRID}"]
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Return the vulnerability component."""
         return self.components[VULNERABILITY]
@@ -127,13 +148,25 @@ class FIATModel(Model):
     ## I/O
     @hydromt_step
     def read(self) -> None:
-        """Read the FIAT model."""
-        super().read()
+        """Read the FIAT model.
+
+        Does not read model results.
+        """
+        components = [item for item in self.components.values() if item._build]
+        for component in components:
+            component.read()
+
+    @hydromt_step
+    def read_output(self) -> None:
+        """Read the FIAT model outputs (results)."""
+        components = [item for item in self.components.values() if not item._build]
+        for component in components:
+            component.read()
 
     @hydromt_step
     def write(self) -> None:
         """Write the FIAT model."""
-        names = list(self.components.keys())
+        names = [item.name_in_model for item in self.components.values() if item._build]
         names.remove(CONFIG)
         for name in names:
             self.components[name].write()

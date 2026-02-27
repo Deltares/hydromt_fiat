@@ -30,6 +30,8 @@ class RegionComponent(SpatialModelComponent):
         by default "region.geojson" i.e. one file.
     """
 
+    _build = True
+
     def __init__(
         self,
         model: Model,

@@ -11,7 +11,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt.readers import read_toml
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
-from hydromt_fiat.utils import SETTINGS
+from hydromt_fiat.utils import OUTPUT, OUTPUT_PATH, SETTINGS
 
 __all__ = ["ConfigComponent"]
 
@@ -32,6 +32,8 @@ class ConfigComponent(ModelComponent):
         be read and written if user does not provide a path themselves.
         By default 'settings.toml'.
     """
+
+    _build = True
 
     def __init__(
         self,
@@ -67,7 +69,7 @@ class ConfigComponent(ModelComponent):
 
     @property
     def dir(self) -> Path:
-        """The absolute directory of configurations file.
+        """The absolute directory path of configurations file.
 
         In most cases this will be equal to the model root directory, however one
         can specify a subdirectory for the configuration file, therefore this property
@@ -83,6 +85,19 @@ class ConfigComponent(ModelComponent):
     @filename.setter
     def filename(self, value: Path | str):
         self._filename = value
+
+    @property
+    def output_dir(self) -> Path:
+        """The absolute path of the output directory.
+
+        The value is based on `ConfigComponent.dir`.
+        """
+        return Path(self.dir, self.get(OUTPUT_PATH, fallback=OUTPUT))
+
+    @output_dir.setter
+    def output_dir(self, value: Path | str):
+        """Set the output directory."""
+        self.set("output.path", value=value)
 
     ## I/O methods
     @hydromt_step
@@ -163,18 +178,22 @@ class ConfigComponent(ModelComponent):
         key: str,
         fallback: Any | None = None,
         abs_path: bool = False,
+        root: Path | str | None = None,
     ) -> Any:
         """Get a configurations value.
 
         Parameters
         ----------
-        args : tuple | str
+        key : str
             Key can given as a string with '.' indicating a new level: ('key1.key2').
         fallback: Any, optional
             Fallback value if key not found in config, by default None.
         abs_path: bool, optional
             If True return the absolute path relative to the configurations directory,
             by default False.
+        root: Path | str, optional
+            Provide a root that might be different than the configurations directory.
+            By default None.
 
         Returns
         -------
@@ -184,7 +203,11 @@ class ConfigComponent(ModelComponent):
         parts = key.split(".")
         current = dict(self.data)  # reads config at first call
         value = get_item(
-            parts, current, root=self.dir, fallback=fallback, abs_path=abs_path
+            parts,
+            current,
+            root=(root or self.dir),
+            fallback=fallback,
+            abs_path=abs_path,
         )
         # Return the value
         return value
