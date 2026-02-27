@@ -38,14 +38,14 @@ jobs:
           pixi run -e test-py${{ inputs.python-version }} test-cov
 
       - name: Upload coverage
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '314'
+        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
         uses: actions/upload-artifact@v6
         with:
           name: code-coverage
           path: coverage.xml
 
       - name: Signal SonarQube
-        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '314'
+        if: inputs.os == 'ubuntu-latest' && inputs.python-version == '313'
         uses: peter-evans/repository-dispatch@5fc4efd1a4797ddb68ffd0714a238564e4cc0e6f
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
