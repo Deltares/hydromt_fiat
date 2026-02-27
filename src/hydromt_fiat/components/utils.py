@@ -96,7 +96,7 @@ def pathing_expand(
         return None
     # Expand
     filename = Path(filename).as_posix()
-    path_glob, _, regex = _expand_uri_placeholders(filename)
+    path_glob, _, _ = _expand_uri_placeholders(filename)
     p = list(Path(root).glob(path_glob))
     # Get the unique names
     n = [item.stem for item in p]

@@ -42,7 +42,6 @@ def aggregate_vector_grid(
     # Get the crs
     dcrs = float_data.crs
     # Sort out the potential geographic issue
-    crs = dcrs
     if dcrs and dcrs.is_geographic:
         logger.warning("CRS of data was geographic, reprojecting to projected crs")
         crs = utm_crs(float_data.total_bounds)

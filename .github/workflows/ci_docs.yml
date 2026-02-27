@@ -20,6 +20,9 @@ on:
       - examples/*
       - pyproject.toml
       - .github/workflows/ci_docs.yml
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   docs:
