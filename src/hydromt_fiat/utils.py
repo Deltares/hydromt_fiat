@@ -2,7 +2,8 @@
 
 import logging
 
-from barril.units import Scalar, UnitDatabase
+from pint import Quantity, UnitRegistry
+from pint.facets.plain import PlainQuantity
 
 __all__ = ["create_query"]
 
@@ -21,8 +22,10 @@ GRID = "grid"
 HAZARD = "hazard"
 MAX = "max"
 MODEL = "model"
+NAME = "name"
 OBJECT = "object"
 OUTPUT = "output"
+PATH = "path"
 REGION = "region"
 RISK = "risk"
 RP = "rp"
@@ -43,6 +46,9 @@ HAZARD_RP = f"{HAZARD}.{RP}"
 HAZARD_SETTINGS = f"{HAZARD}.{SETTINGS}"
 MODEL_RISK = f"{MODEL}.{RISK}"
 MODEL_TYPE = f"{MODEL}.{TYPE}"
+OUTPUT_GEOM_NAME = f"{OUTPUT}.{GEOM}.{NAME}"
+OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
+OUTPUT_PATH = f"{OUTPUT}.{PATH}"
 VAR_AS_BAND = "var_as_band"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 
@@ -58,7 +64,7 @@ OBJECT_ID = f"{OBJECT}_id"
 SUBTYPE = f"sub{TYPE}"
 
 # Unit database init
-UNIT_DATABASE = UnitDatabase.GetSingleton()
+UNIT_REGISTRY: UnitRegistry = UnitRegistry()  # type: ignore[type-arg]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
@@ -88,11 +94,8 @@ def create_query(**kwargs) -> str:
     return query
 
 
-def standard_unit(unit: Scalar) -> Scalar:
+def standard_unit(unit: str) -> PlainQuantity | Quantity:  # type: ignore[type-arg]
     """Translate unit to standard unit for category.
-
-    Accepted units are listed on the website of barril:
-    https://barril.readthedocs.io/en/latest/units.html
 
     Parameters
     ----------
@@ -101,20 +104,19 @@ def standard_unit(unit: Scalar) -> Scalar:
 
     Returns
     -------
-    Scalar
-        Scaling factor in Scalar structure (unitless).
+    Quantity
+        Quantity holding the standard unit and conversion magnitude.
     """
     # Check for the dafault unit
-    default_unit = UNIT_DATABASE.GetDefaultUnit(unit.category)
-    if default_unit == unit.unit:
-        return unit
+    quantity = UNIT_REGISTRY(unit)
+    default_quantity = quantity.to_base_units()
+    if default_quantity.magnitude == 1:
+        return quantity
 
     # Setup for scaling
-    default_scalar = Scalar(1.0, default_unit)
     logger.warning(
-        f"Given unit ({unit.unit}) does not match \
-the standard unit ({default_unit}) for {unit.category}"
+        f"Given unit ({str(quantity.units)}) does not match \
+the standard unit ({str(default_quantity.units)}) \
+for {str(quantity.units.dimensionality)}"
     )
-    translate = unit / default_scalar
-
-    return translate
+    return default_quantity

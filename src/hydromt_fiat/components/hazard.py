@@ -142,7 +142,7 @@ class HazardComponent(GridComponent):
         # Write it in a gdal compliant manner by default
         logger.info(f"Writing the hazard data to {write_path.as_posix()}")
         # Force north south before writing
-        self._data = force_ns(self.data)  # type: ignore[assignment]
+        self._data = force_ns(self.data)
         write_nc(
             self.data,
             file_path=write_path,

@@ -98,7 +98,7 @@ def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
 
 ## Data from a prebuild model
 @pytest.fixture
-def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
+def exposure_vector_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
     p = Path(model_data_clipped_path, "exposure", "buildings_alt.fgb")
     assert p.is_file()
     gdf = gpd.read_file(p)
@@ -107,7 +107,7 @@ def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 
 
 @pytest.fixture
-def exposure_geom_data_link(
+def exposure_vector_data_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
     exposure_vector_clipped_for_damamge.drop(

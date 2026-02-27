@@ -89,26 +89,28 @@ class ExposureGeomsComponent(GeomsComponent):
 
         # Sort the filenames
         # Hierarchy: 1) signature, 2) settings file, 3) default
-        out = (
+        files = (
             pathing_expand(self.root.path, filename=filename)
             or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
             or pathing_expand(self.root.path, filename=self._filename)
         )
-        assert out is not None  # Yh..
+        assert files is not None  # Yh..
         # Loop through the found files
         logger.info("Reading the exposure vector data..")
-        for p, n in zip(*out):
-            logger.info(f"Reading the {n} geometry file at {p.as_posix()}")
+        for read_path, name in zip(*files):
+            if not read_path.is_file():
+                continue
+            logger.info(f"Reading the {name} geometry file at {read_path.as_posix()}")
             # Get the data
-            data = cast(gpd.GeoDataFrame, gpd.read_file(p, **kwargs))
+            data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             # Check for data in csv file, this has to be merged
             # TODO this should be solved better with help of the config file
-            csv_path = p.with_suffix(".csv")
+            csv_path = read_path.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
                 data = data.merge(csv_data, on=OBJECT_ID)
             # Set the data
-            self.set(data=data, name=n)
+            self.set(data=data, name=name)
 
     @hydromt_step
     def write(

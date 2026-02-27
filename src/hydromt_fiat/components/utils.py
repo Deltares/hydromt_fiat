@@ -1,6 +1,5 @@
 """Component utilities."""
 
-import os
 import re
 from os.path import relpath
 from pathlib import Path
@@ -99,28 +98,33 @@ def pathing_expand(
     filename = Path(filename).as_posix()
     path_glob, _, regex = _expand_uri_placeholders(filename)
     p = list(Path(root).glob(path_glob))
-    n = []
     # Get the unique names
-    for item in p:
-        rel = Path(os.path.relpath(item, root))
-        name = ".".join(regex.match(rel.as_posix()).groups())
-        n.append(name)
+    n = [item.stem for item in p]
     return p, n
 
 
-def pathing_config(
-    p: list[Path] | Path | str | None,
-) -> tuple[list[Path], list[str]] | None:
-    """Sort pathing based on config entries (i.e. a list)."""
+def ensure_path_listing(
+    p: list[Path] | list[Path | str] | Path | str | None,
+) -> list[Path] | None:
+    """Ensure the output is either list of Path or None."""
     if p is None:
         return None
     # Handling legacy configs
     if not isinstance(p, list):
-        p = [Path(p)]
+        p = [p]
     # If no files return None
     if all([item is None for item in p]):
         return None
+    return [Path(item) for item in p if item is not None]
+
+
+def pathing_config(
+    p: list[Path] | list[Path | str] | Path | str | None,
+) -> tuple[list[Path], list[str]] | None:
+    """Sort pathing based on config entries (i.e. a list)."""
+    ep = ensure_path_listing(p)
+    if ep is None:
+        return None
     # Remove entries with no files and get the names of the remaining ones
-    p = [Path(item) for item in p if item is not None]
-    n = [item.stem for item in p]
-    return p, n
+    n = [item.stem for item in ep]
+    return ep, n

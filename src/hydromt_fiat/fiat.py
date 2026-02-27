@@ -15,6 +15,7 @@ from hydromt_fiat.components import (
     ExposureGridComponent,
     HazardComponent,
     OutputGeomsComponent,
+    OutputGridComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
@@ -100,6 +101,10 @@ class FIATModel(Model):
             OutputGeomsComponent(model=self),
         )
         self.add_component(
+            f"{OUTPUT}_{GRID}",
+            OutputGridComponent(model=self),
+        )
+        self.add_component(
             VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
@@ -131,6 +136,11 @@ class FIATModel(Model):
         return self.components[f"{OUTPUT}_{GEOM}"]
 
     @property
+    def output_grid(self) -> OutputGridComponent:
+        """Return the output grid component."""
+        return self.components[f"{OUTPUT}_{GRID}"]
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Return the vulnerability component."""
         return self.components[VULNERABILITY]
@@ -149,7 +159,9 @@ class FIATModel(Model):
     @hydromt_step
     def read_output(self) -> None:
         """Read the FIAT model outputs (results)."""
-        self.output_geoms.read()
+        components = [item for item in self.components.values() if not item._build]
+        for component in components:
+            component.read()
 
     @hydromt_step
     def write(self) -> None:

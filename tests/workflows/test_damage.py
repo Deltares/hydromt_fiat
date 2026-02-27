@@ -106,19 +106,19 @@ def test_max_monetary_damage_geo_crs(
 
 
 def test_max_monetary_damage_no_subtype(
-    exposure_geom_data_alt: gpd.GeoDataFrame,
+    exposure_vector_data_alt: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers_alt: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
-    assert f"{MAX}_{DAMAGE}" not in exposure_geom_data_alt
+    assert f"{MAX}_{DAMAGE}" not in exposure_vector_data_alt
 
     # Alterations should be inplace, i.e. id before == id after
-    id_before = id(exposure_geom_data_alt)
+    id_before = id(exposure_vector_data_alt)
 
     # Call the function
     exposure_vector = max_monetary_damage(
-        exposure_data=exposure_geom_data_alt,
+        exposure_data=exposure_vector_data_alt,
         exposure_cost_table=exposure_cost_table,
         exposure_type=DAMAGE,
         vulnerability=vulnerability_identifiers_alt,
@@ -130,7 +130,7 @@ def test_max_monetary_damage_no_subtype(
     assert id_before == id_after
 
     # Assert the content
-    assert f"{MAX}_{DAMAGE}" in exposure_geom_data_alt
+    assert f"{MAX}_{DAMAGE}" in exposure_vector_data_alt
     assert int(exposure_vector[f"{MAX}_{DAMAGE}"].mean()) == 1363905
 
 
