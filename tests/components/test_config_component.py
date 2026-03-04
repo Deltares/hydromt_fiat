@@ -204,6 +204,29 @@ def test_config_component_read_none(
     assert len(component.data) == 0
 
 
+def test_config_component_read_none(
+    tmp_path: Path,
+    mock_model: MagicMock,
+):
+    # Set it to read mode
+    type(mock_model).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+
+    # Setup the component
+    component = ConfigComponent(mock_model)
+
+    # Assert its data currently none
+    assert component._data is None
+
+    # Read the data
+    component.read()
+
+    # Assert the read data
+    assert isinstance(component.data, dict)
+    assert len(component.data) == 0
+
+
 def test_config_component_write(
     tmp_path: Path,
     mock_model: MagicMock,
