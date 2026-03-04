@@ -19,6 +19,7 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
@@ -228,6 +229,9 @@ class FIATModel(Model):
             raise ValueError(
                 "crs was not provided nor found in the model 'crs' attribute"
             )
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+        logger.info(f"Reprojecting the model to crs: {crs_representation(crs)}")
         # Call the reproject methods of the spatial components
         for _, component in self.components.items():
             if not isinstance(component, SpatialModelComponent):

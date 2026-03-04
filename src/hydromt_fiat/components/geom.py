@@ -117,6 +117,8 @@ class GeomsComponent(SpatialModelComponent):
         data = {}
         if len(self.data) == 0:
             return None
+
+        logger.info(f"Clipping data of {self.__class__.__name__}")
         # Loop through all the existing GeoDataFrames and clip them
         for key, gdf in self.data.items():
             if geom.crs and gdf.crs and gdf.crs != geom.crs:
@@ -149,6 +151,11 @@ class GeomsComponent(SpatialModelComponent):
         dict[str, gpd.GeoDataFrame] | None
             Return a dictionary of GeoDataFrame's is inplace is False.
         """
+        # If there is no data
+        if len(self.data) == 0:
+            return None
+
+        logger.info(f"Reproject data in {self.__class__.__name__}")
         # Set the crs
         if not isinstance(crs, CRS):
             crs = CRS.from_user_input(crs)
