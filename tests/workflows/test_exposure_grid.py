@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from hydromt_fiat.utils import EXPOSURE_LINK, FN_CURVE, OBJECT_TYPE
 from hydromt_fiat.workflows import exposure_grid_setup
 
 
@@ -21,7 +22,7 @@ def test_exposure_grid_setup(
     # Assert the output
     assert isinstance(ds, xr.Dataset)
     assert len(ds.data_vars) == 1
-    assert ds.industrial_content.attrs.get("fn_damage") == "in2"
+    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
 
 
 def test_exposure_grid_setup_linking(
@@ -39,7 +40,7 @@ def test_exposure_grid_setup_linking(
 
     # Assert the output
     assert isinstance(ds, xr.Dataset)
-    assert ds.industrial_content.attrs.get("fn_damage") == "in2"
+    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
 
 
 def test_exposure_grid_setup_link_no(
@@ -51,12 +52,12 @@ def test_exposure_grid_setup_link_no(
         grid_like=None,
         exposure_data={"industrial_content": exposure_grid_data_ind},
         vulnerability=vulnerability_linking,
-        exposure_linking=pd.DataFrame(data={"exposure_link": [], "object_type": []}),
+        exposure_linking=pd.DataFrame(data={EXPOSURE_LINK: [], OBJECT_TYPE: []}),
     )
 
     # Assert the output
     assert isinstance(ds, xr.Dataset)
-    assert ds.industrial_content.attrs.get("fn_damage") == "in2"
+    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
 
 
 def test_exposure_grid_setup_alt(
@@ -93,8 +94,8 @@ def test_exposure_grid_setup_alt_link(
         vulnerability=vulnerability_linking_alt,
         exposure_linking=pd.DataFrame(
             data={
-                "exposure_link": ["industrial_content"],
-                "object_type": ["industrial"],
+                EXPOSURE_LINK: ["industrial_content"],
+                OBJECT_TYPE: ["industrial"],
             }
         ),
     )
