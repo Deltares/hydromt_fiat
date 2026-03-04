@@ -35,11 +35,12 @@ readme = "README.rst"
 
 requires-python = ">=3.11"
 dependencies = [
-    "barril",
     "geopandas",
-    "hydromt>=1.2.0,<1.3.0",
+    "hydromt>=1.3.0",
     "numpy",
     "osmnx",
+    "pandas",
+    "pint",
     "pooch",
     "pyproj",
     "requests",
@@ -93,7 +94,6 @@ docs = [
 	"pydata-sphinx-theme",
     "sphinx>=8.2.0",
     "sphinx_design",
-    "sphinx_autosummary_accessors",
 ]
 examples = [
     "cartopy",
@@ -128,6 +128,7 @@ fiat = "hydromt_fiat.drivers.resolvers"
 markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
     "serial",
+    "system: marks tests as system tests (deselect with '-m \"not system\"')",
 ]
 testpaths = [
     "tests",
@@ -224,12 +225,12 @@ docker-clean = { cmd = ["docker", "system", "prune", "-f"] }
 # Dev specific taskss
 [tool.pixi.feature.dev.tasks]
 # Installation
-install = { depends-on = ["install-pre-commit"] }
 install-pre-commit = "pre-commit install"
+install = { depends-on = ["install-pre-commit"] }
 
 # Linting and code checking
 lint = { cmd = ["pre-commit", "run", "--all"] }
-mypy = { cmd = ["mypy", "."] }
+mypy = { cmd = ["mypy", ".", "--install-types", "--non-interactive"] }
 
 # SBOM
 sbom = { cmd = [
@@ -253,12 +254,12 @@ serve = { cmd = ["python", "-m", "http.server", "8000", "-d", "docs/_build/html"
 
 # Testing tasks
 [tool.pixi.feature.test.tasks]
-test = { cmd = ["pytest"] }
+test = { cmd = ["pytest", "--verbose"] }
 test-lf = { cmd = ["pytest", "--lf", "--tb=short"] }
 test-cov = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov=hydromt_fiat",
     "--cov-report",
@@ -267,7 +268,7 @@ test-cov = { cmd = [
 test-cov-html = { cmd = [
     "pytest",
     "-m",
-    "not integration",
+    "not (integration or system)",
     "--verbose",
     "--cov",
     "--cov-report",
@@ -279,10 +280,16 @@ test-integration = { cmd = [
     "integration",
     "--verbose",
 ] }
+test-system = { cmd = [
+    "pytest",
+    "-m",
+    "system",
+    "--verbose",
+] }
 
 ## Dependencies
 [tool.pixi.dependencies]
-numpy = "<2.3"
+numpy = "*"
 pip = "*"
 uv = "*"
 
@@ -293,10 +300,19 @@ hydromt_fiat = { path = ".", editable = true }
 pandoc = "*"
 
 [tool.pixi.feature.test.dependencies]
-delft_fiat = ">=0.4.0"
 gdal = ">=3.9.1"
 
+[tool.pixi.feature.test.pypi-dependencies]
+delft_fiat = "*"
+
+[tool.pixi.feature.wheel.dependencies]
+pip = "*"
+uv = "*"
+
 # Extra python environments
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
 [tool.pixi.feature.py313.dependencies]
 python = "3.13.*"
 
@@ -308,9 +324,11 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["py313", "dev", "docs", "examples", "test"] }
-docs = { features = ["docs", "examples"] }
+default = { features = ["py314", "dev", "docs", "examples", "test"] }
+docs = { features = ["py313", "docs", "examples"] }
 slim = { features = [] }
-test-py313 = {features = ["py313", "test"]}
-test-py312 = {features = ["py312", "test"]}
-test-py311 = {features = ["py311", "test"]}
+test-py314 = { features = ["py314", "test"] }
+test-py313 = { features = ["py313", "test"] }
+test-py312 = { features = ["py312", "test"] }
+test-py311 = { features = ["py311", "test"] }
+wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }

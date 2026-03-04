@@ -3,6 +3,7 @@ from pathlib import Path
 from hydromt_fiat.components.utils import (
     _mount,
     _relpath,
+    ensure_path_listing,
     get_item,
     make_config_paths_relative,
     pathing_config,
@@ -126,6 +127,39 @@ def test_get_item_multi(
     assert isinstance(res, list)
     assert len(res) == 2
     assert res[0] == "tmp/tmp.txt"
+
+
+def test_get_item_none(
+    config_dummy: dict,
+):
+    # Call the function
+    res = get_item([], config_dummy, "")
+    # Assert the output
+    assert res is None
+
+
+def test_ensure_path_listing():
+    # Call the function
+    p = ensure_path_listing("foo.txt")
+
+    # Assert the output
+    assert p == [Path("foo.txt")]
+
+
+def test_ensure_path_listing_w_none():
+    # Call the function
+    p = ensure_path_listing(["foo.txt", None])
+
+    # Assert the output
+    assert p == [Path("foo.txt")]
+
+
+def test_ensure_path_listing_none():
+    # Call the function
+    p = ensure_path_listing(None)
+
+    # Assert the output
+    assert p is None
 
 
 def test_pathing_expand(

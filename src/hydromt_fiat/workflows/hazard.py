@@ -4,17 +4,16 @@ import logging
 from typing import Any
 
 import xarray as xr
-from barril.units import Scalar
 
-from hydromt_fiat.utils import standard_unit
+from hydromt_fiat.utils import ANALYSIS, EVENT, RISK, RP, TYPE, standard_unit
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
-__all__ = ["hazard_grid"]
+__all__ = ["hazard_setup"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def hazard_grid(
+def hazard_setup(
     grid_like: xr.Dataset | None,
     hazard_data: dict[str, xr.DataArray],
     hazard_type: str,
@@ -23,7 +22,7 @@ def hazard_grid(
     risk: bool = False,
     unit: str = "m",
 ) -> xr.Dataset:
-    """Parse hazard data files to xarray dataset.
+    """Read and transform hazard data.
 
     Parameters
     ----------
@@ -50,15 +49,15 @@ def hazard_grid(
         da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
-        conversion = standard_unit(Scalar(1.0, unit))
-        da *= conversion.value
+        conversion = standard_unit(unit)
+        da *= conversion.magnitude
 
         attrs: dict[str, Any] = {
             "name": da_name,
         }
         if risk:
             assert return_periods is not None
-            attrs["return_period"] = return_periods[idx]
+            attrs[RP] = return_periods[idx]
 
         # Set the event data arrays to the hazard grid component
         da = da.assign_attrs(attrs)
@@ -70,11 +69,11 @@ def hazard_grid(
     ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
 
     attrs = {
-        "type": hazard_type,
-        "analysis": "event",
+        TYPE: hazard_type,
+        ANALYSIS: EVENT,
     }
     if risk:
-        attrs["analysis"] = "risk"
+        attrs[ANALYSIS] = RISK
     ds = ds.assign_attrs(attrs)
 
     return ds

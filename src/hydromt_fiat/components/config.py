@@ -1,16 +1,17 @@
-"""The custum config component."""
+"""The config component."""
 
 import logging
 from pathlib import Path
 from typing import Any, cast
 
 import tomlkit
-from hydromt._io.readers import _read_toml
 from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.readers import read_toml
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
+from hydromt_fiat.utils import OUTPUT, OUTPUT_PATH, SETTINGS
 
 __all__ = ["ConfigComponent"]
 
@@ -18,23 +19,27 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 class ConfigComponent(ModelComponent):
-    """A Custom config component for FIAT models.
+    """Config component.
+
+    Container for all the settings of a Delft-FIAT model.
 
     Parameters
     ----------
     model : Model
-        HydroMT model instance.
+        HydroMT model instance (FIATModel).
     filename : str, optional
         A path relative to the root where the configuration file will
         be read and written if user does not provide a path themselves.
         By default 'settings.toml'.
     """
 
+    _build = True
+
     def __init__(
         self,
         model: Model,
         *,
-        filename: str = "settings.toml",
+        filename: Path | str = f"{SETTINGS}.toml",
     ):
         self._data: dict[str, Any] | None = None
         self._filename: Path | str = filename
@@ -43,7 +48,10 @@ class ConfigComponent(ModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize the model config."""
         if self._data is None:
             self._data = {}
@@ -61,7 +69,7 @@ class ConfigComponent(ModelComponent):
 
     @property
     def dir(self) -> Path:
-        """The absolute directory of configurations file.
+        """The absolute directory path of configurations file.
 
         In most cases this will be equal to the model root directory, however one
         can specify a subdirectory for the configuration file, therefore this property
@@ -77,6 +85,19 @@ class ConfigComponent(ModelComponent):
     @filename.setter
     def filename(self, value: Path | str):
         self._filename = value
+
+    @property
+    def output_dir(self) -> Path:
+        """The absolute path of the output directory.
+
+        The value is based on `ConfigComponent.dir`.
+        """
+        return Path(self.dir, self.get(OUTPUT_PATH, fallback=OUTPUT))
+
+    @output_dir.setter
+    def output_dir(self, value: Path | str):
+        """Set the output directory."""
+        self.set("output.path", value=value)
 
     ## I/O methods
     @hydromt_step
@@ -108,7 +129,7 @@ class ConfigComponent(ModelComponent):
 
         # Read the data (config)
         logger.info(f"Reading the config file at {read_path.as_posix()}")
-        self._data = _read_toml(read_path)
+        self._data = read_toml(read_path)
 
     @hydromt_step
     def write(
@@ -147,7 +168,7 @@ class ConfigComponent(ModelComponent):
             parent_dir.mkdir(parents=True)
 
         # Dump to a file
-        logger.info(f"Writing the config file to {write_path.as_posix()}")
+        logger.info(f"Writing the config data to {write_path.as_posix()}")
         with open(write_path, "w") as writer:
             tomlkit.dump(write_data, writer)
 
@@ -157,18 +178,22 @@ class ConfigComponent(ModelComponent):
         key: str,
         fallback: Any | None = None,
         abs_path: bool = False,
+        root: Path | str | None = None,
     ) -> Any:
-        """Get a config value at key(s).
+        """Get a configurations value.
 
         Parameters
         ----------
-        args : tuple | str
+        key : str
             Key can given as a string with '.' indicating a new level: ('key1.key2').
         fallback: Any, optional
             Fallback value if key not found in config, by default None.
         abs_path: bool, optional
             If True return the absolute path relative to the configurations directory,
             by default False.
+        root: Path | str, optional
+            Provide a root that might be different than the configurations directory.
+            By default None.
 
         Returns
         -------
@@ -178,13 +203,28 @@ class ConfigComponent(ModelComponent):
         parts = key.split(".")
         current = dict(self.data)  # reads config at first call
         value = get_item(
-            parts, current, root=self.dir, fallback=fallback, abs_path=abs_path
+            parts,
+            current,
+            root=(root or self.dir),
+            fallback=fallback,
+            abs_path=abs_path,
         )
         # Return the value
         return value
 
-    def set(self, key: str, value: Any) -> None:
-        """Update the config dictionary at key(s) with values.
+    ## Mutating methods
+    @hydromt_step
+    def clear(self) -> None:
+        """Clear the config data."""
+        self._data = None
+        self._initialize(skip_read=True)
+
+    def set(
+        self,
+        key: str,
+        value: Any,
+    ) -> None:
+        """Set an entry in the configurations.
 
         Parameters
         ----------
@@ -195,6 +235,12 @@ class ConfigComponent(ModelComponent):
             The value to set the config to.
         """
         self._initialize()
+        if isinstance(value, dict):
+            for subkey, subvalue in value.items():
+                self.set(f"{key}.{subkey}", subvalue)
+                return
+        if value is None:  # Not allowed in toml files
+            return
         parts = key.split(".")
         num_parts = len(parts)
         current = cast(dict[str, Any], self._data)
