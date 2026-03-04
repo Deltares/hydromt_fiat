@@ -325,7 +325,7 @@ python = "3.11.*"
 ## Define the environments
 [tool.pixi.environments]
 default = { features = ["py314", "dev", "docs", "examples", "test"] }
-docs = { features = ["docs", "examples"] }
+docs = { features = ["py313", "docs", "examples"] }
 slim = { features = [] }
 test-py314 = { features = ["py314", "test"] }
 test-py313 = { features = ["py313", "test"] }
