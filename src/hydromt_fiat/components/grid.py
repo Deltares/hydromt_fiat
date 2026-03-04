@@ -44,6 +44,15 @@ class GridComponent(SpatialModelComponent):
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
 
+    def _check_spatial(self) -> bool:
+        try:
+            self.data.raster.set_spatial_dims()
+            self.data.raster.res
+        except ValueError:
+            return False
+        else:
+            return True
+
     ## Properties
     @property
     def _region_data(self) -> gpd.GeoDataFrame | None:
@@ -140,11 +149,11 @@ class GridComponent(SpatialModelComponent):
         xr.Dataset | None
             Return a dataset if the inplace is False.
         """
-        try:
-            self.data.raster.set_spatial_dims()
-        except ValueError:
+        # Check the spatial component
+        if not self._check_spatial():
             return None
 
+        logger.info(f"Clipping data of {self.__class__.__name__}")
         # If so, clip the data
         data = self.data.raster.clip_geom(geom, buffer=buffer)
         # If inplace, just set the data and return nothing
@@ -174,6 +183,11 @@ class GridComponent(SpatialModelComponent):
         xr.Dataset | None
             Return a dataset if the inplace is False.
         """
+        # Check the spatial component
+        if not self._check_spatial():
+            return None
+
+        logger.info(f"Reproject data in {self.__class__.__name__}")
         # Check for the crs's
         if self.crs is None:
             return None

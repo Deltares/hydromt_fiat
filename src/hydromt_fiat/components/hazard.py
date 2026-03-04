@@ -176,7 +176,6 @@ class HazardComponent(GridComponent):
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
-        **settings,
     ) -> None:
         """Set up hazard maps.
 
@@ -194,8 +193,6 @@ class HazardComponent(GridComponent):
             by default False.
         unit : str, optional
             The unit which the hazard data is in, by default 'm' (meters).
-        **settings : dict
-            Extra settings to be added under the hazard header.
 
         Returns
         -------
@@ -246,7 +243,3 @@ class HazardComponent(GridComponent):
         self.model.config.set(MODEL_RISK, risk)
         if risk:
             self.model.config.set(HAZARD_RP, return_periods)
-
-        # Set the extra settings
-        for key, item in settings.items():
-            self.model.config.set(f"{HAZARD}.{key}", item)

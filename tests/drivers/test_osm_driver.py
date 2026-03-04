@@ -42,6 +42,21 @@ def test_osm_request(
     assert osm_data.intersects(polygon).all()
 
 
+def test_osm_request_full(
+    build_region: gpd.GeoDataFrame,
+):
+    # Call the function
+    osm_data = osm_request(
+        polygon=build_region.geometry[0],
+        tags={"building": True},
+        geom_type=["MultiPolygon", "Polygon"],
+        reduce=False,
+    )
+
+    # Assert the output
+    assert len(osm_data.columns) > 20
+
+
 def test_osm_request_errors(
     caplog: pytest.LogCaptureFixture,
     build_region: gpd.GeoDataFrame,
