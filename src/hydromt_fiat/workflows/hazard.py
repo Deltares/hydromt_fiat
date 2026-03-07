@@ -4,7 +4,6 @@ import logging
 from typing import Any
 
 import xarray as xr
-from barril.units import Scalar
 
 from hydromt_fiat.utils import ANALYSIS, EVENT, RISK, RP, TYPE, standard_unit
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
@@ -50,8 +49,8 @@ def hazard_setup(
         da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
-        conversion = standard_unit(Scalar(1.0, unit))
-        da *= conversion.value
+        conversion = standard_unit(unit)
+        da *= conversion.magnitude
 
         attrs: dict[str, Any] = {
             "name": da_name,

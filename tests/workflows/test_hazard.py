@@ -93,6 +93,7 @@ def test_hazard_setup_unit_differ(
     # Assert the avg level
     avg_level_ft = ds.event.mean().values
     assert (
-        "Given unit (ft) does not match the standard unit (m) for length" in caplog.text
+        "Given unit (foot) does not match the standard unit (meter) for [length]"
+        in caplog.text
     )
     assert np.isclose(avg_level_ft, 0.547029)

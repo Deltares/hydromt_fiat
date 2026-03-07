@@ -1,9 +1,10 @@
 import io
+import logging
 import sys
 from pathlib import Path
 
 import numpy as np
-from barril.units import Scalar
+import pytest
 
 from hydromt_fiat.utils import (
     create_query,
@@ -88,16 +89,22 @@ def test_directory_tree_dirs_only(build_data_path: Path):
 
 
 def test_standard_unit_equal():
-    unit = Scalar(1.0, "m")
-    scalar = standard_unit(unit)
+    # Call the function with the standard for length as input
+    unit = "m"
+    quantity = standard_unit(unit)
 
-    assert np.isclose(scalar.value, 1.0)
-    assert scalar.unit == "m"
+    # Assert magnitude is 1
+    assert np.isclose(quantity.magnitude, 1.0)
+    assert str(quantity.units) == "meter"
 
 
-def test_standard_unit_length():
-    unit = Scalar(1.0, "ft")
-    scalar = standard_unit(unit)
+def test_standard_unit_length(caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    # Call the function with feet as unit
+    unit = "ft"
+    quantity = standard_unit(unit)
 
-    assert np.isclose(scalar.value, 0.3048)
-    assert scalar.unit == ""
+    # Assert conversion
+    assert np.isclose(quantity.magnitude, 0.3048)
+    assert str(quantity.units) == "meter"
+    assert "Given unit (foot) does not match the standard unit (meter)" in caplog.text

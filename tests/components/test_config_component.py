@@ -16,7 +16,7 @@ from hydromt_fiat.utils import (
 )
 
 
-def test_config_component_init(mock_model: MagicMock):
+def test_config_component_empty(mock_model: MagicMock):
     # Setup the component
     component = ConfigComponent(mock_model)
 

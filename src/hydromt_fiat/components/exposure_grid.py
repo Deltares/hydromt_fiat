@@ -9,7 +9,7 @@ from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
-from hydromt_fiat.components.grid import GridCustomComponent
+from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
@@ -28,7 +28,7 @@ __all__ = ["ExposureGridComponent"]
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-class ExposureGridComponent(GridCustomComponent):
+class ExposureGridComponent(GridComponent):
     """Exposure grid component.
 
     Inherits from the HydroMT-core GridComponent model-component.
@@ -55,9 +55,9 @@ class ExposureGridComponent(GridCustomComponent):
         filename: str = f"{EXPOSURE}/spatial.nc",
         region_component: str | None = None,
     ):
+        self._filename = filename
         super().__init__(
             model,
-            filename=filename,
             region_component=region_component,
         )
 
@@ -65,20 +65,24 @@ class ExposureGridComponent(GridCustomComponent):
     @hydromt_step
     def read(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         """Read the exposure grid data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
             Additional keyword arguments to be passed to the `open_dataset` function
             from xarray.
         """
+        # Check the state
+        self.root._assert_read_mode()
+        self._initialize(skip_read=True)
+
         # Sort the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
@@ -103,7 +107,7 @@ class ExposureGridComponent(GridCustomComponent):
     @hydromt_step
     def write(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -111,7 +115,7 @@ class ExposureGridComponent(GridCustomComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
@@ -139,7 +143,7 @@ class ExposureGridComponent(GridCustomComponent):
         # Write it in a gdal compliant manner by default
         logger.info(f"Writing the exposure grid data to {write_path.as_posix()}")
         # Force north south before writing
-        self._data = force_ns(self.data)  # type: ignore[assignment]
+        self._data = force_ns(self.data)
         write_nc(
             self.data,
             file_path=write_path,
