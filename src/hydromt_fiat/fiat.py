@@ -113,37 +113,45 @@ class FIATModel(Model):
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the config component."""
+        """Access the config component."""
         return self.components[CONFIG]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
-        """Return the exposure geoms component."""
+        """Access the exposure geoms component."""
         return self.components[f"{EXPOSURE}_{GEOM}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
-        """Return the exposure grid component."""
+        """Access the exposure grid component."""
         return self.components[f"{EXPOSURE}_{GRID}"]
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return the hazard component."""
+        """Access the hazard component."""
         return self.components[HAZARD]
 
     @property
     def output_geoms(self) -> OutputGeomsComponent:
-        """Return the output geoms component."""
+        """Access the output geoms component."""
         return self.components[f"{OUTPUT}_{GEOM}"]
 
     @property
     def output_grid(self) -> OutputGridComponent:
-        """Return the output grid component."""
+        """Access the output grid component."""
         return self.components[f"{OUTPUT}_{GRID}"]
 
     @property
+    def region(self) -> gpd.GeoDataFrame:
+        """Return the model's region.
+
+        This will return a polygon covering the current region of the model.
+        """
+        return self.components[REGION].region
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
-        """Return the vulnerability component."""
+        """Access the vulnerability component."""
         return self.components[VULNERABILITY]
 
     ## I/O
