@@ -425,6 +425,63 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="osm_request">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.osm_driver.osm_request.html#hydromt_fiat.drivers.osm_request">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">osm_request</span><span class="p">(</span>
+    <span class="n">polygon</span><span class="p">:</span> <span class="n">MultiPolygon</span> <span class="o">|</span> <span class="n">Polygon</span><span class="p">,</span>
+    <span class="n">tags</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduce</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve OSM data with the OSMnx api.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    polygon : MultiPolygon | Polygon</span>
+<span class="sd">        Area of interest.</span>
+<span class="sd">    tags : dict</span>
+<span class="sd">        OSM tag to filter data with, i.e. {&#39;building&#39;: True}.</span>
+<span class="sd">    geom_type : list[str], optional</span>
+<span class="sd">        List of geometry types to filter data with,</span>
+<span class="sd">        i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;].</span>
+<span class="sd">    reduce : bool, optional</span>
+<span class="sd">        Whether or not to reduce the output geodataframe to the columns corresponding</span>
+<span class="sd">        to the tags and (of course) the geometry column. By default True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    gpd.GeoDataFrame</span>
+<span class="sd">        GeoDataFrame with OSM data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="p">(</span><span class="n">Polygon</span><span class="p">,</span> <span class="n">MultiPolygon</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Given geometry is not a (multi)polygon&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">features_from_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">InsufficientResponseError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No OSM data retrieved with the following tags: </span><span class="si">{</span><span class="n">tags</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">err</span>
+
+    <span class="n">tag_keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tags</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">items</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">tag_keys</span><span class="si">}</span><span class="s2"> features found for polygon&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of </span><span class="si">{</span><span class="n">tag_keys</span><span class="si">}</span><span class="s2"> items found from OSM: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">geom_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">items</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">geom_type</span><span class="p">)]</span>
+
+    <span class="c1"># Remove multi index</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">reduce</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">items</span><span class="p">[[</span><span class="o">*</span><span class="n">tag_keys</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="n">items</span></div>
+
+
+
 <div class="viewcode-block" id="OSMDriver">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.OSMDriver.html#hydromt_fiat.drivers.OSMDriver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OSMDriver</span><span class="p">(</span><span class="n">GeoDataFrameDriver</span><span class="p">):</span>
@@ -441,11 +498,11 @@
         <span class="n">uris</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">mask</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">tags</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read OSM data with the OSMnx API.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read OSM data with the OSMnx api.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -453,7 +510,7 @@
 <span class="sd">            List containing single OSM asset type.</span>
 <span class="sd">        mask : gpd.GeoDataFrame | gpd.GeoSeries</span>
 <span class="sd">            GeoDataFrame containing the region of interest.</span>
-<span class="sd">        tags : list[str], optional</span>
+<span class="sd">        tags : dict[str, Any], optional</span>
 <span class="sd">            Additional tags to filter the OSM data by, by default None.</span>
 <span class="sd">        geom_type : list[str], optional</span>
 <span class="sd">            List of geometry types to filter data with,</span>
@@ -490,22 +547,26 @@
 
         <span class="c1"># If tags and geom_types are none check if these are supplied as driver options</span>
         <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geom_type&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">geom_type</span><span class="p">:</span>
-            <span class="n">geom_type</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geom_type&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tags</span><span class="p">:</span>
-            <span class="n">tags</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)</span>
+        <span class="n">geom_type</span> <span class="o">=</span> <span class="n">geom_type</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;geom_type&quot;</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="n">tags</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tags&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">True</span><span class="p">}</span>
 
-        <span class="k">if</span> <span class="n">tags</span><span class="p">:</span>
-            <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="n">tags</span><span class="p">}</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="p">{</span><span class="n">uri</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="c1"># Get and return the data</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Retrieving </span><span class="si">%s</span><span class="s2"> data from OSM API&quot;</span><span class="p">,</span> <span class="n">uri</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_osm_data</span><span class="p">(</span><span class="n">polygon</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span> <span class="n">geom_type</span><span class="o">=</span><span class="n">geom_type</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">osm_request</span><span class="p">(</span>
+            <span class="n">polygon</span><span class="o">=</span><span class="n">polygon</span><span class="p">,</span>
+            <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span>
+            <span class="n">geom_type</span><span class="o">=</span><span class="n">geom_type</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="OSMDriver.write">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.OSMDriver.write.html#hydromt_fiat.drivers.OSMDriver.write">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">StrPath</span><span class="p">,</span> <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrPath</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">StrPath</span><span class="p">,</span>
+        <span class="n">gdf</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StrPath</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write OSMNx data to file.</span>
 
 <span class="sd">        Parameters</span>
@@ -530,57 +591,6 @@
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s2">&quot;.fgb&quot;</span><span class="p">)</span>
         <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">path</span></div>
-
-
-<div class="viewcode-block" id="OSMDriver.get_osm_data">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.drivers.OSMDriver.get_osm_data.html#hydromt_fiat.drivers.OSMDriver.get_osm_data">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_osm_data</span><span class="p">(</span>
-        <span class="n">polygon</span><span class="p">:</span> <span class="n">MultiPolygon</span> <span class="o">|</span> <span class="n">Polygon</span><span class="p">,</span>
-        <span class="n">tag</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-        <span class="n">geom_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve OSM data with the OSMnx api.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        polygon : MultiPolygon | Polygon</span>
-<span class="sd">            Area of interest.</span>
-<span class="sd">        tag : dict</span>
-<span class="sd">            OSM tag to filter data with, i.e. {&#39;building&#39;: True}.</span>
-<span class="sd">        geom_type : list[str] | None</span>
-<span class="sd">            List of geometry types to filter data with,</span>
-<span class="sd">            i.e. [&#39;MultiPolygon&#39;, &#39;Polygon&#39;].</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        gpd.GeoDataFrame</span>
-<span class="sd">            GeoDataFrame with OSM data.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="p">(</span><span class="n">Polygon</span><span class="p">,</span> <span class="n">MultiPolygon</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Given geometry is not a (multi)polygon&quot;</span><span class="p">)</span>
-
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">footprints</span> <span class="o">=</span> <span class="n">ox</span><span class="o">.</span><span class="n">features</span><span class="o">.</span><span class="n">features_from_polygon</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">InsufficientResponseError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No OSM data retrieved with the following tags: </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">err</span>
-
-        <span class="n">tag_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">footprints</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">tag_key</span><span class="si">}</span><span class="s2"> features found for polygon&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total number of </span><span class="si">{</span><span class="n">tag_key</span><span class="si">}</span><span class="s2"> found from OSM: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">footprints</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">geom_type</span><span class="p">:</span>
-            <span class="n">footprints</span> <span class="o">=</span> <span class="n">footprints</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">footprints</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">geom_type</span><span class="p">)]</span>
-
-        <span class="c1"># Remove multi index</span>
-        <span class="n">footprints</span> <span class="o">=</span> <span class="n">footprints</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">footprints</span><span class="p">[[</span><span class="s2">&quot;geometry&quot;</span><span class="p">,</span> <span class="n">tag_key</span><span class="p">]]</span></div>
 </div>
 
 </pre></div>

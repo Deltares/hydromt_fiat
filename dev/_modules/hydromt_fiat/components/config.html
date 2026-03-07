@@ -417,7 +417,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_toml</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_item</span><span class="p">,</span> <span class="n">make_config_paths_relative</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SETTINGS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">OUTPUT</span><span class="p">,</span> <span class="n">OUTPUT_PATH</span><span class="p">,</span> <span class="n">SETTINGS</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;ConfigComponent&quot;</span><span class="p">]</span>
 
@@ -441,11 +441,13 @@
 <span class="sd">        By default &#39;settings.toml&#39;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">_build</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SETTINGS</span><span class="si">}</span><span class="s2">.toml&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">SETTINGS</span><span class="si">}</span><span class="s2">.toml&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">filename</span>
@@ -454,7 +456,10 @@
         <span class="p">)</span>
 
     <span class="c1">## Private methods</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">skip_read</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the model config.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="p">{}</span>
@@ -472,7 +477,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The absolute directory of configurations file.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The absolute directory path of configurations file.</span>
 
 <span class="sd">        In most cases this will be equal to the model root directory, however one</span>
 <span class="sd">        can specify a subdirectory for the configuration file, therefore this property</span>
@@ -488,6 +493,19 @@
     <span class="nd">@filename</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The absolute path of the output directory.</span>
+
+<span class="sd">        The value is based on `ConfigComponent.dir`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">OUTPUT_PATH</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="n">OUTPUT</span><span class="p">))</span>
+
+    <span class="nd">@output_dir</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the output directory.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;output.path&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
 
     <span class="c1">## I/O methods</span>
 <div class="viewcode-block" id="ConfigComponent.read">
@@ -574,18 +592,22 @@
         <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fallback</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">abs_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a configurations value.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        args : tuple | str</span>
+<span class="sd">        key : str</span>
 <span class="sd">            Key can given as a string with &#39;.&#39; indicating a new level: (&#39;key1.key2&#39;).</span>
 <span class="sd">        fallback: Any, optional</span>
 <span class="sd">            Fallback value if key not found in config, by default None.</span>
 <span class="sd">        abs_path: bool, optional</span>
 <span class="sd">            If True return the absolute path relative to the configurations directory,</span>
 <span class="sd">            by default False.</span>
+<span class="sd">        root: Path | str, optional</span>
+<span class="sd">            Provide a root that might be different than the configurations directory.</span>
+<span class="sd">            By default None.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -595,12 +617,30 @@
         <span class="n">parts</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
         <span class="n">current</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># reads config at first call</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">get_item</span><span class="p">(</span>
-            <span class="n">parts</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">,</span> <span class="n">abs_path</span><span class="o">=</span><span class="n">abs_path</span>
+            <span class="n">parts</span><span class="p">,</span>
+            <span class="n">current</span><span class="p">,</span>
+            <span class="n">root</span><span class="o">=</span><span class="p">(</span><span class="n">root</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">),</span>
+            <span class="n">fallback</span><span class="o">=</span><span class="n">fallback</span><span class="p">,</span>
+            <span class="n">abs_path</span><span class="o">=</span><span class="n">abs_path</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Return the value</span>
         <span class="k">return</span> <span class="n">value</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1">## Mutating methods</span>
+<div class="viewcode-block" id="ConfigComponent.clear">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ConfigComponent.clear.html#hydromt_fiat.components.ConfigComponent.clear">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the config data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set an entry in the configurations.</span>
 
 <span class="sd">        Parameters</span>
@@ -627,17 +667,7 @@
             <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_parts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="p">[</span><span class="n">part</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">current</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="c1">## Mutating methods</span>
-<div class="viewcode-block" id="ConfigComponent.clear">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ConfigComponent.clear.html#hydromt_fiat.components.ConfigComponent.clear">[docs]</a>
-    <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear the config data.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
-</div>
+                <span class="n">current</span><span class="p">[</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
 
 </pre></div>
 
