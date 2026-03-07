@@ -35,6 +35,13 @@ OSMDriver methods
 .. autosummary::
     :toctree: ../_generated
 
-    drivers.OSMDriver.get_osm_data
     drivers.OSMDriver.read
     drivers.OSMDriver.write
+
+OSM functions
+-------------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    drivers.osm_driver.osm_request

@@ -43,6 +43,8 @@ Attributes
     FIATModel.hazard
     FIATModel.exposure_geoms
     FIATModel.exposure_grid
+    FIATModel.output_geoms
+    FIATModel.output_grid
 
 .. _api_model_io:
 

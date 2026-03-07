@@ -31,6 +31,8 @@ Initialize
     HazardComponent
     ExposureGeomsComponent
     ExposureGridComponent
+    OutputGeomsComponent
+    OutputGridComponent
 
 ConfigComponent
 ---------------
@@ -98,3 +100,28 @@ ExposureGridComponent
     ExposureGridComponent.clip
     ExposureGridComponent.reproject
     ExposureGridComponent.setup
+
+OutputGeomsComponent
+--------------------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    OutputGeomsComponent.data
+    OutputGeomsComponent.read
+    OutputGeomsComponent.clear
+    OutputGeomsComponent.clip
+    OutputGeomsComponent.reproject
+    OutputGeomsComponent.aggregate_square
+
+OutputGridComponent
+-------------------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    OutputGridComponent.data
+    OutputGridComponent.read
+    OutputGridComponent.clear
+    OutputGridComponent.clip
+    OutputGridComponent.reproject

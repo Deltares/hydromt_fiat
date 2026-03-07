@@ -54,3 +54,11 @@ Exposure (grid)
     :toctree: ../_generated
 
     workflows.exposure_grid_setup
+
+Aggregation
+-----------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    workflows.aggregate_vector_grid
