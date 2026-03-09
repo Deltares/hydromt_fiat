@@ -268,7 +268,7 @@ def test_exposure_geom_component_setup_link_data(
     )
 
     # Assert the output
-    assert "Replacing geometry data: foo"
+    assert "Replacing geometry data: foo" in caplog.text
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
