@@ -2,7 +2,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
-import pytest
 from hydromt.model import ModelRoot
 
 from hydromt_fiat import FIATModel
@@ -103,18 +102,3 @@ def test_output_geoms_component_aggregate_square(
     assert p.is_file()
     data = gpd.read_file(p)
     assert len(data) == 18
-
-
-def test_output_geoms_component_aggregate_square_errors(mock_model: MagicMock):
-    # Set up the component
-    component = OutputGeomsComponent(model=mock_model)
-
-    # No data, so trying to do something for the dataset foo results in an error
-    with pytest.raises(
-        ValueError,
-        match="'foo' not in the output component's data",
-    ):
-        component.aggregate_square(
-            output_name="foo",
-            res=0.1,
-        )

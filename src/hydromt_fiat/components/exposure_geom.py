@@ -191,6 +191,7 @@ class ExposureGeomsComponent(GeomsComponent):
         *,
         exposure_link_fname: Path | str | None = None,
         exposure_type_fill: str | None = None,
+        link_to_vulnerability: bool = True,
     ) -> None:
         """Set up the exposure from a data source.
 
@@ -223,11 +224,6 @@ class ExposureGeomsComponent(GeomsComponent):
                 "Region is None -> \
 use 'setup_region' before this method"
             )
-        # Check for vulnerability
-        vulnerability = self.model.vulnerability.data
-        if any([item.empty for item in vulnerability]):
-            # TODO Replace with custom error class
-            raise RuntimeError("Use `setup_vulnerability` before this method")
 
         # Get the name based on the stem of a path
         name = Path(exposure_fname).stem
@@ -250,17 +246,56 @@ use 'setup_region' before this method"
             exposure_linking=exposure_linking,
             exposure_type_fill=exposure_type_fill,
         )
-        exposure_vector = workflows.exposure_geoms_link_vulnerability(
-            exposure_data=exposure_vector,
-            vulnerability=vulnerability.identifiers,
-        )
-
-        # Set the data in the component
-        self.set(exposure_vector, name=name)
+        # Either link to vulnerability
+        if link_to_vulnerability:
+            self.setup_link_vulnerability(
+                exposure_name=name,
+                exposure_data=exposure_vector,
+            )
+        # Or set the data directly
+        else:
+            self.set(exposure_vector, name=name)
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
         self.model.config.set(MODEL_TYPE, GEOM)
+
+    @hydromt_step
+    def setup_link_vulnerability(
+        self,
+        exposure_name: str,
+        exposure_data: gpd.GeoDataFrame | None = None,
+    ) -> None:
+        """Link the exposure geometry data to the vulnerability data.
+
+        Parameters
+        ----------
+        exposure_name : str
+            The name of the exposure dataset. If exposure_data is None, this name
+            should be present in the `data` attribute of the component.
+        exposure_data : gpd.GeoDataFrame, optional
+            The exposure data to link the vulnerability to. If None, the data is taken
+            from the `data` attribute for the value of exposure_name. By default None.
+        """
+        # Check for data
+        if exposure_data is None:
+            self._assert_entry(exposure_name)
+            exposure_data = self.data[exposure_name]
+
+        # Check for vulnerability
+        vulnerability = self.model.vulnerability.data
+        if any([item.empty for item in vulnerability]):
+            # TODO Replace with custom error class
+            raise RuntimeError("Run `vulnerability.setup` before this method")
+
+        # Call the workflow function to link the data
+        exposure_vector = workflows.exposure_geoms_link_vulnerability(
+            exposure_data=exposure_data,
+            vulnerability=vulnerability.identifiers,
+        )
+
+        # Set the data in the component
+        self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
     def setup_max_damage(
@@ -297,12 +332,7 @@ use 'setup_region' before this method"
         """
         logger.info(f"Setting up maximum potential damage for {exposure_name}")
         # Some checks on the input
-        if exposure_name not in self.data:
-            raise RuntimeError(
-                f"Run `setup_exposure_geoms` before this methods \
-with '{exposure_name}' as input or chose from already present geometries: \
-{list(self.data.keys())}"
-            )
+        self._assert_entry(exposure_name)
         # Get the exposure costs table from the data catalog
         exposure_cost_table = self.model.data_catalog.get_dataframe(
             exposure_cost_table_fname,
@@ -353,12 +383,7 @@ with '{exposure_name}' as input or chose from already present geometries: \
         """
         logger.info(f"Updating exposure data with {columns} columns")
         # Some checks on the input
-        if exposure_name not in self.data:
-            raise RuntimeError(
-                f"Run `setup_exposure_geoms` before this methods \
-with '{exposure_name}' as input or chose from already present geometries: \
-{list(self.data.keys())}"
-            )
+        self._assert_entry(exposure_name)
 
         # Call the workflow function
         exposure_vector = workflows.exposure_geoms_add_columns(

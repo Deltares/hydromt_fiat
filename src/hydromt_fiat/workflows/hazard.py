@@ -54,6 +54,7 @@ def hazard_setup(
 
         attrs: dict[str, Any] = {
             "name": da_name,
+            TYPE: hazard_type,
         }
         if risk:
             assert return_periods is not None
@@ -69,7 +70,6 @@ def hazard_setup(
     ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
 
     attrs = {
-        TYPE: hazard_type,
         ANALYSIS: EVENT,
     }
     if risk:
