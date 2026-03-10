@@ -11,6 +11,7 @@ from hydromt.writers import write_nc
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
@@ -176,6 +177,7 @@ class HazardComponent(GridComponent):
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
+        expand: bool = True,
     ) -> None:
         """Set up hazard maps.
 
@@ -193,6 +195,10 @@ class HazardComponent(GridComponent):
             by default False.
         unit : str, optional
             The unit which the hazard data is in, by default 'm' (meters).
+        expand : bool, optional
+            Whether to expand the hazard data to the bounding box of the model region.
+            Nothing is done when the hazard data already covers the region.
+            By default True.
 
         Returns
         -------
@@ -220,6 +226,7 @@ class HazardComponent(GridComponent):
             da = self.model.data_catalog.get_rasterdataset(
                 entry,
                 geom=self.model.region,
+                buffer=1,
             )
             hazard_data[Path(entry).stem] = da
 
@@ -235,6 +242,13 @@ class HazardComponent(GridComponent):
             risk=risk,
             unit=unit,
         )
+
+        # Expand if necessary
+        if self.model.region is not None and ds.raster.crs is not None and expand:
+            ds = expand_raster_to_bounds(
+                ds=ds,
+                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
+            )
 
         # Set the data to the hazard grid component
         self.set(ds)
