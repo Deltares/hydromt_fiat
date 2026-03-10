@@ -191,6 +191,7 @@ class ExposureGeomsComponent(GeomsComponent):
         *,
         exposure_link_fname: Path | str | None = None,
         exposure_type_fill: str | None = None,
+        predicate: str = "contains",
         link_to_vulnerability: bool = True,
     ) -> None:
         """Set up the exposure from a data source.
@@ -215,6 +216,12 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_type_fill : str, optional
             Value to which missing entries in the exposure type column will be mapped
             to, if provided. By default None.
+        predicate : str, optional
+            Method on how to select the data that falls within the region geometry.
+            For more information see `geopandas.sjoin`. By default 'contains'.
+        link_to_vulnerability : bool, optional
+            Whether to already link to the vulnerability in this setup method.
+            By default False.
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -232,6 +239,7 @@ use 'setup_region' before this method"
         exposure_data = self.model.data_catalog.get_geodataframe(
             data_like=exposure_fname,
             geom=self.model.region,
+            predicate=predicate,
         )
         exposure_linking = None
         if exposure_link_fname is not None:
