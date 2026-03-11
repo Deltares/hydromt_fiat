@@ -1,4 +1,5 @@
 import logging
+import re
 from unittest.mock import MagicMock
 
 import geopandas as gpd
@@ -22,6 +23,48 @@ def test_geoms_component_empty(
     assert component._data is None
     assert isinstance(component.data, dict)  # After initializing
     assert len(component.data) == 0
+
+
+def test_geoms_component__assert_entry(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = {"foo": gpd.GeoDataFrame()}  #
+
+    # Assert it's fine to call foo
+    component._assert_entry(name="foo")
+
+
+def test_geoms_component__assert_entry_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = {"foo": gpd.GeoDataFrame(), "bar": 2}
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(
+            "Chose from already present geometries: ['foo', 'bar'] \
+i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
+        ),
+    ):
+        component._assert_entry(name="baz")
+
+    # Wrong type
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(
+            "Chose from already present geometries: ['foo', 'bar'] \
+i.e. a GeoDataFrame or run the appropriate `setup` method with 'bar' as input"
+        ),
+    ):
+        component._assert_entry(name="bar")
 
 
 def test_geoms_component_clear(
@@ -207,11 +250,11 @@ def test_geoms_component_set(
 
     # Overwrite with the same dataset, should produce no warning
     component.set(data=build_region, name="ds1")
-    assert "Replacing geom: ds1" not in caplog.text
+    assert "Replacing geometry data: ds1" not in caplog.text
 
     # Overwrite, but with a copy, should produce a warning
     component.set(data=build_region.copy(), name="ds1")
-    assert "Replacing geom: ds1" in caplog.text
+    assert "Replacing geometry data: ds1" in caplog.text
 
 
 def test_geoms_component_region(
