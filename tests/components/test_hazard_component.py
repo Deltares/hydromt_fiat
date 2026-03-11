@@ -140,8 +140,9 @@ def test_hazard_component_setup(
     caplog.set_level(logging.INFO)
     component.setup(hazard_fnames="flood_event")
 
-    assert "Added water_depth hazard map: flood_event" in caplog.text
+    assert "Processing water_depth hazard data" in caplog.text
     assert "flood_event" in component.data.data_vars
+    assert component.data.raster.shape == (7, 6)
 
 
 def test_hazard_component_setup_multi(
@@ -151,7 +152,7 @@ def test_hazard_component_setup_multi(
     component = HazardComponent(model=model_with_region)
 
     # Test setting data to hazard grid with data
-    component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
+    component.setup(hazard_fnames=["flood_event", "flood_event_highres"], expand=False)
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars

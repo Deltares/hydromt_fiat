@@ -11,6 +11,7 @@ from hydromt.writers import write_nc
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
@@ -173,6 +174,7 @@ class ExposureGridComponent(GridComponent):
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        expand: bool = True,
     ) -> None:
         """Set up an exposure grid.
 
@@ -182,7 +184,11 @@ class ExposureGridComponent(GridComponent):
             Name of or path to exposure file(s).
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
-            vulnerability curves. By default None
+            vulnerability curves. By default None.
+        expand : bool, optional
+            Whether to expand the hazard data to the bounding box of the model region.
+            Nothing is done when the hazard data already covers the region.
+            By default True.
         """
         logger.info("Setting up gridded exposure")
 
@@ -215,6 +221,7 @@ before setting up exposure grid"
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,
+                buffer=1,
             )
             exposure_data[name] = da
 
@@ -228,6 +235,13 @@ before setting up exposure grid"
             exposure_linking=exposure_linking,
             vulnerability=self.model.vulnerability.data.identifiers,
         )
+
+        # Expand if necessary
+        if self.model.region is not None and ds.raster.crs is not None and expand:
+            ds = expand_raster_to_bounds(
+                ds=ds,
+                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
+            )
 
         # Set the dataset
         self.set(ds)
