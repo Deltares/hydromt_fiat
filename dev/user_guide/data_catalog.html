@@ -434,6 +434,235 @@
                   
   <section id="data-catalog">
 <span id="user-guide-data-catalog"></span><h1>Data Catalog<a class="headerlink" href="#data-catalog" title="Link to this heading">#</a></h1>
+<p>The data catalog is the way of providing a HydroMT model class with raw data to chose
+from when setting up the data for a model. In case of HydroMT-FIAT, this is done for
+the data mentioned in the <a class="reference internal" href="data/index.html#user-guide-data-index"><span class="std std-ref">data</span></a> section. The data catalog for
+HydroMT-FIAT therefore caters to vector, raster and tabular data. This section will
+show a brief overview of a data catalog entry for each of them.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The format of the data catalog is <a class="reference external" href="https://yaml.org/">YAML</a>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not all data catalog functionality is specified here, for more information see
+the <a class="reference external" href="https://deltares.github.io/hydromt/stable/user_guide/data_catalog/data_overview.html">data catalog</a> information in HydroMT-core.</p>
+</div>
+<section id="meta">
+<h2>Meta<a class="headerlink" href="#meta" title="Link to this heading">#</a></h2>
+<p>It is good practice to start each data catalog with the <em>meta</em> section.
+This section is not necessary however as data is automatically searched for relative
+to the data catalog’s location.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">meta</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">roots</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; root-to-data-location-1 &gt;</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; root-to-data-location-2 &gt;</span>
+<span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; version &gt;</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; name &gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="vector">
+<h2>Vector<a class="headerlink" href="#vector" title="Link to this heading">#</a></h2>
+<p>This section will effectively entail the exposure geometry data. The driver is always
+defined as <strong>pyogrio</strong> and the data_type is always set to <strong>GeoDataFrame</strong>.</p>
+<p>Example data catalog entry:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt; your-dataset-name &gt;</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GeoDataFrame</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; path-to-dataset &gt;</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyogrio</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">  </span><span class="nt">rename</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; new-column-name &gt;</span>
+<span class="w">  </span><span class="nt">unit_add</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">unit_mult</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional, but good practice</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; data-category &gt;</span>
+<span class="w">    </span><span class="nt">crs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4326</span><span class="w"> </span><span class="c1"># Whatever the dataset is in</span>
+<span class="w">    </span><span class="nt">source_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+<p>Explanation of optional vector data entry options:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>rename</p></td>
+<td><p>Rename a column header of the attribute table</p></td>
+</tr>
+<tr class="row-odd"><td><p>unit_add</p></td>
+<td><p>Add a set value to the values in a numerical column</p></td>
+</tr>
+<tr class="row-even"><td><p>unit_multi</p></td>
+<td><p>Multiply the values of a numerical column with a set value</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This data entry is mainly called upon by:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
+</ul>
+</section>
+<section id="raster">
+<h2>Raster<a class="headerlink" href="#raster" title="Link to this heading">#</a></h2>
+<p>This section will cover the data that is needed for setup up the hazard data and the
+gridded exposure data. The data type of a raster data entry is always set to
+<strong>rasterdataset</strong>. In contrast to the vector data entry, two drivers are applicable
+in the case of raster data. These are listed in the small table down below:</p>
+<div class="pst-scrollable-table-container"><table class="table table-center" style="width: 60%">
+<colgroup>
+<col style="width: 27.3%" />
+<col style="width: 72.7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Driver name</p></th>
+<th class="head"><p>Data type</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>rasterio</p></td>
+<td><p>Spatially referenced gridded data readable by GDAL (e.g. .tif)</p></td>
+</tr>
+<tr class="row-odd"><td><p>raster_xarray</p></td>
+<td><p>Spatially referenced netCDF data (.nc) and zarr archives (.zarr)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Example data catalog entry:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt; your-dataset-name &gt;</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RasterDataset</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; path-to-dataset &gt;</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; driver-name &gt;</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">chunk</span><span class="p">:</span><span class="w"> </span><span class="c1"># Not necessary, but very handy for large datasets</span>
+<span class="w">        </span><span class="nt">&lt; x-dim &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span><span class="w"> </span><span class="c1"># e.g. lon: 1000</span>
+<span class="w">        </span><span class="nt">&lt; y-dim &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">rename</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; new-column-name &gt;</span>
+<span class="w">  </span><span class="nt">unit_add</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">unit_mult</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional, but good practice</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; data-category &gt;</span>
+<span class="w">    </span><span class="nt">crs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4326</span><span class="w"> </span><span class="c1"># Whatever the dataset is in</span>
+<span class="w">    </span><span class="nt">source_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+<p>Explanation of optional raster data entry options:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>chunk (driver options)</p></td>
+<td><p>Set the chunking per dimension specific</p></td>
+</tr>
+<tr class="row-odd"><td><p>rename</p></td>
+<td><p>Rename a variable (layer or band) in the dataset</p></td>
+</tr>
+<tr class="row-even"><td><p>unit_add</p></td>
+<td><p>Add a set value to the numerical variable</p></td>
+</tr>
+<tr class="row-odd"><td><p>unit_multi</p></td>
+<td><p>Multiply a numerical variable with a set value</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This data entry is mainly called upon by:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup" title="hydromt_fiat.components.HazardComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">HazardComponent.setup()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
+</ul>
+</section>
+<section id="tabular">
+<h2>Tabular<a class="headerlink" href="#tabular" title="Link to this heading">#</a></h2>
+<p>Tabular data is used in most places throughout HydroMT-FIAT either as direct concrete
+input for the vulnerability data or as linking tables in other different places.
+The data type of tabular data is always defined as <strong>DataFrame</strong> and the driver is
+always set to <strong>pandas</strong>.</p>
+<p>Example data catalog entry:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt; your-dataset-name &gt;</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DataFrame</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; path-to-dataset &gt;</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pandas</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">header</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span><span class="w">  </span><span class="c1"># null translates to None in Python -&gt; no header</span>
+<span class="w">      </span><span class="nt">index_col</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w"> </span><span class="c1"># Chose the first column as index</span>
+<span class="w">      </span><span class="nt">parse_dates</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w"> </span><span class="c1"># Whether or not to parse datetime entries</span>
+<span class="w">  </span><span class="nt">rename</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; new-column-name &gt;</span>
+<span class="w">  </span><span class="nt">unit_add</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">unit_mult</span><span class="p">:</span><span class="w"> </span><span class="c1"># Optional</span>
+<span class="w">    </span><span class="nt">&lt; columns-name &gt;</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; value &gt;</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt; data-category &gt;</span>
+<span class="w">    </span><span class="nt">source_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+</pre></div>
+</div>
+<p>Explanation of optional tabular data entry options:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>header (driver options)</p></td>
+<td><p>Whether or not to set a row as the column headers and which row</p></td>
+</tr>
+<tr class="row-odd"><td><p>index_col (driver options)</p></td>
+<td><p>Which column to use as the index for the rows</p></td>
+</tr>
+<tr class="row-even"><td><p>rename</p></td>
+<td><p>Rename a column header of the attribute table</p></td>
+</tr>
+<tr class="row-odd"><td><p>unit_add</p></td>
+<td><p>Add a set value to the values in a numerical column</p></td>
+</tr>
+<tr class="row-even"><td><p>unit_multi</p></td>
+<td><p>Multiply the values of a numerical column with a set value</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This data entry is mainly called upon by:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.VulnerabilityComponent.setup.html#hydromt_fiat.components.VulnerabilityComponent.setup" title="hydromt_fiat.components.VulnerabilityComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VulnerabilityComponent.setup()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability.html#hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability" title="hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_link_vulnerability()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html#hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_max_damage()</span></code></a></p></li>
+<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup" title="hydromt_fiat.components.ExposureGridComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGridComponent.setup()</span></code></a></p></li>
+</ul>
+</section>
 </section>
 
 

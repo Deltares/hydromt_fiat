@@ -417,6 +417,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat</span><span class="w"> </span><span class="kn">import</span> <span class="n">workflows</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.components.grid</span><span class="w"> </span><span class="kn">import</span> <span class="n">GridComponent</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MissingRegionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_raster_to_bounds</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.raster_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">force_ns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">crs_representation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -592,6 +593,7 @@
         <span class="n">return_periods</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">risk</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span><span class="p">,</span>
+        <span class="n">expand</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up hazard maps.</span>
 
@@ -609,6 +611,10 @@
 <span class="sd">            by default False.</span>
 <span class="sd">        unit : str, optional</span>
 <span class="sd">            The unit which the hazard data is in, by default &#39;m&#39; (meters).</span>
+<span class="sd">        expand : bool, optional</span>
+<span class="sd">            Whether to expand the hazard data to the bounding box of the model region.</span>
+<span class="sd">            Nothing is done when the hazard data already covers the region.</span>
+<span class="sd">            By default True.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -636,6 +642,7 @@
             <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
                 <span class="n">entry</span><span class="p">,</span>
                 <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">hazard_data</span><span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span><span class="p">]</span> <span class="o">=</span> <span class="n">da</span>
 
@@ -651,6 +658,13 @@
             <span class="n">risk</span><span class="o">=</span><span class="n">risk</span><span class="p">,</span>
             <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="c1"># Expand if necessary</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ds</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">expand</span><span class="p">:</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">expand_raster_to_bounds</span><span class="p">(</span>
+                <span class="n">ds</span><span class="o">=</span><span class="n">ds</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">da</span><span class="o">.</span><span class="n">raster</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># Set the data to the hazard grid component</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>

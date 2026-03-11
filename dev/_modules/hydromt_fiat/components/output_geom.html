@@ -550,8 +550,7 @@
 <span class="sd">            directory next to the configurations file. By default None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check the output_name&#39;s existence</span>
-        <span class="k">if</span> <span class="n">output_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">&#39; not in the output component&#39;s data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_entry</span><span class="p">(</span><span class="n">output_name</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Square aggregate of </span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2"> km resolution </span><span class="se">\</span>

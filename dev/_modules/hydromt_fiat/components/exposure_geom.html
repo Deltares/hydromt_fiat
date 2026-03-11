@@ -607,6 +607,8 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">exposure_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">exposure_type_fill</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">predicate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;contains&quot;</span><span class="p">,</span>
+        <span class="n">link_to_vulnerability</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the exposure from a data source.</span>
 
@@ -630,6 +632,12 @@
 <span class="sd">        exposure_type_fill : str, optional</span>
 <span class="sd">            Value to which missing entries in the exposure type column will be mapped</span>
 <span class="sd">            to, if provided. By default None.</span>
+<span class="sd">        predicate : str, optional</span>
+<span class="sd">            Method on how to select the data that falls within the region geometry.</span>
+<span class="sd">            For more information see `geopandas.sjoin`. By default &#39;contains&#39;.</span>
+<span class="sd">        link_to_vulnerability : bool, optional</span>
+<span class="sd">            Whether to already link to the vulnerability in this setup method.</span>
+<span class="sd">            By default False.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up exposure geometries&quot;</span><span class="p">)</span>
         <span class="c1"># Check for region</span>
@@ -639,11 +647,6 @@
                 <span class="s2">&quot;Region is None -&gt; </span><span class="se">\</span>
 <span class="s2">use &#39;setup_region&#39; before this method&quot;</span>
             <span class="p">)</span>
-        <span class="c1"># Check for vulnerability</span>
-        <span class="n">vulnerability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">empty</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="p">]):</span>
-            <span class="c1"># TODO Replace with custom error class</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Use `setup_vulnerability` before this method&quot;</span><span class="p">)</span>
 
         <span class="c1"># Get the name based on the stem of a path</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fname</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
@@ -652,6 +655,7 @@
         <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_geodataframe</span><span class="p">(</span>
             <span class="n">data_like</span><span class="o">=</span><span class="n">exposure_fname</span><span class="p">,</span>
             <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+            <span class="n">predicate</span><span class="o">=</span><span class="n">predicate</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">exposure_linking</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">exposure_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -666,17 +670,59 @@
             <span class="n">exposure_linking</span><span class="o">=</span><span class="n">exposure_linking</span><span class="p">,</span>
             <span class="n">exposure_type_fill</span><span class="o">=</span><span class="n">exposure_type_fill</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_link_vulnerability</span><span class="p">(</span>
-            <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_vector</span><span class="p">,</span>
-            <span class="n">vulnerability</span><span class="o">=</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Set the data in the component</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure_vector</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Either link to vulnerability</span>
+        <span class="k">if</span> <span class="n">link_to_vulnerability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setup_link_vulnerability</span><span class="p">(</span>
+                <span class="n">exposure_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_vector</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># Or set the data directly</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure_vector</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># Update the config</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting the model type to &#39;geom&#39;&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MODEL_TYPE</span><span class="p">,</span> <span class="n">GEOM</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ExposureGeomsComponent.setup_link_vulnerability">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability.html#hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_link_vulnerability</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">exposure_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Link the exposure geometry data to the vulnerability data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        exposure_name : str</span>
+<span class="sd">            The name of the exposure dataset. If exposure_data is None, this name</span>
+<span class="sd">            should be present in the `data` attribute of the component.</span>
+<span class="sd">        exposure_data : gpd.GeoDataFrame, optional</span>
+<span class="sd">            The exposure data to link the vulnerability to. If None, the data is taken</span>
+<span class="sd">            from the `data` attribute for the value of exposure_name. By default None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check for data</span>
+        <span class="k">if</span> <span class="n">exposure_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_assert_entry</span><span class="p">(</span><span class="n">exposure_name</span><span class="p">)</span>
+            <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">exposure_name</span><span class="p">]</span>
+
+        <span class="c1"># Check for vulnerability</span>
+        <span class="n">vulnerability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">empty</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="p">]):</span>
+            <span class="c1"># TODO Replace with custom error class</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Run `vulnerability.setup` before this method&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Call the workflow function to link the data</span>
+        <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_link_vulnerability</span><span class="p">(</span>
+            <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_data</span><span class="p">,</span>
+            <span class="n">vulnerability</span><span class="o">=</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the data in the component</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">exposure_vector</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">exposure_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ExposureGeomsComponent.setup_max_damage">
@@ -716,12 +762,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting up maximum potential damage for </span><span class="si">{</span><span class="n">exposure_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># Some checks on the input</span>
-        <span class="k">if</span> <span class="n">exposure_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Run `setup_exposure_geoms` before this methods </span><span class="se">\</span>
-<span class="s2">with &#39;</span><span class="si">{</span><span class="n">exposure_name</span><span class="si">}</span><span class="s2">&#39; as input or chose from already present geometries: </span><span class="se">\</span>
-<span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_entry</span><span class="p">(</span><span class="n">exposure_name</span><span class="p">)</span>
         <span class="c1"># Get the exposure costs table from the data catalog</span>
         <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
             <span class="n">exposure_cost_table_fname</span><span class="p">,</span>
@@ -775,12 +816,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updating exposure data with </span><span class="si">{</span><span class="n">columns</span><span class="si">}</span><span class="s2"> columns&quot;</span><span class="p">)</span>
         <span class="c1"># Some checks on the input</span>
-        <span class="k">if</span> <span class="n">exposure_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Run `setup_exposure_geoms` before this methods </span><span class="se">\</span>
-<span class="s2">with &#39;</span><span class="si">{</span><span class="n">exposure_name</span><span class="si">}</span><span class="s2">&#39; as input or chose from already present geometries: </span><span class="se">\</span>
-<span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_entry</span><span class="p">(</span><span class="n">exposure_name</span><span class="p">)</span>
 
         <span class="c1"># Call the workflow function</span>
         <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_add_columns</span><span class="p">(</span>
