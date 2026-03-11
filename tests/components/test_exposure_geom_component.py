@@ -10,9 +10,11 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.utils import (
+    DAMAGE,
     EXPOSURE,
     EXPOSURE_GEOM,
     FILE,
+    FN,
     GEOM,
     MODEL_TYPE,
 )
@@ -183,9 +185,31 @@ def test_exposure_geom_component_setup(
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
+    assert f"{FN}_{DAMAGE}_structure" in component.data["buildings"].columns
 
     # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GEOM
+
+
+def test_exposure_geom_component_setup_no_link(
+    model_with_region: FIATModel,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_with_region)
+
+    # Setup the data
+    component.setup(
+        exposure_fname="buildings",
+        exposure_type_column="gebruiksdoel",
+        exposure_link_fname="buildings_link",
+        link_to_vulnerability=False,
+    )
+
+    # Assert the output
+    assert "buildings" in component.data
+    assert len(component.data["buildings"]) != 0
+    # This is not present when not linked to the vulnerability
+    assert f"{FN}_{DAMAGE}_structure" not in component.data["buildings"].columns
 
 
 def test_exposure_geom_component_setup_errors(
@@ -206,18 +230,64 @@ def test_exposure_geom_component_setup_errors(
             exposure_link_fname="bag_link",
         )
 
-    # Add region to skip that error
-    component.model.setup_region(build_region_small)
 
-    # Assert that no vulnerability data present results in an error
+def test_exposure_geom_component_setup_link(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Call the method
+    component.setup_link_vulnerability(
+        exposure_name="foo",
+        exposure_data=exposure_vector_clipped_for_link,
+    )
+
+    # Assert the output
+    assert "foo" in component.data
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_setup_link_data(
+    caplog: pytest.LogCaptureFixture,
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    caplog.set_level(logging.WARNING)
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
+    # Call the method
+    component.setup_link_vulnerability(
+        exposure_name="foo",
+    )
+
+    # Assert the output
+    assert "Replacing geometry data: foo" in caplog.text
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_setup_link_errors(
+    model_with_region: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_with_region)
+
+    # No vulnerability data
     with pytest.raises(
         RuntimeError,
-        match="Use `setup_vulnerability` before this method",
+        match="Run `vulnerability.setup` before this method",
     ):
-        component.setup(
-            exposure_fname="bag",
-            exposure_type_column="gebruiksdoel",
-            exposure_link_fname="bag_link",
+        component.setup_link_vulnerability(
+            exposure_name="foo",
+            exposure_data=exposure_vector_clipped_for_link,
         )
 
 
@@ -271,26 +341,6 @@ def test_exposure_geom_component_setup_max_link(
     assert "max_damage_structure" in component.data["buildings"].columns
 
 
-def test_exposure_geom_component_setup_max_errors(
-    model_exposure_setup: FIATModel,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
-
-    # Error as the dataset is not found
-    with pytest.raises(
-        RuntimeError,
-        match="Run `setup_exposure_geoms` before this methods \
-with 'bag' as input or chose from already present geometries: ",
-    ):
-        component.setup_max_damage(
-            exposure_name="bag",
-            exposure_type="damage",
-            exposure_cost_table_fname="jrc_damage_values",
-            country="World",
-        )
-
-
 def test_exposure_geom_component_update_cols(
     model_with_region: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
@@ -327,22 +377,3 @@ def test_exposure_geom_component_update_cols(
     # Assert that the data is there
     assert "ref" in component.data["bag"].columns
     assert "method" in component.data["bag"].columns
-
-
-def test_exposure_geom_component_update_cols_errors(
-    model_with_region: FIATModel,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_with_region)
-
-    # Error as the dataset is not found
-    with pytest.raises(
-        RuntimeError,
-        match="Run `setup_exposure_geoms` before this methods \
-with 'bag' as input or chose from already present geometries: ",
-    ):
-        component.update_column(
-            exposure_name="bag",
-            columns=["foo"],
-            values=0,
-        )

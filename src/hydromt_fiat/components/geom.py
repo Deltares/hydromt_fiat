@@ -35,6 +35,15 @@ class GeomsComponent(SpatialModelComponent):
         )
 
     ## Private methods
+    def _assert_entry(self, name: str):
+        if name not in self.data or not isinstance(
+            self.data[name], (gpd.GeoDataFrame, gpd.GeoSeries)
+        ):
+            raise RuntimeError(
+                f"Chose from already present geometries: {list(self.data.keys())} \
+i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input"
+            )
+
     def _initialize(
         self,
         skip_read: bool = False,
@@ -193,7 +202,7 @@ class GeomsComponent(SpatialModelComponent):
         self._initialize()
         assert self._data is not None
         if name in self._data and id(self._data.get(name)) != id(data):
-            logger.warning(f"Replacing geom: {name}")
+            logger.warning(f"Replacing geometry data: {name}")
 
         if "fid" in data.columns:
             logger.warning(
