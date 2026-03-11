@@ -237,10 +237,9 @@ class GridComponent(SpatialModelComponent):
         # Force ns orientation
         data = force_ns(data)
         # Set thet data
-        if len(self._data) == 0:  # empty grid
-            self._data = data
-        else:
-            for dvar in data.data_vars:
-                if dvar in self._data:
-                    logger.warning(f"Replacing grid map: '{dvar}'")
-                self._data[dvar] = data[dvar]
+        for dvar in data.data_vars:
+            logger.info(f"Adding {dvar} to {self.__class__.__name__}")
+            if dvar in self._data:
+                logger.warning(f"Replacing grid map: '{dvar}'")
+            self._data[dvar] = data[dvar]
+        self._data.attrs.update(data.attrs)

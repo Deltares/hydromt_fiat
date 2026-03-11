@@ -77,7 +77,7 @@ def test_build_model_geom(
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
-    assert model.hazard.data["flood_event"].shape == (5, 4)
+    assert model.hazard.data["flood_event"].shape == (7, 6)
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
     assert f"{MAX}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
@@ -137,7 +137,7 @@ def test_build_model_grid(
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
-    assert model.hazard.data["flood_event"].shape == (5, 4)
+    assert model.hazard.data["flood_event"].shape == (7, 6)
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
     assert model.exposure_grid.data["commercial_content"].attrs[FN_CURVE] == "cm1"

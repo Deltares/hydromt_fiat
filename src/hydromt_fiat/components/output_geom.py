@@ -137,8 +137,7 @@ class OutputGeomsComponent(GeomsComponent):
             directory next to the configurations file. By default None.
         """
         # Check the output_name's existence
-        if output_name not in self.data:
-            raise ValueError(f"'{output_name}' not in the output component's data")
+        self._assert_entry(output_name)
 
         logger.info(
             f"Square aggregate of {output_name} at {res} km resolution \
