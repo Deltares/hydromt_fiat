@@ -25,6 +25,7 @@ Attribution
 -----------
 HydroMT-FIAT relies on these excellent libraries:
 
+- affine
 - geopandas
 - hydromt
 - numpy
