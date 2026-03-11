@@ -13,16 +13,25 @@
         }
     </style>
 
-.. _api_utility:
+.. _api_gis:
 
-Utility
-=======
-Utility functions of HydroMT-FIAT.
+GIS
+===
+Some gis functions specific to HydroMT-FIAT.
 
-Data
-----
+Raster
+------
 
 .. autosummary::
     :toctree: ../_generated
 
-    data.fetch_data
+    gis.raster.expand_raster_to_bounds
+    gis.raster_utils.force_ns
+
+Utility
+-------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    gis.utils.crs_representation

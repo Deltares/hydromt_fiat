@@ -17,7 +17,6 @@
 
 FIATModel
 =========
-
 All FIATModel related operations and attributes.
 
 Initialize

@@ -13,15 +13,14 @@
         }
     </style>
 
-.. _api_components:
+.. _api_components_build:
 
-Components
-==========
-These are the FIATModel components.
+Components (build)
+==================
+These are the FIATModel building components.
 
-
-Initialize
-----------
+Classes
+-------
 
 .. autosummary::
     :toctree: ../_generated
@@ -31,8 +30,6 @@ Initialize
     HazardComponent
     ExposureGeomsComponent
     ExposureGridComponent
-    OutputGeomsComponent
-    OutputGridComponent
 
 ConfigComponent
 ---------------
@@ -84,6 +81,7 @@ ExposureGeomsComponent
     ExposureGeomsComponent.clip
     ExposureGeomsComponent.reproject
     ExposureGeomsComponent.setup
+    ExposureGeomsComponent.setup_link_vulnerability
     ExposureGeomsComponent.setup_max_damage
     ExposureGeomsComponent.update_column
 
@@ -100,28 +98,3 @@ ExposureGridComponent
     ExposureGridComponent.clip
     ExposureGridComponent.reproject
     ExposureGridComponent.setup
-
-OutputGeomsComponent
---------------------
-
-.. autosummary::
-    :toctree: ../_generated
-
-    OutputGeomsComponent.data
-    OutputGeomsComponent.read
-    OutputGeomsComponent.clear
-    OutputGeomsComponent.clip
-    OutputGeomsComponent.reproject
-    OutputGeomsComponent.aggregate_square
-
-OutputGridComponent
--------------------
-
-.. autosummary::
-    :toctree: ../_generated
-
-    OutputGridComponent.data
-    OutputGridComponent.read
-    OutputGridComponent.clear
-    OutputGridComponent.clip
-    OutputGridComponent.reproject

@@ -14,4 +14,4 @@ Furthermore it informs you on planned developments and new features.
 
    ../changelog.rst
    roadmap.rst
-   Developer's guide <https://deltares.github.io/hydromt/stable/guides/core_dev/contributing>
+   Developer's guide <https://deltares.github.io/hydromt/stable/dev/core_dev/index.html>

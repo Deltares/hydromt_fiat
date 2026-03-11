@@ -17,7 +17,6 @@
 
 Workflow functions
 ==================
-
 The underlying workflow methods of the components.
 
 Vulnerability
