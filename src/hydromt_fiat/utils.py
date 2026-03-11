@@ -1,6 +1,8 @@
 """HydroMT-FIAT utility."""
 
 import logging
+from itertools import islice
+from pathlib import Path
 
 from pint import Quantity, UnitRegistry
 from pint.facets.plain import PlainQuantity
@@ -120,3 +122,56 @@ the standard unit ({str(default_quantity.units)}) \
 for {str(quantity.units.dimensionality)}"
     )
     return default_quantity
+
+
+def directory_tree(
+    dir_path: Path,
+    level: int = -1,
+    limit_to_directories: bool = False,
+    length_limit: int = 1000,
+) -> None:
+    """Create a visual tree of the contents of a directory.
+
+    With many thanks to this post:
+    https://stackoverflow.com/questions/9727673/list-directory-tree-structure-in-python
+    """
+    # Specific characters
+    space = "    "
+    branch = "│   "
+    tee = "├── "
+    last = "└── "
+
+    # Ensure typing
+    dir_path = Path(dir_path)
+    files = 0
+    directories = 0
+
+    # Nested function for looping through the file and directories
+    def inner(dir_path: Path, prefix: str = "", level=-1):
+        nonlocal files, directories
+        if not level:
+            return  # 0, stop iterating
+        # Only spit out directories
+        if limit_to_directories:
+            contents = [d for d in dir_path.iterdir() if d.is_dir()]
+        else:
+            contents = list(dir_path.iterdir())
+        pointers = [tee] * (len(contents) - 1) + [last]
+        # Move recursively through the directories
+        for pointer, path in zip(pointers, contents):
+            if path.is_dir():
+                yield prefix + pointer + path.name
+                directories += 1
+                extension = branch if pointer == tee else space
+                # Move through all on level deeper
+                yield from inner(path, prefix=prefix + extension, level=level - 1)
+            elif not limit_to_directories:
+                yield prefix + pointer + path.name
+                files += 1
+
+    # Print the top level
+    print(dir_path.name)
+    iterator = inner(dir_path, level=level)
+    for line in islice(iterator, length_limit):
+        print(line)  # The contents
+    print(f"\n{directories} directories" + (f", {files} files" if files else ""))
