@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Any
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -15,15 +14,19 @@ from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
     HazardComponent,
+    OutputGeomsComponent,
+    OutputGridComponent,
     RegionComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
     GEOM,
     GRID,
     HAZARD,
+    OUTPUT,
     REGION,
     SETTINGS,
     VULNERABILITY,
@@ -42,13 +45,13 @@ class FIATModel(Model):
 
     Parameters
     ----------
-    root : str, optional
+    root : Path | str, optional
         Model root, by default None.
-    config_fname : str, optional
+    config_fname : Path | str, optional
         Name of the configurations file, by default 'settings.toml'.
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w".
-    data_libs : list[str] | str, optional
+    data_libs : list[Path | str] | Path | str, optional
         List of data catalog configuration files, by default None.
     **catalog_keys : dict
         Additional keyword arguments to be passed down to the DataCatalog.
@@ -61,11 +64,11 @@ class FIATModel(Model):
 
     def __init__(
         self,
-        root: str | None = None,
-        config_fname: str = f"{SETTINGS}.toml",
+        root: Path | str | None = None,
+        config_fname: Path | str = f"{SETTINGS}.toml",
         *,
         mode: str = "r",
-        data_libs: list[str] | str | None = None,
+        data_libs: list[Path | str] | Path | str | None = None,
         **catalog_keys,
     ):
         super().__init__(
@@ -95,6 +98,14 @@ class FIATModel(Model):
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
+            f"{OUTPUT}_{GEOM}",
+            OutputGeomsComponent(model=self),
+        )
+        self.add_component(
+            f"{OUTPUT}_{GRID}",
+            OutputGridComponent(model=self),
+        )
+        self.add_component(
             VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
@@ -121,6 +132,16 @@ class FIATModel(Model):
         return self.components[HAZARD]
 
     @property
+    def output_geoms(self) -> OutputGeomsComponent:
+        """Return the output geoms component."""
+        return self.components[f"{OUTPUT}_{GEOM}"]
+
+    @property
+    def output_grid(self) -> OutputGridComponent:
+        """Return the output grid component."""
+        return self.components[f"{OUTPUT}_{GRID}"]
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Return the vulnerability component."""
         return self.components[VULNERABILITY]
@@ -128,13 +149,25 @@ class FIATModel(Model):
     ## I/O
     @hydromt_step
     def read(self) -> None:
-        """Read the FIAT model."""
-        super().read()
+        """Read the FIAT model.
+
+        Does not read model results.
+        """
+        components = [item for item in self.components.values() if item._build]
+        for component in components:
+            component.read()
+
+    @hydromt_step
+    def read_output(self) -> None:
+        """Read the FIAT model outputs (results)."""
+        components = [item for item in self.components.values() if not item._build]
+        for component in components:
+            component.read()
 
     @hydromt_step
     def write(self) -> None:
         """Write the FIAT model."""
-        names = list(self.components.keys())
+        names = [item.name_in_model for item in self.components.values() if item._build]
         names.remove(CONFIG)
         for name in names:
             self.components[name].write()
@@ -142,7 +175,7 @@ class FIATModel(Model):
 
     ## Mutating methods
     @hydromt_step
-    def clear(self):
+    def clear(self) -> None:
         """Clear the model.
 
         All data from the components are deleted.
@@ -196,6 +229,9 @@ class FIATModel(Model):
             raise ValueError(
                 "crs was not provided nor found in the model 'crs' attribute"
             )
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+        logger.info(f"Reprojecting the model to crs: {crs_representation(crs)}")
         # Call the reproject methods of the spatial components
         for _, component in self.components.items():
             if not isinstance(component, SpatialModelComponent):
@@ -206,7 +242,7 @@ class FIATModel(Model):
     @hydromt_step
     def setup_config(
         self,
-        **settings: dict[str, Any],
+        **settings,
     ) -> None:
         """Set config file entries.
 

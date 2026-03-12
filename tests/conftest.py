@@ -200,6 +200,21 @@ def exposure_vector_clipped_for_damamge(
 
 
 @pytest.fixture
+def exposure_vector_clipped_for_link(
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+) -> gpd.GeoDataFrame:
+    exposure_vector_clipped_for_damamge.drop(
+        [
+            "fn_damage_structure",
+            "fn_damage_content",
+        ],
+        axis=1,
+        inplace=True,
+    )
+    return exposure_vector_clipped_for_damamge
+
+
+@pytest.fixture
 def exposure_grid_clipped(model_data_clipped_path: Path) -> xr.Dataset:
     p = Path(model_data_clipped_path, "exposure", "spatial.nc")
     assert p.is_file()
