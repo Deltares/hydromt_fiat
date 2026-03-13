@@ -1,7 +1,6 @@
 """Implement fiat model class"""
 
 import csv
-import glob
 import logging
 import os
 import shutil
@@ -1645,7 +1644,7 @@ class FiatModel(GridModel):
             ]
             self.exposure.read_geoms(exposure_fn)
 
-        fns = glob.glob(Path(self.root, "geoms", "*.geojson").as_posix())
+        fns = [str(p) for p in Path(self.root, "geoms").glob("*.geojson")]
         if self.spatial_joins["aggregation_areas"]:
             fns_aggregation = []
             for i in self.spatial_joins["aggregation_areas"]:
