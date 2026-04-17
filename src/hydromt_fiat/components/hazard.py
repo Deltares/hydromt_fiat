@@ -19,6 +19,7 @@ from hydromt_fiat.utils import (
     HAZARD_FILE,
     HAZARD_RP,
     HAZARD_SETTINGS,
+    MODEL_CALC,
     MODEL_RISK,
     SRS,
     VAR_AS_BAND,
@@ -257,3 +258,8 @@ class HazardComponent(GridComponent):
         self.model.config.set(MODEL_RISK, risk)
         if risk:
             self.model.config.set(HAZARD_RP, return_periods)
+        # Tell Delft-FIAT which calculation method to use based on the hazard
+        # type. The method module determines which band `type` metadata it
+        # expects: flood.depth → water_depth, flood.level → water_level.
+        calc = f"flood.{hazard_type.split('_')[-1]}"
+        self.model.config.set(MODEL_CALC, calc)
