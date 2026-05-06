@@ -44,6 +44,10 @@ def test_exposure_geoms_setup_fill_nodata(
 
     # Assert the output
     assert "3 features could not be internally linked" in caplog.text
+    # The warning should also name the unmapped column and include a
+    # breakdown line with a count (form: "<value>: <count>").
+    assert "Unmapped values in 'gebruiksdoel'" in caplog.text
+    assert ": 3" in caplog.text
     assert len(exposure_vector) == 9
 
     # Fill the nodata in the linking with a known (irony) value
