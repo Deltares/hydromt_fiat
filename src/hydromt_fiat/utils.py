@@ -71,8 +71,8 @@ UNIT_REGISTRY: UnitRegistry = UnitRegistry()  # type: ignore[type-arg]
 
 # calc
 CALC_METHODS = {
-    "flood_depth": "flood.depth",
-    "flood_level": "flood.level",
+    "water_depth": "flood.depth",
+    "water_level": "flood.level",
 }
 
 logger = logging.getLogger(f"hydromt.{__name__}")
