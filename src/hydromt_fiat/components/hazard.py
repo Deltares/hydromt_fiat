@@ -8,7 +8,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
-from hydromt_fiat import workflows
+from hydromt_fiat import utils, workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
@@ -258,8 +258,4 @@ class HazardComponent(GridComponent):
         self.model.config.set(MODEL_RISK, risk)
         if risk:
             self.model.config.set(HAZARD_RP, return_periods)
-        # Tell Delft-FIAT which calculation method to use based on the hazard
-        # type. The method module determines which band `type` metadata it
-        # expects: flood.depth → water_depth, flood.level → water_level.
-        calc = f"flood.{hazard_type.split('_')[-1]}"
-        self.model.config.set(MODEL_CALC, calc)
+        self.model.config.set(MODEL_CALC, utils.get_calculation_method(hazard_type))

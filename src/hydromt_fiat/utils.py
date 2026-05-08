@@ -1,6 +1,7 @@
 """HydroMT-FIAT utility."""
 
 import logging
+from typing import Literal
 
 from pint import Quantity, UnitRegistry
 from pint.facets.plain import PlainQuantity
@@ -68,6 +69,12 @@ SUBTYPE = f"sub{TYPE}"
 # Unit database init
 UNIT_REGISTRY: UnitRegistry = UnitRegistry()  # type: ignore[type-arg]
 
+# calc
+CALC_METHODS = {
+    "flood_depth": "flood.depth",
+    "flood_level": "flood.level",
+}
+
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
@@ -122,3 +129,25 @@ the standard unit ({str(default_quantity.units)}) \
 for {str(quantity.units.dimensionality)}"
     )
     return default_quantity
+
+def get_calculation_method(
+    hazard_type: Literal["flood_depth", "flood_level"]
+) -> str:
+    """Generate the calculation string for a given hazard type.
+
+    Parameters
+    ----------
+    hazard_type : str
+        The type of hazard, e.g. "flood_depth" or "flood_level".
+
+    Returns
+    -------
+    str
+        The model calculation string, e.g. "flood.depth" or "flood.level".
+    """
+    if hazard_type not in CALC_METHODS:
+        raise ValueError(
+            f"Unsupported hazard type: {hazard_type}. "
+            f"Supported types are: {list(CALC_METHODS.keys())}"
+        )
+    return CALC_METHODS[hazard_type]
