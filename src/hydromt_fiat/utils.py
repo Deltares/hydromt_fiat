@@ -130,9 +130,8 @@ for {str(quantity.units.dimensionality)}"
     )
     return default_quantity
 
-def get_calculation_method(
-    hazard_type: Literal["flood_depth", "flood_level"]
-) -> str:
+
+def get_calculation_method(hazard_type: Literal["flood_depth", "flood_level"]) -> str:
     """Generate the calculation string for a given hazard type.
 
     Parameters
