@@ -212,6 +212,47 @@ def test_exposure_geom_component_setup_no_link(
     assert f"{FN}_{DAMAGE}_structure" not in component.data["buildings"].columns
 
 
+def test_exposure_geom_component_setup_with_exposure_name(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Setup the data with an explicit name override
+    component.setup(
+        exposure_fname="buildings",
+        exposure_type_column="gebruiksdoel",
+        exposure_name="residential",
+        exposure_link_fname="buildings_link",
+    )
+
+    # The renamed key replaces the catalog-source stem
+    assert "residential" in component.data
+    assert "buildings" not in component.data
+    assert len(component.data["residential"]) != 0
+    assert f"{FN}_{DAMAGE}_structure" in component.data["residential"].columns
+
+
+def test_exposure_geom_component_setup_with_exposure_name_no_link(
+    model_with_region: FIATModel,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_with_region)
+
+    # Rename also applies on the un-linked code path
+    component.setup(
+        exposure_fname="buildings",
+        exposure_type_column="gebruiksdoel",
+        exposure_name="residential",
+        exposure_link_fname="buildings_link",
+        link_to_vulnerability=False,
+    )
+
+    assert "residential" in component.data
+    assert "buildings" not in component.data
+    assert len(component.data["residential"]) != 0
+
+
 def test_exposure_geom_component_setup_errors(
     model: FIATModel,
     build_region_small: Path,

@@ -174,6 +174,8 @@ class ExposureGridComponent(GridComponent):
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        *,
+        exposure_names: str | list[str | None] | None = None,
         expand: bool = True,
     ) -> None:
         """Set up an exposure grid.
@@ -185,6 +187,12 @@ class ExposureGridComponent(GridComponent):
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None.
+        exposure_names : str | list[str | None], optional
+            Names under which to store the exposure variable(s) in the model. The
+            shape must match `exposure_fnames`. A `None` entry (or the whole arg)
+            falls back to the stem of the corresponding file. The chosen names are
+            also used to match against the `exposure_link_fname` linking table.
+            By default None.
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -214,10 +222,37 @@ before setting up exposure grid"
             else exposure_fnames
         )
 
+        # Normalise exposure_names to a list aligned with exposure_fnames
+        if exposure_names is None:
+            names_in: list[str | None] = [None] * len(exposure_fnames)
+        elif isinstance(exposure_names, str):
+            if len(exposure_fnames) != 1:
+                raise ValueError(
+                    "A scalar `exposure_names` is only valid when a single file "
+                    "is passed; provide a list aligned with `exposure_fnames`."
+                )
+            names_in = [exposure_names]
+        else:
+            if len(exposure_names) != len(exposure_fnames):
+                raise ValueError(
+                    f"`exposure_names` has length {len(exposure_names)} but "
+                    f"`exposure_fnames` has length {len(exposure_fnames)}."
+                )
+            names_in = list(exposure_names)
+
+        # Resolve names: explicit override per-element, else stem of the source path
+        resolved_names = [
+            n if n is not None else Path(f).stem
+            for n, f in zip(names_in, exposure_fnames)
+        ]
+        if len(set(resolved_names)) != len(resolved_names):
+            raise ValueError(
+                f"Resolved exposure names contain duplicates: {resolved_names}."
+            )
+
         # Read exposure data files from data catalog
         exposure_data = {}
-        for fname in exposure_fnames:
-            name = Path(fname).stem
+        for fname, name in zip(exposure_fnames, resolved_names):
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,

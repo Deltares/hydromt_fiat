@@ -1,6 +1,7 @@
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
+import pandas as pd
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
@@ -13,9 +14,11 @@ from hydromt_fiat.utils import (
     EXPOSURE,
     EXPOSURE_GRID_FILE,
     EXPOSURE_GRID_SETTINGS,
+    EXPOSURE_LINK,
     FN_CURVE,
     GRID,
     MODEL_TYPE,
+    OBJECT_TYPE,
     VAR_AS_BAND,
     VULNERABILITY,
 )
@@ -221,4 +224,123 @@ def test_exposure_grid_component_setup_errors(
         component.setup(
             exposure_fnames="industrial_content",
             exposure_link_fname="",
+        )
+
+
+def test_exposure_grid_component_setup_with_exposure_names_single(
+    model_exposure_setup: FIATModel,
+    tmp_path: Path,
+):
+    # Build an ad-hoc linking table mapping the rename to a known identifier
+    link_path = tmp_path / "rename_link.csv"
+    pd.DataFrame(
+        {
+            EXPOSURE_LINK: ["industry"],
+            OBJECT_TYPE: ["industrial_content"],
+        }
+    ).to_csv(link_path, index=False)
+
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    component.setup(
+        exposure_fnames="industrial_content",
+        exposure_link_fname=link_path,
+        exposure_names="industry",
+    )
+
+    # The renamed variable replaces the stem-derived one
+    assert "industry" in component.data.data_vars
+    assert "industrial_content" not in component.data.data_vars
+    assert component.data.industry.attrs.get(FN_CURVE) == "in2"
+
+
+def test_exposure_grid_component_setup_with_exposure_names_multi(
+    model_exposure_setup: FIATModel,
+    tmp_path: Path,
+):
+    link_path = tmp_path / "rename_link.csv"
+    pd.DataFrame(
+        {
+            EXPOSURE_LINK: ["industry_c", "industry_s"],
+            OBJECT_TYPE: ["industrial_content", "industrial_structure"],
+        }
+    ).to_csv(link_path, index=False)
+
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    component.setup(
+        exposure_fnames=["industrial_content", "industrial_structure"],
+        exposure_link_fname=link_path,
+        exposure_names=["industry_c", "industry_s"],
+        expand=False,
+    )
+
+    assert "industry_c" in component.data.data_vars
+    assert "industry_s" in component.data.data_vars
+    assert "industrial_content" not in component.data.data_vars
+    assert "industrial_structure" not in component.data.data_vars
+
+
+def test_exposure_grid_component_setup_with_exposure_names_partial(
+    model_exposure_setup: FIATModel,
+    tmp_path: Path,
+):
+    # One entry keeps the stem (None), the other is renamed
+    link_path = tmp_path / "rename_link.csv"
+    pd.DataFrame(
+        {
+            EXPOSURE_LINK: ["industrial_content", "industry_s"],
+            OBJECT_TYPE: ["industrial_content", "industrial_structure"],
+        }
+    ).to_csv(link_path, index=False)
+
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    component.setup(
+        exposure_fnames=["industrial_content", "industrial_structure"],
+        exposure_link_fname=link_path,
+        exposure_names=[None, "industry_s"],
+        expand=False,
+    )
+
+    assert "industrial_content" in component.data.data_vars
+    assert "industry_s" in component.data.data_vars
+    assert "industrial_structure" not in component.data.data_vars
+
+
+def test_exposure_grid_component_setup_with_exposure_names_mismatch(
+    model_exposure_setup: FIATModel,
+):
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    with pytest.raises(ValueError, match="`exposure_names` has length"):
+        component.setup(
+            exposure_fnames=["industrial_content", "industrial_structure"],
+            exposure_names=["only_one"],
+        )
+
+
+def test_exposure_grid_component_setup_with_exposure_names_scalar_multi(
+    model_exposure_setup: FIATModel,
+):
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    with pytest.raises(
+        ValueError, match="scalar `exposure_names` is only valid when a single file"
+    ):
+        component.setup(
+            exposure_fnames=["industrial_content", "industrial_structure"],
+            exposure_names="industry",
+        )
+
+
+def test_exposure_grid_component_setup_with_exposure_names_collision(
+    model_exposure_setup: FIATModel,
+):
+    component = ExposureGridComponent(model=model_exposure_setup)
+
+    with pytest.raises(ValueError, match="duplicates"):
+        component.setup(
+            exposure_fnames=["industrial_content", "industrial_structure"],
+            exposure_names=["dup", "dup"],
         )
