@@ -4,7 +4,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
-from shapely.geometry import LineString, Point, Polygon, box
+from shapely.geometry import LineString, Point, box
 
 from hydromt_fiat.utils import DAMAGE, MAX
 from hydromt_fiat.workflows import max_value
@@ -138,7 +138,7 @@ def test_max_value_no_subtype(
 
     # Assert the content
     assert f"{MAX}_{DAMAGE}" in exposure_vector_data_alt
-    assert int(exposure_vector[f"{MAX}_{DAMAGE}" ].mean()) == 1363905
+    assert int(exposure_vector[f"{MAX}_{DAMAGE}"].mean()) == 1363905
 
 
 def test_max_value_errors(
