@@ -196,9 +196,13 @@ def test_exposure_geoms_link_vulnerability_fill(
     assert (exposure_vector[OBJECT_TYPE] == "unknown").sum() == 3
     assert f"{FN}_{DAMAGE}_structure" in exposure_vector.columns
     # And the fill features picked up a real curve
-    assert exposure_vector.loc[
-        exposure_vector[OBJECT_TYPE] == "unknown", f"{FN}_{DAMAGE}_structure"
-    ].notna().all()
+    assert (
+        exposure_vector.loc[
+            exposure_vector[OBJECT_TYPE] == "unknown", f"{FN}_{DAMAGE}_structure"
+        ]
+        .notna()
+        .all()
+    )
 
 
 def test_exposure_geoms_link_vulnerability_fill_invalid(
