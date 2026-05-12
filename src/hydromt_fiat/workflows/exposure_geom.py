@@ -118,6 +118,8 @@ these were removed"
 def exposure_geoms_link_vulnerability(
     exposure_data: gpd.GeoDataFrame,
     vulnerability: pd.DataFrame,
+    *,
+    unlinked_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
     """Link the exposure data to the vulnerability data.
 
@@ -129,6 +131,11 @@ def exposure_geoms_link_vulnerability(
         The raw exposure data.
     vulnerability : pd.DataFrame
         The vulnerability identifier table to link up with.
+    unlinked_type_fill : str, optional
+        Object type assigned to features whose current `object_type` is absent
+        from the vulnerability link table. When provided (and present in the
+        vulnerability link table), those features are remapped to this type
+        instead of being dropped. By default None.
 
     Returns
     -------
@@ -143,6 +150,27 @@ def exposure_geoms_link_vulnerability(
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
+
+    # Optionally remap features whose object_type is missing from the
+    # vulnerability link table so they survive the merge below.
+    if unlinked_type_fill is not None:
+        linked_types = set(vulnerability[EXPOSURE_LINK].unique())
+        if unlinked_type_fill not in linked_types:
+            logger.warning(
+                f"`unlinked_type_fill` value '{unlinked_type_fill}' is not present \
+in the vulnerability link table; unlinked features will still be dropped"
+            )
+        else:
+            unlinked_mask = ~exposure_data[OBJECT_TYPE].isin(linked_types)
+            n_unlinked = int(unlinked_mask.sum())
+            if n_unlinked > 0:
+                exposure_data = exposure_data.copy()
+                exposure_data.loc[unlinked_mask, OBJECT_TYPE] = unlinked_type_fill
+                logger.info(
+                    f"{n_unlinked} features had an exposure type not present in \
+the vulnerability link table; remapped to '{unlinked_type_fill}'"
+                )
+
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:

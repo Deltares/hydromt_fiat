@@ -191,6 +191,7 @@ class ExposureGeomsComponent(GeomsComponent):
         *,
         exposure_link_fname: Path | str | None = None,
         exposure_type_fill: str | None = None,
+        unlinked_type_fill: str | None = None,
         predicate: str = "contains",
         link_to_vulnerability: bool = True,
     ) -> None:
@@ -215,7 +216,15 @@ class ExposureGeomsComponent(GeomsComponent):
             types to the vulnerability data, by default None.
         exposure_type_fill : str, optional
             Value to which missing entries in the exposure type column will be mapped
-            to, if provided. By default None.
+            to, if provided. Operates on the first linking stage (raw type column ->
+            object type). By default None.
+        unlinked_type_fill : str, optional
+            Object type assigned to features whose object type (after the first
+            linking stage) has no matching entry in the vulnerability link table.
+            When provided and itself present in the vulnerability link table, those
+            features are remapped to this type and kept; otherwise they are dropped
+            with a warning. Only honored when `link_to_vulnerability` is True. By
+            default None.
         predicate : str, optional
             Method on how to select the data that falls within the region geometry.
             For more information see `geopandas.sjoin`. By default 'contains'.
@@ -256,9 +265,10 @@ use 'setup_region' before this method"
         )
         # Either link to vulnerability
         if link_to_vulnerability:
-            self.setup_link_vulnerability(
+            self._link_vulnerability(
                 exposure_name=name,
                 exposure_data=exposure_vector,
+                unlinked_type_fill=unlinked_type_fill,
             )
         # Or set the data directly
         else:
@@ -290,6 +300,19 @@ use 'setup_region' before this method"
             self._assert_entry(exposure_name)
             exposure_data = self.data[exposure_name]
 
+        self._link_vulnerability(
+            exposure_name=exposure_name,
+            exposure_data=exposure_data,
+        )
+
+    def _link_vulnerability(
+        self,
+        exposure_name: str,
+        exposure_data: gpd.GeoDataFrame,
+        *,
+        unlinked_type_fill: str | None = None,
+    ) -> None:
+        """Link exposure data to vulnerability and store back on the component."""
         # Check for vulnerability
         vulnerability = self.model.vulnerability.data
         if any([item.empty for item in vulnerability]):
@@ -300,6 +323,7 @@ use 'setup_region' before this method"
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
             vulnerability=vulnerability.identifiers,
+            unlinked_type_fill=unlinked_type_fill,
         )
 
         # Set the data in the component

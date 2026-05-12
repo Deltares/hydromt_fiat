@@ -173,6 +173,58 @@ def test_exposure_geoms_link_vulnerability_warnings(
     assert len(exposure_vector) == 9
 
 
+def test_exposure_geoms_link_vulnerability_fill(
+    caplog: pytest.LogCaptureFixture,
+    exposure_vector_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+):
+    # Rename the 'unknown' rows to a type that's not in the vulnerability link;
+    # then ask the workflow to fold them back to 'unknown' via the fill.
+    exposure_data = exposure_vector_data_link.replace("unknown", "absent_type")
+
+    exposure_vector = exposure_geoms_link_vulnerability(
+        exposure_data=exposure_data,
+        vulnerability=vulnerability_identifiers,
+        unlinked_type_fill="unknown",
+    )
+
+    # All features kept; no drop-warning emitted
+    assert len(exposure_vector) == 12
+    assert "could not be linked to vulnerability data" not in caplog.text
+    # Re-mapped features now carry the fill value
+    assert "absent_type" not in exposure_vector[OBJECT_TYPE].values
+    assert (exposure_vector[OBJECT_TYPE] == "unknown").sum() == 3
+    assert f"{FN}_{DAMAGE}_structure" in exposure_vector.columns
+    # And the fill features picked up a real curve
+    assert exposure_vector.loc[
+        exposure_vector[OBJECT_TYPE] == "unknown", f"{FN}_{DAMAGE}_structure"
+    ].notna().all()
+
+
+def test_exposure_geoms_link_vulnerability_fill_invalid(
+    caplog: pytest.LogCaptureFixture,
+    exposure_vector_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+):
+    # Use a fill value that itself is not in the vulnerability link table -- the
+    # workflow should warn about it and fall back to the existing drop behavior.
+    exposure_data = exposure_vector_data_link.replace("unknown", "absent_type")
+
+    exposure_vector = exposure_geoms_link_vulnerability(
+        exposure_data=exposure_data,
+        vulnerability=vulnerability_identifiers,
+        unlinked_type_fill="also_absent",
+    )
+
+    assert (
+        "`unlinked_type_fill` value 'also_absent' is not present in the \
+vulnerability link table"
+        in caplog.text
+    )
+    assert "3 features could not be linked to vulnerability data" in caplog.text
+    assert len(exposure_vector) == 9
+
+
 def test_exposure_geoms_add_columns(
     buildings_data: gpd.GeoDataFrame,
 ):

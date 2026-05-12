@@ -17,6 +17,7 @@ from hydromt_fiat.utils import (
     FN,
     GEOM,
     MODEL_TYPE,
+    OBJECT_TYPE,
 )
 
 
@@ -248,6 +249,33 @@ def test_exposure_geom_component_setup_link(
     assert "foo" in component.data
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_setup_unlinked_fill(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Re-label the 'unknown' object_types to a value absent from the vulnerability
+    # link table, then go through the private helper that `setup()` uses when
+    # `unlinked_type_fill` is provided.
+    data = exposure_vector_clipped_for_link.copy()
+    data.loc[data[OBJECT_TYPE] == "unknown", OBJECT_TYPE] = "absent_type"
+
+    component._link_vulnerability(
+        exposure_name="foo",
+        exposure_data=data,
+        unlinked_type_fill="unknown",
+    )
+
+    # The previously-unmatched features are kept and carry the fill value
+    assert "foo" in component.data
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_structure" in component.data["foo"].columns
+    assert "absent_type" not in component.data["foo"][OBJECT_TYPE].values
+    assert (component.data["foo"][OBJECT_TYPE] == "unknown").sum() == 3
 
 
 def test_exposure_geom_component_setup_link_data(
