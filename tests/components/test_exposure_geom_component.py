@@ -200,8 +200,11 @@ def test_exposure_geom_component_setup_deferred_link(
     model_exposure_setup: FIATModel,
     vulnerability_identifiers_path: Path,
 ):
-    """Calling setup without vulnerability_link_fname stores unlinked exposure,
-    then setup_link_vulnerability applies the link in a separate step."""
+    """Deferred linking via setup_link_vulnerability.
+
+    Calling setup without vulnerability_link_fname stores unlinked exposure;
+    setup_link_vulnerability applies the link in a separate step.
+    """
     component = ExposureGeomsComponent(model=model_exposure_setup)
 
     # Step 1: load exposure without linking
@@ -358,8 +361,11 @@ def test_exposure_geom_component_setup_collision_isolation(
     vulnerability_curves: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
-    """Regression: a road link table whose exposure_link='residential' must NOT pull
-    in structure/content curves from a separate building link table."""
+    """Regression test for the residential typology collision.
+
+    A road link table whose exposure_link='residential' must NOT pull in
+    structure/content curves from a separate building link table.
+    """
     model_with_region.vulnerability._set_curves(vulnerability_curves)
     component = ExposureGeomsComponent(model=model_with_region)
 
