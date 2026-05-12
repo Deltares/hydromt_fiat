@@ -58,7 +58,7 @@ def test_build_model_geom(
         exposure_link_fname="buildings_link",
         exposure_type_fill="unknown",
     )
-    model.exposure_geoms.setup_max_damage(
+    model.exposure_geoms.setup_max_value(
         exposure_name="buildings",
         exposure_type=DAMAGE,
         exposure_cost_table_fname="jrc_damage",

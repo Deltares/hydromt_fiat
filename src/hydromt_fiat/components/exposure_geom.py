@@ -306,15 +306,22 @@ use 'setup_region' before this method"
         self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
-    def setup_max_damage(
+    def setup_max_value(
         self,
         exposure_name: str,
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
+        *,
+        basis: str | None = None,
+        unit: str = "m2",
         **select,
     ) -> None:
-        """Set up the maximum potential damage per object in an existing dataset.
+        """Set up the maximum per-object value for an existing exposure dataset.
+
+        The value is ``factor * cost``, where ``factor`` is the object's area,
+        length, or 1.0 depending on ``basis``. Suitable for any per-object
+        exposure attribute (damage, replacement value, …), not damage alone.
 
         Warning
         -------
@@ -325,20 +332,28 @@ use 'setup_region' before this method"
         exposure_name : str
             The name of the existing dataset.
         exposure_type : str
-            Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
+            Type of exposure corresponding with the vulnerability data,
+            e.g. 'damage'.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
         exposure_cost_link_fname : Path | str, optional
             A linking table to like the present object type with the identifiers
-            defined in the cost table. If None, it is assumed the present object type
-            matches the identifiers in the cost table. By default None.
+            defined in the cost table. If None, it is assumed the present object
+            type matches the identifiers in the cost table. By default None.
+        basis : {'area', 'length', 'object'}, optional
+            How to derive the per-object geometric factor. If None (default), the
+            basis is auto-detected from the geometry: polygons → 'area',
+            lines → 'length', points → 'object'. Mixed geometries raise.
+        unit : str, optional
+            Unit of the geometric denominator in the cost table.
+            Default 'm2'. Ignored when ``basis == 'object'``.
         **select : dict
             Keyword arguments used to select data from the exposure cost table.
-            E.g. a column is present named 'country' and the wanted values are in the
-            row with 'UK', provided country='UK' as keyword argument.
+            E.g. a column is present named 'country' and the wanted values are in
+            the row with 'UK', provided country='UK' as keyword argument.
         """
-        logger.info(f"Setting up maximum potential damage for {exposure_name}")
+        logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
         # Get the exposure costs table from the data catalog
@@ -352,13 +367,15 @@ use 'setup_region' before this method"
                 exposure_cost_link_fname,
             )
 
-        # Call the workflows function to add the max damage
-        exposure_vector = workflows.max_monetary_damage(
+        # Call the workflows function to add the max value
+        exposure_vector = workflows.max_value(
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             exposure_type=exposure_type,
             vulnerability=self.model.vulnerability.data.identifiers,
             exposure_cost_link=exposure_cost_link,
+            basis=basis,
+            unit=unit,
             **select,
         )
 

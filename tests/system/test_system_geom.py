@@ -58,7 +58,7 @@ def test_system_geom_model(
         exposure_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
-    model.exposure_geoms.setup_max_damage(
+    model.exposure_geoms.setup_max_value(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="jrc_damage",
