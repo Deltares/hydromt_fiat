@@ -68,7 +68,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     model.hazard._data = hazard
     model.output_geoms._data = {"foo": exposure_vector}
     model.output_grid._data = exposure_grid
-    model.vulnerability._data = VulnerabilityData(vulnerability_curves, pd.DataFrame())
+    model.vulnerability._data = VulnerabilityData(vulnerability_curves)
     # Assert the current state
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert model.crs.to_epsg() == 28992

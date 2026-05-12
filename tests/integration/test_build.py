@@ -41,7 +41,6 @@ def test_build_model_geom(
     # Setup the vulnerability
     model.vulnerability.setup(
         "jrc_curves",
-        "jrc_curves_link",
         unit="m",
         continent="europe",
     )
@@ -56,6 +55,7 @@ def test_build_model_geom(
         exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
+        vulnerability_link_fname="jrc_curves_link",
         exposure_type_fill="unknown",
     )
     model.exposure_geoms.setup_max_damage(
@@ -115,7 +115,6 @@ def test_build_model_grid(
     # Setup the vulnerability
     model.vulnerability.setup(
         "jrc_curves",
-        "jrc_curves_link",
         unit="m",
         continent="europe",
     )
@@ -129,6 +128,7 @@ def test_build_model_grid(
     model.exposure_grid.setup(
         exposure_fnames=["commercial_structure", "commercial_content"],
         exposure_link_fname="exposure_grid_link",
+        vulnerability_link_fname="jrc_curves_link",
     )
 
     # Assert the state

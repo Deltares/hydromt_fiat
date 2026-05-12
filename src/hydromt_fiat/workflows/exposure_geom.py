@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from hydromt_fiat.utils import (
-    CURVE_ID,
+    CURVE,
     EXPOSURE_LINK,
     EXPOSURE_TYPE,
     FN,
@@ -121,14 +121,26 @@ def exposure_geoms_link_vulnerability(
 ) -> gpd.GeoDataFrame:
     """Link the exposure data to the vulnerability data.
 
-    I.e. link the curve id's of the vulnerability to the exposure types.
+    Joins each exposure row to the curves named in ``vulnerability`` via
+    ``object_type ↔ exposure_link``. One output column ``fn_<exposure_type>_<subtype>``
+    is created per unique header in ``vulnerability``.
+
+    Important
+    ---------
+    The join key is ``object_type`` alone; ``subtype`` and ``exposure_type`` only
+    influence the names of the output columns. The caller is responsible for
+    passing only the linking rows that belong to this exposure dataset — typically
+    by going through ``build_vulnerability_link`` first. Mixing rows from different
+    exposure datasets in ``vulnerability`` will cross-contaminate the output.
 
     Parameters
     ----------
     exposure_data : gpd.GeoDataFrame
-        The raw exposure data.
+        The raw exposure data with an ``object_type`` column already populated.
     vulnerability : pd.DataFrame
-        The vulnerability identifier table to link up with.
+        The per-exposure vulnerability link, validated by ``build_vulnerability_link``.
+        Must contain ``exposure_link``, ``curve``, ``exposure_type`` and optionally
+        ``subtype``.
 
     Returns
     -------
@@ -146,9 +158,9 @@ def exposure_geoms_link_vulnerability(
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE_ID]]
+        link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE]]
         link.rename(
-            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
+            {EXPOSURE_LINK: OBJECT_TYPE, CURVE: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )

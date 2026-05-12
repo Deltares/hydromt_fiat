@@ -42,7 +42,6 @@ def test_system_geom_model(
     # Setup the vulnerability
     model.vulnerability.setup(
         "jrc_curves",
-        "jrc_curves_link",
         unit="m",
         continent="europe",
     )
@@ -57,6 +56,7 @@ def test_system_geom_model(
         exposure_fname="buildings",
         exposure_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
+        vulnerability_link_fname="jrc_curves_link",
     )
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",

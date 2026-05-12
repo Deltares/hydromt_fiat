@@ -1,10 +1,10 @@
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
+import pandas as pd
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
-from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGridComponent
@@ -17,7 +17,6 @@ from hydromt_fiat.utils import (
     GRID,
     MODEL_TYPE,
     VAR_AS_BAND,
-    VULNERABILITY,
 )
 
 
@@ -159,66 +158,64 @@ def test_exposure_grid_component_write_sig(
 
 def test_exposure_grid_component_setup(
     model_exposure_setup: FIATModel,
+    vulnerability_identifiers_path: Path,
 ):
-    # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
-    # Call the method
     component.setup(
         exposure_fnames="industrial_content",
+        vulnerability_link_fname=vulnerability_identifiers_path,
     )
 
-    # Assert the output
     assert isinstance(component.data, xr.Dataset)
     assert "industrial_content" in component.data.data_vars
     assert component.data.industrial_content.attrs.get(FN_CURVE) == "in2"
     assert component.data.raster.shape == (11, 11)
 
-    # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GRID
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
 def test_exposure_grid_component_setup_multi(
     model_exposure_setup: FIATModel,
+    vulnerability_identifiers_path: Path,
 ):
-    # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
-    # Call the method
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
+        vulnerability_link_fname=vulnerability_identifiers_path,
         expand=False,
     )
 
-    # Assert the output
     assert "industrial_content" in component.data.data_vars
     assert "industrial_structure" in component.data.data_vars
     assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
 
 
 def test_exposure_grid_component_setup_errors(
-    mocker: MockerFixture,
     model: FIATModel,
+    vulnerability_curves: pd.DataFrame,
+    vulnerability_identifiers_path: Path,
 ):
-    # Setup the component
     component = ExposureGridComponent(model=model)
 
     # Assert the vulnerability absent error
-    err_msg = "'setup_vulnerability' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
+    with pytest.raises(RuntimeError, match="No vulnerability curves"):
         component.setup(
             exposure_fnames="industrial_content",
-            exposure_link_fname="",  # Can be nonsense, error is raised earlier
+            vulnerability_link_fname=vulnerability_identifiers_path,
+            exposure_link_fname="",  # nonsense; error is raised earlier
         )
 
-    # Assert missing region error
-    mocker.patch.object(FIATModel, VULNERABILITY)
+    # Set curves so the first check passes, then assert missing-region error
+    model.vulnerability._set_curves(vulnerability_curves)
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
         component.setup(
             exposure_fnames="industrial_content",
+            vulnerability_link_fname=vulnerability_identifiers_path,
             exposure_link_fname="",
         )

@@ -14,6 +14,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
+from hydromt_fiat.components.vulnerability import EXPOSURE_GEOM_COL
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
@@ -189,19 +190,18 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_fname: Path | str,
         exposure_type_column: str,
         *,
+        vulnerability_link_fname: Path | str | None = None,
         exposure_link_fname: Path | str | None = None,
         exposure_type_fill: str | None = None,
         predicate: str = "contains",
-        link_to_vulnerability: bool = True,
     ) -> None:
         """Set up the exposure from a data source.
 
-        Will link with the vulnerability data to set a curve for each
-        exposure type.
-
-        Warning
-        -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Loads the raw exposure dataset, applies the optional OSM-tag → typology
+        mapping, and stores the result. If ``vulnerability_link_fname`` is
+        provided, immediately links the exposure to the shared vulnerability
+        curves (curves must already exist). Otherwise the exposure is stored
+        unlinked and you must call :py:meth:`setup_link_vulnerability` later.
 
         Parameters
         ----------
@@ -210,18 +210,22 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_type_column : str
             The name of column in the raw dataset that specifies the object type,
             e.g. the occupancy type.
+        vulnerability_link_fname : Path | str | None, optional
+            Data catalog entry or path to a linking CSV describing how this
+            exposure's typologies map to curves (and optionally subtypes). If
+            provided, the link is applied immediately and the curves library
+            must already be populated (run :py:meth:`VulnerabilityComponent.setup`
+            first). If omitted, defer the linking to a later call to
+            :py:meth:`setup_link_vulnerability`. By default None.
         exposure_link_fname : Path | str | None, optional
-            The name of/ path to the dataset containing the mapping of the exposure
-            types to the vulnerability data, by default None.
+            Optional dataset containing the mapping of the exposure types to the
+            vulnerability data, by default None.
         exposure_type_fill : str, optional
             Value to which missing entries in the exposure type column will be mapped
             to, if provided. By default None.
         predicate : str, optional
             Method on how to select the data that falls within the region geometry.
             For more information see `geopandas.sjoin`. By default 'contains'.
-        link_to_vulnerability : bool, optional
-            Whether to already link to the vulnerability in this setup method.
-            By default False.
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -254,15 +258,17 @@ use 'setup_region' before this method"
             exposure_linking=exposure_linking,
             exposure_type_fill=exposure_type_fill,
         )
-        # Either link to vulnerability
-        if link_to_vulnerability:
+
+        # Store the prepared exposure data first so setup_link_vulnerability
+        # can operate on it if the user supplied a link.
+        self.set(exposure_vector, name=name)
+
+        # Optionally link to the vulnerability curves in the same call
+        if vulnerability_link_fname is not None:
             self.setup_link_vulnerability(
                 exposure_name=name,
-                exposure_data=exposure_vector,
+                vulnerability_link_fname=vulnerability_link_fname,
             )
-        # Or set the data directly
-        else:
-            self.set(exposure_vector, name=name)
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
@@ -272,37 +278,70 @@ use 'setup_region' before this method"
     def setup_link_vulnerability(
         self,
         exposure_name: str,
-        exposure_data: gpd.GeoDataFrame | None = None,
+        vulnerability_link_fname: Path | str,
     ) -> None:
-        """Link the exposure geometry data to the vulnerability data.
+        """Link an existing exposure dataset to the vulnerability curves.
+
+        Validates ``vulnerability_link_fname`` against the curves library,
+        populates the ``fn_*`` columns on the exposure rows, and appends the
+        per-exposure link rows to ``model.vulnerability.data.identifiers``
+        (tagged with the exposure dataset name).
+
+        Use this when you set up the exposure with ``vulnerability_link_fname=None``
+        and want to defer the linking, or to re-link a freshly re-setup exposure.
+
+        Warning
+        -------
+        Run :py:meth:`VulnerabilityComponent.setup` and :py:meth:`setup` for
+        ``exposure_name`` beforehand.
 
         Parameters
         ----------
         exposure_name : str
-            The name of the exposure dataset. If exposure_data is None, this name
-            should be present in the `data` attribute of the component.
-        exposure_data : gpd.GeoDataFrame, optional
-            The exposure data to link the vulnerability to. If None, the data is taken
-            from the `data` attribute for the value of exposure_name. By default None.
+            The name of an existing exposure dataset already loaded by
+            :py:meth:`setup`.
+        vulnerability_link_fname : Path | str
+            Data catalog entry or path to a linking CSV describing how this
+            exposure's typologies map to curves (and optionally subtypes).
         """
-        # Check for data
-        if exposure_data is None:
-            self._assert_entry(exposure_name)
-            exposure_data = self.data[exposure_name]
+        logger.info(f"Linking '{exposure_name}' to vulnerability curves")
+        self._assert_entry(exposure_name)
 
-        # Check for vulnerability
-        vulnerability = self.model.vulnerability.data
-        if any([item.empty for item in vulnerability]):
-            # TODO Replace with custom error class
-            raise RuntimeError("Run `vulnerability.setup` before this method")
+        if self.model.vulnerability.data.curves.empty:
+            raise RuntimeError(
+                "No vulnerability curves found — run `vulnerability.setup` "
+                "before this method."
+            )
 
-        # Call the workflow function to link the data
-        exposure_vector = workflows.exposure_geoms_link_vulnerability(
-            exposure_data=exposure_data,
-            vulnerability=vulnerability.identifiers,
+        # Refuse to silently re-link a dataset that's already linked
+        identifiers = self.model.vulnerability.data.identifiers
+        if (
+            not identifiers.empty
+            and EXPOSURE_GEOM_COL in identifiers.columns
+            and exposure_name in identifiers[EXPOSURE_GEOM_COL].values
+        ):
+            raise RuntimeError(
+                f"'{exposure_name}' is already linked. Re-run `setup` to start "
+                "fresh, or unlink first."
+            )
+
+        # Resolve and validate the per-exposure vulnerability link
+        link_raw = self.model.data_catalog.get_dataframe(
+            data_like=vulnerability_link_fname,
+        )
+        link = workflows.build_vulnerability_link(
+            link_raw,
+            curves=self.model.vulnerability.data.curves,
         )
 
-        # Set the data in the component
+        # Join the exposure rows to the scoped link
+        exposure_vector = workflows.exposure_geoms_link_vulnerability(
+            exposure_data=self.data[exposure_name],
+            vulnerability=link,
+        )
+
+        # Append the link rows to the shared identifiers table and update the geom
+        self.model.vulnerability.append_identifiers(name=exposure_name, link=link)
         self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
@@ -316,9 +355,14 @@ use 'setup_region' before this method"
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
 
+        Looks up the per-exposure vulnerability link from
+        ``model.vulnerability.data.identifiers`` (filtered by exposure dataset
+        name) to discover the relevant subtypes and to drive the default
+        ``exposure_cost_link``.
+
         Warning
         -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Run :py:meth:`setup` for ``exposure_name`` beforehand.
 
         Parameters
         ----------
@@ -341,6 +385,22 @@ use 'setup_region' before this method"
         logger.info(f"Setting up maximum potential damage for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
+        identifiers = self.model.vulnerability.data.identifiers
+        if identifiers.empty or EXPOSURE_GEOM_COL not in identifiers.columns:
+            raise KeyError(
+                f"No vulnerability identifiers found for '{exposure_name}'. "
+                "Did you run `setup` for this exposure dataset first?"
+            )
+        link = identifiers[identifiers[EXPOSURE_GEOM_COL] == exposure_name]
+        if link.empty:
+            available = sorted(identifiers[EXPOSURE_GEOM_COL].unique())
+            raise KeyError(
+                f"No vulnerability identifiers found for '{exposure_name}'. "
+                f"Available: {available}. Did you run `setup` for this exposure "
+                "dataset first?"
+            )
+        link = link.drop(columns=[EXPOSURE_GEOM_COL]).reset_index(drop=True)
+
         # Get the exposure costs table from the data catalog
         exposure_cost_table = self.model.data_catalog.get_dataframe(
             exposure_cost_table_fname,
@@ -357,7 +417,7 @@ use 'setup_region' before this method"
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             exposure_type=exposure_type,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=link,
             exposure_cost_link=exposure_cost_link,
             **select,
         )

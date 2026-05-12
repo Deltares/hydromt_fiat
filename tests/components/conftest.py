@@ -29,17 +29,9 @@ def mount_string() -> str:
 def model_exposure_setup(
     model_with_region: FIATModel,
     vulnerability_curves: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
 ) -> FIATModel:
     model = model_with_region
-    model.vulnerability.set(
-        vulnerability_curves,
-        name="curves",
-    )
-    model.vulnerability.set(
-        vulnerability_identifiers,
-        name="identifiers",
-    )
+    model.vulnerability._set_curves(vulnerability_curves)
     return model
 
 
@@ -96,6 +88,17 @@ def exposure_cost_link_path(
 ) -> Path:
     p = Path(tmp_path, "cost_link.csv")
     exposure_cost_link.to_csv(p, index=False)
+    assert p.is_file()
+    return p
+
+
+@pytest.fixture
+def vulnerability_identifiers_path(
+    tmp_path: Path,
+    vulnerability_identifiers: pd.DataFrame,
+) -> Path:
+    p = Path(tmp_path, "vuln_link.csv")
+    vulnerability_identifiers.to_csv(p, index=False)
     assert p.is_file()
     return p
 

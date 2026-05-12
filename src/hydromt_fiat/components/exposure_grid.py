@@ -173,18 +173,26 @@ class ExposureGridComponent(GridComponent):
     def setup(
         self,
         exposure_fnames: Path | str | list[Path | str],
+        vulnerability_link_fname: Path | str,
+        *,
         exposure_link_fname: Path | str | None = None,
         expand: bool = True,
     ) -> None:
         """Set up an exposure grid.
 
+        Each raster layer name is connected to a curve in the shared vulnerability
+        library via a per-exposure linking table supplied here.
+
         Parameters
         ----------
         exposure_fnames : Path | str | list[Path | str]
             Name of or path to exposure file(s).
+        vulnerability_link_fname : Path | str
+            Data catalog entry or path to a linking CSV describing how this exposure
+            grid's layer names map to curves (and optionally subtypes). Required.
         exposure_link_fname : Path | str, optional
-            Table containing the names of the exposure files and corresponding
-            vulnerability curves. By default None.
+            Table mapping exposure file names to object_type values used in the
+            vulnerability link. By default None.
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -192,13 +200,22 @@ class ExposureGridComponent(GridComponent):
         """
         logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability.data.identifiers.empty == True:
+        if self.model.vulnerability.data.curves.empty:
             raise RuntimeError(
-                "'setup_vulnerability' step is required \
-before setting up exposure grid"
+                "No vulnerability curves found — run `vulnerability.setup` "
+                "before this method."
             )
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
+
+        # Resolve the per-exposure vulnerability link
+        vulnerability_link = self.model.data_catalog.get_dataframe(
+            data_like=vulnerability_link_fname,
+        )
+        link = workflows.build_vulnerability_link(
+            vulnerability_link,
+            curves=self.model.vulnerability.data.curves,
+        )
 
         # Read linking table
         exposure_linking = None
@@ -233,7 +250,7 @@ before setting up exposure grid"
             grid_like=grid_like,
             exposure_data=exposure_data,
             exposure_linking=exposure_linking,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=link,
         )
 
         # Expand if necessary

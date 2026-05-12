@@ -40,7 +40,6 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     assert len(model.hazard.data.data_vars) == 1
     assert "flood_event" in model.hazard.data
     assert not model.vulnerability.data.curves.empty
-    assert not model.vulnerability.data.identifiers.empty
 
     # Set the root to a new location and in write mode
     model.root.set(path=tmp_path, mode="w")
@@ -55,6 +54,5 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}_id.csv").is_file()
     # Assert the addition of some settings set during I/O
     assert model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
