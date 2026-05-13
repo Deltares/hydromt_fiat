@@ -227,7 +227,7 @@ def test_exposure_grid_component_setup_errors(
         )
 
 
-def test_exposure_grid_component_setup_with_exposure_names_single(
+def test_exposure_grid_component_setup_with_rename_single(
     model_exposure_setup: FIATModel,
     tmp_path: Path,
 ):
@@ -245,7 +245,7 @@ def test_exposure_grid_component_setup_with_exposure_names_single(
     component.setup(
         exposure_fnames="industrial_content",
         exposure_link_fname=link_path,
-        exposure_names="industry",
+        rename={"industrial_content": "industry"},
     )
 
     # The renamed variable replaces the stem-derived one
@@ -254,7 +254,7 @@ def test_exposure_grid_component_setup_with_exposure_names_single(
     assert component.data.industry.attrs.get(FN_CURVE) == "in2"
 
 
-def test_exposure_grid_component_setup_with_exposure_names_multi(
+def test_exposure_grid_component_setup_with_rename_multi(
     model_exposure_setup: FIATModel,
     tmp_path: Path,
 ):
@@ -271,7 +271,10 @@ def test_exposure_grid_component_setup_with_exposure_names_multi(
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname=link_path,
-        exposure_names=["industry_c", "industry_s"],
+        rename={
+            "industrial_content": "industry_c",
+            "industrial_structure": "industry_s",
+        },
         expand=False,
     )
 
@@ -281,11 +284,11 @@ def test_exposure_grid_component_setup_with_exposure_names_multi(
     assert "industrial_structure" not in component.data.data_vars
 
 
-def test_exposure_grid_component_setup_with_exposure_names_partial(
+def test_exposure_grid_component_setup_with_rename_partial(
     model_exposure_setup: FIATModel,
     tmp_path: Path,
 ):
-    # One entry keeps the stem (None), the other is renamed
+    # Only one entry is renamed; the other keeps its stem
     link_path = tmp_path / "rename_link.csv"
     pd.DataFrame(
         {
@@ -299,7 +302,7 @@ def test_exposure_grid_component_setup_with_exposure_names_partial(
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname=link_path,
-        exposure_names=[None, "industry_s"],
+        rename={"industrial_structure": "industry_s"},
         expand=False,
     )
 
@@ -308,33 +311,19 @@ def test_exposure_grid_component_setup_with_exposure_names_partial(
     assert "industrial_structure" not in component.data.data_vars
 
 
-def test_exposure_grid_component_setup_with_exposure_names_mismatch(
+def test_exposure_grid_component_setup_with_rename_unknown_key(
     model_exposure_setup: FIATModel,
 ):
     component = ExposureGridComponent(model=model_exposure_setup)
 
-    with pytest.raises(ValueError, match="`exposure_names` has length"):
+    with pytest.raises(ValueError, match="not found among exposure_fnames stems"):
         component.setup(
             exposure_fnames=["industrial_content", "industrial_structure"],
-            exposure_names=["only_one"],
+            rename={"typo": "x"},
         )
 
 
-def test_exposure_grid_component_setup_with_exposure_names_scalar_multi(
-    model_exposure_setup: FIATModel,
-):
-    component = ExposureGridComponent(model=model_exposure_setup)
-
-    with pytest.raises(
-        ValueError, match="scalar `exposure_names` is only valid when a single file"
-    ):
-        component.setup(
-            exposure_fnames=["industrial_content", "industrial_structure"],
-            exposure_names="industry",
-        )
-
-
-def test_exposure_grid_component_setup_with_exposure_names_collision(
+def test_exposure_grid_component_setup_with_rename_collision(
     model_exposure_setup: FIATModel,
 ):
     component = ExposureGridComponent(model=model_exposure_setup)
@@ -342,5 +331,5 @@ def test_exposure_grid_component_setup_with_exposure_names_collision(
     with pytest.raises(ValueError, match="duplicates"):
         component.setup(
             exposure_fnames=["industrial_content", "industrial_structure"],
-            exposure_names=["dup", "dup"],
+            rename={"industrial_content": "dup", "industrial_structure": "dup"},
         )
