@@ -4,7 +4,7 @@ import pytest
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import FLOOD_LEVEL, GEOM, MODEL_TYPE
+from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
 
 try:
     from fiat import Configurations, GeomModel, __version__

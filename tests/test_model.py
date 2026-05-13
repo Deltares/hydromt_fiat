@@ -36,9 +36,7 @@ def test_model_basic_read_write(tmp_path: Path):
 
     # Call the necessary setup methods
     model.setup_config(
-        model_type=GEOM,
-        calculation_method=FLOOD_LEVEL,
-        some_var="some_value"
+        model_type=GEOM, calculation_method=FLOOD_LEVEL, some_var="some_value"
     )
     # Write the model
     model.write()
