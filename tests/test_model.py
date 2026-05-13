@@ -115,10 +115,10 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     # Assert the current state
     assert build_region_small.crs.to_epsg() == 28992
     assert model.exposure_geoms.data["foo"].shape[0] == 543
-    assert model.exposure_grid.data.commercial_content.shape == (67, 50)
-    assert model.hazard.data.flood_event.shape == (34, 25)
+    assert model.exposure_grid.data.commercial_content.shape == (69, 52)
+    assert model.hazard.data.flood_event.shape == (35, 27)
     assert model.output_geoms.data["foo"].shape[0] == 543
-    assert model.output_grid.data.commercial_content.shape == (67, 50)
+    assert model.output_grid.data.commercial_content.shape == (69, 52)
 
     # Call the clip function
     model.clip(region=build_region_small)

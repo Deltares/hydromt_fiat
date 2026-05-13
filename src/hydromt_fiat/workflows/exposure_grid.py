@@ -5,7 +5,13 @@ import logging
 import pandas as pd
 import xarray as xr
 
-from hydromt_fiat.utils import CURVE, EXPOSURE_LINK, FN_CURVE, OBJECT_TYPE, SUBTYPE
+from hydromt_fiat.utils import (
+    CURVE,
+    EXPOSURE_TYPE,
+    FN_CURVE,
+    IMPACT_SUBTYPE,
+    OBJECT_TYPE,
+)
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["exposure_grid_setup"]
@@ -52,30 +58,30 @@ defaulting to the name of the exposure layer"
         entries = list(exposure_data.keys())
         exposure_linking = pd.DataFrame(
             data={
-                EXPOSURE_LINK: entries,
+                EXPOSURE_TYPE: entries,
                 OBJECT_TYPE: entries,
             }
         )
 
     # Check if linking table columns are named according to convention
-    for col_name in [EXPOSURE_LINK, OBJECT_TYPE]:
+    for col_name in [EXPOSURE_TYPE, OBJECT_TYPE]:
         if col_name not in exposure_linking.columns:
             raise ValueError(
                 f"Missing column, '{col_name}' in exposure grid linking table"
             )
 
     # Get the unique exposure types
-    headers = vulnerability[EXPOSURE_LINK]
-    if SUBTYPE in vulnerability:
-        headers = vulnerability[EXPOSURE_LINK] + "_" + vulnerability[SUBTYPE]
+    headers = vulnerability[OBJECT_TYPE]
+    if IMPACT_SUBTYPE in vulnerability:
+        headers = vulnerability[OBJECT_TYPE] + "_" + vulnerability[IMPACT_SUBTYPE]
 
     # Loop through the the supplied data arrays
     for da_name, da in exposure_data.items():
-        if da_name not in exposure_linking[EXPOSURE_LINK].values:
+        if da_name not in exposure_linking[EXPOSURE_TYPE].values:
             link_name = da_name
         else:
             link_name = exposure_linking.loc[
-                exposure_linking[EXPOSURE_LINK] == da_name, OBJECT_TYPE
+                exposure_linking[EXPOSURE_TYPE] == da_name, OBJECT_TYPE
             ].values[0]
 
         # Check if in vulnerability curves link table

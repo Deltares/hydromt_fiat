@@ -9,11 +9,10 @@ from hydromt.gis import utm_crs
 
 from hydromt_fiat.utils import (
     COST_TYPE,
-    EXPOSURE_LINK,
-    EXPOSURE_TYPE,
+    IMPACT_SUBTYPE,
+    IMPACT_TYPE,
     MAX,
     OBJECT_TYPE,
-    SUBTYPE,
     create_query,
 )
 
@@ -73,8 +72,8 @@ def max_monetary_damage(
     if exposure_cost_link is None:
         exposure_cost_link = pd.DataFrame(
             data={
-                OBJECT_TYPE: vulnerability[EXPOSURE_LINK].values,
-                COST_TYPE: vulnerability[EXPOSURE_LINK].values,
+                OBJECT_TYPE: vulnerability[OBJECT_TYPE].values,
+                COST_TYPE: vulnerability[OBJECT_TYPE].values,
             }
         )
 
@@ -86,11 +85,11 @@ def max_monetary_damage(
     exposure_cost_link = exposure_cost_link.drop_duplicates(subset=OBJECT_TYPE)
 
     # Get the unique headers corresponding to the 'exposure_type'
-    if SUBTYPE not in vulnerability.columns:
+    if IMPACT_SUBTYPE not in vulnerability.columns:
         headers = [""]
     else:
-        headers = vulnerability[vulnerability[EXPOSURE_TYPE] == exposure_type]
-        headers = ["_" + str(item) for item in headers[SUBTYPE].unique()]
+        headers = vulnerability[vulnerability[IMPACT_TYPE] == exposure_type]
+        headers = ["_" + str(item) for item in headers[IMPACT_SUBTYPE].unique()]
 
     # If not headers were found, log and return
     if len(headers) == 0:

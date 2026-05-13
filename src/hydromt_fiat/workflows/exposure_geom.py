@@ -9,12 +9,11 @@ import pandas as pd
 
 from hydromt_fiat.utils import (
     CURVE_ID,
-    EXPOSURE_LINK,
-    EXPOSURE_TYPE,
     FN,
+    IMPACT_SUBTYPE,
+    IMPACT_TYPE,
     OBJECT_ID,
     OBJECT_TYPE,
-    SUBTYPE,
 )
 
 __all__ = [
@@ -137,18 +136,18 @@ def exposure_geoms_link_vulnerability(
     """
     logger.info("Linking the exposure data with the vulnerability data")
     # Get the unique exposure types
-    headers = vulnerability[EXPOSURE_TYPE]
-    if SUBTYPE in vulnerability:
-        headers = vulnerability[EXPOSURE_TYPE] + "_" + vulnerability[SUBTYPE]
+    headers = vulnerability[IMPACT_TYPE]
+    if IMPACT_SUBTYPE in vulnerability:
+        headers = vulnerability[IMPACT_TYPE] + "_" + vulnerability[IMPACT_SUBTYPE]
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE_ID]]
+        link = vulnerability[headers == header][[OBJECT_TYPE, CURVE_ID]]
         link.rename(
-            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
+            {OBJECT_TYPE: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )

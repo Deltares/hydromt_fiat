@@ -93,7 +93,7 @@ def test_exposure_geom_component_read_csv(
     assert len(component._data) == 1
     assert len(component.data["foo"]) == 12
     assert "object_id" in component.data["foo"].columns
-    assert "ref" in component.data["foo"].columns
+    assert "elevation" in component.data["foo"].columns
 
 
 def test_exposure_geom_component_write(

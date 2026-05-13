@@ -75,4 +75,4 @@ def test_output_grid_component_read_sig(
     # Assert the state after
     assert len(component.data.data_vars) == 4
     assert "commercial_structure" in component.data.data_vars
-    assert component.data["commercial_structure"].shape == (9, 9)
+    assert component.data["commercial_structure"].shape == (11, 11)
