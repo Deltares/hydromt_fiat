@@ -116,14 +116,13 @@ defaulting to exposure data object type"
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
         top = missing_counts.head(20)
-        breakdown = "\n  ".join(f"{name!r}: {n}" for name, n in top.items())
-        suffix = ""
+        breakdown = ", ".join(f"{name!r}: {n}" for name, n in top.items())
         if len(missing_counts) > 20:
-            suffix = f"\n  ... (+{len(missing_counts) - 20} more)"
+            breakdown += f" (+{len(missing_counts) - 20} more)"
         logger.warning(
             f"{data_or_size - data_m_size} features could not be internally linked, "
-            f"these were removed. Unmapped values in '{exposure_type_column}':\n"
-            f"  {breakdown}{suffix}"
+            f"these were removed. Unmapped values in "
+            f"'{exposure_type_column}': {breakdown}"
         )
 
     # Return the data
