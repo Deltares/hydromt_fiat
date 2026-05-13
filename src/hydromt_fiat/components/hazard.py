@@ -8,7 +8,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt.readers import open_nc
 from hydromt.writers import write_nc
 
-from hydromt_fiat import utils, workflows
+from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
@@ -19,7 +19,6 @@ from hydromt_fiat.utils import (
     HAZARD_FILE,
     HAZARD_RP,
     HAZARD_SETTINGS,
-    MODEL_CALC,
     MODEL_RISK,
     SRS,
     VAR_AS_BAND,
@@ -258,4 +257,3 @@ class HazardComponent(GridComponent):
         self.model.config.set(MODEL_RISK, risk)
         if risk:
             self.model.config.set(HAZARD_RP, return_periods)
-        self.model.config.set(MODEL_CALC, utils.get_calculation_method(hazard_type))
