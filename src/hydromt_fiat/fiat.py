@@ -257,7 +257,7 @@ class FIATModel(Model):
         Parameters
         ----------
         model_type : {'geom', 'grid'}
-            The type of the model, either 'geom' for a geometry-based model or 'grid' 
+            The type of the model, either 'geom' for a geometry-based model or 'grid'
             for a grid-based model.
         calculation_method : {'flood.level', 'flood.depth'}
             The method to be used for the risk calculation, either 'flood.level' or
@@ -275,7 +275,7 @@ class FIATModel(Model):
                 f"calculation_method must be one of '{FLOOD_LEVEL}' or '{FLOOD_DEPTH}'"
             )
         self.config.set(MODEL_CALC, calculation_method)
-        
+
         for key, value in settings.items():
             self.config.set(key, value)
 
