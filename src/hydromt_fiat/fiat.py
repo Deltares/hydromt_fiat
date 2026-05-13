@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Literal
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -23,9 +24,13 @@ from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
+    FLOOD_DEPTH,
+    FLOOD_LEVEL,
     GEOM,
     GRID,
     HAZARD,
+    MODEL_CALC,
+    MODEL_TYPE,
     OUTPUT,
     REGION,
     SETTINGS,
@@ -242,17 +247,35 @@ class FIATModel(Model):
     @hydromt_step
     def setup_config(
         self,
+        *,
+        model_type: Literal["geom", "grid"],
+        calculation_method: Literal["flood.level", "flood.depth"],
         **settings,
     ) -> None:
         """Set config file entries.
 
         Parameters
         ----------
+        model_type : {'geom', 'grid'}
+            The type of the model, either 'geom' for a geometry-based model or 'grid' 
+            for a grid-based model.
+        calculation_method : {'flood.level', 'flood.depth'}
+            The method to be used for the risk calculation, either 'flood.level' or
+            'flood.depth'.
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
+        if model_type not in [GEOM, GRID]:
+            raise ValueError(f"model_type must be one of '{GEOM}' or '{GRID}'")
+        self.config.set(MODEL_TYPE, model_type)
+        if calculation_method not in [FLOOD_LEVEL, FLOOD_DEPTH]:
+            raise ValueError(
+                f"calculation_method must be one of '{FLOOD_LEVEL}' or '{FLOOD_DEPTH}'"
+            )
+        self.config.set(MODEL_CALC, calculation_method)
+        
         for key, value in settings.items():
             self.config.set(key, value)
 

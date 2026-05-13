@@ -51,6 +51,9 @@ OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
 VAR_AS_BAND = "var_as_band"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
+MODEL_CALC = f"{MODEL}.calculation_method"
+FLOOD_DEPTH = "flood.depth"
+FLOOD_LEVEL = "flood.level"
 
 ## HydroMT-FIAT
 COST_TYPE = f"cost_{TYPE}"
