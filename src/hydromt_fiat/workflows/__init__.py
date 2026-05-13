@@ -9,7 +9,12 @@ from .exposure_geom import (
 )
 from .exposure_grid import exposure_grid_setup
 from .hazard import hazard_setup
-from .vulnerability import process_vulnerability_linking, vulnerability_setup
+from .vulnerability import (
+    merge_vulnerability_curves,
+    merge_vulnerability_linking,
+    process_vulnerability_linking,
+    vulnerability_setup,
+)
 
 __all__ = [
     "aggregate_vector_grid",
@@ -19,6 +24,8 @@ __all__ = [
     "exposure_grid_setup",
     "hazard_setup",
     "max_monetary_damage",
+    "merge_vulnerability_curves",
+    "merge_vulnerability_linking",
     "process_vulnerability_linking",
     "vulnerability_setup",
 ]
