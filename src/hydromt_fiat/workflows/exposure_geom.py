@@ -136,10 +136,15 @@ def exposure_geoms_link_vulnerability(
         The resulting exposure data linked with the vulnerability data.
     """
     logger.info("Linking the exposure data with the vulnerability data")
-    # Get the unique exposure types
-    headers = vulnerability[EXPOSURE_TYPE]
+    # Get the unique exposure types. Build the header per row: append `_subtype`
+    # only where subtype is actually set, so rows from linking tables without a
+    # subtype column (e.g. roads) produce `fn_<exposure_type>` instead of the
+    # `fn_nan` that a vectorised string concat with NaN would yield.
+    headers = vulnerability[EXPOSURE_TYPE].astype(str)
     if SUBTYPE in vulnerability:
-        headers = vulnerability[EXPOSURE_TYPE] + "_" + vulnerability[SUBTYPE]
+        sub = vulnerability[SUBTYPE]
+        has_sub = sub.notna() & (sub.astype(str) != "")
+        headers = headers.where(~has_sub, headers + "_" + sub.astype(str))
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
