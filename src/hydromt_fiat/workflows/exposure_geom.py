@@ -164,12 +164,22 @@ def exposure_geoms_link_vulnerability(
             how="left",
         )
 
+    # Drop fn_ columns that have no values at all — these correspond to
+    # vulnerability entries whose exposure_link doesn't appear in this
+    # exposure dataset (e.g. road outage curves applied to a buildings layer).
+    fn_cols = [f"{FN}_{item}" for item in header_list]
+    empty_fn_cols = [c for c in fn_cols if exposure_data[c].isna().all()]
+    if empty_fn_cols:
+        exposure_data.drop(columns=empty_fn_cols, inplace=True)
+        fn_cols = [c for c in fn_cols if c not in empty_fn_cols]
+
     # Remove the features that don't have any linking to the vulnerability
-    exposure_data.dropna(
-        subset=[f"{FN}_{item}" for item in header_list],
-        how="all",
-        inplace=True,
-    )
+    if fn_cols:
+        exposure_data.dropna(
+            subset=fn_cols,
+            how="all",
+            inplace=True,
+        )
 
     # Check the length after vulerability merging
     data_v_size = len(exposure_data)
