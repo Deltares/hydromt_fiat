@@ -200,18 +200,22 @@ def test_max_value_errors(
 
 
 # ---------------------------------------------------------------------------
-# New tests: basis auto-detection, override, unit handling, mixed-geometry guard
+# New tests: basis auto-detection, alignment & unit conversion, mixed-geometry
+# guard
 # ---------------------------------------------------------------------------
 
 
-def _tiny_cost_table() -> pd.DataFrame:
+def _tiny_cost_table(unit: str | None = "$/m2") -> pd.DataFrame:
     # Two rows so the .query(country=='World') step still works.
-    return pd.DataFrame(
+    df = pd.DataFrame(
         {
             "country": ["World", "Other"],
             "residential": [10.0, 1.0],
         }
     )
+    if unit is not None:
+        df.attrs["unit"] = unit
+    return df
 
 
 def _tiny_vulnerability() -> pd.DataFrame:
@@ -250,7 +254,7 @@ def test_max_value_basis_length_line():
     )
     result = max_value(
         exposure_data=gdf,
-        exposure_cost_table=_tiny_cost_table(),
+        exposure_cost_table=_tiny_cost_table("$/m"),
         exposure_type=DAMAGE,
         vulnerability=_tiny_vulnerability(),
         country="World",
@@ -258,8 +262,8 @@ def test_max_value_basis_length_line():
     assert result[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(1000.0)
 
 
-def test_max_value_basis_object_point(caplog: pytest.LogCaptureFixture):
-    caplog.set_level(logging.INFO)
+def test_max_value_basis_object_point():
+    # Points + per-object cost (no denominator) → factor 1.0 → result == cost.
     gdf = gpd.GeoDataFrame(
         {"object_type": ["residential", "residential"]},
         geometry=[Point(0, 0), Point(1, 1)],
@@ -267,15 +271,12 @@ def test_max_value_basis_object_point(caplog: pytest.LogCaptureFixture):
     )
     result = max_value(
         exposure_data=gdf,
-        exposure_cost_table=_tiny_cost_table(),
+        exposure_cost_table=_tiny_cost_table("$"),
         exposure_type=DAMAGE,
         vulnerability=_tiny_vulnerability(),
-        unit="km2",  # non-default → should log "ignored"
         country="World",
     )
-    # Factor is 1.0 → result equals the raw cost
     assert result[f"{MAX}_{DAMAGE}"].tolist() == pytest.approx([10.0, 10.0])
-    assert "basis='object': unit 'km2' ignored" in caplog.text
 
 
 def test_max_value_mixed_geometry_raises():
@@ -294,38 +295,11 @@ def test_max_value_mixed_geometry_raises():
         )
 
 
-def test_max_value_basis_override():
-    # Polygon footprint, but billed per-object → ignore area, factor = 1
-    gdf = gpd.GeoDataFrame(
-        {"object_type": ["residential"]},
-        geometry=[box(0, 0, 10, 10)],
-        crs=28992,
-    )
-    result = max_value(
-        exposure_data=gdf,
-        exposure_cost_table=_tiny_cost_table(),
-        exposure_type=DAMAGE,
-        vulnerability=_tiny_vulnerability(),
-        basis="object",
-        country="World",
-    )
-    assert result[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(10.0)
-
-    # Invalid basis
-    with pytest.raises(ValueError, match="basis must be one of"):
-        _ = max_value(
-            exposure_data=gdf,
-            exposure_cost_table=_tiny_cost_table(),
-            exposure_type=DAMAGE,
-            vulnerability=_tiny_vulnerability(),
-            basis="foo",
-            country="World",
-        )
-
-
-def test_max_value_unit_conversion():
-    # 1 km² polygon. unit='km2' → factor = 1 km² → converted to base m²
-    # via Pint (× 1e6). Result == 1e6 × cost.
+def test_max_value_unit_conversion(caplog: pytest.LogCaptureFixture):
+    # 1 km × 1 km polygon (area = 1e6 m² = 1 km²). Cost cell == 10.
+    # $/m2 → factor 1e6 m² → result 1e7.
+    # $/km2 → factor 1 km² → result 10.
+    caplog.set_level(logging.WARNING)
     gdf = gpd.GeoDataFrame(
         {"object_type": ["residential"]},
         geometry=[box(0, 0, 1000, 1000)],
@@ -333,23 +307,105 @@ def test_max_value_unit_conversion():
     )
     result_m2 = max_value(
         exposure_data=gdf.copy(),
-        exposure_cost_table=_tiny_cost_table(),
+        exposure_cost_table=_tiny_cost_table("$/m2"),
         exposure_type=DAMAGE,
         vulnerability=_tiny_vulnerability(),
-        unit="m2",
         country="World",
     )
+    assert result_m2[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(1e7)
+
+    caplog.clear()
     result_km2 = max_value(
         exposure_data=gdf.copy(),
-        exposure_cost_table=_tiny_cost_table(),
+        exposure_cost_table=_tiny_cost_table("$/km2"),
         exposure_type=DAMAGE,
         vulnerability=_tiny_vulnerability(),
-        unit="km2",
         country="World",
     )
-    assert result_km2[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(
-        result_m2[f"{MAX}_{DAMAGE}"].iloc[0] * 1e6
+    assert result_km2[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(10.0)
+    assert "Converting geometry to 'km2'" in caplog.text
+
+
+def test_max_value_unit_default_when_attr_missing():
+    # No attrs['unit'] → fall back to "$/m2" semantics (legacy default).
+    gdf = gpd.GeoDataFrame(
+        {"object_type": ["residential"]},
+        geometry=[box(0, 0, 10, 10)],
+        crs=28992,
     )
+    cost = _tiny_cost_table(unit=None)
+    assert "unit" not in cost.attrs
+    result = max_value(
+        exposure_data=gdf,
+        exposure_cost_table=cost,
+        exposure_type=DAMAGE,
+        vulnerability=_tiny_vulnerability(),
+        country="World",
+    )
+    assert result[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(1000.0)
+
+
+def test_max_value_no_denominator_polygon():
+    # Polygon + per-object cost is valid → factor 1.0, ignores area.
+    gdf = gpd.GeoDataFrame(
+        {"object_type": ["residential"]},
+        geometry=[box(0, 0, 10, 10)],
+        crs=28992,
+    )
+    result = max_value(
+        exposure_data=gdf,
+        exposure_cost_table=_tiny_cost_table("$"),
+        exposure_type=DAMAGE,
+        vulnerability=_tiny_vulnerability(),
+        country="World",
+    )
+    assert result[f"{MAX}_{DAMAGE}"].iloc[0] == pytest.approx(10.0)
+
+
+def test_max_value_alignment_errors():
+    poly = gpd.GeoDataFrame(
+        {"object_type": ["residential"]},
+        geometry=[box(0, 0, 10, 10)],
+        crs=28992,
+    )
+    line = gpd.GeoDataFrame(
+        {"object_type": ["residential"]},
+        geometry=[LineString([(0, 0), (100, 0)])],
+        crs=28992,
+    )
+    point = gpd.GeoDataFrame(
+        {"object_type": ["residential"]},
+        geometry=[Point(0, 0)],
+        crs=28992,
+    )
+
+    # Polygon with length denominator → raise
+    with pytest.raises(ValueError, match="not an area unit"):
+        max_value(
+            exposure_data=poly,
+            exposure_cost_table=_tiny_cost_table("$/m"),
+            exposure_type=DAMAGE,
+            vulnerability=_tiny_vulnerability(),
+            country="World",
+        )
+    # Line with area denominator → raise
+    with pytest.raises(ValueError, match="not a length unit"):
+        max_value(
+            exposure_data=line,
+            exposure_cost_table=_tiny_cost_table("$/m2"),
+            exposure_type=DAMAGE,
+            vulnerability=_tiny_vulnerability(),
+            country="World",
+        )
+    # Point with any denominator → raise
+    with pytest.raises(ValueError, match="Point geometry but cost-cell unit"):
+        max_value(
+            exposure_data=point,
+            exposure_cost_table=_tiny_cost_table("$/m2"),
+            exposure_type=DAMAGE,
+            vulnerability=_tiny_vulnerability(),
+            country="World",
+        )
 
 
 def test_max_value_multi_utm_zone_warning(caplog: pytest.LogCaptureFixture):

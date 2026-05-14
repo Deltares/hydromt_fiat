@@ -312,16 +312,17 @@ use 'setup_region' before this method"
         exposure_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
-        *,
-        basis: str | None = None,
-        unit: str = "m2",
         **select,
     ) -> None:
         """Set up the maximum per-object value for an existing exposure dataset.
 
-        The value is ``factor * cost``, where ``factor`` is the object's area,
-        length, or 1.0 depending on ``basis``. Suitable for any per-object
-        exposure attribute (damage, replacement value, …), not damage alone.
+        The per-object factor (area, length, or 1.0) is inferred from the
+        exposure dataset's geometry. The cost-table's cell unit
+        (e.g. ``'$/m2'``, ``'no_people/m2'``, ``'EUR'``) is read from
+        ``cost_table.attrs['unit']``; its denominator scales the geometric
+        factor, and its numerator (the *value unit*) is persisted to the FIAT
+        config under ``exposure.value_units.<exposure_type>``. The numerator
+        may be any label — currency, count, energy, etc.
 
         Warning
         -------
@@ -341,13 +342,6 @@ use 'setup_region' before this method"
             A linking table to like the present object type with the identifiers
             defined in the cost table. If None, it is assumed the present object
             type matches the identifiers in the cost table. By default None.
-        basis : {'area', 'length', 'object'}, optional
-            How to derive the per-object geometric factor. If None (default), the
-            basis is auto-detected from the geometry: polygons → 'area',
-            lines → 'length', points → 'object'. Mixed geometries raise.
-        unit : str, optional
-            Unit of the geometric denominator in the cost table.
-            Default 'm2'. Ignored when ``basis == 'object'``.
         **select : dict
             Keyword arguments used to select data from the exposure cost table.
             E.g. a column is present named 'country' and the wanted values are in
@@ -374,10 +368,25 @@ use 'setup_region' before this method"
             exposure_type=exposure_type,
             vulnerability=self.model.vulnerability.data.identifiers,
             exposure_cost_link=exposure_cost_link,
-            basis=basis,
-            unit=unit,
             **select,
         )
+
+        # Persist the value-unit numerator (currency / count / …) to the
+        # FIAT config so downstream tools know what the output column is in.
+        cell_unit = (
+            exposure_cost_table.attrs.get("unit") or workflows.value._DEFAULT_CELL_UNIT
+        )
+        numerator, _ = workflows.value._parse_cell_unit(cell_unit)
+        if numerator:
+            key = f"{EXPOSURE}.value_units.{exposure_type}"
+            existing = self.model.config.get(key, fallback=None)
+            if existing and existing != numerator:
+                logger.warning(
+                    f"Value unit for '{exposure_type}' changed from "
+                    f"'{existing}' to '{numerator}' (cost table "
+                    f"'{exposure_cost_table_fname}')."
+                )
+            self.model.config.set(key, numerator)
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
         self.set(exposure_vector, exposure_name)

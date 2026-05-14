@@ -15,6 +15,7 @@ from hydromt_fiat.utils import (
     MAX,
     OBJECT_TYPE,
     SUBTYPE,
+    UNIT_REGISTRY,
     create_query,
     standard_unit,
 )
@@ -23,7 +24,6 @@ __all__ = ["max_value"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
-_VALID_BASES = ("area", "length", "object")
 _AREA_TYPES = {"Polygon", "MultiPolygon"}
 _LENGTH_TYPES = {"LineString", "MultiLineString"}
 _OBJECT_TYPES = {"Point", "MultiPoint"}
@@ -31,10 +31,34 @@ _OBJECT_TYPES = {"Point", "MultiPoint"}
 # Maps human shorthand like "m2", "km3", "ft2" to Pint-compatible "m**2".
 _PINT_POWER_RE = re.compile(r"(?<=[a-zA-Z])(\d+)$")
 
+_AREA_DIM = UNIT_REGISTRY("m**2").dimensionality
+_LENGTH_DIM = UNIT_REGISTRY("m").dimensionality
+
+# Used when a cost table has no `unit` metadata. Treated as currency/area; the
+# component falls back to area-basis math, matching the pre-refactor default.
+_DEFAULT_CELL_UNIT = "$/m2"
+
 
 def _to_pint(unit: str) -> str:
     """Translate human shorthand (e.g. 'm2') to Pint syntax ('m**2')."""
     return _PINT_POWER_RE.sub(r"**\1", unit)
+
+
+def _parse_cell_unit(cell_unit: str) -> tuple[str, str]:
+    """Split a cost-cell unit string into ``(numerator, denominator)``.
+
+    Examples
+    --------
+    ``'$/m2'``           → ``('$', 'm2')``
+    ``'EUR/m**2'``       → ``('EUR', 'm**2')``
+    ``'no_people/m2'``   → ``('no_people', 'm2')``
+    ``'EUR'``            → ``('EUR', '')``        — per-object value
+    ``''``               → ``('', '')``           — caller substitutes default
+    """
+    if "/" not in cell_unit:
+        return cell_unit.strip(), ""
+    num, denom = cell_unit.split("/", 1)
+    return num.strip(), denom.strip()
 
 
 def _detect_basis(exposure_data: gpd.GeoDataFrame) -> str:
@@ -57,20 +81,50 @@ def _detect_basis(exposure_data: gpd.GeoDataFrame) -> str:
     if len(buckets) != 1:
         raise ValueError(
             f"Mixed geometry types in exposure_data: {sorted(geom_types)}. "
-            "Provide basis= explicitly or split the dataset."
+            "Split the dataset by geometry type."
         )
     return buckets.pop()
 
 
+def _check_alignment(basis: str, denom: str) -> None:
+    """Ensure the cost-cell denominator matches the geometric basis."""
+    if basis == "object":
+        if denom:
+            raise ValueError(
+                f"Point geometry but cost-cell unit has a denominator "
+                f"('/{denom}'). Use a per-object unit (e.g. '$') instead."
+            )
+        return
+    if denom == "":
+        # Per-object cost on polygon/line is allowed — factor will be 1.
+        return
+    dim = UNIT_REGISTRY(_to_pint(denom)).dimensionality
+    if basis == "area" and dim != _AREA_DIM:
+        raise ValueError(
+            f"Polygon geometry but cost-cell denominator '{denom}' is not "
+            f"an area unit. Expected something like 'm2' or 'km**2'."
+        )
+    if basis == "length" and dim != _LENGTH_DIM:
+        raise ValueError(
+            f"Line geometry but cost-cell denominator '{denom}' is not "
+            f"a length unit. Expected something like 'm' or 'km'."
+        )
+
+
 def _geometric_factor(
     exposure_data: gpd.GeoDataFrame,
+    *,
     basis: str,
-    unit: str,
+    denom: str,
 ) -> pd.Series:
-    """Compute the per-object geometric factor (area, length, or 1.0)."""
-    if basis == "object":
-        if unit != "m2":
-            logger.info(f"basis='object': unit '{unit}' ignored")
+    """Compute the per-object factor in the cost table's denominator unit.
+
+    For per-object costs (empty denom or point basis) the factor is 1.0.
+    Otherwise the geometry is taken in UTM (m² for areas, m for lengths) and
+    converted into ``denom`` by dividing by the base-SI magnitude of one
+    ``denom`` (e.g. 10⁶ for ``km**2``).
+    """
+    if basis == "object" or denom == "":
         return pd.Series(1.0, index=exposure_data.index)
 
     crs = exposure_data.crs
@@ -89,12 +143,14 @@ def _geometric_factor(
     else:
         projected = exposure_data
 
-    if basis == "area":
-        factor = projected.area
-    else:
-        factor = projected.length
+    raw = projected.area if basis == "area" else projected.length
 
-    return factor * standard_unit(_to_pint(unit)).magnitude
+    base_per_denom = standard_unit(_to_pint(denom)).magnitude
+    if base_per_denom != 1.0:
+        logger.warning(
+            f"Converting geometry to '{denom}' (dividing by {base_per_denom})."
+        )
+    return raw / base_per_denom
 
 
 def max_value(
@@ -103,40 +159,31 @@ def max_value(
     exposure_type: str,
     vulnerability: pd.DataFrame,
     exposure_cost_link: pd.DataFrame | None = None,
-    *,
-    basis: str | None = None,
-    unit: str = "m2",
     **select,
 ) -> gpd.GeoDataFrame:
     """Determine the maximum per-object value for an exposure dataset.
 
-    The maximum value is ``factor * cost``, where ``factor`` is the object's
-    area, length, or 1.0 depending on ``basis``, optionally scaled to the
-    requested ``unit``. The cost-table denominator must match ``unit`` (e.g.
-    EUR/m² for ``unit='m2'``).
+    The maximum value is ``factor * cost``. ``factor`` is the object's area,
+    length, or 1.0 — inferred from the exposure dataset's geometry. The cost
+    table's full cell unit (e.g. ``'$/m2'``, ``'no_people/m2'``, ``'EUR'``) is
+    read from ``exposure_cost_table.attrs['unit']``; the numerator (value
+    unit) is left for the caller to persist, the denominator is used here to
+    scale the geometric factor.
 
     Parameters
     ----------
     exposure_data : gpd.GeoDataFrame
         The existing exposure data.
     exposure_cost_table : pd.DataFrame
-        The cost table.
+        The cost table. ``attrs['unit']`` should hold the full cell unit
+        (e.g. ``'$/m2'``); falls back to ``'$/m2'`` when absent.
     exposure_type : str
-        Type of exposure data, e.g. 'damage'.
+        Type of exposure data, e.g. ``'damage'``.
     vulnerability : pd.DataFrame
         The vulnerability identifier table.
     exposure_cost_link : pd.DataFrame, optional
         A linking table to connect the exposure data to the exposure cost data.
         By default None.
-    basis : {'area', 'length', 'object'}, optional
-        How to derive the per-object geometric factor. If None (default), the
-        basis is auto-detected from ``exposure_data.geom_type``: polygons
-        → 'area', lines → 'length', points → 'object'. Mixed geometries raise.
-        When given explicitly the value is honoured without cross-checking the
-        geometry.
-    unit : str, optional
-        Unit of the geometric denominator in the cost table. Default 'm2'.
-        Ignored when ``basis == 'object'``.
     **select : dict, optional
         Keyword arguments to select data from the cost table.
         The key corresponds to the column and the value to value in that column.
@@ -149,11 +196,10 @@ def max_value(
     if exposure_cost_table is None:
         raise ValueError("Exposure costs table cannot be None")
 
-    # Resolve basis (auto-detect or validate user input)
-    if basis is None:
-        basis = _detect_basis(exposure_data)
-    elif basis not in _VALID_BASES:
-        raise ValueError(f"basis must be one of {_VALID_BASES}, got {basis!r}")
+    cell_unit = exposure_cost_table.attrs.get("unit") or _DEFAULT_CELL_UNIT
+    _, denom = _parse_cell_unit(cell_unit)
+    basis = _detect_basis(exposure_data)
+    _check_alignment(basis, denom)
 
     # Create a query from the kwargs
     if len(select) != 0:
@@ -214,10 +260,10 @@ def max_value(
     # Drop the data that cannnot be linked
     exposure_data.dropna(subset=COST_TYPE, inplace=True)
 
-    # Compute the per-object factor (area / length / 1.0) in the requested unit.
+    # Compute the per-object factor in the cost-table's denominator unit.
     # Reprojection (when needed) happens on a copy so the caller's CRS is not
     # mutated.
-    factor = _geometric_factor(exposure_data, basis=basis, unit=unit)
+    factor = _geometric_factor(exposure_data, basis=basis, denom=denom)
 
     # Loop through the headers to set the max value per subtype (or not)
     for header in headers:

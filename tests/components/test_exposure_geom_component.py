@@ -341,28 +341,24 @@ def test_exposure_geom_component_setup_max_link(
     assert "max_damage_structure" in component.data["buildings"].columns
 
 
-def test_exposure_geom_component_setup_max_value_basis_override(
+def test_exposure_geom_component_setup_max_value_persists_value_unit(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
-    """Smoke test: basis= kwarg plumbs through to the workflow."""
+    """The numerator of the cost-cell unit lands in model.config."""
     component = ExposureGeomsComponent(model=model_exposure_setup)
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
-    # basis='object' means factor=1; result equals raw per-m² cost from the table.
     component.setup_max_value(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="jrc_damage",
-        basis="object",
         country="World",
     )
 
-    col = "max_damage_structure"
-    assert col in component.data["buildings"].columns
-    # With factor=1 (object basis), values cannot exceed per-m² cost (small);
-    # the area-based path produces values orders of magnitude larger.
-    assert (component.data["buildings"][col] < 10_000).all()
+    # The jrc_damage catalog entry has no `unit` metadata, so the workflow
+    # falls back to "$/m2" and the component persists "$".
+    assert model_exposure_setup.config.get("exposure.value_units.damage") == "$"
 
 
 def test_exposure_geom_component_update_cols(
