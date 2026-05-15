@@ -138,4 +138,4 @@ jobs:
 
       - name: Test
         run: |
-          pixi run -e test-py${{ inputs.python-version }} test-system
+          pixi run --no-install -e test-py${{ inputs.python-version }} test-system
