@@ -302,6 +302,11 @@ pandoc = "*"
 [tool.pixi.feature.test.dependencies]
 gdal = ">=3.9.1"
 
+[tool.pixi.feature.delft-fiat.dependencies]
+libgdal-core = ">=3.5"
+libgdal-arrow-parquet = "*"
+libgdal-netcdf = "*"
+
 [tool.pixi.feature.delft-fiat.pypi-dependencies]
 delft_fiat = "*"
 
