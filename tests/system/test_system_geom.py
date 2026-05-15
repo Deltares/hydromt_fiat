@@ -4,7 +4,7 @@ import pytest
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import GEOM, MODEL_TYPE
+from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
 
 try:
     from fiat import Configurations, GeomModel, __version__
@@ -36,7 +36,7 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(**{MODEL_TYPE: GEOM})
+    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
