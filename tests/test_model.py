@@ -16,7 +16,7 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
-from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
+from hydromt_fiat.utils import CONFIG, FLOOD_LEVEL, GEOM, MODEL, REGION, SETTINGS, TYPE
 
 
 def test_model_empty(tmp_path: Path):
@@ -35,7 +35,9 @@ def test_model_basic_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.setup_config(some_var="some_value")
+    model.setup_config(
+        model_type=GEOM, calculation_method=FLOOD_LEVEL, some_var="some_value"
+    )
     # Write the model
     model.write()
     model = None
@@ -221,11 +223,13 @@ def test_model_setup_config(tmp_path: Path):
 
     # Setup some config variables
     model.setup_config(
+        model_type=GEOM,
+        calculation_method=FLOOD_LEVEL,
         **{
             "global.model": "geom",
             "global.srs.value": "EPSG:4326",
             "output.path": "output",
-        }
+        },
     )
 
     # Assert the config component
