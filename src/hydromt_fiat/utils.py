@@ -10,6 +10,7 @@ __all__ = ["create_query"]
 # GLOBAL STRINGS
 ## BASE
 ANALYSIS = "analysis"
+CALC = "calc"
 CONFIG = "config"
 CURVE = "curve"
 DAMAGE = "damage"
@@ -51,7 +52,7 @@ OUTPUT_GRID_NAME = f"{OUTPUT}.{GRID}.{NAME}"
 OUTPUT_PATH = f"{OUTPUT}.{PATH}"
 VAR_AS_BAND = "var_as_band"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
-MODEL_CALC = f"{MODEL}.calculation_method"
+MODEL_CALC = f"{MODEL}.{CALC}"
 FLOOD_DEPTH = "flood.depth"
 FLOOD_LEVEL = "flood.level"
 
