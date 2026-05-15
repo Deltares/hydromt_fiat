@@ -302,7 +302,7 @@ pandoc = "*"
 [tool.pixi.feature.test.dependencies]
 gdal = ">=3.9.1"
 
-[tool.pixi.feature.test.pypi-dependencies]
+[tool.pixi.feature.delft-fiat.pypi-dependencies]
 delft_fiat = "*"
 
 [tool.pixi.feature.wheel.dependencies]
@@ -324,11 +324,11 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["py314", "dev", "docs", "examples", "test"] }
+default = { features = ["py314", "dev", "docs", "examples", "test", "delft-fiat"] }
 docs = { features = ["py313", "docs", "examples"] }
 slim = { features = [] }
-test-py314 = { features = ["py314", "test"] }
-test-py313 = { features = ["py313", "test"] }
-test-py312 = { features = ["py312", "test"] }
-test-py311 = { features = ["py311", "test"] }
-wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
+test-py314 = { features = ["py314", "test", "delft-fiat"] }
+test-py313 = { features = ["py313", "test", "delft-fiat"] }
+test-py312 = { features = ["py312", "test", "delft-fiat"] }
+test-py311 = { features = ["py311", "test", "delft-fiat"] }
+wheel = { features = ["py313", "test", "delft-fiat", "wheel"], no-default-feature=true }
