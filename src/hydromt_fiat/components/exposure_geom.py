@@ -189,6 +189,7 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_fname: Path | str,
         exposure_type_column: str,
         *,
+        exposure_name: str | None = None,
         exposure_link_fname: Path | str | None = None,
         exposure_type_fill: str | None = None,
         predicate: str = "contains",
@@ -210,6 +211,11 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_type_column : str
             The name of column in the raw dataset that specifies the object type,
             e.g. the occupancy type.
+        exposure_name : str, optional
+            Name under which to store this exposure in the model. Also used as the
+            written filename stem and as the `exposure_geom` tag on vulnerability
+            identifiers. When None, the stem of `exposure_fname` is used.
+            By default None.
         exposure_link_fname : Path | str | None, optional
             The name of/ path to the dataset containing the mapping of the exposure
             types to the vulnerability data, by default None.
@@ -232,8 +238,8 @@ class ExposureGeomsComponent(GeomsComponent):
 use 'setup_region' before this method"
             )
 
-        # Get the name based on the stem of a path
-        name = Path(exposure_fname).stem
+        # Resolve the storage name: explicit override or stem of the source path
+        name = exposure_name if exposure_name is not None else Path(exposure_fname).stem
 
         # Get ze data
         exposure_data = self.model.data_catalog.get_geodataframe(

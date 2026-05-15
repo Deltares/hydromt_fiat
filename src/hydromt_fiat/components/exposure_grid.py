@@ -174,6 +174,8 @@ class ExposureGridComponent(GridComponent):
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        *,
+        rename: dict[str, str] | None = None,
         expand: bool = True,
     ) -> None:
         """Set up an exposure grid.
@@ -185,6 +187,12 @@ class ExposureGridComponent(GridComponent):
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None.
+        rename : dict[str, str], optional
+            Optional mapping from source-file stem to the name under which the
+            exposure variable should be stored (and matched against
+            `exposure_link_fname`). Only include entries you want to rename;
+            files absent from the mapping keep their file-stem name. Unknown
+            keys raise ``ValueError``. By default None.
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -214,10 +222,24 @@ before setting up exposure grid"
             else exposure_fnames
         )
 
+        rename = rename or {}
+        stems = [Path(f).stem for f in exposure_fnames]
+        unknown = set(rename) - set(stems)
+        if unknown:
+            raise ValueError(
+                f"`rename` keys not found among exposure_fnames stems: "
+                f"{sorted(unknown)}. Known stems: {stems}."
+            )
+
+        resolved_names = [rename.get(stem, stem) for stem in stems]
+        if len(set(resolved_names)) != len(resolved_names):
+            raise ValueError(
+                f"Resolved exposure names contain duplicates: {resolved_names}."
+            )
+
         # Read exposure data files from data catalog
         exposure_data = {}
-        for fname in exposure_fnames:
-            name = Path(fname).stem
+        for fname, name in zip(exposure_fnames, resolved_names):
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,
