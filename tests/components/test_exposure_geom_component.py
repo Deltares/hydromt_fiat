@@ -304,7 +304,7 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.setup_max_value(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="jrc_damage",
@@ -329,7 +329,7 @@ def test_exposure_geom_component_setup_max_link(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.setup_max_value(
         exposure_name="buildings",
         exposure_type="damage",
         exposure_cost_table_fname="jrc_damage",
@@ -339,6 +339,26 @@ def test_exposure_geom_component_setup_max_link(
 
     # Assert that the data is there
     assert "max_damage_structure" in component.data["buildings"].columns
+
+
+def test_exposure_geom_component_setup_max_value_persists_value_unit(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+):
+    """The numerator of the cost-cell unit lands in model.config."""
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    component.setup_max_value(
+        exposure_name="buildings",
+        exposure_type="damage",
+        exposure_cost_table_fname="jrc_damage",
+        country="World",
+    )
+
+    # The jrc_damage catalog entry has no `unit` metadata, so the workflow
+    # falls back to "$/m2" and the component persists "$".
+    assert model_exposure_setup.config.get("exposure.value_units.damage") == "$"
 
 
 def test_exposure_geom_component_update_cols(

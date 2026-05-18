@@ -306,7 +306,7 @@ use 'setup_region' before this method"
         self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
-    def setup_max_damage(
+    def setup_max_value(
         self,
         exposure_name: str,
         exposure_type: str,
@@ -314,7 +314,15 @@ use 'setup_region' before this method"
         exposure_cost_link_fname: Path | str | None = None,
         **select,
     ) -> None:
-        """Set up the maximum potential damage per object in an existing dataset.
+        """Set up the maximum per-object value for an existing exposure dataset.
+
+        The per-object factor (area, length, or 1.0) is inferred from the
+        exposure dataset's geometry. The cost-table's cell unit
+        (e.g. ``'$/m2'``, ``'no_people/m2'``, ``'EUR'``) is read from
+        ``cost_table.attrs['unit']``; its denominator scales the geometric
+        factor, and its numerator (the *value unit*) is persisted to the FIAT
+        config under ``exposure.value_units.<exposure_type>``. The numerator
+        may be any label — currency, count, energy, etc.
 
         Warning
         -------
@@ -325,20 +333,21 @@ use 'setup_region' before this method"
         exposure_name : str
             The name of the existing dataset.
         exposure_type : str
-            Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
+            Type of exposure corresponding with the vulnerability data,
+            e.g. 'damage'.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
         exposure_cost_link_fname : Path | str, optional
             A linking table to like the present object type with the identifiers
-            defined in the cost table. If None, it is assumed the present object type
-            matches the identifiers in the cost table. By default None.
+            defined in the cost table. If None, it is assumed the present object
+            type matches the identifiers in the cost table. By default None.
         **select : dict
             Keyword arguments used to select data from the exposure cost table.
-            E.g. a column is present named 'country' and the wanted values are in the
-            row with 'UK', provided country='UK' as keyword argument.
+            E.g. a column is present named 'country' and the wanted values are in
+            the row with 'UK', provided country='UK' as keyword argument.
         """
-        logger.info(f"Setting up maximum potential damage for {exposure_name}")
+        logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
         # Get the exposure costs table from the data catalog
@@ -352,8 +361,8 @@ use 'setup_region' before this method"
                 exposure_cost_link_fname,
             )
 
-        # Call the workflows function to add the max damage
-        exposure_vector = workflows.max_monetary_damage(
+        # Call the workflows function to add the max value
+        exposure_vector = workflows.max_value(
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             exposure_type=exposure_type,
@@ -361,6 +370,23 @@ use 'setup_region' before this method"
             exposure_cost_link=exposure_cost_link,
             **select,
         )
+
+        # Persist the value-unit numerator (currency / count / …) to the
+        # FIAT config so downstream tools know what the output column is in.
+        cell_unit = (
+            exposure_cost_table.attrs.get("unit") or workflows.value._DEFAULT_CELL_UNIT
+        )
+        numerator, _ = workflows.value._parse_cell_unit(cell_unit)
+        if numerator:
+            key = f"{EXPOSURE}.value_units.{exposure_type}"
+            existing = self.model.config.get(key, fallback=None)
+            if existing and existing != numerator:
+                logger.warning(
+                    f"Value unit for '{exposure_type}' changed from "
+                    f"'{existing}' to '{numerator}' (cost table "
+                    f"'{exposure_cost_table_fname}')."
+                )
+            self.model.config.set(key, numerator)
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
         self.set(exposure_vector, exposure_name)
