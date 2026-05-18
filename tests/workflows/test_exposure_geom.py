@@ -20,7 +20,7 @@ def test_exposure_geoms_setup(
     # Simply call the function
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
     )
 
@@ -38,7 +38,7 @@ def test_exposure_geoms_setup_fill_nodata(
     # Produce the warning by default
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
     )
 
@@ -49,9 +49,9 @@ def test_exposure_geoms_setup_fill_nodata(
     # Fill the nodata in the linking with a known (irony) value
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_linking=buildings_link_table,
-        exposure_type_fill="unknown",
+        exposure_object_type_fill="unknown",
     )
 
     # Assert the output
@@ -65,7 +65,7 @@ def test_exposure_geoms_setup_no_table(
     # Calling the workflow function without an exposure link table
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
     )
 
     # This will produce a warning
@@ -89,7 +89,7 @@ def test_exposure_geoms_setup_errors(
     ):
         _ = exposure_geoms_setup(
             exposure_data=buildings_data,
-            exposure_type_column="unknown_col",
+            exposure_object_type_column="unknown_col",
         )
 
     # The exposure type column is not found in the link table
@@ -103,7 +103,7 @@ def test_exposure_geoms_setup_errors(
     ):
         _ = exposure_geoms_setup(
             exposure_data=buildings_data,
-            exposure_type_column="gebruiksdoel",
+            exposure_object_type_column="gebruiksdoel",
             exposure_linking=buildings_link_table,
         )
 
@@ -122,6 +122,7 @@ def test_exposure_geoms_link_vulnerability(
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link,
         vulnerability=vulnerability_identifiers,
+        impact_type=["damage"],
     )
 
     # Assert the output
@@ -149,6 +150,7 @@ def test_exposure_geoms_link_vulnerability_subtype(
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link,
         vulnerability=vulnerability_identifiers_alt,
+        impact_type=["damage"],
     )
 
     # Assert the output
@@ -166,6 +168,7 @@ def test_exposure_geoms_link_vulnerability_warnings(
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link.replace("unknown", "known"),
         vulnerability=vulnerability_identifiers,
+        impact_type=["damage"],
     )
 
     # Assert the output

@@ -178,38 +178,16 @@ def test_exposure_geom_component_setup(
     # Setup the data
     component.setup(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
 
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
-    assert f"{FN}_{DAMAGE}_structure" in component.data["buildings"].columns
 
     # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GEOM
-
-
-def test_exposure_geom_component_setup_no_link(
-    model_with_region: FIATModel,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_with_region)
-
-    # Setup the data
-    component.setup(
-        exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
-        exposure_link_fname="buildings_link",
-        link_to_vulnerability=False,
-    )
-
-    # Assert the output
-    assert "buildings" in component.data
-    assert len(component.data["buildings"]) != 0
-    # This is not present when not linked to the vulnerability
-    assert f"{FN}_{DAMAGE}_structure" not in component.data["buildings"].columns
 
 
 def test_exposure_geom_component_setup_errors(
@@ -226,31 +204,12 @@ def test_exposure_geom_component_setup_errors(
     ):
         component.setup(
             exposure_fname="bag",
-            exposure_type_column="gebruiksdoel",
+            exposure_object_type_column="gebruiksdoel",
             exposure_link_fname="bag_link",
         )
 
 
 def test_exposure_geom_component_setup_link(
-    model_exposure_setup: FIATModel,
-    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
-
-    # Call the method
-    component.setup_link_vulnerability(
-        exposure_name="foo",
-        exposure_data=exposure_vector_clipped_for_link,
-    )
-
-    # Assert the output
-    assert "foo" in component.data
-    assert len(component.data["foo"]) == 12
-    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
-
-
-def test_exposure_geom_component_setup_link_data(
     caplog: pytest.LogCaptureFixture,
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
@@ -265,6 +224,31 @@ def test_exposure_geom_component_setup_link_data(
     # Call the method
     component.setup_link_vulnerability(
         exposure_name="foo",
+        impact_type=DAMAGE,
+    )
+
+    # Assert the output
+    assert "Replacing geometry data: foo" in caplog.text
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_setup_link_multi(
+    caplog: pytest.LogCaptureFixture,
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    caplog.set_level(logging.WARNING)
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
+    # Call the method
+    component.setup_link_vulnerability(
+        exposure_name="foo",
+        impact_type=[DAMAGE, "spooky"],  # Doesnt do much, but still
     )
 
     # Assert the output
@@ -280,6 +264,9 @@ def test_exposure_geom_component_setup_link_errors(
     # Setup the component
     component = ExposureGeomsComponent(model=model_with_region)
 
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
     # No vulnerability data
     with pytest.raises(
         RuntimeError,
@@ -287,7 +274,6 @@ def test_exposure_geom_component_setup_link_errors(
     ):
         component.setup_link_vulnerability(
             exposure_name="foo",
-            exposure_data=exposure_vector_clipped_for_link,
         )
 
 
@@ -306,7 +292,7 @@ def test_exposure_geom_component_setup_max(
     # Call the setup method
     component.setup_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="World",
     )
@@ -331,7 +317,7 @@ def test_exposure_geom_component_setup_max_link(
     # Call the setup method
     component.setup_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         exposure_cost_link_fname=exposure_cost_link_path,
         country="World",

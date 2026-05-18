@@ -24,7 +24,7 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 def max_monetary_damage(
     exposure_data: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
-    exposure_type: str,
+    impact_type: str,
     vulnerability: pd.DataFrame,
     exposure_cost_link: pd.DataFrame | None = None,
     **select,
@@ -88,13 +88,13 @@ def max_monetary_damage(
     if IMPACT_SUBTYPE not in vulnerability.columns:
         headers = [""]
     else:
-        headers = vulnerability[vulnerability[IMPACT_TYPE] == exposure_type]
+        headers = vulnerability[vulnerability[IMPACT_TYPE] == impact_type]
         headers = ["_" + str(item) for item in headers[IMPACT_SUBTYPE].unique()]
 
     # If not headers were found, log and return
     if len(headers) == 0:
         raise ValueError(
-            f"Exposure type ({exposure_type}) not found in vulnerability data"
+            f"Exposure type ({impact_type}) not found in vulnerability data"
         )
 
     # Get unique linking names
@@ -136,7 +136,7 @@ def max_monetary_damage(
         # Multiply by the area
         costs_per *= area
 
-        exposure_data[f"{MAX}_{exposure_type}{header}"] = costs_per.astype(float)
+        exposure_data[f"{MAX}_{impact_type}{header}"] = costs_per.astype(float)
 
     # Check data length afterwards
     data_m_size = len(exposure_data)
