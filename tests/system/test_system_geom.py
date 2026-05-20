@@ -58,9 +58,13 @@ def test_system_geom_model(
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
+    model.exposure_geoms.setup_link_vulnerability(
+        exposure_name="buildings",
+        impact_type="damage",
+    )
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
