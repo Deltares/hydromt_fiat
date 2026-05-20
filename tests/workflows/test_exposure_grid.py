@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from hydromt_fiat.utils import EXPOSURE_LINK, FN_CURVE, OBJECT_TYPE
+from hydromt_fiat.utils import EXPOSURE__TYPE, FN_CURVE, OBJECT__TYPE
 from hydromt_fiat.workflows import exposure_grid_setup
 
 
@@ -52,7 +52,7 @@ def test_exposure_grid_setup_link_no(
         grid_like=None,
         exposure_data={"industrial_content": exposure_grid_data_ind},
         vulnerability=vulnerability_linking,
-        exposure_linking=pd.DataFrame(data={EXPOSURE_LINK: [], OBJECT_TYPE: []}),
+        exposure_linking=pd.DataFrame(data={EXPOSURE__TYPE: [], OBJECT__TYPE: []}),
     )
 
     # Assert the output
@@ -94,8 +94,8 @@ def test_exposure_grid_setup_alt_link(
         vulnerability=vulnerability_linking_alt,
         exposure_linking=pd.DataFrame(
             data={
-                EXPOSURE_LINK: ["industrial_content"],
-                OBJECT_TYPE: ["industrial"],
+                EXPOSURE__TYPE: ["industrial_content"],
+                OBJECT__TYPE: ["industrial"],
             }
         ),
     )
@@ -112,7 +112,7 @@ def test_exposure_grid_setup_errors(
     # Assert an error on the missing necessary columns
     with pytest.raises(
         ValueError,
-        match="Missing column, 'exposure_link' in exposure grid linking table",
+        match="Missing column, 'exposure_type' in exposure grid linking table",
     ):
         # Call the function
         _ = exposure_grid_setup(

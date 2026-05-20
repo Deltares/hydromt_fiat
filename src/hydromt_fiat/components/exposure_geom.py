@@ -23,7 +23,7 @@ from hydromt_fiat.utils import (
     FILE,
     GEOM,
     MODEL_TYPE,
-    OBJECT_ID,
+    OBJECT__ID,
     SETTINGS,
     SRS,
 )
@@ -108,7 +108,7 @@ class ExposureGeomsComponent(GeomsComponent):
             csv_path = read_path.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                data = data.merge(csv_data, on=OBJECT_ID)
+                data = data.merge(csv_data, on=OBJECT__ID)
             # Set the data
             self.set(data=data, name=name)
 
@@ -187,41 +187,30 @@ class ExposureGeomsComponent(GeomsComponent):
     def setup(
         self,
         exposure_fname: Path | str,
-        exposure_type_column: str,
+        exposure_object_type_column: str,
         *,
         exposure_link_fname: Path | str | None = None,
-        exposure_type_fill: str | None = None,
+        exposure_object_type_fill: str | None = None,
         predicate: str = "contains",
-        link_to_vulnerability: bool = True,
     ) -> None:
         """Set up the exposure from a data source.
-
-        Will link with the vulnerability data to set a curve for each
-        exposure type.
-
-        Warning
-        -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
 
         Parameters
         ----------
         exposure_fname : Path | str
             The name of/ path to the raw exposure dataset.
-        exposure_type_column : str
+        exposure_object_type_column : str
             The name of column in the raw dataset that specifies the object type,
             e.g. the occupancy type.
         exposure_link_fname : Path | str | None, optional
             The name of/ path to the dataset containing the mapping of the exposure
             types to the vulnerability data, by default None.
-        exposure_type_fill : str, optional
-            Value to which missing entries in the exposure type column will be mapped
-            to, if provided. By default None.
+        exposure_object_type_fill : str, optional
+            Value to which missing entries in the exposure object type column will be
+            mapped to, if provided. By default None.
         predicate : str, optional
             Method on how to select the data that falls within the region geometry.
             For more information see `geopandas.sjoin`. By default 'contains'.
-        link_to_vulnerability : bool, optional
-            Whether to already link to the vulnerability in this setup method.
-            By default False.
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -250,19 +239,12 @@ use 'setup_region' before this method"
         # Call the workflows function(s) to manipulate the data
         exposure_vector = workflows.exposure_geoms_setup(
             exposure_data=exposure_data,
-            exposure_type_column=exposure_type_column,
+            exposure_object_type_column=exposure_object_type_column,
             exposure_linking=exposure_linking,
-            exposure_type_fill=exposure_type_fill,
+            exposure_object_type_fill=exposure_object_type_fill,
         )
-        # Either link to vulnerability
-        if link_to_vulnerability:
-            self.setup_link_vulnerability(
-                exposure_name=name,
-                exposure_data=exposure_vector,
-            )
-        # Or set the data directly
-        else:
-            self.set(exposure_vector, name=name)
+        # Set the data directly
+        self.set(exposure_vector, name=name)
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
@@ -272,23 +254,30 @@ use 'setup_region' before this method"
     def setup_link_vulnerability(
         self,
         exposure_name: str,
-        exposure_data: gpd.GeoDataFrame | None = None,
+        impact_type: str | list[str] = "damage",
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
+
+        Will link with the vulnerability data to set a curve for each
+        exposure type.
+
+        Warning
+        -------
+        Run `setup_vulnerability` beforehand (see vulnerability component).
 
         Parameters
         ----------
         exposure_name : str
             The name of the exposure dataset. If exposure_data is None, this name
             should be present in the `data` attribute of the component.
-        exposure_data : gpd.GeoDataFrame, optional
-            The exposure data to link the vulnerability to. If None, the data is taken
-            from the `data` attribute for the value of exposure_name. By default None.
+        impact_type : str | list[str], optional
+            The type of impact to link to the exposure data, which should be present
+            in the vulnerability identifiers table. Can either be a single string or
+            a list of strings. By default 'damage'.
         """
         # Check for data
-        if exposure_data is None:
-            self._assert_entry(exposure_name)
-            exposure_data = self.data[exposure_name]
+        self._assert_entry(exposure_name)
+        exposure_data = self.data[exposure_name]
 
         # Check for vulnerability
         vulnerability = self.model.vulnerability.data
@@ -296,10 +285,15 @@ use 'setup_region' before this method"
             # TODO Replace with custom error class
             raise RuntimeError("Run `vulnerability.setup` before this method")
 
+        # Impact type type conversion
+        if not isinstance(impact_type, list):
+            impact_type = [impact_type]
+
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
             vulnerability=vulnerability.identifiers,
+            impact_type=impact_type,
         )
 
         # Set the data in the component
@@ -309,7 +303,7 @@ use 'setup_region' before this method"
     def setup_max_damage(
         self,
         exposure_name: str,
-        exposure_type: str,
+        impact_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
         **select,
@@ -324,8 +318,8 @@ use 'setup_region' before this method"
         ----------
         exposure_name : str
             The name of the existing dataset.
-        exposure_type : str
-            Type of exposure corresponding with the vulnerability data, e.g. 'damage'.
+        impact_type : str
+            Type of impact corresponding with the vulnerability data, e.g. 'damage'.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
@@ -356,7 +350,7 @@ use 'setup_region' before this method"
         exposure_vector = workflows.max_monetary_damage(
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
-            exposure_type=exposure_type,
+            impact_type=impact_type,
             vulnerability=self.model.vulnerability.data.identifiers,
             exposure_cost_link=exposure_cost_link,
             **select,
