@@ -8,6 +8,7 @@ from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
     FLOOD_LEVEL,
+    FN,
     FN_CURVE,
     GEOM,
     GRID,
@@ -55,13 +56,17 @@ def test_build_model_geom(
     # Setup the exposure geometry data
     model.exposure_geoms.setup(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
-        exposure_type_fill="unknown",
+        exposure_object_type_fill="unknown",
+    )
+    model.exposure_geoms.setup_link_vulnerability(
+        exposure_name="buildings",
+        impact_type=DAMAGE,
     )
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
@@ -81,6 +86,7 @@ def test_build_model_geom(
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
+    assert f"{FN}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
     assert f"{MAX}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
 
     # Write the model
