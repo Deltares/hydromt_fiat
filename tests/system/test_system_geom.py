@@ -55,7 +55,7 @@ def test_system_geom_model(
     # Setup the exposure geometry data
     model.exposure_geoms.setup(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
     model.exposure_geoms.setup_max_damage(
