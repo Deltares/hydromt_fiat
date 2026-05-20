@@ -48,6 +48,7 @@ dependencies = [
     "tomlkit",
     "xarray",
     "minio",
+    "python-dotenv"
 ]
 
 keywords = ["HydroMT", "FIAT", "Impact"]

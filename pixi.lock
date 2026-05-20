@@ -5379,7 +5379,7 @@ packages:
 - pypi: ./
   name: hydromt-fiat
   version: 1.0.0.dev0
-  sha256: 1a043fe4dfa10433d42f82b5e09bdb084325394ca3dfa4fd1f6d9b67f74652e2
+  sha256: 89d8d4f5701732af1bf78dab53a5cd5d9f131f0d084f2f54da5230e00b39b3a4
   requires_dist:
   - geopandas
   - hydromt>=1.3.0
@@ -5394,6 +5394,7 @@ packages:
   - tomlkit
   - xarray
   - minio
+  - python-dotenv
   - build ; extra == 'dev'
   - mypy ; extra == 'dev'
   - pre-commit ; extra == 'dev'
