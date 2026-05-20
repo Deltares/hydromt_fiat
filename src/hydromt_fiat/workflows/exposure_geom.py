@@ -8,12 +8,12 @@ import numpy.typing as npt
 import pandas as pd
 
 from hydromt_fiat.utils import (
-    CURVE_ID,
+    CURVE__ID,
     FN,
-    IMPACT_SUBTYPE,
-    IMPACT_TYPE,
-    OBJECT_ID,
-    OBJECT_TYPE,
+    IMPACT__SUBTYPE,
+    IMPACT__TYPE,
+    OBJECT__ID,
+    OBJECT__TYPE,
 )
 
 __all__ = [
@@ -69,7 +69,7 @@ defaulting to exposure data object type"
                 exposure_object_type_column: exposure_data[
                     exposure_object_type_column
                 ].values,
-                OBJECT_TYPE: exposure_data[exposure_object_type_column].values,
+                OBJECT__TYPE: exposure_data[exposure_object_type_column].values,
             }
         )
     if exposure_object_type_column not in exposure_linking:
@@ -85,7 +85,7 @@ defaulting to exposure data object type"
     # Drop the row with None as key, prevents duplicates later
     exposure_linking = exposure_linking.dropna(subset=exposure_object_type_column)
     # Also drop the remaining unused columns
-    exposure_linking = exposure_linking[[exposure_object_type_column, OBJECT_TYPE]]
+    exposure_linking = exposure_linking[[exposure_object_type_column, OBJECT__TYPE]]
 
     # Set the nodata fill
     if exposure_object_type_fill is not None:
@@ -93,7 +93,7 @@ defaulting to exposure data object type"
             None,
             exposure_object_type_fill,
         ]
-        exposure_linking[OBJECT_TYPE] = exposure_linking.loc[:, OBJECT_TYPE].fillna(
+        exposure_linking[OBJECT__TYPE] = exposure_linking.loc[:, OBJECT__TYPE].fillna(
             exposure_object_type_fill
         )
 
@@ -102,9 +102,9 @@ defaulting to exposure data object type"
 
     # Pre-compute which source values won't survive the inner merge so we can
     # name them in the warning if any get dropped.
-    mapped_keys = set(exposure_linking[exposure_type_column].dropna())
+    mapped_keys = set(exposure_linking[exposure_object_type_column].dropna())
     missing_counts = (
-        exposure_data[exposure_type_column]
+        exposure_data[exposure_object_type_column]
         .loc[lambda s: ~s.isin(mapped_keys)]
         .value_counts(dropna=False)
     )
@@ -121,14 +121,11 @@ defaulting to exposure data object type"
 
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
-        top = missing_counts.head(20)
-        breakdown = ", ".join(f"{name!r}: {n}" for name, n in top.items())
-        if len(missing_counts) > 20:
-            breakdown += f" (+{len(missing_counts) - 20} more)"
+        breakdown = ", ".join(f"{name!r}: {n}" for name, n in missing_counts.items())
         logger.warning(
             f"{data_or_size - data_m_size} features could not be internally linked, "
             f"these were removed. Unmapped values in "
-            f"'{exposure_type_column}': {breakdown}"
+            f"'{exposure_object_type_column}': {breakdown}"
         )
 
     # Return the data
@@ -160,7 +157,7 @@ def exposure_geoms_link_vulnerability(
     """
     logger.info("Linking the exposure data with the vulnerability data")
     # Select based on the impact type(s)
-    vulnerability = vulnerability[vulnerability[IMPACT_TYPE].isin(impact_type)]
+    vulnerability = vulnerability[vulnerability[IMPACT__TYPE].isin(impact_type)]
     if vulnerability.empty:
         raise ValueError(
             f"No data found in the vulnerability identifiers for these \
@@ -168,25 +165,25 @@ impact types {impact_type}"
         )
 
     # Get the unique exposure types
-    headers = vulnerability[IMPACT_TYPE]
-    if IMPACT_SUBTYPE in vulnerability:
-        headers = vulnerability[IMPACT_TYPE] + "_" + vulnerability[IMPACT_SUBTYPE]
+    headers = vulnerability[IMPACT__TYPE]
+    if IMPACT__SUBTYPE in vulnerability:
+        headers = vulnerability[IMPACT__TYPE] + "_" + vulnerability[IMPACT__SUBTYPE]
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][[OBJECT_TYPE, CURVE_ID]]
+        link = vulnerability[headers == header][[OBJECT__TYPE, CURVE__ID]]
         link.rename(
-            {OBJECT_TYPE: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
+            {OBJECT__TYPE: OBJECT__TYPE, CURVE__ID: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )
         # And merge the data
         exposure_data = exposure_data.merge(
-            link.drop_duplicates(subset=OBJECT_TYPE),
-            on=OBJECT_TYPE,
+            link.drop_duplicates(subset=OBJECT__TYPE),
+            on=OBJECT__TYPE,
             how="left",
         )
 
@@ -206,8 +203,8 @@ vulnerability data, these were removed"
         )
 
     # Reset the index as default for object_id
-    if OBJECT_ID not in exposure_data.columns:
-        exposure_data.reset_index(names=OBJECT_ID, inplace=True)
+    if OBJECT__ID not in exposure_data.columns:
+        exposure_data.reset_index(names=OBJECT__ID, inplace=True)
 
     return exposure_data
 

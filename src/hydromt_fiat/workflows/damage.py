@@ -8,11 +8,11 @@ import pandas as pd
 from hydromt.gis import utm_crs
 
 from hydromt_fiat.utils import (
-    COST_TYPE,
-    IMPACT_SUBTYPE,
-    IMPACT_TYPE,
+    COST__TYPE,
+    IMPACT__SUBTYPE,
+    IMPACT__TYPE,
     MAX,
-    OBJECT_TYPE,
+    OBJECT__TYPE,
     create_query,
 )
 
@@ -72,24 +72,28 @@ def max_monetary_damage(
     if exposure_cost_link is None:
         exposure_cost_link = pd.DataFrame(
             data={
-                OBJECT_TYPE: vulnerability[OBJECT_TYPE].values,
-                COST_TYPE: vulnerability[OBJECT_TYPE].values,
+                OBJECT__TYPE: vulnerability[OBJECT__TYPE].values,
+                COST__TYPE: vulnerability[OBJECT__TYPE].values,
             }
         )
 
     # Check for the necessary columns
-    if not all(item in exposure_cost_link.columns for item in [OBJECT_TYPE, COST_TYPE]):
-        raise ValueError(f"Cost link table either missing {OBJECT_TYPE} or {COST_TYPE}")
+    if not all(
+        item in exposure_cost_link.columns for item in [OBJECT__TYPE, COST__TYPE]
+    ):
+        raise ValueError(
+            f"Cost link table either missing {OBJECT__TYPE} or {COST__TYPE}"
+        )
     # Leave only the necessary columns
-    exposure_cost_link = exposure_cost_link[[OBJECT_TYPE, COST_TYPE]]
-    exposure_cost_link = exposure_cost_link.drop_duplicates(subset=OBJECT_TYPE)
+    exposure_cost_link = exposure_cost_link[[OBJECT__TYPE, COST__TYPE]]
+    exposure_cost_link = exposure_cost_link.drop_duplicates(subset=OBJECT__TYPE)
 
     # Get the unique headers corresponding to the 'exposure_type'
-    if IMPACT_SUBTYPE not in vulnerability.columns:
+    if IMPACT__SUBTYPE not in vulnerability.columns:
         headers = [""]
     else:
-        headers = vulnerability[vulnerability[IMPACT_TYPE] == impact_type]
-        headers = ["_" + str(item) for item in headers[IMPACT_SUBTYPE].unique()]
+        headers = vulnerability[vulnerability[IMPACT__TYPE] == impact_type]
+        headers = ["_" + str(item) for item in headers[IMPACT__SUBTYPE].unique()]
 
     # If not headers were found, log and return
     if len(headers) == 0:
@@ -98,26 +102,26 @@ def max_monetary_damage(
         )
 
     # Get unique linking names
-    unique_link = exposure_cost_link[COST_TYPE].unique().tolist()
+    unique_link = exposure_cost_link[COST__TYPE].unique().tolist()
     unique_link = [f"{x}{y}" for x, y in product(unique_link, headers)]
     # Transpose the cost table, rename index to object_type to easily merge
     # This is not the object type, but the specific max costs of that element
-    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST_TYPE)
+    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
     # Index the cost table
     exposure_cost_table = exposure_cost_table[
-        exposure_cost_table[COST_TYPE].isin(unique_link)
+        exposure_cost_table[COST__TYPE].isin(unique_link)
     ]
 
     # Link the cost type to the exposure data
     data_or_size = len(exposure_data)  # For size check later
-    exposure_data[COST_TYPE] = exposure_data[[OBJECT_TYPE]].merge(
+    exposure_data[COST__TYPE] = exposure_data[[OBJECT__TYPE]].merge(
         exposure_cost_link,
-        on=OBJECT_TYPE,
+        on=OBJECT__TYPE,
         how="inner",
-    )[COST_TYPE]
+    )[COST__TYPE]
 
     # Drop the data that cannnot be linked
-    exposure_data.dropna(subset=COST_TYPE, inplace=True)
+    exposure_data.dropna(subset=COST__TYPE, inplace=True)
 
     # Get the area, make sure its a projected crs
     old_crs = exposure_data.crs
@@ -128,10 +132,10 @@ def max_monetary_damage(
 
     # Loop through the headers to set the max damage per subtype (or not)
     for header in headers:
-        data = exposure_data[COST_TYPE] + header
+        data = exposure_data[COST__TYPE] + header
         # Get the costs per object
-        costs_per = data.to_frame().merge(exposure_cost_table, on=COST_TYPE)
-        costs_per.drop(COST_TYPE, axis=1, inplace=True)
+        costs_per = data.to_frame().merge(exposure_cost_table, on=COST__TYPE)
+        costs_per.drop(COST__TYPE, axis=1, inplace=True)
         costs_per = costs_per.squeeze()
         # Multiply by the area
         costs_per *= area

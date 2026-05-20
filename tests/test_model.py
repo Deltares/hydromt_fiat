@@ -16,7 +16,16 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
-from hydromt_fiat.utils import CONFIG, FLOOD_LEVEL, GEOM, MODEL, REGION, SETTINGS, TYPE
+from hydromt_fiat.utils import (
+    CONFIG,
+    FLOOD_LEVEL,
+    GEOM,
+    GRID,
+    MODEL,
+    REGION,
+    SETTINGS,
+    TYPE,
+)
 
 
 def test_model_empty(tmp_path: Path):
@@ -237,6 +246,20 @@ def test_model_setup_config(tmp_path: Path):
     assert model.config.get("output.path") == "output"
     assert len(model.config.get("global")) == 2
     assert model.config.get("global.srs") == {"value": "EPSG:4326"}
+
+
+def test_model_setup_config_errors(tmp_path: Path):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Set the nonsense model type
+    with pytest.raises(
+        ValueError, match=f"Model_type must be either '{GEOM}' or '{GRID}'"
+    ):
+        model.setup_config(
+            model_type="foo",
+            calculation_method=FLOOD_LEVEL,
+        )
 
 
 def test_model_setup_region(tmp_path: Path, build_region_path: Path):

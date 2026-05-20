@@ -249,7 +249,7 @@ class FIATModel(Model):
         self,
         *,
         model_type: Literal["geom", "grid"],
-        calculation_method: Literal["flood.level", "flood.depth"],
+        calculation_method: Literal[FLOOD_LEVEL, FLOOD_DEPTH],
         **settings,
     ) -> None:
         """Set config file entries.
@@ -268,14 +268,10 @@ class FIATModel(Model):
         """
         logger.info("Setting config entries from user input")
         if model_type not in [GEOM, GRID]:
-            raise ValueError(f"model_type must be one of '{GEOM}' or '{GRID}'")
+            raise ValueError(f"Model_type must be either '{GEOM}' or '{GRID}'")
         self.config.set(MODEL_TYPE, model_type)
-        if calculation_method not in [FLOOD_LEVEL, FLOOD_DEPTH]:
-            raise ValueError(
-                f"calculation_method must be one of '{FLOOD_LEVEL}' or '{FLOOD_DEPTH}'"
-            )
         self.config.set(MODEL_CALC, calculation_method)
-
+        # Set the other defined settings
         for key, value in settings.items():
             self.config.set(key, value)
 
@@ -293,7 +289,7 @@ class FIATModel(Model):
             Path to the region vector file or a loaded vector file that takes the form
             of a geopandas GeoDataFrame.
         replace : bool, optional
-            If False, a union is created between given and existing geometries.
+            If False, a union is created between provided and existing geometries.
             By default False.
         """
         if isinstance(region, (Path, str)):

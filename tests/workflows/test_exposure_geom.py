@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hydromt_fiat.utils import CURVE_ID, DAMAGE, FN, OBJECT_ID, OBJECT_TYPE
+from hydromt_fiat.utils import CURVE__ID, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
 from hydromt_fiat.workflows import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
@@ -26,7 +26,7 @@ def test_exposure_geoms_setup(
 
     # Assert the output
     assert len(exposure_vector) == 9
-    assert OBJECT_TYPE in exposure_vector.columns
+    assert OBJECT__TYPE in exposure_vector.columns
     assert "industrial" in exposure_vector.object_type.values
 
 
@@ -119,7 +119,7 @@ def test_exposure_geoms_link_vulnerability(
     # Assert amount of columns in the exposure data
     assert len(exposure_vector_data_link.columns) == 11
     # Assert that these columns are absent
-    assert OBJECT_ID not in exposure_vector_data_link.columns
+    assert OBJECT__ID not in exposure_vector_data_link.columns
     assert f"{FN}_{DAMAGE}_structure" not in exposure_vector_data_link.columns
 
     # Call the workflow function
@@ -131,13 +131,13 @@ def test_exposure_geoms_link_vulnerability(
 
     # Assert the output
     assert len(exposure_vector.columns) == 14
-    assert OBJECT_ID in exposure_vector.columns
+    assert OBJECT__ID in exposure_vector.columns
     assert f"{FN}_{DAMAGE}_structure" in exposure_vector.columns
 
     # A simple that the curves set in the exposure data (linking) are present
     # in the vulnerability identifiers
     for value in exposure_vector[f"{FN}_{DAMAGE}_structure"].unique():
-        assert value in vulnerability_identifiers[CURVE_ID].values
+        assert value in vulnerability_identifiers[CURVE__ID].values
 
 
 def test_exposure_geoms_link_vulnerability_subtype(
@@ -147,7 +147,7 @@ def test_exposure_geoms_link_vulnerability_subtype(
     # Assert amount of columns in the exposure data
     assert len(exposure_vector_data_link.columns) == 11
     # Assert that these columns are absent
-    assert OBJECT_ID not in exposure_vector_data_link.columns
+    assert OBJECT__ID not in exposure_vector_data_link.columns
     assert f"{FN}_{DAMAGE}" not in exposure_vector_data_link.columns
 
     # Calling the workflow function wihtout subtyping
@@ -159,7 +159,7 @@ def test_exposure_geoms_link_vulnerability_subtype(
 
     # Assert the output
     assert len(exposure_vector.columns) == 13  # One column less
-    assert OBJECT_ID in exposure_vector.columns
+    assert OBJECT__ID in exposure_vector.columns
     assert f"{FN}_{DAMAGE}" in exposure_vector.columns  # Not fn_damage_*, but just base
 
 
@@ -178,6 +178,25 @@ def test_exposure_geoms_link_vulnerability_warnings(
     # Assert the output
     assert "3 features could not be linked to vulnerability data" in caplog.text
     assert len(exposure_vector) == 9
+
+
+def test_exposure_geoms_link_vulnerability_errors(
+    exposure_vector_data_link: gpd.GeoDataFrame,
+    vulnerability_identifiers: pd.DataFrame,
+):
+    # Select nonsense impact types
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "No data found in the vulnerability identifiers for these \
+impact types ['foo', 'bar']"
+        ),
+    ):
+        exposure_geoms_link_vulnerability(
+            exposure_data=exposure_vector_data_link,
+            vulnerability=vulnerability_identifiers,
+            impact_type=["foo", "bar"],
+        )
 
 
 def test_exposure_geoms_add_columns(

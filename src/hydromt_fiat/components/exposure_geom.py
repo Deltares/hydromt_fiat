@@ -23,7 +23,7 @@ from hydromt_fiat.utils import (
     FILE,
     GEOM,
     MODEL_TYPE,
-    OBJECT_ID,
+    OBJECT__ID,
     SETTINGS,
     SRS,
 )
@@ -108,7 +108,7 @@ class ExposureGeomsComponent(GeomsComponent):
             csv_path = read_path.with_suffix(".csv")
             if csv_path.is_file():
                 csv_data = pd.read_csv(csv_path)
-                data = data.merge(csv_data, on=OBJECT_ID)
+                data = data.merge(csv_data, on=OBJECT__ID)
             # Set the data
             self.set(data=data, name=name)
 

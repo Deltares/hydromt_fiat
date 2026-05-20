@@ -52,6 +52,28 @@ def test_exposure_geom_component_read(
     assert "buildings" in component.data
 
 
+def test_exposure_geom_component_read_none(
+    mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config)
+    # Set the config to point to nonsense path
+    component.model.config.data["exposure"]["geom"] = [{"file": "foo.fgb"}]
+
+    # Assert it's empty
+    assert component._data is None
+
+    # Calling read to read in the data
+    component.read()
+
+    # Assert the output
+    assert len(component._data) == 0
+
+
 def test_exposure_geom_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
