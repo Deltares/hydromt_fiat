@@ -7,6 +7,7 @@ from hydromt_fiat.utils import (
     CURVES,
     DAMAGE,
     EXPOSURE,
+    FLOOD_LEVEL,
     FN,
     FN_CURVE,
     GEOM,
@@ -36,7 +37,7 @@ def test_build_model_geom(
     )
 
     # Add model type and region
-    model.setup_config(**{MODEL_TYPE: GEOM})
+    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -115,7 +116,7 @@ def test_build_model_grid(
     )
 
     # Add model type and region
-    model.setup_config(**{MODEL_TYPE: GRID})
+    model.setup_config(model_type=GRID, calculation_method=FLOOD_LEVEL)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability

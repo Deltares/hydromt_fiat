@@ -100,6 +100,15 @@ defaulting to exposure data object type"
     # Store the length of the data
     data_or_size = len(exposure_data)
 
+    # Pre-compute which source values won't survive the inner merge so we can
+    # name them in the warning if any get dropped.
+    mapped_keys = set(exposure_linking[exposure_type_column].dropna())
+    missing_counts = (
+        exposure_data[exposure_type_column]
+        .loc[lambda s: ~s.isin(mapped_keys)]
+        .value_counts(dropna=False)
+    )
+
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
@@ -112,9 +121,14 @@ defaulting to exposure data object type"
 
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
+        top = missing_counts.head(20)
+        breakdown = ", ".join(f"{name!r}: {n}" for name, n in top.items())
+        if len(missing_counts) > 20:
+            breakdown += f" (+{len(missing_counts) - 20} more)"
         logger.warning(
-            f"{data_or_size - data_m_size} features could not be internally linked, \
-these were removed"
+            f"{data_or_size - data_m_size} features could not be internally linked, "
+            f"these were removed. Unmapped values in "
+            f"'{exposure_type_column}': {breakdown}"
         )
 
     # Return the data
