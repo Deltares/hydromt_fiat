@@ -13,6 +13,8 @@ jobs:
         shell: bash -e -l {0}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 30
+    env:
+      PIXI_ENV: test-py${{ inputs.python-version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -21,7 +23,7 @@ jobs:
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.65.0"
-          environments: test-py${{ inputs.python-version }}
+          environments: ${{ env.PIXI_ENV }}
           locked: false
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
@@ -35,7 +37,7 @@ jobs:
 
       - name: Test
         run: |
-          pixi run -e test-py${{ inputs.python-version }} test-cov
+          pixi run -e ${{ env.PIXI_ENV }} test-cov
 
       - name: Upload coverage
         if: inputs.os == 'ubuntu-latest' && inputs.python-version == '314'
@@ -67,6 +69,8 @@ jobs:
     runs-on: ${{ inputs.os }}
     needs: unit
     timeout-minutes: 30
+    env:
+      PIXI_ENV: test-py${{ inputs.python-version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -75,7 +79,7 @@ jobs:
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.65.0"
-          environments: test-py${{ inputs.python-version }}
+          environments: ${{ env.PIXI_ENV }}
           locked: false
           cache: true
           cache-write: false
@@ -89,7 +93,7 @@ jobs:
 
       - name: Test
         run: |
-          pixi run -e test-py${{ inputs.python-version }} test-integration
+          pixi run -e ${{ env.PIXI_ENV }} test-integration
 
   system:
     defaults:
@@ -100,34 +104,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        fiat-install: [release, source]
+        fiat-install: ["stable", "dev"]
     name: "system (${{ matrix.fiat-install }})"
     timeout-minutes: 30
+    env:
+      PIXI_ENV: test-py${{ inputs.python-version }}${{ matrix.fiat-install == 'dev' && '-dev' || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
-      - name: Checkout Delft-FIAT
-        if: matrix.fiat-install == 'source'
-        uses: actions/checkout@v6
-        with:
-          repository: Deltares/Delft-FIAT
-          path: Delft-FIAT
-          ref: v1
 
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
           pixi-version: "v0.65.0"
-          environments: test-py${{ inputs.python-version }}
+          environments: ${{ env.PIXI_ENV }}
           locked: false
           cache: true
           cache-write: false
-
-      - name: Install Delft-FIAT from source
-        if: matrix.fiat-install == 'source'
-        run: |
-          pixi run -e test-py${{ inputs.python-version }} python -m pip install ./Delft-FIAT --no-deps --force-reinstall
 
       - name: Download cache
         uses: actions/cache/restore@v5
@@ -138,4 +131,4 @@ jobs:
 
       - name: Test
         run: |
-          pixi run --no-install -e test-py${{ inputs.python-version }} test-system
+          pixi run -e ${{ env.PIXI_ENV }} test-system
