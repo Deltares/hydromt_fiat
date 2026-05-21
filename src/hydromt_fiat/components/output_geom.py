@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import cast
 
 import geopandas as gpd
+from hydromt.gis.vector import _filter_gdf
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
@@ -15,7 +16,8 @@ from hydromt_fiat.components.utils import (
     pathing_config,
     pathing_expand,
 )
-from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, OUTPUT_GEOM_NAME
+from hydromt_fiat.gis import create_square_vector_grid
+from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, OUTPUT_GEOM_NAME, POST
 
 __all__ = ["OutputGeomsComponent"]
 
@@ -37,10 +39,77 @@ class OutputGeomsComponent(GeomsComponent):
         self,
         model: Model,
     ):
+        self._filename: str = f"{POST}/{{name}}.fgb"
+        self._processed_data: dict[str, gpd.GeoDataFrame] | None = None
         super().__init__(
             model,
             region_component=None,
         )
+
+    ## Private methods
+    def _assert_output_entry(self, name: str):
+        if name not in self.combined_data or not isinstance(
+            self.combined_data[name], (gpd.GeoDataFrame, gpd.GeoSeries)
+        ):
+            raise RuntimeError(
+                f"Chose from already present geometries: \
+{list(self.combined_data.keys())} i.e. a GeoDataFrame or run the appropriate `setup` \
+method with '{name}' as input"
+            )
+
+    def _initialize(self, skip_read=False):
+        if self._processed_data is None:
+            self._processed_data = {}
+        return super()._initialize(skip_read)
+
+    def _set(
+        self,
+        data: gpd.GeoDataFrame,
+        name: str,
+    ):
+        """Set post processed data in the corresponding dictionary.
+
+        Parameters
+        ----------
+        data : gpd.GeoDataFrame
+            New post processed geometry data to add.
+        name : str
+            Geometry name.
+        """
+        self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        if name in self._processed_data and id(self._processed_data.get(name)) != id(
+            data
+        ):
+            logger.warning(f"Replacing post processed geometry data: {name}")
+
+        if "fid" in data.columns:
+            logger.warning(
+                f"'fid' column encountered in {name}, \
+column will be removed"
+            )
+            data.drop("fid", axis=1, inplace=True)
+
+        # Set the data
+        self._processed_data[name] = data
+
+    ## Properties
+    @property
+    def combined_data(self) -> dict[str, gpd.GeoDataFrame]:
+        """Return the combined output and post processed data."""
+        data = dict(self.data)
+        # Update with post processed data
+        data.update(self.processed_data)
+        # Return the combined data
+        return data
+
+    @property
+    def processed_data(self) -> dict[str, gpd.GeoDataFrame]:
+        """Return the post processed data."""
+        if self._processed_data is None:
+            self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        return self._processed_data
 
     ## I/O methods
     @hydromt_step
@@ -107,20 +176,55 @@ class OutputGeomsComponent(GeomsComponent):
             data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             self.set(data=data, name=name)
 
-    def write(self):
-        """Write method."""
-        raise NotImplementedError(
-            f"Writing not available for {self.__class__.__name__}",
-        )
+    def write(
+        self,
+        **kwargs,
+    ):
+        """Write the post processed datasets.
+
+        These will be placed in the 'post' directory next to the settings file (if
+        it exists) or in the root directory of the model.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Additional keyword arguments that are passed to the
+            `geopandas.to_file` function.
+        """
+        # If no data to write, return
+        if len(self.processed_data) == 0:
+            logger.info("No post processed data found, skip writing.")
+            return
+
+        # Ensure the format (also for future signature update)
+        filename = Path(self._filename).as_posix()
+        # Loop over the post processed data
+        for name, gdf in self.processed_data.items():
+            # Create the write path
+            write_path = Path(
+                self.root.path,
+                filename.format(name=name),
+            )
+            # Ensure the directory
+            write_dir = write_path.parent
+            write_dir.mkdir(parents=True, exist_ok=True)
+
+            logger.info(
+                f"Writing the '{name}' post processed geometry data to \
+{write_path.as_posix()}",
+            )
+            # Write the entire thing to vector file
+            gdf.to_file(write_path, **kwargs)
 
     ## Post processing methods
     @hydromt_step
-    def aggregate_square(
+    def spatial_square_aggregate(
         self,
         output_name: str,
-        res: float | int = 1,
         method: str = "mean",
-        output_dir: Path | str | None = None,
+        res: float | int = 1,
+        unit: str = "km",
+        name: str | None = None,
     ) -> None:
         """Aggregate FIAT vector output data to a square cell grid.
 
@@ -128,35 +232,53 @@ class OutputGeomsComponent(GeomsComponent):
         ----------
         output_name : str
             The name of the dataset in the data of the component.
-        res : float | int
-            The resolution of the resulting vector grid in km. By default 1.
         method : str, optional
             The method of aggregation, by default "mean".
-        output_dir : Path | str | None, optional
-            The output directory. If None, the data is written to the 'aggregated'
-            directory next to the configurations file. By default None.
+        res : float | int
+            The resolution of the resulting vector grid. By default 1.
+        unit : str, optional
+            The unit of the res variables. By default 'km'.
+        name : str, optional
+            The name of the new post processed dataset in the `processed` attribute.
+            If not provided, 'output_name' is used with the 'sq_aggr' suffix.
+            By default None.
         """
         # Check the output_name's existence
-        self._assert_entry(output_name)
+        self._assert_output_entry(output_name)
 
         logger.info(
             f"Square aggregate of {output_name} at {res} km resolution \
 using the '{method}' aggregation method"
         )
-        # Call the workflow function
-        vector_grid = workflows.aggregate_vector_grid(
-            output_data=self.data[output_name],
-            res=res,
-            method=method,
-            region=self.model.region,
+        # Prep the output data
+        output_data = workflows.prep_data_for_aggregation(
+            output_data=self.combined_data[output_name],
         )
 
-        # Check the output directory
-        output_dir = output_dir or "aggregate"
-        output_dir = Path(self.model.config.dir, output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Create a square vector grid
+        aggregation_areas = create_square_vector_grid(
+            bbox=output_data.total_bounds,
+            crs=output_data.crs,
+            res=res,
+            unit=unit,
+        )
 
-        # Write the data
-        out_fname = f"{output_name}_sq_aggr.fgb"
-        logger.info(f"Writing aggregate file {out_fname} to {output_dir.as_posix()}")
-        vector_grid.to_file(Path(output_dir, out_fname))
+        # Call the aggregation function
+        vector_grid = workflows.aggregate_spatially(
+            output_data=output_data,
+            aggregation_areas=aggregation_areas,
+            method=method,
+        )
+
+        # Clip based on the region
+        vector_grid = vector_grid.iloc[
+            _filter_gdf(
+                vector_grid,
+                geom=self.model.region,
+                bbox=vector_grid.total_bounds,
+            ),
+            :,
+        ]
+
+        # Set the data
+        self._set(data=vector_grid, name=name or f"{output_name}_sq_aggr")

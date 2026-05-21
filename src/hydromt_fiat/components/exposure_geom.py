@@ -76,7 +76,7 @@ class ExposureGeomsComponent(GeomsComponent):
         Parameters
         ----------
         filename : Path | str, optional
-            Filename relative to model root. should contain a {name} placeholder
+            Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
             If None, the value(s) is/ are either taken from the model configurations or
             the `_filename` attribute, by default None.
@@ -165,8 +165,7 @@ class ExposureGeomsComponent(GeomsComponent):
             )
             # Ensure the directory
             write_dir = write_path.parent
-            if not write_dir.is_dir():
-                write_dir.mkdir(parents=True, exist_ok=True)
+            write_dir.mkdir(parents=True, exist_ok=True)
 
             entry[FILE] = write_path
             # Due to header overloading, this is not solved properly in
@@ -263,7 +262,8 @@ use 'setup_region' before this method"
 
         Warning
         -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Run :py:meth:`~VulnerabilityComponent.setup` beforehand
+        (see vulnerability component).
 
         Parameters
         ----------

@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import geopandas as gpd
@@ -6,7 +7,9 @@ import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
-from hydromt.gis import full
+from hydromt.gis import full, full_from_transform
+
+from hydromt_fiat.utils import SQUARE__ID
 
 
 ## Data from the data catalog
@@ -141,6 +144,16 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
 
 
 ## Extra data structure
+@pytest.fixture
+def prepped_aggr_data(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    # Keep only floating point columns
+    data: gpd.GeoDataFrame = exposure_vector_clipped.select_dtypes(
+        include=[float, "geometry"],
+    )
+    # Return the data
+    return data
+
+
 @pytest.fixture(scope="session")
 def rotated_grid() -> xr.DataArray:
     # Create coordinates
@@ -149,3 +162,23 @@ def rotated_grid() -> xr.DataArray:
     # Build using 'full' from core
     da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
     return da
+
+
+@pytest.fixture
+def vector_grid(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    bbox = exposure_vector_clipped.total_bounds
+    # Get the sizes in y and x directions
+    dy = bbox[3] - bbox[1]
+    dx = bbox[2] - bbox[0]
+    res = 100
+
+    # Setup the vector grid
+    vg: gpd.GeoDataFrame = full_from_transform(
+        transform=(res, 0.0, bbox[0], 0.0, -res, bbox[3]),
+        shape=(math.ceil(dy / res), math.ceil(dx / res)),
+        crs=exposure_vector_clipped.crs,
+    ).raster.vector_grid()
+    vg[SQUARE__ID] = range(len(vg))
+
+    # Return the vector grid
+    return vg
