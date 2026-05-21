@@ -218,12 +218,60 @@ column will be removed"
 
     ## Post processing methods
     @hydromt_step
+    def spatial_aggregate(
+        self,
+        output_name: str,
+        *,
+        aggregation_areas: gpd.GeoDataFrame,
+        method: str = "mean",
+        name: str | None = None,
+    ):
+        """Aggregate data spatially.
+
+        Parameters
+        ----------
+        output_name : str
+            The name of the dataset in the data of the component, this can either be raw
+            FIAT model output data or already processed data in the `processed`
+            data attribute.
+        aggregation_areas : gpd.GeoDataFrame
+            The dataset with areas over which to aggregate the data.
+        method : str, optional
+            The method of aggregation, by default "mean".
+        name : str, optional
+            The name of the new post processed dataset in the `processed` attribute.
+            If not provided, 'output_name' is used with the 'sp_aggr' suffix.
+            By default None.
+        """
+        # Check the output_name's existence
+        self._assert_output_entry(output_name)
+
+        logger.info(
+            f"Spatial aggregate of {output_name} over a provided dataset \
+using the '{method}' aggregation method"
+        )
+        # Call the workflow methods
+        output_data = workflows.prep_data_for_aggregation(
+            output_data=self.combined_data[output_name],
+        )
+        # Aggregation
+        aggregated_data = workflows.aggregate_spatially(
+            output_data=output_data,
+            aggregation_areas=aggregation_areas.to_crs(output_data.crs),
+            method=method,
+        )
+
+        # Set the data
+        self._set(data=aggregated_data, name=name or f"{output_name}_sp_aggr")
+
+    @hydromt_step
     def spatial_square_aggregate(
         self,
         output_name: str,
-        method: str = "mean",
+        *,
         res: float | int = 1,
         unit: str = "km",
+        method: str = "mean",
         name: str | None = None,
     ) -> None:
         """Aggregate FIAT vector output data to a square cell grid.
@@ -231,13 +279,15 @@ column will be removed"
         Parameters
         ----------
         output_name : str
-            The name of the dataset in the data of the component.
-        method : str, optional
-            The method of aggregation, by default "mean".
+            The name of the dataset in the data of the component, this can either be raw
+            FIAT model output data or already processed data in the `processed`
+            data attribute.
         res : float | int
             The resolution of the resulting vector grid. By default 1.
         unit : str, optional
             The unit of the res variables. By default 'km'.
+        method : str, optional
+            The method of aggregation, by default "mean".
         name : str, optional
             The name of the new post processed dataset in the `processed` attribute.
             If not provided, 'output_name' is used with the 'sq_aggr' suffix.
@@ -247,7 +297,7 @@ column will be removed"
         self._assert_output_entry(output_name)
 
         logger.info(
-            f"Square aggregate of {output_name} at {res} km resolution \
+            f"Spatial square aggregate of {output_name} at {res} {unit} resolution \
 using the '{method}' aggregation method"
         )
         # Prep the output data
@@ -264,21 +314,21 @@ using the '{method}' aggregation method"
         )
 
         # Call the aggregation function
-        vector_grid = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas,
             method=method,
         )
 
         # Clip based on the region
-        vector_grid = vector_grid.iloc[
+        aggregated_data = aggregated_data.iloc[
             _filter_gdf(
-                vector_grid,
+                aggregated_data,
                 geom=self.model.region,
-                bbox=vector_grid.total_bounds,
+                bbox=aggregated_data.total_bounds,
             ),
             :,
         ]
 
         # Set the data
-        self._set(data=vector_grid, name=name or f"{output_name}_sq_aggr")
+        self._set(data=aggregated_data, name=name or f"{output_name}_sq_aggr")

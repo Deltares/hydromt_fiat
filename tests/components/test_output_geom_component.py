@@ -95,6 +95,28 @@ def test_output_geom_component__set(
     assert "Replacing post processed geometry data: ds1" in caplog.text
 
 
+def test_output_geom_component__set_fid(
+    caplog: pytest.LogCaptureFixture,
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    caplog.set_level(logging.INFO)
+    # Setup the component
+    component = OutputGeomsComponent(model=mock_model)
+    assert len(component.processed_data) == 0  # No data yet
+    # Add fid column
+    build_region["fid"] = [1]
+    assert "fid" in build_region.columns
+
+    # Add a geometry dataset
+    component._set(data=build_region, name="ds1")
+
+    # Assert logging statement
+    assert "fid' column encountered in ds1" in caplog.text
+    # Assert no fid column
+    assert "fid" not in component.processed_data["ds1"].columns
+
+
 def test_output_geom_component_read_none(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -191,6 +213,39 @@ def test_output_geom_component_write_warnings(
 
     # Assert the logging message
     assert "No post processed data found, skip writing." in caplog.text
+
+
+def test_output_geom_component_spatial_aggregate(
+    model_with_region: FIATModel,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+    vector_grid: gpd.GeoDataFrame,
+):
+    # Set up the component
+    component = OutputGeomsComponent(model=model_with_region)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped}
+
+    # Call the method
+    component.spatial_aggregate(
+        output_name="foo",
+        aggregation_areas=vector_grid,
+    )
+
+    # Assert the output
+    assert "foo_sp_aggr" in component.processed_data
+    data = component.processed_data["foo_sp_aggr"]
+    assert len(data) == 20
+    np.testing.assert_almost_equal(
+        data["max_damage_content"].iloc[0],
+        desired=155730,
+        decimal=0,
+    )
+    np.testing.assert_almost_equal(
+        np.nanmean(data["max_damage_content"]),
+        desired=796843,
+        decimal=0,
+    )
 
 
 def test_output_geom_component_spatial_square_aggregate(
