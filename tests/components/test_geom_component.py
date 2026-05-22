@@ -13,7 +13,7 @@ from hydromt_fiat.components.geom import GeomsComponent
 GeomsComponent.__abstractmethods__ = set()
 
 
-def test_geoms_component_empty(
+def test_geom_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
@@ -25,7 +25,7 @@ def test_geoms_component_empty(
     assert len(component.data) == 0
 
 
-def test_geoms_component__assert_entry(
+def test_geom_component__assert_entry(
     mock_model: MagicMock,
 ):
     # Set up the component
@@ -38,7 +38,7 @@ def test_geoms_component__assert_entry(
     component._assert_entry(name="foo")
 
 
-def test_geoms_component__assert_entry_errors(
+def test_geom_component__assert_entry_errors(
     mock_model: MagicMock,
 ):
     # Set up the component
@@ -67,7 +67,7 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with 'bar' as input"
         component._assert_entry(name="bar")
 
 
-def test_geoms_component_clear(
+def test_geom_component_clear(
     mock_model: MagicMock,
     exposure_vector: gpd.GeoDataFrame,
 ):
@@ -85,7 +85,7 @@ def test_geoms_component_clear(
     assert len(component.data) == 0
 
 
-def test_geoms_component_clip(
+def test_geom_component_clip(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
     exposure_vector: gpd.GeoDataFrame,
@@ -106,7 +106,7 @@ def test_geoms_component_clip(
     assert ds["foo"].shape[0] == 12
 
 
-def test_geoms_component_clip_srs(
+def test_geom_component_clip_srs(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
     exposure_vector: gpd.GeoDataFrame,
@@ -130,7 +130,7 @@ def test_geoms_component_clip_srs(
     assert ds["foo"].shape[0] == 12
 
 
-def test_geoms_component_clip_no_data(
+def test_geom_component_clip_no_data(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
 ):
@@ -145,7 +145,7 @@ def test_geoms_component_clip_no_data(
     assert ds is None
 
 
-def test_geoms_component_clip_inplace(
+def test_geom_component_clip_inplace(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
     exposure_vector: gpd.GeoDataFrame,
@@ -165,7 +165,7 @@ def test_geoms_component_clip_inplace(
     assert component.data["foo"].shape[0] == 12
 
 
-def test_geoms_component_reproject(
+def test_geom_component_reproject(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
@@ -188,7 +188,7 @@ def test_geoms_component_reproject(
     )
 
 
-def test_geoms_component_reproject_inplace(
+def test_geom_component_reproject_inplace(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
@@ -212,7 +212,7 @@ def test_geoms_component_reproject_inplace(
     )
 
 
-def test_geoms_component_reproject_nothing(
+def test_geom_component_reproject_nothing(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
@@ -231,7 +231,7 @@ def test_geoms_component_reproject_nothing(
     assert id_before == id(ds["ds1"])  # Same dataset, nothing happened
 
 
-def test_geoms_component_set(
+def test_geom_component_set(
     caplog: pytest.LogCaptureFixture,
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
@@ -257,7 +257,7 @@ def test_geoms_component_set(
     assert "Replacing geometry data: ds1" in caplog.text
 
 
-def test_geoms_component_region(
+def test_geom_component_region(
     build_region: gpd.GeoDataFrame,
     box_geometry: gpd.GeoDataFrame,
     mock_model: MagicMock,

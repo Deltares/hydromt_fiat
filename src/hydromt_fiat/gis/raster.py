@@ -13,23 +13,23 @@ logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def expand_raster_to_bounds(
-    ds: xr.Dataset | xr.DataArray,
+    ds: xr.Dataset,
     bbox: tuple[float] | np.ndarray,
-) -> xr.Dataset | xr.DataArray:
+) -> xr.Dataset:
     """Expand a raster to (beyond) the borders of a bounding box.
 
     When expanded, the new raster will be aligned with the old one.
 
     Parameters
     ----------
-    da : xr.DataArray
+    da : xr.Dataset
         The input raster dataset.
     bounds : tuple[float] | np.ndarray
         The bounds to which to expand the raster.
 
     Returns
     -------
-    xr.DataArray
+    xr.Dataset
         An expanded raster.
     """
     logger.info("Checking raster extent versus region bounding box")

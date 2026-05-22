@@ -24,8 +24,6 @@ from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
-    FLOOD_DEPTH,
-    FLOOD_LEVEL,
     GEOM,
     GRID,
     HAZARD,
@@ -249,7 +247,7 @@ class FIATModel(Model):
         self,
         *,
         model_type: Literal["geom", "grid"],
-        calculation_method: Literal[FLOOD_LEVEL, FLOOD_DEPTH],
+        calculation_method: Literal["flood.depth", "flood.level"],
         **settings,
     ) -> None:
         """Set config file entries.
