@@ -10,6 +10,7 @@ __all__ = ["create_query"]
 # GLOBAL STRINGS
 ## BASE
 ANALYSIS = "analysis"
+AREA = "area"
 CALC = "calc"
 CONFIG = "config"
 CURVE = "curve"
@@ -19,6 +20,7 @@ EXPOSURE = "exposure"
 FILE = "file"
 FN = "fn"
 GEOM = "geom"
+GEOMETRY = "geometry"
 GRID = "grid"
 HAZARD = "hazard"
 ID = "id"
@@ -62,6 +64,7 @@ VAR_AS_BAND = "var_as_band"
 VULNERABILITY_FILE = f"{VULNERABILITY}.{FILE}"
 
 ## HydroMT-FIAT
+AREA__SQM = f"{AREA}_sqm"
 COST__TYPE = f"cost_{TYPE}"
 CURVE__ID = f"{CURVE}_{ID}"
 CURVES = f"{CURVE}s"

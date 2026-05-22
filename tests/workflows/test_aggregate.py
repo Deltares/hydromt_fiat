@@ -55,3 +55,69 @@ def test_aggregate_spatially(
         desired=796843,
         decimal=0,
     )
+
+
+def test_aggregate_spatially_sum(
+    prepped_aggr_data: gpd.GeoDataFrame,
+    vector_grid: gpd.GeoDataFrame,
+):
+    # Call the function
+    vg = aggregate_spatially(
+        output_data=prepped_aggr_data,
+        aggregation_areas=vector_grid,
+        method="sum",
+    )
+
+    # Assert the output
+    assert len(vg) == 20
+    np.testing.assert_almost_equal(vg["max_damage_content"].iloc[0], 155730, decimal=0)
+    np.testing.assert_almost_equal(
+        np.nanmean(vg["max_damage_content"]),
+        desired=840854,
+        decimal=0,
+    )
+
+
+def test_aggregate_spatially_areal_mean(
+    prepped_aggr_data: gpd.GeoDataFrame,
+    vector_grid: gpd.GeoDataFrame,
+):
+    # Call the function
+    vg = aggregate_spatially(
+        output_data=prepped_aggr_data,
+        aggregation_areas=vector_grid,
+        method="sum",
+        areal_mean=True,
+    )
+
+    # Assert the output
+    assert len(vg) == 20
+    np.testing.assert_almost_equal(vg["max_damage_content"].iloc[0], 326, decimal=0)
+    np.testing.assert_almost_equal(
+        np.nanmean(vg["max_damage_content"]),
+        desired=301,
+        decimal=0,
+    )
+
+
+def test_aggregate_spatially_areal_mean_per(
+    prepped_aggr_data: gpd.GeoDataFrame,
+    vector_grid: gpd.GeoDataFrame,
+):
+    # Call the function
+    vg = aggregate_spatially(
+        output_data=prepped_aggr_data,
+        aggregation_areas=vector_grid,
+        method="sum",
+        areal_mean=True,
+        per_area=True,
+    )
+
+    # Assert the output
+    assert len(vg) == 20
+    np.testing.assert_almost_equal(vg["max_damage_content"].iloc[0], 15.6, decimal=1)
+    np.testing.assert_almost_equal(
+        np.nanmean(vg["max_damage_content"]),
+        desired=84.1,
+        decimal=1,
+    )

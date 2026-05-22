@@ -224,6 +224,8 @@ column will be removed"
         *,
         aggregation_areas: gpd.GeoDataFrame,
         method: str = "mean",
+        areal_mean: bool = False,
+        per_area: bool = False,
         name: str | None = None,
     ):
         """Aggregate data spatially.
@@ -238,6 +240,14 @@ column will be removed"
             The dataset with areas over which to aggregate the data.
         method : str, optional
             The method of aggregation, by default "mean".
+        areal_mean : bool, optional
+            Whether or not to calculate the results per unit area (i.e. m2). Setting
+            this to True is only recommended when `method` is set to 'sum'.
+            By default False.
+        per_area : bool, optional
+            Whether or not to calculate per unit area using the aggregation area (True)
+            or the combined (based on method) area of the features in the `output_data`.
+            By default False.
         name : str, optional
             The name of the new post processed dataset in the `processed` attribute.
             If not provided, 'output_name' is used with the 'sp_aggr' suffix.
@@ -259,6 +269,8 @@ using the '{method}' aggregation method"
             output_data=output_data,
             aggregation_areas=aggregation_areas.to_crs(output_data.crs),
             method=method,
+            areal_mean=areal_mean,
+            per_area=per_area,
         )
 
         # Set the data
