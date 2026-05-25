@@ -302,8 +302,13 @@ pandoc = "*"
 [tool.pixi.feature.test.dependencies]
 gdal = ">=3.9.1"
 
-[tool.pixi.feature.test.pypi-dependencies]
-delft_fiat = "*"
+[tool.pixi.feature.delft-fiat-stable]
+dependencies = {libgdal-core = ">=3.5", libgdal-arrow-parquet = "*", libgdal-netcdf = "*"}
+pypi-dependencies = {delft_fiat = "*"}
+
+[tool.pixi.feature.delft-fiat-dev]
+dependencies = {libgdal-core = ">=3.5", libgdal-arrow-parquet = "*", libgdal-netcdf = "*"}
+pypi-dependencies = {delft_fiat = { git = "https://github.com/Deltares/DELFT-fiat.git", branch = "v1" }}
 
 [tool.pixi.feature.wheel.dependencies]
 pip = "*"
@@ -324,11 +329,15 @@ python = "3.11.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["py314", "dev", "docs", "examples", "test"] }
+default = { features = ["py314", "dev", "docs", "examples", "test", "delft-fiat-stable"] }
 docs = { features = ["py313", "docs", "examples"] }
 slim = { features = [] }
-test-py314 = { features = ["py314", "test"] }
-test-py313 = { features = ["py313", "test"] }
-test-py312 = { features = ["py312", "test"] }
-test-py311 = { features = ["py311", "test"] }
-wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
+test-py314 = { features = ["py314", "test", "delft-fiat-stable"] }
+test-py313 = { features = ["py313", "test", "delft-fiat-stable"] }
+test-py312 = { features = ["py312", "test", "delft-fiat-stable"] }
+test-py311 = { features = ["py311", "test", "delft-fiat-stable"] }
+test-py314-dev = { features = ["py314", "test", "delft-fiat-dev"] }
+test-py313-dev = { features = ["py313", "test", "delft-fiat-dev"] }
+test-py312-dev = { features = ["py312", "test", "delft-fiat-dev"] }
+test-py311-dev = { features = ["py311", "test", "delft-fiat-dev"] }
+wheel = { features = ["py313", "test", "delft-fiat-stable", "wheel"], no-default-feature=true }

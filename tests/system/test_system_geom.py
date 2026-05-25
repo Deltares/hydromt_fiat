@@ -4,20 +4,19 @@ import pytest
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
+from hydromt_fiat.utils import FLOOD_DEPTH, GEOM
 
 try:
     from fiat import Configurations, GeomModel, __version__
 
     HAS_FIAT = True
-
 except ImportError:
     __version__ = "0.0.0"
     HAS_FIAT = False
 
 
 @pytest.mark.skipif(
-    not HAS_FIAT or Version(__version__) < Version("1"),
+    not HAS_FIAT or Version(__version__) < Version("1.0.0.dev0"),
     reason="At least Delft-FIAT version 1.0.0 is required.",
 )
 @pytest.mark.system
@@ -36,7 +35,7 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
+    model.setup_config(model_type=GEOM, calculation_method=FLOOD_DEPTH)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -50,6 +49,7 @@ def test_system_geom_model(
     # Add an hazard layer
     model.hazard.setup(
         "flood_event",
+        hazard_type="water_depth",
     )
 
     # Setup the exposure geometry data
@@ -58,17 +58,21 @@ def test_system_geom_model(
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
+    model.exposure_geoms.setup_link_vulnerability(
+        exposure_name="buildings",
+        impact_type="damage",
+    )
     model.exposure_geoms.setup_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
     # Needed for flood calculations
     model.exposure_geoms.update_column(
         exposure_name="buildings",
-        columns=["ref", "method"],
-        values=[0, "centroid"],
+        columns=["reference", "elevation", "method"],
+        values=[0, 0, "centroid"],
     )
 
     # Write the model
