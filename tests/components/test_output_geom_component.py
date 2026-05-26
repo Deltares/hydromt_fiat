@@ -229,7 +229,7 @@ def test_output_geom_component_spatial_aggregate(
     # Call the method
     component.spatial_aggregate(
         output_name="foo",
-        aggregation_areas=vector_grid,
+        aggregation_areas_fname=vector_grid,
     )
 
     # Assert the output
