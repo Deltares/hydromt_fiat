@@ -221,8 +221,8 @@ column will be removed"
     def spatial_aggregate(
         self,
         output_name: str,
+        aggregation_areas_fname: str,
         *,
-        aggregation_areas: gpd.GeoDataFrame,
         method: str = "mean",
         areal_mean: bool = False,
         per_area: bool = False,
@@ -236,7 +236,7 @@ column will be removed"
             The name of the dataset in the data of the component, this can either be raw
             FIAT model output data or already processed data in the `processed`
             data attribute.
-        aggregation_areas : gpd.GeoDataFrame
+        aggregation_areas_fname : str
             The dataset with areas over which to aggregate the data.
         method : str, optional
             The method of aggregation, by default "mean".
@@ -259,6 +259,10 @@ column will be removed"
         logger.info(
             f"Spatial aggregate of {output_name} over a provided dataset \
 using the '{method}' aggregation method"
+        )
+        # Get the aggregation area from the data catalog
+        aggregation_areas = self.data_catalog.get_geodataframe(
+            data_like=aggregation_areas_fname,
         )
         # Call the workflow methods
         output_data = workflows.prep_data_for_aggregation(
