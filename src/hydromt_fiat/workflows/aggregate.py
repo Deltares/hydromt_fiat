@@ -112,7 +112,7 @@ def aggregate_spatially(
 
     # Do it only over the numeric columns
     float_cols = aggregation_areas.columns.drop([GEOMETRY, AREA__SQM])
-    aggregation_areas = aggregation_areas[float_cols].div(
+    aggregation_areas[float_cols] = aggregation_areas[float_cols].div(
         aggregation_areas[AREA__SQM],
         axis=0,
     )

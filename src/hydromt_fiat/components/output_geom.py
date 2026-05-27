@@ -17,7 +17,7 @@ from hydromt_fiat.components.utils import (
     pathing_expand,
 )
 from hydromt_fiat.gis import create_square_vector_grid
-from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, OUTPUT_GEOM_NAME, POST
+from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, GEOMETRY, OUTPUT_GEOM_NAME, POST
 
 __all__ = ["OutputGeomsComponent"]
 
@@ -171,7 +171,7 @@ column will be removed"
             # If file doesn't exist, skip it
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the {name} output file at {read_path.as_posix()}")
+            logger.info(f"Reading the '{name}' output file at {read_path.as_posix()}")
             # Read the data and set it
             data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             self.set(data=data, name=name)
@@ -209,11 +209,19 @@ column will be removed"
             write_dir = write_path.parent
             write_dir.mkdir(parents=True, exist_ok=True)
 
+            # If there is not geometry, it's a dataframe, write it to csv
+            if GEOMETRY not in gdf.columns:
+                logger.info(
+                    f"Writing the '{name}' post processed tabular data to \
+{write_path.with_suffix('.csv').as_posix()}",
+                )
+                gdf.to_csv(write_path.with_suffix(".csv"), index=False)
+                continue
+            # Write the entire thing to vector file
             logger.info(
                 f"Writing the '{name}' post processed geometry data to \
 {write_path.as_posix()}",
             )
-            # Write the entire thing to vector file
             gdf.to_file(write_path, **kwargs)
 
     ## Post processing methods
@@ -257,7 +265,7 @@ column will be removed"
         self._assert_output_entry(output_name)
 
         logger.info(
-            f"Spatial aggregate of {output_name} over a provided dataset \
+            f"Spatial aggregate of '{output_name}' over a provided dataset \
 using the '{method}' aggregation method"
         )
         # Get the aggregation area from the data catalog
@@ -313,7 +321,7 @@ using the '{method}' aggregation method"
         self._assert_output_entry(output_name)
 
         logger.info(
-            f"Spatial square aggregate of {output_name} at {res} {unit} resolution \
+            f"Spatial square aggregate of '{output_name}' at {res} {unit} resolution \
 using the '{method}' aggregation method"
         )
         # Prep the output data
