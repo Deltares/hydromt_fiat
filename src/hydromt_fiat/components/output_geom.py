@@ -17,7 +17,7 @@ from hydromt_fiat.components.utils import (
     pathing_expand,
 )
 from hydromt_fiat.gis import create_square_vector_grid
-from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, OUTPUT_GEOM_NAME, POST
+from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, GEOMETRY, OUTPUT_GEOM_NAME, POST
 
 __all__ = ["OutputGeomsComponent"]
 
@@ -213,6 +213,10 @@ column will be removed"
                 f"Writing the '{name}' post processed geometry data to \
 {write_path.as_posix()}",
             )
+            # If there is not geometry, it's a dataframe, write it to csv
+            if GEOMETRY not in gdf.columns:
+                gdf.to_csv(write_path.with_suffix(".csv"), index=False)
+                continue
             # Write the entire thing to vector file
             gdf.to_file(write_path, **kwargs)
 

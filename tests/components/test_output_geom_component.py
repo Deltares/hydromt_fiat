@@ -201,6 +201,34 @@ def test_output_geom_component_write(
     assert Path(tmp_path, component._filename.format(name="aggr2")).is_file()
 
 
+def test_output_geom_component_write_df(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = OutputGeomsComponent(model=mock_model_config)
+    # Drop the geometry column
+    exposure_vector_clipped.drop(["geometry"], axis=1, inplace=True)
+    # Set data like a dummy
+    component._processed_data = {
+        "aggr1": exposure_vector_clipped,
+    }
+
+    # Write the data
+    component.write()
+
+    # Assert the files
+    assert (
+        Path(
+            tmp_path,
+            component._filename.format(name="aggr1"),
+        )
+        .with_suffix(".csv")
+        .is_file()
+    )
+
+
 def test_output_geom_component_write_warnings(
     caplog: pytest.LogCaptureFixture,
     mock_model_config: MagicMock,
