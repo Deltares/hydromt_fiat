@@ -100,7 +100,7 @@ class ExposureGeomsComponent(GeomsComponent):
         for read_path, name in zip(*files):
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the {name} geometry file at {read_path.as_posix()}")
+            logger.info(f"Reading the '{name}' geometry file at {read_path.as_posix()}")
             # Get the data
             data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             # Check for data in csv file, this has to be merged
