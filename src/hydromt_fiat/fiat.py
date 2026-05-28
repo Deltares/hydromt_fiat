@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Literal
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -26,6 +27,8 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
+    MODEL_CALC,
+    MODEL_TYPE,
     OUTPUT,
     REGION,
     SETTINGS,
@@ -242,17 +245,31 @@ class FIATModel(Model):
     @hydromt_step
     def setup_config(
         self,
+        *,
+        model_type: Literal["geom", "grid"],
+        calculation_method: Literal["flood.depth", "flood.level"],
         **settings,
     ) -> None:
         """Set config file entries.
 
         Parameters
         ----------
+        model_type : {'geom', 'grid'}
+            The type of the model, either 'geom' for a geometry-based model or 'grid'
+            for a grid-based model.
+        calculation_method : {'flood.level', 'flood.depth'}
+            The method to be used for the risk calculation, either 'flood.level' or
+            'flood.depth'.
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
+        if model_type not in [GEOM, GRID]:
+            raise ValueError(f"Model_type must be either '{GEOM}' or '{GRID}'")
+        self.config.set(MODEL_TYPE, model_type)
+        self.config.set(MODEL_CALC, calculation_method)
+        # Set the other defined settings
         for key, value in settings.items():
             self.config.set(key, value)
 
@@ -270,7 +287,7 @@ class FIATModel(Model):
             Path to the region vector file or a loaded vector file that takes the form
             of a geopandas GeoDataFrame.
         replace : bool, optional
-            If False, a union is created between given and existing geometries.
+            If False, a union is created between provided and existing geometries.
             By default False.
         """
         if isinstance(region, (Path, str)):

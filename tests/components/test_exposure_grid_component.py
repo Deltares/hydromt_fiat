@@ -213,8 +213,12 @@ def test_exposure_grid_component_setup_errors(
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
 
+    # Fake component
+    fake_component = mocker.Mock()
+    fake_component.data.identifiers.empty = False
+
     # Assert missing region error
-    mocker.patch.object(FIATModel, VULNERABILITY)
+    mocker.patch.object(FIATModel, VULNERABILITY, fake_component)
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
