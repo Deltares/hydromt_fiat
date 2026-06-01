@@ -60,4 +60,4 @@ Aggregation
 .. autosummary::
     :toctree: ../_generated
 
-    workflows.aggregate_vector_grid
+    workflows.aggregate_spatially

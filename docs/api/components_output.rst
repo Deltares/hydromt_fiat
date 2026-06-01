@@ -39,7 +39,8 @@ OutputGeomsComponent
     OutputGeomsComponent.clear
     OutputGeomsComponent.clip
     OutputGeomsComponent.reproject
-    OutputGeomsComponent.aggregate_square
+    OutputGeomsComponent.spatial_aggregate
+    OutputGeomsComponent.spatial_square_aggregate
 
 OutputGridComponent
 -------------------

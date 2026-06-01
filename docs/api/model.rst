@@ -54,6 +54,7 @@ I/O methods
     :toctree: ../_generated
 
     FIATModel.read
+    FIATModel.read_output
     FIATModel.write
 
 .. _api_model_setup_methods:

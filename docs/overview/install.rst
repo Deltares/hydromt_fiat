@@ -34,37 +34,8 @@ To test whether the installation was successful you can run :code:`hydromt --plu
 .. code-block:: shell
 
     $ hydromt --plugins
-        Model plugins:
-                - model (hydromt 1.0.1)
-                - fiat_model (hydromt_fiat 1.0.0.dev0)
-        Component plugins:
-                - ConfigComponent (hydromt 1.0.1)
-                - DatasetsComponent (hydromt 1.0.1)
-                - GeomsComponent (hydromt 1.0.1)
-                - GridComponent (hydromt 1.0.1)
-                - MeshComponent (hydromt 1.0.1)
-                - SpatialDatasetsComponent (hydromt 1.0.1)
-                - TablesComponent (hydromt 1.0.1)
-                - VectorComponent (hydromt 1.0.1)
-        Driver plugins:
-                - dataset_xarray (hydromt 1.0.1)
-                - geodataframe_table (hydromt 1.0.1)
-                - geodataset_vector (hydromt 1.0.1)
-                - geodataset_xarray (hydromt 1.0.1)
-                - pandas (hydromt 1.0.1)
-                - pyogrio (hydromt 1.0.1)
-                - raster_xarray (hydromt 1.0.1)
-                - rasterio (hydromt 1.0.1)
-                - osm (hydromt_fiat 1.0.0.dev0)
-        Catalog plugins:
-                - deltares_data (hydromt 1.0.1)
-                - artifact_data (hydromt 1.0.1)
-                - aws_data (hydromt 1.0.1)
-                - gcs_cmip6_data (hydromt 1.0.1)
-        Uri_resolver plugins:
-                - convention (hydromt 1.0.1)
-                - raster_tindex (hydromt 1.0.1)
-                - osm_resolver (hydromt_fiat 1.0.0.dev0)
+
+.. program-output:: hydromt --plugins
 
 Installing HydroMT-FIAT in a python environment
 -----------------------------------------------

@@ -17,14 +17,19 @@ steps: # Grouping of the steps of the recipe
   # Setup the exposure based on a vector dataset
   - exposure_geoms.setup:
       exposure_fname: osm_buildings
-      exposure_type_column: building
+      exposure_object_type_column: building
       exposure_link_fname: osm_buildings_link
-      exposure_type_fill: unknown
+      exposure_object_type_fill: unknown
+
+  # Link with the vulnerability
+  - exposure_geoms.setup_link_vulnerability:
+      exposure_name: osm_buildings
+      impact_type: damage
 
   # Add the maximum damage to it
   - exposure_geoms.setup_max_damage:
       exposure_name: osm_buildings
-      exposure_type: damage
+      impact_type: damage
       exposure_cost_table_fname: jrc_damage
       country: World
 
@@ -32,8 +37,6 @@ steps: # Grouping of the steps of the recipe
   - exposure_geoms.update_column:
       exposure_name: osm_buildings
       columns:
-        - ref
-        - method
+        - elevatio
       values:
         - 0
-        - centroid

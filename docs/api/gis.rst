@@ -28,6 +28,14 @@ Raster
     gis.raster.expand_raster_to_bounds
     gis.raster_utils.force_ns
 
+Vector
+------
+
+.. autosummary::
+    :toctree: ../_generated
+
+    gis.vector.create_square_vector_grid
+
 Utility
 -------
 

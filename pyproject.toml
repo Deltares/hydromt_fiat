@@ -94,6 +94,7 @@ docs = [
 	"pydata-sphinx-theme",
     "sphinx>=8.2.0",
     "sphinx_design",
+    "sphinxcontrib-programoutput",
 ]
 examples = [
     "cartopy",
