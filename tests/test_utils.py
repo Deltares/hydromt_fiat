@@ -107,4 +107,6 @@ def test_standard_unit_length(caplog: pytest.LogCaptureFixture):
     # Assert conversion
     assert np.isclose(quantity.magnitude, 0.3048)
     assert str(quantity.units) == "meter"
-    assert "Given unit (foot) does not match the standard unit (meter)" in caplog.text
+    assert (
+        "Given unit (foot) does not match the standard/ default unit (meter)"
+    ) in caplog.text

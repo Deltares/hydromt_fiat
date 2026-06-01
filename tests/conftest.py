@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import geopandas as gpd
@@ -5,11 +6,13 @@ import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.gis import full_from_transform
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
+from hydromt_fiat.utils import SQUARE__ID
 
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
@@ -190,8 +193,7 @@ def exposure_vector_clipped_for_damamge(
             "cost_type",
             "max_damage_structure",
             "max_damage_content",
-            "ref",
-            "method",
+            "elevation",
         ],
         axis=1,
         inplace=True,
@@ -288,3 +290,23 @@ def exposure_cost_link() -> pd.DataFrame:
         }
     )
     return df
+
+
+@pytest.fixture
+def vector_grid(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    bbox = exposure_vector_clipped.total_bounds
+    # Get the sizes in y and x directions
+    dy = bbox[3] - bbox[1]
+    dx = bbox[2] - bbox[0]
+    res = 100
+
+    # Setup the vector grid
+    vg: gpd.GeoDataFrame = full_from_transform(
+        transform=(res, 0.0, bbox[0], 0.0, -res, bbox[3]),
+        shape=(math.ceil(dy / res), math.ceil(dx / res)),
+        crs=exposure_vector_clipped.crs,
+    ).raster.vector_grid()
+    vg[SQUARE__ID] = range(len(vg))
+
+    # Return the vector grid
+    return vg
