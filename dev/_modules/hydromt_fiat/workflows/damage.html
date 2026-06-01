@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
 
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -46,32 +46,39 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/damage';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             false;
         </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
-
+  <body data-default-mode="auto">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -322,11 +335,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -339,8 +359,7 @@
           
           
           
-          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -414,12 +433,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.gis</span><span class="w"> </span><span class="kn">import</span> <span class="n">utm_crs</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">COST_TYPE</span><span class="p">,</span>
-    <span class="n">EXPOSURE_LINK</span><span class="p">,</span>
-    <span class="n">EXPOSURE_TYPE</span><span class="p">,</span>
+    <span class="n">COST__TYPE</span><span class="p">,</span>
+    <span class="n">IMPACT__SUBTYPE</span><span class="p">,</span>
+    <span class="n">IMPACT__TYPE</span><span class="p">,</span>
     <span class="n">MAX</span><span class="p">,</span>
-    <span class="n">OBJECT_TYPE</span><span class="p">,</span>
-    <span class="n">SUBTYPE</span><span class="p">,</span>
+    <span class="n">OBJECT__TYPE</span><span class="p">,</span>
     <span class="n">create_query</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -433,7 +451,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">max_monetary_damage</span><span class="p">(</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
     <span class="n">exposure_cost_table</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">exposure_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">impact_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">vulnerability</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">exposure_cost_link</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">select</span><span class="p">,</span>
@@ -481,52 +499,56 @@
     <span class="k">if</span> <span class="n">exposure_cost_link</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-                <span class="n">OBJECT_TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                <span class="n">COST_TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_LINK</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">OBJECT__TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">OBJECT__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">COST__TYPE</span><span class="p">:</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">OBJECT__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
 
     <span class="c1"># Check for the necessary columns</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">item</span> <span class="ow">in</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">COST_TYPE</span><span class="p">]):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cost link table either missing </span><span class="si">{</span><span class="n">OBJECT_TYPE</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">COST_TYPE</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+        <span class="n">item</span> <span class="ow">in</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">columns</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="p">[</span><span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">COST__TYPE</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Cost link table either missing </span><span class="si">{</span><span class="n">OBJECT__TYPE</span><span class="si">}</span><span class="s2"> or </span><span class="si">{</span><span class="n">COST__TYPE</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
     <span class="c1"># Leave only the necessary columns</span>
-    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[[</span><span class="n">OBJECT_TYPE</span><span class="p">,</span> <span class="n">COST_TYPE</span><span class="p">]]</span>
-    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">OBJECT_TYPE</span><span class="p">)</span>
+    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[[</span><span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">COST__TYPE</span><span class="p">]]</span>
+    <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">OBJECT__TYPE</span><span class="p">)</span>
 
     <span class="c1"># Get the unique headers corresponding to the &#39;exposure_type&#39;</span>
-    <span class="k">if</span> <span class="n">SUBTYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">IMPACT__SUBTYPE</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
         <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">vulnerability</span><span class="p">[</span><span class="n">EXPOSURE_TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="n">exposure_type</span><span class="p">]</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">[</span><span class="n">SUBTYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()]</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="n">impact_type</span><span class="p">]</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">[</span><span class="n">IMPACT__SUBTYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()]</span>
 
     <span class="c1"># If not headers were found, log and return</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Exposure type (</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}</span><span class="s2">) not found in vulnerability data&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Exposure type (</span><span class="si">{</span><span class="n">impact_type</span><span class="si">}</span><span class="s2">) not found in vulnerability data&quot;</span>
         <span class="p">)</span>
 
     <span class="c1"># Get unique linking names</span>
-    <span class="n">unique_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">unique_link</span> <span class="o">=</span> <span class="n">exposure_cost_link</span><span class="p">[</span><span class="n">COST__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="n">unique_link</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">unique_link</span><span class="p">,</span> <span class="n">headers</span><span class="p">)]</span>
     <span class="c1"># Transpose the cost table, rename index to object_type to easily merge</span>
     <span class="c1"># This is not the object type, but the specific max costs of that element</span>
-    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">)</span>
+    <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="n">COST__TYPE</span><span class="p">)</span>
     <span class="c1"># Index the cost table</span>
     <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="n">exposure_cost_table</span><span class="p">[</span>
-        <span class="n">exposure_cost_table</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">unique_link</span><span class="p">)</span>
+        <span class="n">exposure_cost_table</span><span class="p">[</span><span class="n">COST__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">unique_link</span><span class="p">)</span>
     <span class="p">]</span>
 
     <span class="c1"># Link the cost type to the exposure data</span>
     <span class="n">data_or_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">)</span>  <span class="c1"># For size check later</span>
-    <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[[</span><span class="n">OBJECT_TYPE</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+    <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST__TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[[</span><span class="n">OBJECT__TYPE</span><span class="p">]]</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
         <span class="n">exposure_cost_link</span><span class="p">,</span>
-        <span class="n">on</span><span class="o">=</span><span class="n">OBJECT_TYPE</span><span class="p">,</span>
+        <span class="n">on</span><span class="o">=</span><span class="n">OBJECT__TYPE</span><span class="p">,</span>
         <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">,</span>
-    <span class="p">)[</span><span class="n">COST_TYPE</span><span class="p">]</span>
+    <span class="p">)[</span><span class="n">COST__TYPE</span><span class="p">]</span>
 
     <span class="c1"># Drop the data that cannnot be linked</span>
-    <span class="n">exposure_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">exposure_data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="n">COST__TYPE</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># Get the area, make sure its a projected crs</span>
     <span class="n">old_crs</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">crs</span>
@@ -537,15 +559,15 @@
 
     <span class="c1"># Loop through the headers to set the max damage per subtype (or not)</span>
     <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="n">headers</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST_TYPE</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">exposure_data</span><span class="p">[</span><span class="n">COST__TYPE</span><span class="p">]</span> <span class="o">+</span> <span class="n">header</span>
         <span class="c1"># Get the costs per object</span>
-        <span class="n">costs_per</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">exposure_cost_table</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">COST_TYPE</span><span class="p">)</span>
-        <span class="n">costs_per</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">COST_TYPE</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">costs_per</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">exposure_cost_table</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">COST__TYPE</span><span class="p">)</span>
+        <span class="n">costs_per</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">COST__TYPE</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">costs_per</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
         <span class="c1"># Multiply by the area</span>
         <span class="n">costs_per</span> <span class="o">*=</span> <span class="n">area</span>
 
-        <span class="n">exposure_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">MAX</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">exposure_type</span><span class="si">}{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">exposure_data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">MAX</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">impact_type</span><span class="si">}{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">costs_per</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
     <span class="c1"># Check data length afterwards</span>
     <span class="n">data_m_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">)</span>
@@ -612,8 +634,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -647,7 +669,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
 </p></div>
       
     </div>

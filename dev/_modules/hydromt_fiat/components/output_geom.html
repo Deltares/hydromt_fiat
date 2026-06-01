@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
 
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -46,32 +46,39 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/components/output_geom';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             false;
         </script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="icon" href="../../../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="auto">
-
+  <body data-default-mode="auto">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -97,7 +104,7 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
   <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
@@ -201,11 +208,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -218,8 +232,7 @@
           
           
           
-          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
       
@@ -322,11 +335,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -339,8 +359,7 @@
           
           
           
-          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/Deltares/hydromt_fiat" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fab fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
 </ul></div>
         
@@ -411,6 +430,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.gis.vector</span><span class="w"> </span><span class="kn">import</span> <span class="n">_filter_gdf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
 
@@ -421,7 +441,8 @@
     <span class="n">pathing_config</span><span class="p">,</span>
     <span class="n">pathing_expand</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EXPOSURE_GEOM_FILE</span><span class="p">,</span> <span class="n">OUTPUT_GEOM_NAME</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.gis</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_square_vector_grid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">EXPOSURE_GEOM_FILE</span><span class="p">,</span> <span class="n">GEOMETRY</span><span class="p">,</span> <span class="n">OUTPUT_GEOM_NAME</span><span class="p">,</span> <span class="n">POST</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OutputGeomsComponent&quot;</span><span class="p">]</span>
 
@@ -445,10 +466,77 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
     <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">POST</span><span class="si">}</span><span class="s2">/</span><span class="se">{{</span><span class="s2">name</span><span class="se">}}</span><span class="s2">.fgb&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">model</span><span class="p">,</span>
             <span class="n">region_component</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
+
+    <span class="c1">## Private methods</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_assert_output_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoSeries</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Chose from already present geometries: </span><span class="se">\</span>
+<span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2"> i.e. a GeoDataFrame or run the appropriate `setup` </span><span class="se">\</span>
+<span class="s2">method with &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; as input&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_read</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set post processed data in the corresponding dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : gpd.GeoDataFrame</span>
+<span class="sd">            New post processed geometry data to add.</span>
+<span class="sd">        name : str</span>
+<span class="sd">            Geometry name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="ow">and</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">id</span><span class="p">(</span>
+            <span class="n">data</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Replacing post processed geometry data: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;fid&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;fid&#39; column encountered in </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">column will be removed&quot;</span>
+            <span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;fid&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Set the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="c1">## Properties</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">combined_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the combined output and post processed data.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Update with post processed data</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">)</span>
+        <span class="c1"># Return the combined data</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">processed_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the post processed data.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">skip_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processed_data</span>
 
     <span class="c1">## I/O methods</span>
 <div class="viewcode-block" id="OutputGeomsComponent.read">
@@ -512,67 +600,197 @@
             <span class="c1"># If file doesn&#39;t exist, skip it</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">read_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                 <span class="k">continue</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading the </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> output file at </span><span class="si">{</span><span class="n">read_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading the &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; output file at </span><span class="si">{</span><span class="n">read_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># Read the data and set it</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">read_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write method.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Writing not available for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the post processed datasets.</span>
+
+<span class="sd">        These will be placed in the &#39;post&#39; directory next to the settings file (if</span>
+<span class="sd">        it exists) or in the root directory of the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Additional keyword arguments that are passed to the</span>
+<span class="sd">            `geopandas.to_file` function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If no data to write, return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No post processed data found, skip writing.&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Ensure the format (also for future signature update)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filename</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span>
+        <span class="c1"># Loop over the post processed data</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">gdf</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Create the write path</span>
+            <span class="n">write_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="c1"># Ensure the directory</span>
+            <span class="n">write_dir</span> <span class="o">=</span> <span class="n">write_path</span><span class="o">.</span><span class="n">parent</span>
+            <span class="n">write_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># If there is not geometry, it&#39;s a dataframe, write it to csv</span>
+            <span class="k">if</span> <span class="n">GEOMETRY</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Writing the &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; post processed tabular data to </span><span class="se">\</span>
+<span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">gdf</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">write_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.csv&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Write the entire thing to vector file</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Writing the &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; post processed geometry data to </span><span class="se">\</span>
+<span class="si">{</span><span class="n">write_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">gdf</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">write_path</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c1">## Post processing methods</span>
-<div class="viewcode-block" id="OutputGeomsComponent.aggregate_square">
-<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.OutputGeomsComponent.aggregate_square.html#hydromt_fiat.components.OutputGeomsComponent.aggregate_square">[docs]</a>
+<div class="viewcode-block" id="OutputGeomsComponent.spatial_aggregate">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.OutputGeomsComponent.spatial_aggregate.html#hydromt_fiat.components.OutputGeomsComponent.spatial_aggregate">[docs]</a>
     <span class="nd">@hydromt_step</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">aggregate_square</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spatial_aggregate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">res</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">aggregation_areas_fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-        <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">areal_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">per_area</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Aggregate data spatially.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_name : str</span>
+<span class="sd">            The name of the dataset in the data of the component, this can either be raw</span>
+<span class="sd">            FIAT model output data or already processed data in the `processed`</span>
+<span class="sd">            data attribute.</span>
+<span class="sd">        aggregation_areas_fname : str</span>
+<span class="sd">            The dataset with areas over which to aggregate the data.</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            The method of aggregation, by default &quot;mean&quot;.</span>
+<span class="sd">        areal_mean : bool, optional</span>
+<span class="sd">            Whether or not to calculate the results per unit area (i.e. m2). Setting</span>
+<span class="sd">            this to True is only recommended when `method` is set to &#39;sum&#39;.</span>
+<span class="sd">            By default False.</span>
+<span class="sd">        per_area : bool, optional</span>
+<span class="sd">            Whether or not to calculate per unit area using the aggregation area (True)</span>
+<span class="sd">            or the combined (based on method) area of the features in the `output_data`.</span>
+<span class="sd">            By default False.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the new post processed dataset in the `processed` attribute.</span>
+<span class="sd">            If not provided, &#39;output_name&#39; is used with the &#39;sp_aggr&#39; suffix.</span>
+<span class="sd">            By default None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check the output_name&#39;s existence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_output_entry</span><span class="p">(</span><span class="n">output_name</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Spatial aggregate of &#39;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">&#39; over a provided dataset </span><span class="se">\</span>
+<span class="s2">using the &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; aggregation method&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Get the aggregation area from the data catalog</span>
+        <span class="n">aggregation_areas</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_geodataframe</span><span class="p">(</span>
+            <span class="n">data_like</span><span class="o">=</span><span class="n">aggregation_areas_fname</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Call the workflow methods</span>
+        <span class="n">output_data</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">prep_data_for_aggregation</span><span class="p">(</span>
+            <span class="n">output_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span><span class="p">[</span><span class="n">output_name</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="c1"># Aggregation</span>
+        <span class="n">aggregated_data</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">aggregate_spatially</span><span class="p">(</span>
+            <span class="n">output_data</span><span class="o">=</span><span class="n">output_data</span><span class="p">,</span>
+            <span class="n">aggregation_areas</span><span class="o">=</span><span class="n">aggregation_areas</span><span class="o">.</span><span class="n">to_crs</span><span class="p">(</span><span class="n">output_data</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="n">areal_mean</span><span class="o">=</span><span class="n">areal_mean</span><span class="p">,</span>
+            <span class="n">per_area</span><span class="o">=</span><span class="n">per_area</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">aggregated_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">_sp_aggr&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OutputGeomsComponent.spatial_square_aggregate">
+<a class="viewcode-back" href="../../../_generated/hydromt_fiat.components.OutputGeomsComponent.spatial_square_aggregate.html#hydromt_fiat.components.OutputGeomsComponent.spatial_square_aggregate">[docs]</a>
+    <span class="nd">@hydromt_step</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spatial_square_aggregate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">res</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;km&quot;</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Aggregate FIAT vector output data to a square cell grid.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        output_name : str</span>
-<span class="sd">            The name of the dataset in the data of the component.</span>
+<span class="sd">            The name of the dataset in the data of the component, this can either be raw</span>
+<span class="sd">            FIAT model output data or already processed data in the `processed`</span>
+<span class="sd">            data attribute.</span>
 <span class="sd">        res : float | int</span>
-<span class="sd">            The resolution of the resulting vector grid in km. By default 1.</span>
+<span class="sd">            The resolution of the resulting vector grid. By default 1.</span>
+<span class="sd">        unit : str, optional</span>
+<span class="sd">            The unit of the res variables. By default &#39;km&#39;.</span>
 <span class="sd">        method : str, optional</span>
 <span class="sd">            The method of aggregation, by default &quot;mean&quot;.</span>
-<span class="sd">        output_dir : Path | str | None, optional</span>
-<span class="sd">            The output directory. If None, the data is written to the &#39;aggregated&#39;</span>
-<span class="sd">            directory next to the configurations file. By default None.</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            The name of the new post processed dataset in the `processed` attribute.</span>
+<span class="sd">            If not provided, &#39;output_name&#39; is used with the &#39;sq_aggr&#39; suffix.</span>
+<span class="sd">            By default None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Check the output_name&#39;s existence</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_entry</span><span class="p">(</span><span class="n">output_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_assert_output_entry</span><span class="p">(</span><span class="n">output_name</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Square aggregate of </span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2"> km resolution </span><span class="se">\</span>
+            <span class="sa">f</span><span class="s2">&quot;Spatial square aggregate of &#39;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">&#39; at </span><span class="si">{</span><span class="n">res</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2"> resolution </span><span class="se">\</span>
 <span class="s2">using the &#39;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">&#39; aggregation method&quot;</span>
         <span class="p">)</span>
-        <span class="c1"># Call the workflow function</span>
-        <span class="n">vector_grid</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">aggregate_vector_grid</span><span class="p">(</span>
-            <span class="n">output_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">output_name</span><span class="p">],</span>
-            <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
-            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
-            <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+        <span class="c1"># Prep the output data</span>
+        <span class="n">output_data</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">prep_data_for_aggregation</span><span class="p">(</span>
+            <span class="n">output_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">combined_data</span><span class="p">[</span><span class="n">output_name</span><span class="p">],</span>
         <span class="p">)</span>
 
-        <span class="c1"># Check the output directory</span>
-        <span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="ow">or</span> <span class="s2">&quot;aggregate&quot;</span>
-        <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
-        <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Create a square vector grid</span>
+        <span class="n">aggregation_areas</span> <span class="o">=</span> <span class="n">create_square_vector_grid</span><span class="p">(</span>
+            <span class="n">bbox</span><span class="o">=</span><span class="n">output_data</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">,</span>
+            <span class="n">crs</span><span class="o">=</span><span class="n">output_data</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+            <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
+            <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="c1"># Write the data</span>
-        <span class="n">out_fname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">_sq_aggr.fgb&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing aggregate file </span><span class="si">{</span><span class="n">out_fname</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">output_dir</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">vector_grid</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">out_fname</span><span class="p">))</span></div>
+        <span class="c1"># Call the aggregation function</span>
+        <span class="n">aggregated_data</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">aggregate_spatially</span><span class="p">(</span>
+            <span class="n">output_data</span><span class="o">=</span><span class="n">output_data</span><span class="p">,</span>
+            <span class="n">aggregation_areas</span><span class="o">=</span><span class="n">aggregation_areas</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Clip based on the region</span>
+        <span class="n">aggregated_data</span> <span class="o">=</span> <span class="n">aggregated_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span>
+            <span class="n">_filter_gdf</span><span class="p">(</span>
+                <span class="n">aggregated_data</span><span class="p">,</span>
+                <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                <span class="n">bbox</span><span class="o">=</span><span class="n">aggregated_data</span><span class="o">.</span><span class="n">total_bounds</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="p">:,</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Set the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">aggregated_data</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">_sq_aggr&quot;</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
@@ -630,8 +848,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -665,7 +883,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
 </p></div>
       
     </div>
