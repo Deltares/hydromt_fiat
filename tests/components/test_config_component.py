@@ -3,8 +3,8 @@ from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
-from hydromt._io import _read_toml
 from hydromt.model import ModelRoot
+from hydromt.readers import read_toml
 
 from hydromt_fiat.components import ConfigComponent
 from hydromt_fiat.utils import (
@@ -16,7 +16,7 @@ from hydromt_fiat.utils import (
 )
 
 
-def test_config_component_init(mock_model: MagicMock):
+def test_config_component_empty(mock_model: MagicMock):
     # Setup the component
     component = ConfigComponent(mock_model)
 
@@ -39,6 +39,9 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     # Set the filename
     component.filename = "foo.toml"
     assert component.filename == "foo.toml"
+    # Set the output directory
+    component.output_dir = "output/foo"
+    assert component.output_dir == Path(tmp_path, "output", "foo")
 
 
 def test_config_component_clear(
@@ -222,7 +225,7 @@ def test_config_component_write(
     assert Path(tmp_path, component._filename).is_file()
 
     # Assert at least the path that was absolute in the config dict
-    data = _read_toml(Path(tmp_path, component._filename))
+    data = read_toml(Path(tmp_path, component._filename))
     assert data["baz"]["file1"] == "tmp.txt"
 
 

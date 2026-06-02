@@ -7,7 +7,7 @@ from typing import cast
 import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
-from hydromt.model.steps import hydromt_step
+from pyproj.crs import CRS
 
 from hydromt_fiat.utils import REGION
 
@@ -30,6 +30,8 @@ class RegionComponent(SpatialModelComponent):
         by default "region.geojson" i.e. one file.
     """
 
+    _build = True
+
     def __init__(
         self,
         model: Model,
@@ -44,7 +46,10 @@ class RegionComponent(SpatialModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read=False) -> None:
+    def _initialize(
+        self,
+        skip_read: bool = False,
+    ) -> None:
         """Initialize region."""
         self._init = True
         if self.root.is_reading_mode() and not skip_read:
@@ -69,13 +74,16 @@ class RegionComponent(SpatialModelComponent):
         return self._data
 
     ## I/O methods
-    @hydromt_step
-    def read(self, filename: str | None = None, **kwargs) -> None:
+    def read(
+        self,
+        filename: Path | str | None = None,
+        **kwargs,
+    ) -> None:
         """Read model region data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root.
             If None, the value is taken from the `_filename` attribute,
             by default None.
@@ -97,7 +105,6 @@ class RegionComponent(SpatialModelComponent):
         data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
         self.set(data=data)
 
-    @hydromt_step
     def write(
         self,
         filename: str | None = None,
@@ -152,10 +159,42 @@ class RegionComponent(SpatialModelComponent):
         data.to_file(write_path, **kwargs)
 
     ## Mutating methods
-    def clear(self):
+    def clear(self) -> None:
         """Clear the region."""
         self._data = None
         self._initialize(skip_read=True)
+
+    def reproject(
+        self,
+        crs: CRS | int | str,
+        inplace: bool = False,
+    ) -> gpd.GeoDataFrame | None:
+        """Reproject the model region.
+
+        Parameters
+        ----------
+        crs : CRS | int | str
+            The coordinate system to reproject to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new GeoDataFrame.
+            By default False.
+        """
+        # Set the crs
+        if not isinstance(crs, CRS):
+            crs = CRS.from_user_input(crs)
+
+        # Check for equal crs
+        if self.data is None or crs == self.crs:
+            return None
+
+        # Reproject
+        data = self.data.to_crs(crs)
+
+        # Check return or inplace
+        if inplace:
+            self._data = data
+            return None
+        return data
 
     def set(
         self,
@@ -183,9 +222,9 @@ class RegionComponent(SpatialModelComponent):
             data = cast(gpd.GeoDataFrame, data.to_frame())
 
         # Verify if a geom is set to model crs and if not sets geom to model crs
-        model_crs = self.model.crs
+        model_crs = self.crs
         if model_crs and model_crs != data.crs:
-            data.to_crs(model_crs.to_epsg(), inplace=True)
+            data.to_crs(model_crs, inplace=True)
 
         # Get rid of columns that aren't geometry
         data = data["geometry"].to_frame()

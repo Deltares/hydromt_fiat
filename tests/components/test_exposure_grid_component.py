@@ -69,6 +69,24 @@ def test_exposure_grid_component_read_sig(
     assert "industrial_content" in component.data.data_vars
 
 
+def test_exposure_grid_component_read_nothing(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGridComponent(model=mock_model_config)
+    # Assert current state
+    assert len(component.data) == 0
+
+    # Read the data (nothing)
+    component.read()
+    # Assert still no data
+    assert len(component.data) == 0
+
+
 def test_exposure_grid_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -154,6 +172,7 @@ def test_exposure_grid_component_setup(
     assert isinstance(component.data, xr.Dataset)
     assert "industrial_content" in component.data.data_vars
     assert component.data.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GRID
@@ -170,6 +189,7 @@ def test_exposure_grid_component_setup_multi(
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
+        expand=False,
     )
 
     # Assert the output
@@ -193,8 +213,12 @@ def test_exposure_grid_component_setup_errors(
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
 
+    # Fake component
+    fake_component = mocker.Mock()
+    fake_component.data.identifiers.empty = False
+
     # Assert missing region error
-    mocker.patch.object(FIATModel, VULNERABILITY)
+    mocker.patch.object(FIATModel, VULNERABILITY, fake_component)
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):

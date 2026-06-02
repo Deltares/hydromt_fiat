@@ -1,15 +1,23 @@
 from pathlib import Path
 
 import pytest
-from fiat import Configurations, GeomModel, __version__
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import GEOM, MODEL_TYPE
+from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
+
+try:
+    from fiat import Configurations, GeomModel, __version__
+
+    HAS_FIAT = True
+
+except ImportError:
+    __version__ = "0.0.0"
+    HAS_FIAT = False
 
 
 @pytest.mark.skipif(
-    Version(__version__) < Version("1"),
+    not HAS_FIAT or Version(__version__) < Version("1"),
     reason="At least Delft-FIAT version 1.0.0 is required.",
 )
 @pytest.mark.system
@@ -28,7 +36,7 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(**{MODEL_TYPE: GEOM})
+    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -47,7 +55,7 @@ def test_system_geom_model(
     # Setup the exposure geometry data
     model.exposure_geoms.setup(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
     model.exposure_geoms.setup_max_damage(

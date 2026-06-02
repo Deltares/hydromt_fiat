@@ -23,7 +23,7 @@ def test_max_monetary_damage(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         country="World",  # Select kwargs
     )
@@ -47,7 +47,7 @@ def test_max_monetary_damage_link(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
         country="World",  # Select kwargs
@@ -73,7 +73,7 @@ def test_max_monetary_damage_link_partial(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
         country="World",  # Select kwargs
@@ -96,7 +96,7 @@ def test_max_monetary_damage_geo_crs(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         country="World",  # Select kwargs
     )
@@ -106,21 +106,21 @@ def test_max_monetary_damage_geo_crs(
 
 
 def test_max_monetary_damage_no_subtype(
-    exposure_geom_data_alt: gpd.GeoDataFrame,
+    exposure_vector_data_alt: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers_alt: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
-    assert f"{MAX}_{DAMAGE}" not in exposure_geom_data_alt
+    assert f"{MAX}_{DAMAGE}" not in exposure_vector_data_alt
 
     # Alterations should be inplace, i.e. id before == id after
-    id_before = id(exposure_geom_data_alt)
+    id_before = id(exposure_vector_data_alt)
 
     # Call the function
     exposure_vector = max_monetary_damage(
-        exposure_data=exposure_geom_data_alt,
+        exposure_data=exposure_vector_data_alt,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers_alt,
         country="World",  # Select kwargs
     )
@@ -130,7 +130,7 @@ def test_max_monetary_damage_no_subtype(
     assert id_before == id_after
 
     # Assert the content
-    assert f"{MAX}_{DAMAGE}" in exposure_geom_data_alt
+    assert f"{MAX}_{DAMAGE}" in exposure_vector_data_alt
     assert int(exposure_vector[f"{MAX}_{DAMAGE}"].mean()) == 1363905
 
 
@@ -147,7 +147,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=None,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
         )
 
@@ -159,7 +159,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
             country="Unknown",
         )
@@ -172,7 +172,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type="affected",
+            impact_type="affected",
             vulnerability=vulnerability_identifiers,
             country="World",
         )
@@ -185,7 +185,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
             country="World",
             exposure_cost_link=pd.DataFrame(),

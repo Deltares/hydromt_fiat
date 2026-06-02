@@ -4,7 +4,6 @@ import logging
 from typing import Any
 
 import xarray as xr
-from barril.units import Scalar
 
 from hydromt_fiat.utils import ANALYSIS, EVENT, RISK, RP, TYPE, standard_unit
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
@@ -45,16 +44,18 @@ def hazard_setup(
     xr.Dataset
         Unified xarray dataset containing the hazard data.
     """
+    logger.info(f"Processing {hazard_type} hazard data")
     hazard_dataarrays = []
     for idx, (da_name, da) in enumerate(hazard_data.items()):
         da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
-        conversion = standard_unit(Scalar(1.0, unit))
-        da *= conversion.value
+        conversion = standard_unit(unit)
+        da *= conversion.magnitude
 
         attrs: dict[str, Any] = {
             "name": da_name,
+            TYPE: hazard_type,
         }
         if risk:
             assert return_periods is not None
@@ -62,15 +63,12 @@ def hazard_setup(
 
         # Set the event data arrays to the hazard grid component
         da = da.assign_attrs(attrs)
-
         hazard_dataarrays.append(da)
-        logger.info(f"Added {hazard_type} hazard map: {da_name}")
 
     # Reproject to gridlike
     ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
 
     attrs = {
-        TYPE: hazard_type,
         ANALYSIS: EVENT,
     }
     if risk:

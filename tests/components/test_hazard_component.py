@@ -69,6 +69,24 @@ def test_hazard_component_read_sig(
     assert len(component.data.data_vars) == 1
 
 
+def test_hazard_component_read_nothing(
+    tmp_path: Path,
+    mock_model_config: MagicMock,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    )
+    # Setup the component
+    component = HazardComponent(model=mock_model_config)
+    # Assert current state
+    assert len(component.data) == 0
+
+    # Read the data (nothing)
+    component.read()
+    # Assert still no data
+    assert len(component.data) == 0
+
+
 def test_hazard_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -122,8 +140,9 @@ def test_hazard_component_setup(
     caplog.set_level(logging.INFO)
     component.setup(hazard_fnames="flood_event")
 
-    assert "Added water_depth hazard map: flood_event" in caplog.text
+    assert "Processing water_depth hazard data" in caplog.text
     assert "flood_event" in component.data.data_vars
+    assert component.data.raster.shape == (7, 6)
 
 
 def test_hazard_component_setup_multi(
@@ -133,7 +152,7 @@ def test_hazard_component_setup_multi(
     component = HazardComponent(model=model_with_region)
 
     # Test setting data to hazard grid with data
-    component.setup(hazard_fnames=["flood_event", "flood_event_highres"])
+    component.setup(hazard_fnames=["flood_event", "flood_event_highres"], expand=False)
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars

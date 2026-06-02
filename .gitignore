@@ -5,6 +5,7 @@
 .cov/
 .docs/
 tmp/
+todo.txt
 
 # Geospatial temporary files
 *.aux.xml
