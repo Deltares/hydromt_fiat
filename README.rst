@@ -25,11 +25,12 @@ Attribution
 -----------
 HydroMT-FIAT relies on these excellent libraries:
 
-- barril
+- affine
 - geopandas
 - hydromt
 - numpy
 - osmnx
+- pint
 - pooch
 - pyproj
 - requests

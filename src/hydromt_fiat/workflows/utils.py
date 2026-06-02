@@ -8,7 +8,10 @@ from hydromt.model.processes.grid import grid_from_rasterdataset
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
-def _process_dataarray(da: xr.DataArray, da_name: str) -> xr.DataArray:
+def _process_dataarray(
+    da: xr.DataArray,
+    da_name: str,
+) -> xr.DataArray:
     # Convert to gdal compliant
     da.encoding["_FillValue"] = None
     da = da.raster.gdal_compliant()
@@ -28,7 +31,8 @@ def _process_dataarray(da: xr.DataArray, da_name: str) -> xr.DataArray:
 
 
 def _merge_dataarrays(
-    grid_like: xr.Dataset | xr.DataArray | None, dataarrays: list[xr.DataArray]
+    grid_like: xr.Dataset | xr.DataArray | None,
+    dataarrays: list[xr.DataArray],
 ) -> xr.Dataset:
     if grid_like is None:
         logger.warning(

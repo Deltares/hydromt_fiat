@@ -1,8 +1,9 @@
-import numpy as np
-from barril.units import Scalar
-from pyproj.crs import CRS, CompoundCRS
+import logging
 
-from hydromt_fiat.utils import create_query, srs_representation, standard_unit
+import numpy as np
+import pytest
+
+from hydromt_fiat.utils import create_query, standard_unit
 
 
 def test_create_query_single_type():
@@ -33,45 +34,24 @@ def test_create_query_iter_type():
 
 
 def test_standard_unit_equal():
-    unit = Scalar(1.0, "m")
-    scalar = standard_unit(unit)
+    # Call the function with the standard for length as input
+    unit = "m"
+    quantity = standard_unit(unit)
 
-    assert np.isclose(scalar.value, 1.0)
-    assert scalar.unit == "m"
-
-
-def test_standard_unit_length():
-    unit = Scalar(1.0, "ft")
-    scalar = standard_unit(unit)
-
-    assert np.isclose(scalar.value, 0.3048)
-    assert scalar.unit == ""
+    # Assert magnitude is 1
+    assert np.isclose(quantity.magnitude, 1.0)
+    assert str(quantity.units) == "meter"
 
 
-def test_srs_representation():
-    # Call the function
-    s = srs_representation(CRS.from_epsg(4326))
+def test_standard_unit_length(caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    # Call the function with feet as unit
+    unit = "ft"
+    quantity = standard_unit(unit)
 
-    # Assert the output
-    assert s == "EPSG:4326"
-
-
-def test_srs_representation_none():
-    # Call the function
-    s = srs_representation(None)
-
-    # Assert the output
-    assert s is None
-
-
-def test_srs_representation_unknown():
-    # Call the function
-    s = srs_representation(
-        CompoundCRS(
-            name="foo",
-            components=[CRS.from_epsg(4326), CRS.from_epsg(7837)],
-        ),
-    )
-
-    # Assert the output
-    assert s.startswith("COMPOUNDCRS")
+    # Assert conversion
+    assert np.isclose(quantity.magnitude, 0.3048)
+    assert str(quantity.units) == "meter"
+    assert (
+        "Given unit (foot) does not match the standard/ default unit (meter)"
+    ) in caplog.text

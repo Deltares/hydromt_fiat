@@ -3,25 +3,25 @@
 import logging
 from pathlib import Path
 
-import geopandas as gpd
-import xarray as xr
-from hydromt._io.writers import _write_nc
 from hydromt.model import Model
-from hydromt.model.components import GridComponent
 from hydromt.model.steps import hydromt_step
+from hydromt.readers import open_nc
+from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
+from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster import expand_raster_to_bounds
+from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     EXPOSURE,
     EXPOSURE_GRID_FILE,
     EXPOSURE_GRID_SETTINGS,
     GRID,
     MODEL_TYPE,
-    REGION,
     SRS,
     VAR_AS_BAND,
-    srs_representation,
 )
 
 __all__ = ["ExposureGridComponent"]
@@ -47,9 +47,6 @@ class ExposureGridComponent(GridComponent):
         Note that the create method only works if the region_component is None.
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
-    region_filename : str
-        The path to use for reading and writing of the region data by default.
-        By default "region.geojson".
     """
 
     def __init__(
@@ -58,32 +55,35 @@ class ExposureGridComponent(GridComponent):
         *,
         filename: str = f"{EXPOSURE}/spatial.nc",
         region_component: str | None = None,
-        region_filename: str = f"{REGION}.geojson",
     ):
+        self._filename = filename
         super().__init__(
             model,
-            filename=filename,
             region_component=region_component,
-            region_filename=region_filename,
         )
 
     ## I/O methods
     @hydromt_step
     def read(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         **kwargs,
     ) -> None:
         """Read the exposure grid data.
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `read_nc` method.
+            Additional keyword arguments to be passed to the `open_dataset` function
+            from xarray.
         """
+        # Check the state
+        self.root._assert_read_mode()
+        self._initialize(skip_read=True)
+
         # Sort the filename
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
@@ -93,13 +93,22 @@ class ExposureGridComponent(GridComponent):
         )
         # Read the data
         read_path = Path(self.root.path, filename)
+        # Return on nothing found
+        if not read_path.is_file():
+            return
         logger.info(f"Reading the exposure grid file at {read_path.as_posix()}")
-        super().read(filename=read_path, **kwargs)
+        # Read with the (old) read function from hydromt-core
+        ds = open_nc(
+            read_path,
+            **kwargs,
+        )
+        # Set the dataset
+        self.set(ds)
 
     @hydromt_step
     def write(
         self,
-        filename: str | None = None,
+        filename: Path | str | None = None,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -107,14 +116,15 @@ class ExposureGridComponent(GridComponent):
 
         Parameters
         ----------
-        filename : str, optional
+        filename : Path | str, optional
             Filename relative to model root. If None, the value is either taken from
             the model configurations or the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
         **kwargs : dict
-            Additional keyword arguments to be passed to the `write_nc` method.
+            Additional keyword arguments to be passed to the `to_netcdf` method from
+            xarray.
         """
         # Check the state
         self.root._assert_write_mode()
@@ -133,15 +143,17 @@ class ExposureGridComponent(GridComponent):
 
         # Write it in a gdal compliant manner by default
         logger.info(f"Writing the exposure grid data to {write_path.as_posix()}")
-        _write_nc(
-            {GRID: self.data},
-            write_path.as_posix(),
-            root=self.root.path,
+        # Force north south before writing
+        self._data = force_ns(self.data)
+        write_nc(
+            self.data,
+            file_path=write_path,
             gdal_compliant=gdal_compliant,
             rename_dims=False,
             force_overwrite=self.root.mode.is_override_mode(),
             force_sn=False,
-            **kwargs,
+            progressbar=True,
+            to_netcdf_kwargs=kwargs,
         )
 
         # Update the config
@@ -153,53 +165,8 @@ class ExposureGridComponent(GridComponent):
         # Set the srs
         self.model.config.set(
             f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
-            srs_representation(self.data.raster.crs),
+            crs_representation(self.data.raster.crs),
         )
-
-    ## Mutating methods
-    @hydromt_step
-    def clear(self):
-        """Clear the exposure grid data."""
-        self._data = None
-        self._initialize_grid(skip_read=True)
-
-    @hydromt_step
-    def clip(
-        self,
-        geom: gpd.GeoDataFrame,
-        buffer: int = 1,
-        inplace: bool = False,
-    ) -> xr.Dataset | None:
-        """Clip the exposure data based on geometry.
-
-        Parameters
-        ----------
-        geom : gpd.GeoDataFrame
-            The area to clip the data to.
-        buffer : int, optional
-            A buffer of cells around the clipped area to keep, by default 1.
-        inplace : bool, optional
-            Whether to do the clipping in place or return a new xr.Dataset,
-            by default False.
-
-        Returns
-        -------
-        xr.Dataset | None
-            Return a dataset if the inplace is False.
-        """
-        # Check whether it has the necessary dims
-        try:
-            self.data.raster.set_spatial_dims()
-        except ValueError:
-            return None
-
-        # If so, clip the data
-        data = self.data.raster.clip_geom(geom, buffer=buffer)
-        # If inplace, just set the data and return nothing
-        if inplace:
-            self._data = data
-            return None
-        return data
 
     ## Setup methods
     @hydromt_step
@@ -207,6 +174,7 @@ class ExposureGridComponent(GridComponent):
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        expand: bool = True,
     ) -> None:
         """Set up an exposure grid.
 
@@ -216,11 +184,15 @@ class ExposureGridComponent(GridComponent):
             Name of or path to exposure file(s).
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
-            vulnerability curves. By default None
+            vulnerability curves. By default None.
+        expand : bool, optional
+            Whether to expand the hazard data to the bounding box of the model region.
+            Nothing is done when the hazard data already covers the region.
+            By default True.
         """
         logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability.data.identifiers.empty == True:
+        if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(
                 "'setup_vulnerability' step is required \
 before setting up exposure grid"
@@ -232,7 +204,7 @@ before setting up exposure grid"
         exposure_linking = None
         if exposure_link_fname is not None:
             exposure_linking = self.model.data_catalog.get_dataframe(
-                exposure_link_fname
+                exposure_link_fname,
             )
 
         # Sort the input out as iterator
@@ -249,6 +221,7 @@ before setting up exposure grid"
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,
+                buffer=1,
             )
             exposure_data[name] = da
 
@@ -262,6 +235,13 @@ before setting up exposure grid"
             exposure_linking=exposure_linking,
             vulnerability=self.model.vulnerability.data.identifiers,
         )
+
+        # Expand if necessary
+        if self.model.region is not None and ds.raster.crs is not None and expand:
+            ds = expand_raster_to_bounds(
+                ds=ds,
+                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
+            )
 
         # Set the dataset
         self.set(ds)
