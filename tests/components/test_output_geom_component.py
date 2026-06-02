@@ -233,6 +233,7 @@ def test_output_geom_component_write_warnings(
     caplog: pytest.LogCaptureFixture,
     mock_model_config: MagicMock,
 ):
+    caplog.set_level(logging.INFO)
 
     # Setup the component
     component = OutputGeomsComponent(model=mock_model_config)
