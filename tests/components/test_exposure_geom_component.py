@@ -169,6 +169,7 @@ def test_exposure_geom_component_write_warnings(
     mock_model: MagicMock,
 ):
     caplog.set_level(logging.DEBUG)
+
     type(mock_model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="w"),
     )

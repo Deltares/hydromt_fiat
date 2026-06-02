@@ -195,6 +195,9 @@ def test_region_component_read(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
+    # Create a dummy file to prevent ModelRoot._cleanup from deleting the tmp_path
+    (tmp_path / "tmp").touch()
+
     # Setup the component
     type(mock_model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),

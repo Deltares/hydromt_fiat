@@ -163,6 +163,9 @@ def test_config_component_read(
     mock_model: MagicMock,
     model_data_clipped_path: Path,
 ):
+    # Create a dummy file to prevent ModelRoot._cleanup from deleting the tmp_path
+    (model_data_clipped_path / "tmp").touch()
+
     # Set it to read mode
     type(mock_model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
@@ -188,6 +191,9 @@ def test_config_component_read_none(
     tmp_path: Path,
     mock_model: MagicMock,
 ):
+    # Create a dummy file to prevent ModelRoot._cleanup from deleting the tmp_path
+    (tmp_path / "tmp").touch()
+
     # Set it to read mode
     type(mock_model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),

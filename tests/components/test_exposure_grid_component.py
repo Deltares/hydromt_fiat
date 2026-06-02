@@ -73,6 +73,10 @@ def test_exposure_grid_component_read_nothing(
     tmp_path: Path,
     mock_model_config: MagicMock,
 ):
+    # Create a dummy file to prevent ModelRoot._cleanup from deleting the tmp_path
+    (tmp_path / "tmp").touch()
+
+    # Set it to read mode
     type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),
     )
