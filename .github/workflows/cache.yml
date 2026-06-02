@@ -4,22 +4,17 @@ on:
   schedule:
     - cron: "0 8 * * 1"
   workflow_dispatch:
+permissions:
+  actions: write
+  contents: write
 
 jobs:
   cache:
     defaults:
       run:
         shell: bash -e -l {0}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        include:
-          - os: ubuntu-latest
-            label: linux-64
     name: cache
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout

@@ -7,18 +7,61 @@ import pytest
 import xarray as xr
 from pyproj.crs import CRS
 
-from hydromt_fiat.components.grid import GridCustomComponent
+from hydromt_fiat.components.grid import GridComponent
 
 # Overwrite the abstractmethods to be able to initialize it
-GridCustomComponent.__abstractmethods__ = set()
+GridComponent.__abstractmethods__ = set()
 
 
-def test_grid_custom_component_clear(
+def test_grid_component_empty(mock_model: MagicMock):
+    # Set up the component
+    component = GridComponent(model=mock_model)
+
+    # Assert the state
+    assert component._data is None
+    assert isinstance(component.data, xr.Dataset)  # Initialized
+
+    # Assert the properties
+    assert component._region_data is None
+    assert component.bounds is None
+    assert component.crs is None
+    assert component.res is None
+    assert component.transform is None
+
+
+def test_grid_component_properties(
     mock_model: MagicMock,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = hazard
+
+    # Assert properties when data is present
+    assert isinstance(component._region_data, gpd.GeoDataFrame)
+    np.testing.assert_array_almost_equal(
+        component.bounds,
+        [85100, 442400, 87800, 445900],
+    )
+    assert component.crs.to_epsg() == 28992
+    np.testing.assert_array_almost_equal(
+        component.res,
+        (100, -100),
+    )
+    np.testing.assert_array_almost_equal(
+        component.transform,
+        (100, 0, 85100, 0, -100, 445900, 0, 0, 1),
+    )
+
+
+def test_grid_component_clear(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
@@ -31,18 +74,18 @@ def test_grid_custom_component_clear(
     assert len(component.data.data_vars) == 0
 
 
-def test_grid_custom_component_clip(
+def test_grid_component_clip(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
 
     # Call the clipping method using a smaller region
     ds = component.clip(geom=build_region_small, buffer=0)
@@ -50,12 +93,12 @@ def test_grid_custom_component_clip(
     assert ds.flood_event.shape == (5, 4)
 
 
-def test_grid_custom_component_clip_no_data(
+def test_grid_component_clip_no_data(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
     # Assert the current state
     assert component._data is None
 
@@ -65,18 +108,18 @@ def test_grid_custom_component_clip_no_data(
     assert ds is None
 
 
-def test_grid_custom_component_clip_inplace(
+def test_grid_component_clip_inplace(
     mock_model: MagicMock,
     build_region_small: gpd.GeoDataFrame,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
 
     # Call the clipping method using a smaller region
     ds = component.clip(geom=build_region_small, buffer=0, inplace=True)
@@ -85,19 +128,19 @@ def test_grid_custom_component_clip_inplace(
     assert component.data.flood_event.shape == (5, 4)
 
 
-def test_grid_custom_component_reproject(
+def test_grid_component_reproject(
     mock_model: MagicMock,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
     assert component.crs.to_epsg() == 28992
-    np.testing.assert_almost_equal(component.data.x.values[0], 85250)
+    np.testing.assert_almost_equal(component.data.x.values[0], 85150)
 
     # Reproject the data
     ds = component.reproject(crs=4326)
@@ -106,21 +149,21 @@ def test_grid_custom_component_reproject(
     assert not component.data.equals(ds)
     assert component.crs.to_epsg() == 28992
     assert ds.raster.crs.to_epsg() == 4326
-    assert ds.flood_event.shape == (28, 33)
+    assert ds.flood_event.shape == (28, 35)
     np.testing.assert_almost_equal(ds.longitude.values[0], 4.371, decimal=3)
 
 
-def test_grid_custom_component_reproject_inplace(
+def test_grid_component_reproject_inplace(
     mock_model: MagicMock,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
     assert component.crs.to_epsg() == 28992
 
     # Reproject inplace
@@ -129,15 +172,15 @@ def test_grid_custom_component_reproject_inplace(
     # Assert the output/ state
     assert ds is None
     assert component.crs.to_epsg() == 4326
-    assert component.data.flood_event.shape == (28, 33)
+    assert component.data.flood_event.shape == (28, 35)
 
 
-def test_grid_custom_component_reproject_nothing(
+def test_grid_component_reproject_nothing(
     mock_model: MagicMock,
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Set data like a dummy
     component._data = hazard
@@ -150,7 +193,7 @@ def test_grid_custom_component_reproject_nothing(
     assert id_before == id(component.data)
 
     # Same yields true when the data crs is None
-    component._data = component._data.drop("spatial_ref")
+    component._data = component._data.drop_vars("spatial_ref")
     id_before = id(component.data)  # To check later
 
     # Reproject with the same crs
@@ -160,12 +203,12 @@ def test_grid_custom_component_reproject_nothing(
     assert id_before == id(component.data)
 
 
-def test_grid_custom_component_set(
+def test_grid_component_set(
     mock_model: MagicMock,
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -184,14 +227,14 @@ def test_grid_custom_component_set(
     assert "foo" in component.data.data_vars
 
 
-def test_grid_custom_component_set_replace(
+def test_grid_component_set_replace(
     caplog: pytest.LogCaptureFixture,
     mock_model: MagicMock,
     exposure_grid_clipped: xr.Dataset,
 ):
     caplog.set_level(logging.WARNING)
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -207,12 +250,12 @@ def test_grid_custom_component_set_replace(
     assert "commercial_content" in component.data.data_vars
 
 
-def test_grid_custom_component_set_errors(
+def test_grid_component_set_errors(
     mock_model: MagicMock,
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridCustomComponent(model=mock_model)
+    component = GridComponent(model=mock_model)
 
     # Dataarray without a name
     da = exposure_grid_clipped["commercial_content"]

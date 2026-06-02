@@ -98,7 +98,7 @@ def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
 
 ## Data from a prebuild model
 @pytest.fixture
-def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
+def exposure_vector_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
     p = Path(model_data_clipped_path, "exposure", "buildings_alt.fgb")
     assert p.is_file()
     gdf = gpd.read_file(p)
@@ -107,8 +107,8 @@ def exposure_geom_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 
 
 @pytest.fixture
-def exposure_geom_data_link(
-    exposure_vector_clipped_for_damamge: gpd.geodataframe,
+def exposure_vector_data_link(
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
     exposure_vector_clipped_for_damamge.drop(
         [
@@ -141,6 +141,16 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
 
 
 ## Extra data structure
+@pytest.fixture
+def prepped_aggr_data(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    # Keep only floating point columns
+    data: gpd.GeoDataFrame = exposure_vector_clipped.select_dtypes(
+        include=[float, "geometry"],
+    )
+    # Return the data
+    return data
+
+
 @pytest.fixture(scope="session")
 def rotated_grid() -> xr.DataArray:
     # Create coordinates

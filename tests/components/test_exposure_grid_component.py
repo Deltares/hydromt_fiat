@@ -172,6 +172,7 @@ def test_exposure_grid_component_setup(
     assert isinstance(component.data, xr.Dataset)
     assert "industrial_content" in component.data.data_vars
     assert component.data.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
     assert component.model.config.get(MODEL_TYPE) == GRID
@@ -188,6 +189,7 @@ def test_exposure_grid_component_setup_multi(
     component.setup(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
+        expand=False,
     )
 
     # Assert the output
@@ -211,8 +213,12 @@ def test_exposure_grid_component_setup_errors(
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
 
+    # Fake component
+    fake_component = mocker.Mock()
+    fake_component.data.identifiers.empty = False
+
     # Assert missing region error
-    mocker.patch.object(FIATModel, VULNERABILITY)
+    mocker.patch.object(FIATModel, VULNERABILITY, fake_component)
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
