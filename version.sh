@@ -54,10 +54,10 @@ add() {
     local updated=false
 
     # Extract special entries
-    latest_entry=$(jq -c '.[] | select(.version == "latest")' "$SWITCHER_JSON")
+    dev_entry=$(jq -c '.[] | select(.version == "dev")' "$SWITCHER_JSON")
 
     # Extract versioned entries
-    mapfile -t version_entries < <(jq -c '.[] | select(.version != "latest" and .version != "stable" and .version != "dev")' "$SWITCHER_JSON")
+    mapfile -t version_entries < <(jq -c '.[] | select(.version != "dev" and .version != "stable" and .version != "dev")' "$SWITCHER_JSON")
 
     # Extract existing version strings
     mapfile -t existing_versions < <(printf "%s\n" "${version_entries[@]}" | jq -r '.version')
@@ -144,7 +144,7 @@ add() {
     # Combine all entries into valid JSON
     {
         echo "["
-        echo "  $latest_entry,"
+        echo "  $dev_entry,"
         echo "  $stable_entry,"
         for i in "${!sorted_entries[@]}"; do
             echo -n "  ${sorted_entries[$i]}"
