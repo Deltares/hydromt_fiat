@@ -51,6 +51,7 @@ def _unpack_processor(
 def fetch_data(
     data: str,
     local_registry: bool = True,
+    retries: int = 10,
     sub_dir: bool = True,
     cache_dir: Path | str | None = None,
     output_dir: Path | str | None = None,
@@ -64,6 +65,8 @@ def fetch_data(
     local_registry : bool, optional
         If True, the registry is taken from the current library location.
         Otherwise, it is taken from the remote 'main' branch on github, by default True.
+    retries : int, optional
+        The number of retries when downloading the data, by default 10.
     sub_dir : bool, optional
         Whether to place the fetched data in a sub directory of the same name.
         I.e. if  the (tarred) dataset is named 'custom-data' a directory named
@@ -107,7 +110,7 @@ def fetch_data(
         path=cache_dir,  # store archive to cache
         base_url=base_url,
         registry=registry,
-        retry_if_failed=5,
+        retry_if_failed=retries,
     )
 
     # Set the way of unpacking it

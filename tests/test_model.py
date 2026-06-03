@@ -11,10 +11,21 @@ from hydromt_fiat.components import (
     ExposureGeomsComponent,
     ExposureGridComponent,
     HazardComponent,
+    OutputGeomsComponent,
+    OutputGridComponent,
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
-from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
+from hydromt_fiat.utils import (
+    CONFIG,
+    FLOOD_LEVEL,
+    GEOM,
+    GRID,
+    MODEL,
+    REGION,
+    SETTINGS,
+    TYPE,
+)
 
 
 def test_model_empty(tmp_path: Path):
@@ -25,7 +36,7 @@ def test_model_empty(tmp_path: Path):
     assert CONFIG in model.components
     assert REGION in model.components
     assert model.region is None
-    assert len(model.components) == 6
+    assert len(model.components) == 8
 
 
 def test_model_basic_read_write(tmp_path: Path):
@@ -33,7 +44,9 @@ def test_model_basic_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.setup_config(some_var="some_value")
+    model.setup_config(
+        model_type=GEOM, calculation_method=FLOOD_LEVEL, some_var="some_value"
+    )
     # Write the model
     model.write()
     model = None
@@ -42,6 +55,7 @@ def test_model_basic_read_write(tmp_path: Path):
     # Model in read mode
     model = FIATModel(tmp_path, mode="r")
     model.read()
+    model.read_output()
 
     assert len(model.config.data) != 0
 
@@ -63,6 +77,8 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
+    model.output_geoms._data = {"foo": exposure_vector}
+    model.output_grid._data = exposure_grid
     model.vulnerability._data = VulnerabilityData(vulnerability_curves, pd.DataFrame())
     # Assert the current state
     assert isinstance(model.region, gpd.GeoDataFrame)
@@ -71,6 +87,8 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     assert len(model.exposure_geoms.data) == 1
     assert len(model.exposure_grid.data.data_vars) == 4
     assert len(model.hazard.data.data_vars) == 1
+    assert len(model.output_geoms.data) == 1
+    assert len(model.output_grid.data.data_vars) == 4
     assert len(model.vulnerability.data.curves) == 1001
 
     # Clear the model
@@ -82,6 +100,8 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     assert len(model.exposure_geoms.data) == 0
     assert len(model.exposure_grid.data.data_vars) == 0
     assert len(model.hazard.data.data_vars) == 0
+    assert len(model.output_geoms.data) == 0
+    assert len(model.output_grid.data.data_vars) == 0
     assert len(model.vulnerability.data.curves) == 0
 
 
@@ -101,11 +121,15 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
+    model.output_geoms._data = {"foo": exposure_vector}
+    model.output_grid._data = exposure_grid
     # Assert the current state
     assert build_region_small.crs.to_epsg() == 28992
     assert model.exposure_geoms.data["foo"].shape[0] == 543
-    assert model.exposure_grid.data.commercial_content.shape == (67, 50)
-    assert model.hazard.data.flood_event.shape == (34, 25)
+    assert model.exposure_grid.data.commercial_content.shape == (69, 52)
+    assert model.hazard.data.flood_event.shape == (35, 27)
+    assert model.output_geoms.data["foo"].shape[0] == 543
+    assert model.output_grid.data.commercial_content.shape == (69, 52)
 
     # Call the clip function
     model.clip(region=build_region_small)
@@ -114,6 +138,8 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     assert model.exposure_geoms.data["foo"].shape[0] == 12
     assert model.exposure_grid.data.commercial_content.shape == (11, 12)
     assert model.hazard.data.flood_event.shape == (7, 6)
+    assert model.output_geoms.data["foo"].shape[0] == 12
+    assert model.output_grid.data.commercial_content.shape == (11, 12)
 
 
 def test_model_reproject(
@@ -131,11 +157,15 @@ def test_model_reproject(
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
+    model.output_geoms._data = {"foo": exposure_vector}
+    model.output_grid._data = exposure_grid
     # Assert the current state
     assert model.crs.to_epsg() == 4326
     assert model.exposure_geoms.data["foo"].crs.to_epsg() == 28992
     assert model.exposure_grid.data.raster.crs.to_epsg() == 28992
     assert model.hazard.data.raster.crs.to_epsg() == 28992
+    assert model.output_geoms.data["foo"].crs.to_epsg() == 28992
+    assert model.output_grid.data.raster.crs.to_epsg() == 28992
     id_before = id(model.region)
 
     # Reproject the model, based on the region
@@ -145,6 +175,8 @@ def test_model_reproject(
     assert model.exposure_geoms.data["foo"].crs.to_epsg() == 4326
     assert model.exposure_grid.data.raster.crs.to_epsg() == 4326
     assert model.hazard.data.raster.crs.to_epsg() == 4326
+    assert model.output_geoms.data["foo"].crs.to_epsg() == 4326
+    assert model.output_grid.data.raster.crs.to_epsg() == 4326
     assert id_before == id(model.region)  # Nothing happened
 
 
@@ -170,7 +202,7 @@ def test_model_reproject_sig(
     assert model.hazard.data.raster.crs.to_epsg() == 28992
     id_before = id(model.region)
 
-    # Reproject the model, based on the region
+    # Reproject the model, based on the region, output follows geom and grid
     model.reproject(crs="EPSG:3857")
     # Assert the state
     assert model.crs.to_epsg() == 3857
@@ -200,11 +232,13 @@ def test_model_setup_config(tmp_path: Path):
 
     # Setup some config variables
     model.setup_config(
+        model_type=GEOM,
+        calculation_method=FLOOD_LEVEL,
         **{
             "global.model": "geom",
             "global.srs.value": "EPSG:4326",
             "output.path": "output",
-        }
+        },
     )
 
     # Assert the config component
@@ -212,6 +246,20 @@ def test_model_setup_config(tmp_path: Path):
     assert model.config.get("output.path") == "output"
     assert len(model.config.get("global")) == 2
     assert model.config.get("global.srs") == {"value": "EPSG:4326"}
+
+
+def test_model_setup_config_errors(tmp_path: Path):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Set the nonsense model type
+    with pytest.raises(
+        ValueError, match=f"Model_type must be either '{GEOM}' or '{GRID}'"
+    ):
+        model.setup_config(
+            model_type="foo",
+            calculation_method=FLOOD_LEVEL,
+        )
 
 
 def test_model_setup_region(tmp_path: Path, build_region_path: Path):
@@ -264,5 +312,7 @@ def test_model_properties(model_with_region: FIATModel):
     assert isinstance(model.exposure_geoms, ExposureGeomsComponent)
     assert isinstance(model.exposure_grid, ExposureGridComponent)
     assert isinstance(model.hazard, HazardComponent)
+    assert isinstance(model.output_geoms, OutputGeomsComponent)
+    assert isinstance(model.output_grid, OutputGridComponent)
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert isinstance(model.vulnerability, VulnerabilityComponent)

@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import geopandas as gpd
@@ -5,19 +6,37 @@ import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.gis import full_from_transform
+from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
+from hydromt_fiat.utils import SQUARE__ID
 
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
 
+def check_connection(fn):
+    def inner(*args, **kwargs):
+        try:
+            r = fn(*args, **kwargs)
+        except RequestException as e:
+            raise ConnectionError(
+                "Failed to download hydromt test data, check your connection"
+            ) from e
+        else:
+            return r
+
+    return inner
+
+
 ## Build data
 @pytest.fixture(scope="session")
+@check_connection
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("test-build-data", cache_dir=CACHE_DIR)
+    p = fetch_data("test-build-data", retries=1, cache_dir=CACHE_DIR)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -66,9 +85,10 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 
 ## Global data
 @pytest.fixture(scope="session")
+@check_connection
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("global-data", cache_dir=CACHE_DIR)
+    p = fetch_data("global-data", retries=1, cache_dir=CACHE_DIR)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -89,9 +109,10 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 
 ## Model data
 @pytest.fixture(scope="session")
+@check_connection
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model", retries=1, cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -146,9 +167,10 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 
 ## Model data (clipped)
 @pytest.fixture(scope="session")
+@check_connection
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model-c", retries=1, cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -171,13 +193,27 @@ def exposure_vector_clipped_for_damamge(
             "cost_type",
             "max_damage_structure",
             "max_damage_content",
-            "ref",
-            "method",
+            "elevation",
         ],
         axis=1,
         inplace=True,
     )
     return exposure_vector_clipped
+
+
+@pytest.fixture
+def exposure_vector_clipped_for_link(
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+) -> gpd.GeoDataFrame:
+    exposure_vector_clipped_for_damamge.drop(
+        [
+            "fn_damage_structure",
+            "fn_damage_content",
+        ],
+        axis=1,
+        inplace=True,
+    )
+    return exposure_vector_clipped_for_damamge
 
 
 @pytest.fixture
@@ -203,9 +239,10 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 
 ## OSM data
 @pytest.fixture(scope="session")
+@check_connection
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("osmnx", cache_dir=CACHE_DIR)
+    p = fetch_data("osmnx", retries=1, cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -253,3 +290,23 @@ def exposure_cost_link() -> pd.DataFrame:
         }
     )
     return df
+
+
+@pytest.fixture
+def vector_grid(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    bbox = exposure_vector_clipped.total_bounds
+    # Get the sizes in y and x directions
+    dy = bbox[3] - bbox[1]
+    dx = bbox[2] - bbox[0]
+    res = 100
+
+    # Setup the vector grid
+    vg: gpd.GeoDataFrame = full_from_transform(
+        transform=(res, 0.0, bbox[0], 0.0, -res, bbox[3]),
+        shape=(math.ceil(dy / res), math.ceil(dx / res)),
+        crs=exposure_vector_clipped.crs,
+    ).raster.vector_grid()
+    vg[SQUARE__ID] = range(len(vg))
+
+    # Return the vector grid
+    return vg
