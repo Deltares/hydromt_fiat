@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
+from hydromt.model.mode import ModelMode
+from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import HazardComponent
@@ -70,11 +72,14 @@ def test_hazard_component_read_sig(
 
 
 def test_hazard_component_read_nothing(
-    tmp_path: Path,
+    mocker: MockerFixture,
     mock_model_config: MagicMock,
 ):
-    type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    mocker.patch.object(
+        type(mock_model_config.root),
+        "mode",
+        new_callable=PropertyMock,
+        return_value=ModelMode("r"),
     )
     # Setup the component
     component = HazardComponent(model=mock_model_config)
