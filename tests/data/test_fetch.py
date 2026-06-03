@@ -2,53 +2,34 @@ import os
 from pathlib import Path
 
 import pytest
-from pooch.processors import ExtractorProcessor
 
 from hydromt_fiat.data import fetch_data
-from hydromt_fiat.data.fetch import _fetch_registry, _unpack_processor
+from hydromt_fiat.data.get import get_registry
 from tests.conftest import CACHE_DIR, check_connection
 
 
-def test__fetch_registry_local():
+def test_get_registry_local():
     # Call the function
-    db = _fetch_registry(local_registry=True)
+    db = get_registry(local=True)
 
     # Assert the output
     assert isinstance(db, dict)
-    assert "data" in db
+    assert "global-data.tar.gz" in db
 
 
 @check_connection
-def test__fetch_registry_remote():
+def test_get_registry_remote():
     # Call the function
-    db = _fetch_registry(local_registry=False)
+    db = get_registry(local=False)
 
     # Assert the output
     assert isinstance(db, dict)
     assert "data" in db
-
-
-def test__unpack_processor_known():
-    # Call the function
-    up = _unpack_processor(suffix="tar.gz")
-
-    # Assert the output
-    assert isinstance(up, ExtractorProcessor)
-
-
-def test__unpack_processor_unknown():
-    # Call the function
-    up = _unpack_processor(suffix="foo")
-
-    # Assert the output
-    assert up is None
 
 
 def test_fetch_data():
     # Call the function in it's default state
-    path = check_connection(fetch_data)(
-        data="fiat-model-c", retries=1, cache_dir=CACHE_DIR
-    )
+    path = check_connection(fetch_data)(data="fiat-model-c.tar.gz", cache_dir=CACHE_DIR)
 
     # Get the cache dir location
     data_dir = Path(CACHE_DIR, "fiat-model-c")
@@ -64,11 +45,10 @@ def test_fetch_data():
 def test_fetch_data_no_subdir(tmp_path: Path):
     # Call the function in it's default state
     path = fetch_data(
-        data="fiat-model-c",
+        data="fiat-model-c.tar.gz",
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir=tmp_path,
-        retries=1,
     )
 
     # Assert the output
@@ -85,11 +65,10 @@ def test_fetch_data_relative_output_dir(tmp_path: Path):
 
     # Call the function in it's default state
     path = fetch_data(
-        data="fiat-model-c",
+        data="fiat-model-c.tar.gz",
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir="data",
-        retries=1,
     )
 
     # Get the cache dir location
@@ -108,7 +87,7 @@ def test_fetch_data_relative_output_dir(tmp_path: Path):
 def test_fetch_data_errors():
     # Call the function while requesting something that isnt there
     with pytest.raises(
-        ValueError,
-        match="Choose one of the following: ",
+        KeyError,
+        match="",
     ):
-        check_connection(fetch_data)(data="foobar", retries=1)
+        check_connection(fetch_data)(data="foobar")

@@ -167,11 +167,11 @@ def fetch_data(
     # Get the registy
     registry = get_registry(local=local_registry)
     # Get the data entry from the registry
-    entry = registry.get(data)
+    entry = registry[data]
     # Use common cache directory or a user provided one
     cache_dir = cache_dir or CACHE_DIR
     # Set the output_dir
-    output_dir = output_dir or cache_dir
+    output_dir = Path(Path.cwd(), output_dir) or cache_dir
     if sub_dir:
         output_dir = Path(output_dir, data.split(".", 1)[0])
 
