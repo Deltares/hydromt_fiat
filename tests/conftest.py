@@ -36,7 +36,7 @@ def check_connection(fn):
 @check_connection
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("test-build-data", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("test-build-data.tar.gz", cache_dir=CACHE_DIR)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -88,7 +88,7 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 @check_connection
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("global-data", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("global-data.tar.gz", cache_dir=CACHE_DIR)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -112,7 +112,7 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 @check_connection
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model.tar.gz", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -170,7 +170,7 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 @check_connection
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model-c.tar.gz", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -242,7 +242,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 @check_connection
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("osmnx", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("osmnx.tar.gz", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
