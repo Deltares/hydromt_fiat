@@ -192,7 +192,7 @@ class ExposureGridComponent(GridComponent):
         """
         logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability.data.identifiers.empty == True:
+        if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(
                 "'setup_vulnerability' step is required \
 before setting up exposure grid"

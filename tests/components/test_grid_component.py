@@ -43,7 +43,7 @@ def test_grid_component_properties(
     assert isinstance(component._region_data, gpd.GeoDataFrame)
     np.testing.assert_array_almost_equal(
         component.bounds,
-        [85200, 442400, 87700, 445800],
+        [85100, 442400, 87800, 445900],
     )
     assert component.crs.to_epsg() == 28992
     np.testing.assert_array_almost_equal(
@@ -52,7 +52,7 @@ def test_grid_component_properties(
     )
     np.testing.assert_array_almost_equal(
         component.transform,
-        (100, 0, 85200, 0, -100, 445800, 0, 0, 1),
+        (100, 0, 85100, 0, -100, 445900, 0, 0, 1),
     )
 
 
@@ -85,7 +85,7 @@ def test_grid_component_clip(
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
 
     # Call the clipping method using a smaller region
     ds = component.clip(geom=build_region_small, buffer=0)
@@ -119,7 +119,7 @@ def test_grid_component_clip_inplace(
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
 
     # Call the clipping method using a smaller region
     ds = component.clip(geom=build_region_small, buffer=0, inplace=True)
@@ -138,9 +138,9 @@ def test_grid_component_reproject(
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
     assert component.crs.to_epsg() == 28992
-    np.testing.assert_almost_equal(component.data.x.values[0], 85250)
+    np.testing.assert_almost_equal(component.data.x.values[0], 85150)
 
     # Reproject the data
     ds = component.reproject(crs=4326)
@@ -149,7 +149,7 @@ def test_grid_component_reproject(
     assert not component.data.equals(ds)
     assert component.crs.to_epsg() == 28992
     assert ds.raster.crs.to_epsg() == 4326
-    assert ds.flood_event.shape == (28, 33)
+    assert ds.flood_event.shape == (28, 35)
     np.testing.assert_almost_equal(ds.longitude.values[0], 4.371, decimal=3)
 
 
@@ -163,7 +163,7 @@ def test_grid_component_reproject_inplace(
     # Set data like a dummy
     component._data = hazard
     # Assert the current state
-    assert component.data.flood_event.shape == (34, 25)
+    assert component.data.flood_event.shape == (35, 27)
     assert component.crs.to_epsg() == 28992
 
     # Reproject inplace
@@ -172,7 +172,7 @@ def test_grid_component_reproject_inplace(
     # Assert the output/ state
     assert ds is None
     assert component.crs.to_epsg() == 4326
-    assert component.data.flood_event.shape == (28, 33)
+    assert component.data.flood_event.shape == (28, 35)
 
 
 def test_grid_component_reproject_nothing(
@@ -193,7 +193,7 @@ def test_grid_component_reproject_nothing(
     assert id_before == id(component.data)
 
     # Same yields true when the data crs is None
-    component._data = component._data.drop("spatial_ref")
+    component._data = component._data.drop_vars("spatial_ref")
     id_before = id(component.data)  # To check later
 
     # Reproject with the same crs

@@ -4,7 +4,7 @@ import pytest
 from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import GEOM, MODEL_TYPE
+from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
 
 try:
     from fiat import Configurations, GeomModel, __version__
@@ -36,7 +36,7 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(**{MODEL_TYPE: GEOM})
+    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
     model.setup_region(build_region_small)
 
     # Setup the vulnerability
@@ -55,7 +55,7 @@ def test_system_geom_model(
     # Setup the exposure geometry data
     model.exposure_geoms.setup(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
     model.exposure_geoms.setup_max_damage(

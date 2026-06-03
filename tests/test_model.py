@@ -16,7 +16,16 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
-from hydromt_fiat.utils import CONFIG, GEOM, MODEL, REGION, SETTINGS, TYPE
+from hydromt_fiat.utils import (
+    CONFIG,
+    FLOOD_LEVEL,
+    GEOM,
+    GRID,
+    MODEL,
+    REGION,
+    SETTINGS,
+    TYPE,
+)
 
 
 def test_model_empty(tmp_path: Path):
@@ -35,7 +44,9 @@ def test_model_basic_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.setup_config(some_var="some_value")
+    model.setup_config(
+        model_type=GEOM, calculation_method=FLOOD_LEVEL, some_var="some_value"
+    )
     # Write the model
     model.write()
     model = None
@@ -115,10 +126,10 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     # Assert the current state
     assert build_region_small.crs.to_epsg() == 28992
     assert model.exposure_geoms.data["foo"].shape[0] == 543
-    assert model.exposure_grid.data.commercial_content.shape == (67, 50)
-    assert model.hazard.data.flood_event.shape == (34, 25)
+    assert model.exposure_grid.data.commercial_content.shape == (69, 52)
+    assert model.hazard.data.flood_event.shape == (35, 27)
     assert model.output_geoms.data["foo"].shape[0] == 543
-    assert model.output_grid.data.commercial_content.shape == (67, 50)
+    assert model.output_grid.data.commercial_content.shape == (69, 52)
 
     # Call the clip function
     model.clip(region=build_region_small)
@@ -221,11 +232,13 @@ def test_model_setup_config(tmp_path: Path):
 
     # Setup some config variables
     model.setup_config(
+        model_type=GEOM,
+        calculation_method=FLOOD_LEVEL,
         **{
             "global.model": "geom",
             "global.srs.value": "EPSG:4326",
             "output.path": "output",
-        }
+        },
     )
 
     # Assert the config component
@@ -233,6 +246,20 @@ def test_model_setup_config(tmp_path: Path):
     assert model.config.get("output.path") == "output"
     assert len(model.config.get("global")) == 2
     assert model.config.get("global.srs") == {"value": "EPSG:4326"}
+
+
+def test_model_setup_config_errors(tmp_path: Path):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Set the nonsense model type
+    with pytest.raises(
+        ValueError, match=f"Model_type must be either '{GEOM}' or '{GRID}'"
+    ):
+        model.setup_config(
+            model_type="foo",
+            calculation_method=FLOOD_LEVEL,
+        )
 
 
 def test_model_setup_region(tmp_path: Path, build_region_path: Path):
