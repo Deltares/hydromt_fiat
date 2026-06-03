@@ -141,6 +141,16 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
 
 
 ## Extra data structure
+@pytest.fixture
+def prepped_aggr_data(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    # Keep only floating point columns
+    data: gpd.GeoDataFrame = exposure_vector_clipped.select_dtypes(
+        include=[float, "geometry"],
+    )
+    # Return the data
+    return data
+
+
 @pytest.fixture(scope="session")
 def rotated_grid() -> xr.DataArray:
     # Create coordinates

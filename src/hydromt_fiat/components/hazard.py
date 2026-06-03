@@ -178,6 +178,7 @@ class HazardComponent(GridComponent):
         risk: bool = False,
         unit: str = "m",
         expand: bool = True,
+        region: bool = True,
     ) -> None:
         """Set up hazard maps.
 
@@ -199,6 +200,8 @@ class HazardComponent(GridComponent):
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
             By default True.
+        region : bool, optional
+            Whether or not to use the model region. By default True.
 
         Returns
         -------
@@ -216,7 +219,7 @@ class HazardComponent(GridComponent):
         ):
             raise ValueError("Return periods do not match the number of hazard files")
 
-        if self.model.region is None:
+        if self.model.region is None and region:
             raise MissingRegionError(
                 "Region component is missing for setting up hazard data."
             )

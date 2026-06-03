@@ -76,7 +76,7 @@ class ExposureGeomsComponent(GeomsComponent):
         Parameters
         ----------
         filename : Path | str, optional
-            Filename relative to model root. should contain a {name} placeholder
+            Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
             If None, the value(s) is/ are either taken from the model configurations or
             the `_filename` attribute, by default None.
@@ -100,7 +100,7 @@ class ExposureGeomsComponent(GeomsComponent):
         for read_path, name in zip(*files):
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the {name} geometry file at {read_path.as_posix()}")
+            logger.info(f"Reading the '{name}' geometry file at {read_path.as_posix()}")
             # Get the data
             data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
             # Check for data in csv file, this has to be merged
@@ -165,8 +165,7 @@ class ExposureGeomsComponent(GeomsComponent):
             )
             # Ensure the directory
             write_dir = write_path.parent
-            if not write_dir.is_dir():
-                write_dir.mkdir(parents=True, exist_ok=True)
+            write_dir.mkdir(parents=True, exist_ok=True)
 
             entry[FILE] = write_path
             # Due to header overloading, this is not solved properly in
@@ -263,7 +262,8 @@ use 'setup_region' before this method"
 
         Warning
         -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Run :py:meth:`~VulnerabilityComponent.setup` beforehand
+        (see vulnerability component).
 
         Parameters
         ----------
