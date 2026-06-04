@@ -4,6 +4,8 @@ import hashlib
 from _hashlib import HASH
 from pathlib import Path
 
+__all__ = ["file_hash"]
+
 
 def file_hash(
     path: Path,

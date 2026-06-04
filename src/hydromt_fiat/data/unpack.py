@@ -4,6 +4,8 @@ import tarfile
 import zipfile
 from pathlib import Path
 
+__all__ = ["untar", "unzip"]
+
 
 def _is_archive(
     file: Path,

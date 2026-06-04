@@ -15,11 +15,9 @@ from hydromt_fiat.utils import PATH, REGISTRY, VERSION
 
 __all__ = ["fetch_data"]
 
-logger = logging.getLogger(f"hydromt.{__name__}")
-
 # Settings
 BUCKET = "hydromt-fiat"
-CACHE_DIR = Path("~", ".cache", "hydromt_fiat").expanduser()
+CACHE_DIR = Path("~", ".cache", BUCKET).expanduser()
 ENDPOINT = "s3.deltares.nl"
 HASH_ALGORITM = "md5"
 HASHKEY = "hash"
@@ -44,6 +42,8 @@ UNPACK = {
     0: untar,
     1: unzip,
 }
+
+logger = logging.getLogger(f"hydromt.{__name__}")
 
 
 def get_registry(
