@@ -9,7 +9,7 @@ from typing import Any
 import requests
 from minio import Minio, datatypes
 
-from hydromt_fiat.data.unpack import is_archive, untar, unzip
+from hydromt_fiat.data.unpack import _is_archive, untar, unzip
 from hydromt_fiat.data.utils import file_hash
 from hydromt_fiat.utils import PATH, REGISTRY, VERSION
 
@@ -23,14 +23,14 @@ CACHE_DIR = Path("~", ".cache", "hydromt_fiat").expanduser()
 ENDPOINT = "s3.deltares.nl"
 HASH_ALGORITM = "md5"
 HASHKEY = "hash"
-HERE = Path(__file__).parent
+LIB_DATA_DIR = Path(__file__).parent
 REMOTE_REGISTRY = "https://raw.githubusercontent.com/Deltares/hydromt_fiat/refs/heads/main/src/hydromt_fiat/data/registry.json"
 
 # Keys
-with open(Path(HERE, "access.key"), "r") as reader:
-    ACCESS_KEY = reader.read()
-with open(Path(HERE, "secret.key"), "r") as reader:
-    SECRET_KEY = reader.read()
+with open(Path(LIB_DATA_DIR, "access.key"), "r") as reader:
+    ACCESS_KEY = reader.read().strip()
+with open(Path(LIB_DATA_DIR, "secret.key"), "r") as reader:
+    SECRET_KEY = reader.read().strip()
 
 # Client
 CLIENT = Minio(
@@ -52,7 +52,7 @@ def get_registry(
     """Get the registry."""
     # Get the data either from the local repo or remote repo
     if local:
-        with open(Path(__file__).parent / f"{REGISTRY}.json", "r") as f:
+        with open(LIB_DATA_DIR / f"{REGISTRY}.json", "r") as f:
             data = f.read()
     else:
         r = requests.get(REMOTE_REGISTRY, timeout=5)
@@ -63,7 +63,20 @@ def get_registry(
     return database
 
 
-def check_remote_hash(
+def get_entry(
+    name: str, registry: dict[str, dict[str, str]]
+) -> tuple[str, dict[str, str]]:
+    """Get the entry from the registry."""
+    if name in registry:
+        return name, registry[name]
+    name_map = {item.split(".", 1)[0]: item for item in registry.keys()}
+    if name in name_map:
+        file = name_map[name]
+        return file, registry[file]
+    raise KeyError(f"'{name}' is not found in the registry, directly or by stem")
+
+
+def assert_remote_hash(
     stat: datatypes.Object,
     known_hash: str,
 ) -> None:
@@ -86,7 +99,7 @@ def check_local_hash(
     Done between a local file and the known hash from the registry.
     """
     logger.info(
-        f"Checking whether {file.as_posix()} is already locally cached \
+        f"Checking whether '{file.name}' is already locally cached \
 with correct hash"
     )
     if not file.exists():
@@ -95,31 +108,42 @@ with correct hash"
     if not flag:
         os.unlink(file)
         return flag
-    logger.info(f"Existing file: '{file.as_posix()}' matches the hash {hash}")
+    logger.info(f"Existing file: '{file.name}' matches the hash {hash}")
     return flag
 
 
 def download(
-    data: str,
+    file: str,
     entry: dict[str, str],
     write_path: Path,
 ):
+    """Download data from the minio bucket.
+
+    Parameters
+    ----------
+    file : str
+        The file to download.
+    entry : dict[str, str]
+        The entry from the registry corresponding to the file.
+    write_path : Path
+        The path to which to write the file.
+    """
     # Checking for the remote hash match
-    check_remote_hash(
+    assert_remote_hash(
         CLIENT.stat_object(
             BUCKET,
-            Path(entry[PATH], entry[VERSION], data).as_posix(),
+            Path(entry[PATH], entry[VERSION], file).as_posix(),
         ),
         known_hash=entry[HASHKEY],
     )
 
-    logger.info(f"Downloading {data}..")
+    logger.info(f"Downloading {file}..")
     # Get and write the as a stream from the bucket
     respone = CLIENT.get_object(
         BUCKET,
-        Path(entry[PATH], entry[VERSION], data).as_posix(),
-        data,
+        Path(entry[PATH], entry[VERSION], file).as_posix(),
     )
+    logger.info(f"Writing file to '{write_path.as_posix()}'")
     # Read chunks of the data and write those chunks
     with open(write_path, "wb") as writer:
         for chunk in respone.stream(50 * 1024**2):
@@ -131,18 +155,20 @@ def download(
 
 
 def fetch_data(
-    data: str,
+    name: str,
     local_registry: bool = True,
     sub_dir: bool = True,
     cache_dir: Path | str | None = None,
     output_dir: Path | str | None = None,
 ) -> Path:
-    """Fetch data by simply calling the function.
+    """Fetch data by simply calling this function.
 
     Parameters
     ----------
-    data : str
-        The data to fetch.
+    name : str
+        The name of the data to fetch, this can either be the file as defined in
+        the registry file (e.g. 'global-data.tar.gz') or the stem of that file
+        ('global-data').
     local_registry : bool, optional
         If True, the registry is taken from the current library location.
         Otherwise, it is taken from the remote 'main' branch on github, by default True.
@@ -163,51 +189,40 @@ def fetch_data(
     Path
         The output directory where the data is stored.
     """
-    logger.info(f"Requesting the {data} file from the {BUCKET} s3 bucket")
+    logger.info(f"Requesting the '{name}' file from the {BUCKET} s3 bucket")
     # Get the registy
     registry = get_registry(local=local_registry)
     # Get the data entry from the registry
-    entry = registry[data]
+    file, entry = get_entry(name=name, registry=registry)
     # Use common cache directory or a user provided one
     cache_dir = cache_dir or CACHE_DIR
     # Set the output_dir
     output_dir = Path(Path.cwd(), output_dir or cache_dir)
     if sub_dir:
-        output_dir = Path(output_dir, data.split(".", 1)[0])
+        output_dir = Path(output_dir, file.split(".", 1)[0])
 
     # Set the archive write path
-    write_path = Path(cache_dir, data)
+    write_path = Path(cache_dir, file)
     # Check for the existence of the file
     if not check_local_hash(
-        Path(cache_dir, data),
+        Path(cache_dir, file),
         hash=entry[HASHKEY],
     ):
         logger.info("File not locally cached, trying to download")
         # If not, download
         download(
-            data=data,
+            file=file,
             entry=entry,
             write_path=write_path,
         )
 
     # Unpack the data
-    logger.info(f"Unpacking the archive to {output_dir.as_posix()}")
-    archive_flag = is_archive(write_path)
+    archive_flag = _is_archive(write_path)
     if any(archive_flag):
+        logger.info(f"Unpacking the archive to {output_dir.as_posix()}")
         UNPACK[archive_flag.index(True)](
             file=write_path,
             output_dir=output_dir,
         )
     # Return the output directory
     return output_dir
-
-
-if __name__ == "__main__":
-    from hydromt import log
-
-    log.initialize_logging()
-    x = file_hash(
-        "c:/dev/data/hydromt_fiat/tarballs/global-data.tar.gz",
-    )
-    fetch_data("osmnx.tar.gz")
-    pass

@@ -5,7 +5,7 @@ import zipfile
 from pathlib import Path
 
 
-def is_archive(
+def _is_archive(
     file: Path,
 ) -> tuple[bool, bool]:
     """Check whether it's an archive."""
@@ -34,7 +34,7 @@ def untar(
     """
     # Check the validity of the file
     if not tarfile.is_tarfile(file):
-        raise tarfile.TarError(f"{file.as_posix()} is not a tar file.")
+        raise tarfile.TarError(f"'{file.as_posix()}' is not a tar file.")
     # Ensure the output directory
     output_dir = output_dir or file.parent
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -66,7 +66,7 @@ def unzip(
     """
     # Check the validity of the file
     if not zipfile.is_zipfile(file):
-        raise zipfile.error(f"{file.as_posix()} is not a zip file.")
+        raise zipfile.error(f"'{file.as_posix()}' is not a zip file.")
     # Ensure the output directory
     output_dir = output_dir or file.parent
     output_dir.mkdir(parents=True, exist_ok=True)

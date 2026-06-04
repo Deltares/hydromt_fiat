@@ -1,4 +1,5 @@
 import math
+from functools import wraps
 from pathlib import Path
 
 import geopandas as gpd
@@ -9,6 +10,7 @@ from hydromt import DataCatalog
 from hydromt.gis import full_from_transform
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
+from urllib3.exceptions import HTTPError
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
@@ -18,10 +20,11 @@ CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
 
 def check_connection(fn):
+    @wraps(fn)
     def inner(*args, **kwargs):
         try:
             r = fn(*args, **kwargs)
-        except RequestException as e:
+        except (HTTPError, OSError, RequestException) as e:
             raise ConnectionError(
                 "Failed to download hydromt test data, check your connection"
             ) from e
@@ -36,7 +39,7 @@ def check_connection(fn):
 @check_connection
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("test-build-data.tar.gz", cache_dir=CACHE_DIR)
+    p = fetch_data("test-build-data", cache_dir=CACHE_DIR)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -88,7 +91,7 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 @check_connection
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("global-data.tar.gz", cache_dir=CACHE_DIR)
+    p = fetch_data("global-data", cache_dir=CACHE_DIR)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -112,7 +115,7 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 @check_connection
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model.tar.gz", cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -170,7 +173,7 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 @check_connection
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c.tar.gz", cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -242,7 +245,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 @check_connection
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("osmnx.tar.gz", cache_dir=CACHE_DIR)
+    p = fetch_data("osmnx", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
