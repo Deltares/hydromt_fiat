@@ -20,14 +20,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Download
+      - name: Install aws CLI
         run: |
-          mkdir -p .cache
-          gh release download test-data \
-            --pattern "*.tar.gz" \
-            --dir .cache
+          pip install awscli
+
+      - name: Download
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+        run: |
+          aws --endpoint-url https://s3.deltares.nl \
+            s3 cp s3://hydromt-fiat/global-data/v1.0.0/global-data.tar.gz \
+            .cache/global-data.tar.gz
+          aws --endpoint-url https://s3.deltares.nl \
+            s3 cp s3://hydromt-fiat/test-data/v1.0.0/ ./.cache \
+            --recursive
 
       - name: Untar
         run: |

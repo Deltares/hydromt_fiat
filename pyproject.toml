@@ -37,11 +37,11 @@ requires-python = ">=3.11"
 dependencies = [
     "geopandas",
     "hydromt>=1.4.0",
+    "minio",
     "numpy",
     "osmnx",
     "pandas",
     "pint",
-    "pooch",
     "pyproj",
     "requests",
     "shapely",

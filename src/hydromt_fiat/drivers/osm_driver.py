@@ -12,9 +12,13 @@ from osmnx._errors import InsufficientResponseError
 from pyproj.crs import CRS
 from shapely.geometry import MultiPolygon, Polygon
 
-CACHE_DIR = Path.home() / ".cache" / "hydromt_fiat" / "osmnx"
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
-ox.settings.cache_folder = CACHE_DIR
+from hydromt_fiat.data import CACHE_DIR
+
+__all__ = ["OSMDriver", "osm_request"]
+
+OSM_CACHE_DIR = Path(CACHE_DIR, "osmnx")
+OSM_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+ox.settings.cache_folder = OSM_CACHE_DIR
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
