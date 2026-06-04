@@ -34,7 +34,7 @@ def test_get_registry_remote():
 
     # Assert the output
     assert isinstance(db, dict)
-    assert "data" in db
+    assert "fiat-model.tar.gz" in db
 
 
 def test_get_entry(
