@@ -4,7 +4,9 @@ from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from hydromt.model import ModelRoot
+from hydromt.model.mode import ModelMode
 from hydromt.readers import read_toml
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.components import ConfigComponent
 from hydromt_fiat.utils import (
@@ -185,12 +187,15 @@ def test_config_component_read(
 
 
 def test_config_component_read_none(
-    tmp_path: Path,
+    mocker: MockerFixture,
     mock_model: MagicMock,
 ):
     # Set it to read mode
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    mocker.patch.object(
+        type(mock_model.root),
+        "mode",
+        new_callable=PropertyMock,
+        return_value=ModelMode("r"),
     )
 
     # Setup the component
