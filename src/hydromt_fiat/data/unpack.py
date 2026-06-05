@@ -3,6 +3,7 @@
 import tarfile
 import zipfile
 from pathlib import Path
+from tarfile import TarInfo
 from typing import Callable
 
 __all__ = ["untar", "unzip"]
@@ -22,7 +23,7 @@ def _dummy_filter(tarinfo, path=None):
 
 def untar(
     file: Path,
-    filter: Callable | None = None,
+    filter: Callable[[TarInfo, str], TarInfo | None] | None = None,
     output_dir: Path | None = None,
 ) -> Path:
     """Unpack a tar archive.

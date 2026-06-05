@@ -230,7 +230,7 @@ def fetch_data(
     archive_flag = _is_archive(write_path)
     if any(archive_flag):
         logger.info(f"Unpacking the archive to {output_dir.as_posix()}")
-        UNPACK[archive_flag.index(True)](
+        UNPACK[archive_flag.index(True)](  # type: ignore
             file=write_path,
             output_dir=output_dir,
         )
