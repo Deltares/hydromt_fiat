@@ -231,7 +231,7 @@ class HazardComponent(GridComponent):
 
         # Read the data
         hazard_data = {}
-        kwargs = dict(buffer=1)
+        kwargs = {"buffer": 1}
         kwargs.update(read_kwargs or {})
         # Loop over the entries
         for entry in hazard_fnames:

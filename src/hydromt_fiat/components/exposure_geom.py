@@ -234,7 +234,7 @@ use 'setup_region' before this method"
         name = Path(exposure_fname).stem
 
         # Get ze data
-        kwargs = dict(predicate=predicate)
+        kwargs = {"predicate", predicate}
         kwargs.update(**read_kwargs or {})
         exposure_data = self.model.data_catalog.get_geodataframe(
             data_like=exposure_fname,

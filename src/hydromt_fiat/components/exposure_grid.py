@@ -227,7 +227,7 @@ before setting up exposure grid"
 
         # Read exposure data files from data catalog
         exposure_data = {}
-        kwargs = dict(buffer=1)
+        kwargs = {"buffer": 1}
         kwargs.update(read_kwargs or {})
         # Loop over the entries
         for fname in exposure_fnames:
