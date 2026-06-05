@@ -33,7 +33,7 @@ description = "HydroMT plugin for Delft-FIAT."
 license = "GPL-3.0-or-later"
 readme = "README.rst"
 
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "geopandas",
     "hydromt>=1.4.0",
@@ -75,7 +75,6 @@ classifiers = [
 # Specify the Python versions you support here. In particular, ensure
 # that you indicate whether you support Python 2, Python 3 or both.
 'Programming Language :: Python :: 3',
-'Programming Language :: Python :: 3.11',
 'Programming Language :: Python :: 3.12',
 'Programming Language :: Python :: 3.13',
 'Programming Language :: Python :: 3.14',
@@ -182,7 +181,7 @@ convention = "numpy"
 # TODO: Re-enable the tests
 exclude = ["tests/.*", "tmp/.*"]
 plugins = ["pydantic.mypy", "numpy.typing.mypy_plugin"]
-python_version = "3.13"
+python_version = "3.14"
 ignore_missing_imports = true
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -320,9 +319,6 @@ python = "3.13.*"
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
 
-[tool.pixi.feature.py311.dependencies]
-python = "3.11.*"
-
 ## Define the environments
 [tool.pixi.environments]
 default = { features = ["py314", "dev", "docs", "examples", "test"] }
@@ -331,5 +327,4 @@ slim = { features = [] }
 test-py314 = { features = ["py314", "test"] }
 test-py313 = { features = ["py313", "test"] }
 test-py312 = { features = ["py312", "test"] }
-test-py311 = { features = ["py311", "test"] }
 wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }

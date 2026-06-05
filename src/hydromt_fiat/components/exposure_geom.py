@@ -191,6 +191,8 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_link_fname: Path | str | None = None,
         exposure_object_type_fill: str | None = None,
         predicate: str = "contains",
+        read_kwargs: dict[str, Any] | None = None,
+        read_link_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Set up the exposure from a data source.
 
@@ -210,6 +212,14 @@ class ExposureGeomsComponent(GeomsComponent):
         predicate : str, optional
             Method on how to select the data that falls within the region geometry.
             For more information see `geopandas.sjoin`. By default 'contains'.
+        read_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_geodataframe` method. By default None.
+        read_link_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_link_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
         logger.info("Setting up exposure geometries")
         # Check for region
@@ -224,22 +234,25 @@ use 'setup_region' before this method"
         name = Path(exposure_fname).stem
 
         # Get ze data
+        kwargs = {"predicate": predicate}
+        kwargs.update(**read_kwargs or {})
         exposure_data = self.model.data_catalog.get_geodataframe(
             data_like=exposure_fname,
             geom=self.model.region,
-            predicate=predicate,
+            **kwargs,
         )
-        exposure_linking = None
+        exposure_link = None
         if exposure_link_fname is not None:
-            exposure_linking = self.model.data_catalog.get_dataframe(
+            exposure_link = self.model.data_catalog.get_dataframe(
                 data_like=exposure_link_fname,
+                **(read_link_kwargs or {}),
             )
 
         # Call the workflows function(s) to manipulate the data
         exposure_vector = workflows.exposure_geoms_setup(
             exposure_data=exposure_data,
             exposure_object_type_column=exposure_object_type_column,
-            exposure_linking=exposure_linking,
+            exposure_link=exposure_link,
             exposure_object_type_fill=exposure_object_type_fill,
         )
         # Set the data directly
@@ -306,6 +319,8 @@ use 'setup_region' before this method"
         impact_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
+        read_table_kwargs: dict[str, Any] | None = None,
+        read_link_kwargs: dict[str, Any] | None = None,
         **select,
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.
@@ -327,6 +342,14 @@ use 'setup_region' before this method"
             A linking table to like the present object type with the identifiers
             defined in the cost table. If None, it is assumed the present object type
             matches the identifiers in the cost table. By default None.
+        read_table_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_cost_table_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
+        read_link_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_cost_link_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         **select : dict
             Keyword arguments used to select data from the exposure cost table.
             E.g. a column is present named 'country' and the wanted values are in the
@@ -338,12 +361,14 @@ use 'setup_region' before this method"
         # Get the exposure costs table from the data catalog
         exposure_cost_table = self.model.data_catalog.get_dataframe(
             exposure_cost_table_fname,
+            **(read_table_kwargs or {}),
         )
         # Get the exposure cost link is not None
         exposure_cost_link = None
         if exposure_cost_link_fname is not None:
             exposure_cost_link = self.model.data_catalog.get_dataframe(
                 exposure_cost_link_fname,
+                **(read_link_kwargs or {}),
             )
 
         # Call the workflows function to add the max damage

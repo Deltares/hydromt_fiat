@@ -83,14 +83,14 @@ def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
 
 
 @pytest.fixture
-def vulnerability_linking(global_data_catalog: DataCatalog) -> pd.DataFrame:
+def vulnerability_link(global_data_catalog: DataCatalog) -> pd.DataFrame:
     df = global_data_catalog.get_dataframe("jrc_curves_link")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
+def vulnerability_link_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
     df = global_data_catalog.get_dataframe("jrc_curves_link_alt")
     assert len(df) != 0
     return df

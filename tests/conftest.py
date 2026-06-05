@@ -19,24 +19,30 @@ from hydromt_fiat.utils import SQUARE__ID
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
 
-def check_connection(fn):
-    @wraps(fn)
-    def inner(*args, **kwargs):
-        try:
-            r = fn(*args, **kwargs)
-        except (HTTPError, OSError, RequestException) as e:
-            raise ConnectionError(
-                "Failed to download hydromt test data, check your connection"
-            ) from e
-        else:
-            return r
+def check_connection(error: bool = True):
+    def outer(fn):
+        @wraps(fn)
+        def inner(*args, **kwargs):
+            try:
+                r = fn(*args, **kwargs)
+            except (HTTPError, OSError, RequestException) as e:
+                if not error:
+                    pytest.skip(reason="Connection timeout..")
+                    return
+                raise ConnectionError(
+                    "Failed to download test data, check your connection"
+                ) from e
+            else:
+                return r
 
-    return inner
+        return inner
+
+    return outer
 
 
 ## Build data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
     p = fetch_data("test-build-data", cache_dir=CACHE_DIR)
@@ -88,7 +94,7 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 
 ## Global data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
     p = fetch_data("global-data", cache_dir=CACHE_DIR)
@@ -112,7 +118,7 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 
 ## Model data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def model_data_path() -> Path:
     # Fetch the data
     p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
@@ -170,7 +176,7 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 
 ## Model data (clipped)
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def model_data_clipped_path() -> Path:
     # Fetch the data
     p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
@@ -242,7 +248,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 
 ## OSM data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def osm_data_path() -> Path:
     # Fetch the data
     p = fetch_data("osmnx", cache_dir=CACHE_DIR)
