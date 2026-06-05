@@ -27,7 +27,7 @@ def test_get_registry_local():
     assert "global-data.tar.gz" in db
 
 
-@check_connection
+@check_connection(error=False)
 def test_get_registry_remote():
     # Call the function
     db = get_registry(local=False)
@@ -70,7 +70,7 @@ def test_get_entry_errors(
         get_entry(name="foo", registry=registry)
 
 
-@check_connection
+@check_connection(error=False)
 def test_assert_remote_hash(registry: dict[str, dict[str, str]]):
     file = "global-data.tar.gz"
     entry = registry[file]
@@ -84,7 +84,7 @@ def test_assert_remote_hash(registry: dict[str, dict[str, str]]):
     # Should just pass
 
 
-@check_connection
+@check_connection(error=False)
 def test_assert_remote_hash_errors(registry: dict[str, dict[str, str]]):
     file = "global-data.tar.gz"
     entry = registry[file]
@@ -135,7 +135,7 @@ def test_check_local_hash_not_exist(tmp_path: Path):
     assert not f
 
 
-@check_connection
+@check_connection(error=False)
 def test_download(
     tmp_path: Path,
     registry: dict[str, dict[str, str]],
@@ -152,7 +152,7 @@ def test_download(
     assert p.is_file()
 
 
-@check_connection
+@check_connection()
 def test_fetch_data():
     # Call the function in it's default state
     path = fetch_data(name="fiat-model-c", cache_dir=CACHE_DIR)
@@ -168,7 +168,7 @@ def test_fetch_data():
     assert Path(data_dir, "settings.toml").is_file()
 
 
-@check_connection
+@check_connection(error=False)
 def test_fetch_data_cache_dir(tmp_path: Path):
     # Call the function in it's default state
     path = fetch_data(name="fiat-model-c", cache_dir=tmp_path)

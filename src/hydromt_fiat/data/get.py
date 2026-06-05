@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
+import urllib3
 from minio import Minio, datatypes
 
 from hydromt_fiat.data.unpack import _is_archive, untar, unzip
@@ -31,10 +32,18 @@ with open(Path(LIB_DATA_DIR, "secret.key"), "r") as reader:
     SECRET_KEY = reader.read().strip()
 
 # Client
+HTTPS_CLIENT = urllib3.PoolManager(
+    timeout=urllib3.Timeout(
+        connect=10.0,  # max time to establish connection
+        read=300.0,  # max time to read response
+    ),
+    retries=False,
+)
 CLIENT = Minio(
     endpoint=ENDPOINT,
     access_key=ACCESS_KEY,
     secret_key=SECRET_KEY,
+    http_client=HTTPS_CLIENT,
     secure=True,  # Right? :p
 )
 # Unpack dictionary
