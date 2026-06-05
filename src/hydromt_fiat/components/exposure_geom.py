@@ -191,8 +191,8 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_link_fname: Path | str | None = None,
         exposure_object_type_fill: str | None = None,
         predicate: str = "contains",
-        read_kwargs: dict | None = None,
-        read_link_kwargs: dict | None = None,
+        read_kwargs: dict[str, Any] | None = None,
+        read_link_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Set up the exposure from a data source.
 
@@ -319,8 +319,8 @@ use 'setup_region' before this method"
         impact_type: str,
         exposure_cost_table_fname: Path | str,
         exposure_cost_link_fname: Path | str | None = None,
-        read_table_kwargs: dict | None = None,
-        read_link_kwargs: dict | None = None,
+        read_table_kwargs: dict[str, Any] | None = None,
+        read_link_kwargs: dict[str, Any] | None = None,
         **select,
     ) -> None:
         """Set up the maximum potential damage per object in an existing dataset.

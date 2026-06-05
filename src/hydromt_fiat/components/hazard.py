@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
@@ -179,7 +180,7 @@ class HazardComponent(GridComponent):
         unit: str = "m",
         expand: bool = True,
         region: bool = True,
-        read_kwargs: dict | None = None,
+        read_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Set up hazard maps.
 
