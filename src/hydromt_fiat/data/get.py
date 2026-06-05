@@ -195,7 +195,8 @@ def fetch_data(
     # Get the data entry from the registry
     file, entry = get_entry(name=name, registry=registry)
     # Use common cache directory or a user provided one
-    cache_dir = cache_dir or CACHE_DIR
+    cache_dir = Path(cache_dir or CACHE_DIR)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     # Set the output_dir
     output_dir = Path(Path.cwd(), output_dir or cache_dir)
     if sub_dir:
