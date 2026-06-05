@@ -179,6 +179,7 @@ class HazardComponent(GridComponent):
         unit: str = "m",
         expand: bool = True,
         region: bool = True,
+        read_kwargs: dict | None = None,
     ) -> None:
         """Set up hazard maps.
 
@@ -202,6 +203,10 @@ class HazardComponent(GridComponent):
             By default True.
         region : bool, optional
             Whether or not to use the model region. By default True.
+        read_kwargs : dict, optional
+            Optional keyword arguments for reading the `hazard_fnames` data. These
+            arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
 
         Returns
         -------
@@ -224,12 +229,16 @@ class HazardComponent(GridComponent):
                 "Region component is missing for setting up hazard data."
             )
 
+        # Read the data
         hazard_data = {}
+        kwargs = dict(buffer=1)
+        kwargs.update(read_kwargs or {})
+        # Loop over the entries
         for entry in hazard_fnames:
             da = self.model.data_catalog.get_rasterdataset(
                 entry,
                 geom=self.model.region,
-                buffer=1,
+                **kwargs,
             )
             hazard_data[Path(entry).stem] = da
 

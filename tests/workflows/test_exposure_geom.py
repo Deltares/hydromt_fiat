@@ -21,7 +21,7 @@ def test_exposure_geoms_setup(
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_object_type_column="gebruiksdoel",
-        exposure_linking=buildings_link_table,
+        exposure_link=buildings_link_table,
     )
 
     # Assert the output
@@ -39,7 +39,7 @@ def test_exposure_geoms_setup_fill_nodata(
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_object_type_column="gebruiksdoel",
-        exposure_linking=buildings_link_table,
+        exposure_link=buildings_link_table,
     )
 
     # Assert the output
@@ -54,7 +54,7 @@ def test_exposure_geoms_setup_fill_nodata(
     exposure_vector = exposure_geoms_setup(
         exposure_data=buildings_data,
         exposure_object_type_column="gebruiksdoel",
-        exposure_linking=buildings_link_table,
+        exposure_link=buildings_link_table,
         exposure_object_type_fill="unknown",
     )
 
@@ -108,7 +108,7 @@ def test_exposure_geoms_setup_errors(
         _ = exposure_geoms_setup(
             exposure_data=buildings_data,
             exposure_object_type_column="gebruiksdoel",
-            exposure_linking=buildings_link_table,
+            exposure_link=buildings_link_table,
         )
 
 

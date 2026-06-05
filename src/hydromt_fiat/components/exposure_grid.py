@@ -174,7 +174,10 @@ class ExposureGridComponent(GridComponent):
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        *,
         expand: bool = True,
+        read_kwargs: dict | None = None,
+        read_link_kwargs: dict | None = None,
     ) -> None:
         """Set up an exposure grid.
 
@@ -189,6 +192,14 @@ class ExposureGridComponent(GridComponent):
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
             By default True.
+        read_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_fnames` data. These
+            arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
+        read_link_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_link_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
         logger.info("Setting up gridded exposure")
 
@@ -201,10 +212,10 @@ before setting up exposure grid"
             raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
-        exposure_linking = None
+        exposure_link = None
         if exposure_link_fname is not None:
-            exposure_linking = self.model.data_catalog.get_dataframe(
-                exposure_link_fname,
+            exposure_link = self.model.data_catalog.get_dataframe(
+                exposure_link_fname, **(read_link_kwargs or {})
             )
 
         # Sort the input out as iterator
@@ -216,12 +227,15 @@ before setting up exposure grid"
 
         # Read exposure data files from data catalog
         exposure_data = {}
+        kwargs = dict(buffer=1)
+        kwargs.update(read_kwargs or {})
+        # Loop over the entries
         for fname in exposure_fnames:
             name = Path(fname).stem
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,
-                buffer=1,
+                **kwargs,
             )
             exposure_data[name] = da
 
@@ -232,7 +246,7 @@ before setting up exposure grid"
         ds = workflows.exposure_grid_setup(
             grid_like=grid_like,
             exposure_data=exposure_data,
-            exposure_linking=exposure_linking,
+            exposure_link=exposure_link,
             vulnerability=self.model.vulnerability.data.identifiers,
         )
 

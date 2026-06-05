@@ -23,7 +23,7 @@ def exposure_grid_setup(
     grid_like: xr.Dataset | None,
     exposure_data: dict[str, xr.DataArray],
     vulnerability: pd.DataFrame,
-    exposure_linking: pd.DataFrame | None = None,
+    exposure_link: pd.DataFrame | None = None,
 ) -> xr.Dataset:
     """Read and transform exposure grid data.
 
@@ -37,7 +37,7 @@ def exposure_grid_setup(
     vulnerability : pd.DataFrame
         A Table containing valid vulnerability curve id's an their
         presumed link to the exposure.
-    exposure_linking : pd.DataFrame, optional
+    exposure_link : pd.DataFrame, optional
         Table containing the names of the exposure files and corresponding
         vulnerability curves.
 
@@ -49,14 +49,14 @@ def exposure_grid_setup(
     exposure_dataarrays = []
 
     # Log the fact that there is not linking table
-    if exposure_linking is None:
+    if exposure_link is None:
         logger.warning(
             "No exposure linking provided, \
 defaulting to the name of the exposure layer"
         )
         # Construct a dummy dataframe from the names
         entries = list(exposure_data.keys())
-        exposure_linking = pd.DataFrame(
+        exposure_link = pd.DataFrame(
             data={
                 EXPOSURE__TYPE: entries,
                 OBJECT__TYPE: entries,
@@ -65,7 +65,7 @@ defaulting to the name of the exposure layer"
 
     # Check if linking table columns are named according to convention
     for col_name in [EXPOSURE__TYPE, OBJECT__TYPE]:
-        if col_name not in exposure_linking.columns:
+        if col_name not in exposure_link.columns:
             raise ValueError(
                 f"Missing column, '{col_name}' in exposure grid linking table"
             )
@@ -77,11 +77,11 @@ defaulting to the name of the exposure layer"
 
     # Loop through the the supplied data arrays
     for da_name, da in exposure_data.items():
-        if da_name not in exposure_linking[EXPOSURE__TYPE].values:
+        if da_name not in exposure_link[EXPOSURE__TYPE].values:
             link_name = da_name
         else:
-            link_name = exposure_linking.loc[
-                exposure_linking[EXPOSURE__TYPE] == da_name, OBJECT__TYPE
+            link_name = exposure_link.loc[
+                exposure_link[EXPOSURE__TYPE] == da_name, OBJECT__TYPE
             ].values[0]
 
         # Check if in vulnerability curves link table
