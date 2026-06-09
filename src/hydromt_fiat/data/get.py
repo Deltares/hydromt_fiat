@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
+import urllib3
 from minio import Minio, datatypes
 
 from hydromt_fiat.data.unpack import _is_archive, untar, unzip
@@ -31,11 +32,20 @@ with open(Path(LIB_DATA_DIR, "secret.key"), "r") as reader:
     SECRET_KEY = reader.read().strip()
 
 # Client
+HTTPS_CLIENT = urllib3.PoolManager(
+    timeout=urllib3.Timeout(
+        connect=10.0,  # max time to establish connection
+        read=300.0,  # max time to read response
+    ),
+    retries=False,
+)
 CLIENT = Minio(
     endpoint=ENDPOINT,
     access_key=ACCESS_KEY,
     secret_key=SECRET_KEY,
-    secure=True,  # Right? :p
+    http_client=HTTPS_CLIENT,
+    secure=True,
+    region="eu-west-1",
 )
 # Unpack dictionary
 UNPACK = {
@@ -195,7 +205,8 @@ def fetch_data(
     # Get the data entry from the registry
     file, entry = get_entry(name=name, registry=registry)
     # Use common cache directory or a user provided one
-    cache_dir = cache_dir or CACHE_DIR
+    cache_dir = Path(cache_dir or CACHE_DIR)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     # Set the output_dir
     output_dir = Path(Path.cwd(), output_dir or cache_dir)
     if sub_dir:
@@ -220,7 +231,7 @@ def fetch_data(
     archive_flag = _is_archive(write_path)
     if any(archive_flag):
         logger.info(f"Unpacking the archive to {output_dir.as_posix()}")
-        UNPACK[archive_flag.index(True)](
+        UNPACK[archive_flag.index(True)](  # type: ignore
             file=write_path,
             output_dir=output_dir,
         )
