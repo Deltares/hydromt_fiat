@@ -52,7 +52,7 @@ def test_directory_tree(build_data_path: Path):
     s.seek(0)
     out = s.read()
     # Assert the output
-    assert out.count("\n") == 22
+    assert out.count("\n") == 25
     assert "data_catalog.yml" in out
 
 
@@ -68,7 +68,7 @@ def test_directory_tree_level(build_data_path: Path):
     s.seek(0)
     out = s.read()
     # Assert the output
-    assert out.count("\n") == 9
+    assert out.count("\n") == 10
     assert "data_catalog.yml" in out
 
 
@@ -84,7 +84,7 @@ def test_directory_tree_dirs_only(build_data_path: Path):
     s.seek(0)
     out = s.read()
     # Assert the output
-    assert out.count("\n") == 6
+    assert out.count("\n") == 7
     assert "data_catalog.yml" not in out
 
 
