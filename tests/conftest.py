@@ -10,7 +10,6 @@ from hydromt import DataCatalog
 from hydromt.gis import full_from_transform
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
-from tenacity import retry, stop_after_attempt, wait_exponential
 from urllib3.exceptions import HTTPError
 
 from hydromt_fiat import FIATModel
@@ -22,10 +21,6 @@ CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
 def check_connection(error: bool = True):
     def outer(fn):
-        @retry(
-            stop=stop_after_attempt(5),
-            wait=wait_exponential(multiplier=1, min=1, max=10),
-        )
         @wraps(fn)
         def inner(*args, **kwargs):
             try:

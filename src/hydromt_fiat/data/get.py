@@ -45,6 +45,7 @@ CLIENT = Minio(
     secret_key=SECRET_KEY,
     http_client=HTTPS_CLIENT,
     secure=True,  # Right? :p
+    region="eu-west-1",
 )
 # Unpack dictionary
 UNPACK = {
