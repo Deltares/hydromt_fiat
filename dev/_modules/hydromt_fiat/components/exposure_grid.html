@@ -427,6 +427,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt.model.steps</span><span class="w"> </span><span class="kn">import</span> <span class="n">hydromt_step</span>
@@ -609,7 +610,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">exposure_fnames</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">],</span>
         <span class="n">exposure_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
         <span class="n">expand</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">read_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_link_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up an exposure grid.</span>
 
@@ -624,6 +628,14 @@
 <span class="sd">            Whether to expand the hazard data to the bounding box of the model region.</span>
 <span class="sd">            Nothing is done when the hazard data already covers the region.</span>
 <span class="sd">            By default True.</span>
+<span class="sd">        read_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_fnames` data. These</span>
+<span class="sd">            arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.</span>
+<span class="sd">        read_link_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_link_fname` data.</span>
+<span class="sd">            These arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up gridded exposure&quot;</span><span class="p">)</span>
 
@@ -636,10 +648,10 @@
             <span class="k">raise</span> <span class="n">MissingRegionError</span><span class="p">(</span><span class="s2">&quot;Region is required for setting up exposure grid&quot;</span><span class="p">)</span>
 
         <span class="c1"># Read linking table</span>
-        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">exposure_link</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">exposure_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">exposure_linking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
-                <span class="n">exposure_link_fname</span><span class="p">,</span>
+            <span class="n">exposure_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
+                <span class="n">exposure_link_fname</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">read_link_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
             <span class="p">)</span>
 
         <span class="c1"># Sort the input out as iterator</span>
@@ -651,12 +663,15 @@
 
         <span class="c1"># Read exposure data files from data catalog</span>
         <span class="n">exposure_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;buffer&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">read_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
+        <span class="c1"># Loop over the entries</span>
         <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">exposure_fnames</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
             <span class="n">da</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_rasterdataset</span><span class="p">(</span>
                 <span class="n">fname</span><span class="p">,</span>
                 <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-                <span class="n">buffer</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">exposure_data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">da</span>
 
@@ -667,7 +682,7 @@
         <span class="n">ds</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_grid_setup</span><span class="p">(</span>
             <span class="n">grid_like</span><span class="o">=</span><span class="n">grid_like</span><span class="p">,</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_data</span><span class="p">,</span>
-            <span class="n">exposure_linking</span><span class="o">=</span><span class="n">exposure_linking</span><span class="p">,</span>
+            <span class="n">exposure_link</span><span class="o">=</span><span class="n">exposure_link</span><span class="p">,</span>
             <span class="n">vulnerability</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">identifiers</span><span class="p">,</span>
         <span class="p">)</span>
 

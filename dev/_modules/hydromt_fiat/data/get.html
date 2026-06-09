@@ -432,6 +432,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">minio</span><span class="w"> </span><span class="kn">import</span> <span class="n">Minio</span><span class="p">,</span> <span class="n">datatypes</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.data.unpack</span><span class="w"> </span><span class="kn">import</span> <span class="n">_is_archive</span><span class="p">,</span> <span class="n">untar</span><span class="p">,</span> <span class="n">unzip</span>
@@ -456,11 +457,20 @@
     <span class="n">SECRET_KEY</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
 <span class="c1"># Client</span>
+<span class="n">HTTPS_CLIENT</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">(</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="n">urllib3</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span>
+        <span class="n">connect</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>  <span class="c1"># max time to establish connection</span>
+        <span class="n">read</span><span class="o">=</span><span class="mf">300.0</span><span class="p">,</span>  <span class="c1"># max time to read response</span>
+    <span class="p">),</span>
+    <span class="n">retries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">CLIENT</span> <span class="o">=</span> <span class="n">Minio</span><span class="p">(</span>
     <span class="n">endpoint</span><span class="o">=</span><span class="n">ENDPOINT</span><span class="p">,</span>
     <span class="n">access_key</span><span class="o">=</span><span class="n">ACCESS_KEY</span><span class="p">,</span>
     <span class="n">secret_key</span><span class="o">=</span><span class="n">SECRET_KEY</span><span class="p">,</span>
-    <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Right? :p</span>
+    <span class="n">http_client</span><span class="o">=</span><span class="n">HTTPS_CLIENT</span><span class="p">,</span>
+    <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">region</span><span class="o">=</span><span class="s2">&quot;eu-west-1&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="c1"># Unpack dictionary</span>
 <span class="n">UNPACK</span> <span class="o">=</span> <span class="p">{</span>
@@ -622,7 +632,8 @@
     <span class="c1"># Get the data entry from the registry</span>
     <span class="n">file</span><span class="p">,</span> <span class="n">entry</span> <span class="o">=</span> <span class="n">get_entry</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">registry</span><span class="o">=</span><span class="n">registry</span><span class="p">)</span>
     <span class="c1"># Use common cache directory or a user provided one</span>
-    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">CACHE_DIR</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span> <span class="ow">or</span> <span class="n">CACHE_DIR</span><span class="p">)</span>
+    <span class="n">cache_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="c1"># Set the output_dir</span>
     <span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">(),</span> <span class="n">output_dir</span> <span class="ow">or</span> <span class="n">cache_dir</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sub_dir</span><span class="p">:</span>
@@ -647,7 +658,7 @@
     <span class="n">archive_flag</span> <span class="o">=</span> <span class="n">_is_archive</span><span class="p">(</span><span class="n">write_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">archive_flag</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unpacking the archive to </span><span class="si">{</span><span class="n">output_dir</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">UNPACK</span><span class="p">[</span><span class="n">archive_flag</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)](</span>
+        <span class="n">UNPACK</span><span class="p">[</span><span class="n">archive_flag</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)](</span>  <span class="c1"># type: ignore</span>
             <span class="n">file</span><span class="o">=</span><span class="n">write_path</span><span class="p">,</span>
             <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
         <span class="p">)</span>

@@ -526,21 +526,21 @@ Model plugins:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-04 12:18:17,926 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-04 12:18:17,927 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-04 12:18:17,927 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-04 12:18:17,929 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
-2026-06-04 12:18:17,930 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
-2026-06-04 12:18:17,937 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
-2026-06-04 12:18:17,937 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
-2026-06-04 12:18:17,938 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
-2026-06-04 12:18:18,886 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
-2026-06-04 12:18:18,982 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
-2026-06-04 12:18:25,172 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
-2026-06-04 12:18:25,180 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-04 12:18:25,181 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-04 12:18:25,183 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 5731285b0de0e2bad0297c2eec3912cb
-2026-06-04 12:18:25,184 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
+2026-06-09 14:39:06,345 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-09 14:39:06,346 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-09 14:39:06,346 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-09 14:39:06,348 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
+2026-06-09 14:39:06,349 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
+2026-06-09 14:39:06,356 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
+2026-06-09 14:39:06,356 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
+2026-06-09 14:39:06,356 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
+2026-06-09 14:39:07,077 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
+2026-06-09 14:39:07,168 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
+2026-06-09 14:39:07,752 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
+2026-06-09 14:39:07,760 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-09 14:39:07,761 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-09 14:39:07,763 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 73f0d8d82a1a70238a4f46673782553d
+2026-06-09 14:39:07,764 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
 /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
 </pre></div></div>
 </div>
@@ -735,7 +735,7 @@ steps: # Grouping of the steps of the recipe
   # Setup the vulnerability in one go
   - vulnerability.setup:
       vulnerability_fname: jrc_curves
-      vulnerability_linking_fname: jrc_curves_link
+      vulnerability_link_fname: jrc_curves_link
       unit: m
       continent: europe
 
@@ -766,7 +766,7 @@ steps: # Grouping of the steps of the recipe
   - exposure_geoms.update_column:
       exposure_name: osm_buildings
       columns:
-        - elevatio
+        - elevation
       values:
         - 0
 
@@ -833,78 +833,85 @@ Options:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-04 12:18:29,890 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-04 12:18:30,089 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
-2026-06-04 12:18:30,762 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
-2026-06-04 12:18:30,773 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
-2026-06-04 12:18:30,773 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-04 12:18:30,774 - hydromt.model.model - model - INFO - build: setup_region
-2026-06-04 12:18:30,774 - hydromt.model.model - model - INFO - setup_region.replace=False
-2026-06-04 12:18:30,774 - hydromt.model.model - model - INFO - setup_region.region=/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson
-2026-06-04 12:18:30,774 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson&#39;
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - build: vulnerability.setup
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_linking_fname=jrc_curves_link
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.unit=m
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.index_name=depth
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.column_oriented=True
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_fname=jrc_curves
-2026-06-04 12:18:30,784 - hydromt.model.model - model - INFO - vulnerability.setup.continent=europe
-2026-06-04 12:18:30,784 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
-2026-06-04 12:18:30,784 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions.csv
-2026-06-04 12:18:30,798 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions_linking.csv
-2026-06-04 12:18:30,969 - hydromt.model.model - model - INFO - build: hazard.setup
-2026-06-04 12:18:30,969 - hydromt.model.model - model - INFO - hazard.setup.hazard_type=water_depth
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.return_periods=None
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.risk=False
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.unit=m
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.expand=True
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.region=True
-2026-06-04 12:18:30,970 - hydromt.model.model - model - INFO - hazard.setup.hazard_fnames=flood_event
-2026-06-04 12:18:30,970 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
-2026-06-04 12:18:30,970 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading flood_event RasterDataset data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/floodmaps/event.tif
-2026-06-04 12:18:31,045 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Processing water_depth hazard data
-2026-06-04 12:18:31,049 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
-2026-06-04 12:18:31,055 - hydromt.hydromt_fiat.gis.raster - raster - INFO - Checking raster extent versus region bounding box
-2026-06-04 12:18:31,056 - hydromt.hydromt_fiat.components.grid - grid - INFO - Adding flood_event to HazardComponent
-2026-06-04 12:18:31,056 - hydromt.model.model - model - INFO - build: exposure_geoms.setup
-2026-06-04 12:18:31,057 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_link_fname=osm_buildings_link
-2026-06-04 12:18:31,057 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_fill=unknown
-2026-06-04 12:18:31,057 - hydromt.model.model - model - INFO - exposure_geoms.setup.predicate=contains
-2026-06-04 12:18:31,057 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_fname=osm_buildings
-2026-06-04 12:18:31,057 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_column=building
-2026-06-04 12:18:31,057 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up exposure geometries
-2026-06-04 12:18:31,057 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings GeoDataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/building
-2026-06-04 12:18:31,057 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Retrieving building data from OSM API
-2026-06-04 12:18:31,316 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Number of [&#39;building&#39;] items found from OSM: 578
-2026-06-04 12:18:31,321 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/osm_buildings-jrc_map.csv
-2026-06-04 12:18:31,324 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Setting up the exposure data for further use
-2026-06-04 12:18:31,344 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting the model type to &#39;geom&#39;
-2026-06-04 12:18:31,344 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_link_vulnerability
-2026-06-04 12:18:31,344 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.impact_type=damage
-2026-06-04 12:18:31,344 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.exposure_name=osm_buildings
-2026-06-04 12:18:31,344 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Linking the exposure data with the vulnerability data
-2026-06-04 12:18:31,354 - hydromt.hydromt_fiat.components.geom - geom - WARNING - Replacing geometry data: osm_buildings
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_max_damage
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_link_fname=None
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_name=osm_buildings
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.impact_type=damage
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_table_fname=jrc_damage
-2026-06-04 12:18:31,354 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.country=World
-2026-06-04 12:18:31,354 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up maximum potential damage for osm_buildings
-2026-06-04 12:18:31,354 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_damage DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/jrc_damage_values.csv
-2026-06-04 12:18:31,374 - hydromt.model.model - model - INFO - build: exposure_geoms.update_column
-2026-06-04 12:18:31,374 - hydromt.model.model - model - INFO - exposure_geoms.update_column.exposure_name=osm_buildings
-2026-06-04 12:18:31,374 - hydromt.model.model - model - INFO - exposure_geoms.update_column.columns=[&#39;elevatio&#39;]
-2026-06-04 12:18:31,374 - hydromt.model.model - model - INFO - exposure_geoms.update_column.values=[0]
-2026-06-04 12:18:31,374 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Updating exposure data with [&#39;elevatio&#39;] columns
-2026-06-04 12:18:31,375 - hydromt.hydromt_fiat.components.region - region - INFO - Writing the model region file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/region.geojson
-2026-06-04 12:18:31,378 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the exposure vector data..
-2026-06-04 12:18:31,378 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the &#39;osm_buildings&#39; geometry data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/exposure/osm_buildings.fgb
-2026-06-04 12:18:31,386 - hydromt.hydromt_fiat.components.exposure_grid - exposure_grid - INFO - No exposure grid data found, skip writing.
-2026-06-04 12:18:31,386 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Writing the hazard data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/hazard.nc
-[########################################] | 100% Completed | 100.73 ms
-2026-06-04 12:18:31,498 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Writing the vulnerability data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/vulnerability/curves.csv
-2026-06-04 12:18:31,505 - hydromt.hydromt_fiat.components.config - config - INFO - Writing the config data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/settings.toml
+2026-06-09 14:39:12,467 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-09 14:39:12,667 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
+2026-06-09 14:39:13,361 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
+2026-06-09 14:39:13,373 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
+2026-06-09 14:39:13,374 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-09 14:39:13,374 - hydromt.model.model - model - INFO - build: setup_region
+2026-06-09 14:39:13,374 - hydromt.model.model - model - INFO - setup_region.replace=False
+2026-06-09 14:39:13,374 - hydromt.model.model - model - INFO - setup_region.region=/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson
+2026-06-09 14:39:13,374 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson&#39;
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - build: vulnerability.setup
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_link_fname=jrc_curves_link
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.unit=m
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.index_name=depth
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.column_oriented=True
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.read_kwargs=None
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.read_link_kwargs=None
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_fname=jrc_curves
+2026-06-09 14:39:13,384 - hydromt.model.model - model - INFO - vulnerability.setup.continent=europe
+2026-06-09 14:39:13,384 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
+2026-06-09 14:39:13,385 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions.csv
+2026-06-09 14:39:13,398 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions_linking.csv
+2026-06-09 14:39:13,573 - hydromt.model.model - model - INFO - build: hazard.setup
+2026-06-09 14:39:13,573 - hydromt.model.model - model - INFO - hazard.setup.hazard_type=water_depth
+2026-06-09 14:39:13,573 - hydromt.model.model - model - INFO - hazard.setup.return_periods=None
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.risk=False
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.unit=m
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.expand=True
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.region=True
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.read_kwargs=None
+2026-06-09 14:39:13,574 - hydromt.model.model - model - INFO - hazard.setup.hazard_fnames=flood_event
+2026-06-09 14:39:13,574 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
+2026-06-09 14:39:13,574 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading flood_event RasterDataset data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/floodmaps/event.tif
+2026-06-09 14:39:13,650 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Processing water_depth hazard data
+2026-06-09 14:39:13,654 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
+2026-06-09 14:39:13,660 - hydromt.hydromt_fiat.gis.raster - raster - INFO - Checking raster extent versus region bounding box
+2026-06-09 14:39:13,662 - hydromt.hydromt_fiat.components.grid - grid - INFO - Adding flood_event to HazardComponent
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - build: exposure_geoms.setup
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_link_fname=osm_buildings_link
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_fill=unknown
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - exposure_geoms.setup.predicate=contains
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - exposure_geoms.setup.read_kwargs=None
+2026-06-09 14:39:13,662 - hydromt.model.model - model - INFO - exposure_geoms.setup.read_link_kwargs=None
+2026-06-09 14:39:13,663 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_fname=osm_buildings
+2026-06-09 14:39:13,663 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_column=building
+2026-06-09 14:39:13,663 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up exposure geometries
+2026-06-09 14:39:13,663 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings GeoDataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/building
+2026-06-09 14:39:13,663 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Retrieving building data from OSM API
+2026-06-09 14:39:13,942 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Number of [&#39;building&#39;] items found from OSM: 578
+2026-06-09 14:39:13,948 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/osm_buildings-jrc_map.csv
+2026-06-09 14:39:13,951 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Setting up the exposure data for further use
+2026-06-09 14:39:13,970 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting the model type to &#39;geom&#39;
+2026-06-09 14:39:13,971 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_link_vulnerability
+2026-06-09 14:39:13,971 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.impact_type=damage
+2026-06-09 14:39:13,971 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.exposure_name=osm_buildings
+2026-06-09 14:39:13,971 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Linking the exposure data with the vulnerability data
+2026-06-09 14:39:13,981 - hydromt.hydromt_fiat.components.geom - geom - WARNING - Replacing geometry data: osm_buildings
+2026-06-09 14:39:13,981 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_max_damage
+2026-06-09 14:39:13,981 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_link_fname=None
+2026-06-09 14:39:13,981 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.read_table_kwargs=None
+2026-06-09 14:39:13,982 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.read_link_kwargs=None
+2026-06-09 14:39:13,982 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_name=osm_buildings
+2026-06-09 14:39:13,982 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.impact_type=damage
+2026-06-09 14:39:13,982 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_table_fname=jrc_damage
+2026-06-09 14:39:13,982 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.country=World
+2026-06-09 14:39:13,982 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up maximum potential damage for osm_buildings
+2026-06-09 14:39:13,982 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_damage DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/jrc_damage_values.csv
+2026-06-09 14:39:14,001 - hydromt.model.model - model - INFO - build: exposure_geoms.update_column
+2026-06-09 14:39:14,002 - hydromt.model.model - model - INFO - exposure_geoms.update_column.exposure_name=osm_buildings
+2026-06-09 14:39:14,002 - hydromt.model.model - model - INFO - exposure_geoms.update_column.columns=[&#39;elevation&#39;]
+2026-06-09 14:39:14,002 - hydromt.model.model - model - INFO - exposure_geoms.update_column.values=[0]
+2026-06-09 14:39:14,002 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Updating exposure data with [&#39;elevation&#39;] columns
+2026-06-09 14:39:14,002 - hydromt.hydromt_fiat.components.region - region - INFO - Writing the model region file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/region.geojson
+2026-06-09 14:39:14,005 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the exposure vector data..
+2026-06-09 14:39:14,006 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the &#39;osm_buildings&#39; geometry data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/exposure/osm_buildings.fgb
+2026-06-09 14:39:14,013 - hydromt.hydromt_fiat.components.exposure_grid - exposure_grid - INFO - No exposure grid data found, skip writing.
+2026-06-09 14:39:14,014 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Writing the hazard data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/hazard.nc
+[########################################] | 100% Completed | 100.68 ms
+2026-06-09 14:39:14,125 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Writing the vulnerability data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/vulnerability/curves.csv
+2026-06-09 14:39:14,132 - hydromt.hydromt_fiat.components.config - config - INFO - Writing the config data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/settings.toml
 </pre></div></div>
 </div>
 <div class="line-block">

@@ -626,6 +626,8 @@
         <span class="n">exposure_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">exposure_object_type_fill</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">predicate</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;contains&quot;</span><span class="p">,</span>
+        <span class="n">read_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_link_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the exposure from a data source.</span>
 
@@ -645,6 +647,14 @@
 <span class="sd">        predicate : str, optional</span>
 <span class="sd">            Method on how to select the data that falls within the region geometry.</span>
 <span class="sd">            For more information see `geopandas.sjoin`. By default &#39;contains&#39;.</span>
+<span class="sd">        read_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_fname` data.</span>
+<span class="sd">            These arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_geodataframe` method. By default None.</span>
+<span class="sd">        read_link_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_link_fname` data.</span>
+<span class="sd">            These arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up exposure geometries&quot;</span><span class="p">)</span>
         <span class="c1"># Check for region</span>
@@ -659,22 +669,25 @@
         <span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">exposure_fname</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
 
         <span class="c1"># Get ze data</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;predicate&quot;</span><span class="p">:</span> <span class="n">predicate</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">read_kwargs</span> <span class="ow">or</span> <span class="p">{})</span>
         <span class="n">exposure_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_geodataframe</span><span class="p">(</span>
             <span class="n">data_like</span><span class="o">=</span><span class="n">exposure_fname</span><span class="p">,</span>
             <span class="n">geom</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
-            <span class="n">predicate</span><span class="o">=</span><span class="n">predicate</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">exposure_link</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">exposure_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">exposure_linking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
+            <span class="n">exposure_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
                 <span class="n">data_like</span><span class="o">=</span><span class="n">exposure_link_fname</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">(</span><span class="n">read_link_kwargs</span> <span class="ow">or</span> <span class="p">{}),</span>
             <span class="p">)</span>
 
         <span class="c1"># Call the workflows function(s) to manipulate the data</span>
         <span class="n">exposure_vector</span> <span class="o">=</span> <span class="n">workflows</span><span class="o">.</span><span class="n">exposure_geoms_setup</span><span class="p">(</span>
             <span class="n">exposure_data</span><span class="o">=</span><span class="n">exposure_data</span><span class="p">,</span>
             <span class="n">exposure_object_type_column</span><span class="o">=</span><span class="n">exposure_object_type_column</span><span class="p">,</span>
-            <span class="n">exposure_linking</span><span class="o">=</span><span class="n">exposure_linking</span><span class="p">,</span>
+            <span class="n">exposure_link</span><span class="o">=</span><span class="n">exposure_link</span><span class="p">,</span>
             <span class="n">exposure_object_type_fill</span><span class="o">=</span><span class="n">exposure_object_type_fill</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># Set the data directly</span>
@@ -747,6 +760,8 @@
         <span class="n">impact_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">exposure_cost_table_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">exposure_cost_link_fname</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_table_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_link_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">select</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the maximum potential damage per object in an existing dataset.</span>
@@ -768,6 +783,14 @@
 <span class="sd">            A linking table to like the present object type with the identifiers</span>
 <span class="sd">            defined in the cost table. If None, it is assumed the present object type</span>
 <span class="sd">            matches the identifiers in the cost table. By default None.</span>
+<span class="sd">        read_table_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_cost_table_fname` data.</span>
+<span class="sd">            These arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.</span>
+<span class="sd">        read_link_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments for reading the `exposure_cost_link_fname` data.</span>
+<span class="sd">            These arguments are passed to the HydroMT</span>
+<span class="sd">            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.</span>
 <span class="sd">        **select : dict</span>
 <span class="sd">            Keyword arguments used to select data from the exposure cost table.</span>
 <span class="sd">            E.g. a column is present named &#39;country&#39; and the wanted values are in the</span>
@@ -779,12 +802,14 @@
         <span class="c1"># Get the exposure costs table from the data catalog</span>
         <span class="n">exposure_cost_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
             <span class="n">exposure_cost_table_fname</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">(</span><span class="n">read_table_kwargs</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="p">)</span>
         <span class="c1"># Get the exposure cost link is not None</span>
         <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">exposure_cost_link_fname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">exposure_cost_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">data_catalog</span><span class="o">.</span><span class="n">get_dataframe</span><span class="p">(</span>
                 <span class="n">exposure_cost_link_fname</span><span class="p">,</span>
+                <span class="o">**</span><span class="p">(</span><span class="n">read_link_kwargs</span> <span class="ow">or</span> <span class="p">{}),</span>
             <span class="p">)</span>
 
         <span class="c1"># Call the workflows function to add the max damage</span>

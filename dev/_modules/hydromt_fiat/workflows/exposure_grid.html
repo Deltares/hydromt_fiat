@@ -450,7 +450,7 @@
     <span class="n">grid_like</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">],</span>
     <span class="n">vulnerability</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">exposure_linking</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">exposure_link</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read and transform exposure grid data.</span>
 
@@ -464,7 +464,7 @@
 <span class="sd">    vulnerability : pd.DataFrame</span>
 <span class="sd">        A Table containing valid vulnerability curve id&#39;s an their</span>
 <span class="sd">        presumed link to the exposure.</span>
-<span class="sd">    exposure_linking : pd.DataFrame, optional</span>
+<span class="sd">    exposure_link : pd.DataFrame, optional</span>
 <span class="sd">        Table containing the names of the exposure files and corresponding</span>
 <span class="sd">        vulnerability curves.</span>
 
@@ -476,14 +476,14 @@
     <span class="n">exposure_dataarrays</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="c1"># Log the fact that there is not linking table</span>
-    <span class="k">if</span> <span class="n">exposure_linking</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">exposure_link</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
             <span class="s2">&quot;No exposure linking provided, </span><span class="se">\</span>
 <span class="s2">defaulting to the name of the exposure layer&quot;</span>
         <span class="p">)</span>
         <span class="c1"># Construct a dummy dataframe from the names</span>
         <span class="n">entries</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="n">exposure_linking</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">exposure_link</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
             <span class="n">data</span><span class="o">=</span><span class="p">{</span>
                 <span class="n">EXPOSURE__TYPE</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
                 <span class="n">OBJECT__TYPE</span><span class="p">:</span> <span class="n">entries</span><span class="p">,</span>
@@ -492,7 +492,7 @@
 
     <span class="c1"># Check if linking table columns are named according to convention</span>
     <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">EXPOSURE__TYPE</span><span class="p">,</span> <span class="n">OBJECT__TYPE</span><span class="p">]:</span>
-        <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_link</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Missing column, &#39;</span><span class="si">{</span><span class="n">col_name</span><span class="si">}</span><span class="s2">&#39; in exposure grid linking table&quot;</span>
             <span class="p">)</span>
@@ -504,11 +504,11 @@
 
     <span class="c1"># Loop through the the supplied data arrays</span>
     <span class="k">for</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">da</span> <span class="ow">in</span> <span class="n">exposure_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">da_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">da_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_link</span><span class="p">[</span><span class="n">EXPOSURE__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
             <span class="n">link_name</span> <span class="o">=</span> <span class="n">da_name</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">link_name</span> <span class="o">=</span> <span class="n">exposure_linking</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
-                <span class="n">exposure_linking</span><span class="p">[</span><span class="n">EXPOSURE__TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">OBJECT__TYPE</span>
+            <span class="n">link_name</span> <span class="o">=</span> <span class="n">exposure_link</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+                <span class="n">exposure_link</span><span class="p">[</span><span class="n">EXPOSURE__TYPE</span><span class="p">]</span> <span class="o">==</span> <span class="n">da_name</span><span class="p">,</span> <span class="n">OBJECT__TYPE</span>
             <span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Check if in vulnerability curves link table</span>
