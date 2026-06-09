@@ -6,20 +6,38 @@ Examples
 
 This page contains examples regarding:
 
-- Preparing the necessary data
-- Building a data catalog
-- Building with HydroMT-FIAT
-- Updating with HydroMT-FIAT
+- Exploring and understanding the data used by HydroMT-FIAT
+- Preparing a data catalog
+- Building a Delft-FIAT model
+- Updating an existing model
+
+Exploring Data
+--------------
+
+*   `Explore HydroMT-FIAT data types <../_examples/explore_data.ipynb>`_
+
+Data Catalog
+------------
+
+*   `Preparing a data catalog <../_examples/prepare_data_catalog.ipynb>`_
 
 Building
 --------
 
-*   `Build FIAT model with api <../_examples/build_api.ipynb>`_
-*   `Build FIAT model from cli <../_examples/build_cli.ipynb>`_
+*   `Build FIAT model with API <../_examples/build_api.ipynb>`_
+*   `Build FIAT model from CLI <../_examples/build_cli.ipynb>`_
+
+Updating
+--------
+
+*   `Update a FIAT model <../_examples/update_model.ipynb>`_
 
 .. toctree::
     :maxdepth: 2
     :hidden:
 
-    Build FIAT model with api <../_examples/build_api.ipynb>
-    Build FIAT model from cli <../_examples/build_cli.ipynb>
+    Explore data <../_examples/explore_data.ipynb>
+    Prepare data catalog <../_examples/prepare_data_catalog.ipynb>
+    Build FIAT model with API <../_examples/build_api.ipynb>
+    Build FIAT model from CLI <../_examples/build_cli.ipynb>
+    Update a FIAT model <../_examples/update_model.ipynb>
