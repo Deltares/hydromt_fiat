@@ -29,7 +29,7 @@ def exposure_geoms_setup(
     exposure_data: gpd.GeoDataFrame,
     exposure_object_type_column: str,
     *,
-    exposure_linking: pd.DataFrame | None = None,
+    exposure_link: pd.DataFrame | None = None,
     exposure_object_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
     """Prep the raw exposure data for later fuctions/ methods.
@@ -42,7 +42,7 @@ def exposure_geoms_setup(
         The raw exposure data.
     exposure_object_type_column : str
         The name of column that specifies the exposure type, e.g. occupancy type.
-    exposure_linking : pd.DataFrame, optional
+    exposure_link : pd.DataFrame, optional
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
         By default None
@@ -59,12 +59,12 @@ def exposure_geoms_setup(
     # Some checks
     if exposure_object_type_column not in exposure_data:
         raise KeyError(f"{exposure_object_type_column} not found in the exposure data")
-    if exposure_linking is None:
+    if exposure_link is None:
         logger.warning(
             "No exposure link table provided, \
 defaulting to exposure data object type"
         )
-        exposure_linking = pd.DataFrame(
+        exposure_link = pd.DataFrame(
             {
                 exposure_object_type_column: exposure_data[
                     exposure_object_type_column
@@ -72,28 +72,28 @@ defaulting to exposure data object type"
                 OBJECT__TYPE: exposure_data[exposure_object_type_column].values,
             }
         )
-    if exposure_object_type_column not in exposure_linking:
+    if exposure_object_type_column not in exposure_link:
         raise KeyError(
             f"{exposure_object_type_column} not found in the provided linking data"
         )
 
     # Make sure that there are no duplicated in the linking
-    exposure_linking = exposure_linking.drop_duplicates(
+    exposure_link = exposure_link.drop_duplicates(
         exposure_object_type_column,
         keep="first",
     )
     # Drop the row with None as key, prevents duplicates later
-    exposure_linking = exposure_linking.dropna(subset=exposure_object_type_column)
+    exposure_link = exposure_link.dropna(subset=exposure_object_type_column)
     # Also drop the remaining unused columns
-    exposure_linking = exposure_linking[[exposure_object_type_column, OBJECT__TYPE]]
+    exposure_link = exposure_link[[exposure_object_type_column, OBJECT__TYPE]]
 
     # Set the nodata fill
     if exposure_object_type_fill is not None:
-        exposure_linking.loc[len(exposure_linking), :] = [
+        exposure_link.loc[len(exposure_link), :] = [
             None,
             exposure_object_type_fill,
         ]
-        exposure_linking[OBJECT__TYPE] = exposure_linking.loc[:, OBJECT__TYPE].fillna(
+        exposure_link[OBJECT__TYPE] = exposure_link.loc[:, OBJECT__TYPE].fillna(
             exposure_object_type_fill
         )
 
@@ -102,7 +102,7 @@ defaulting to exposure data object type"
 
     # Pre-compute which source values won't survive the inner merge so we can
     # name them in the warning if any get dropped.
-    mapped_keys = set(exposure_linking[exposure_object_type_column].dropna())
+    mapped_keys = set(exposure_link[exposure_object_type_column].dropna())
     missing_counts = (
         exposure_data[exposure_object_type_column]
         .loc[lambda s: ~s.isin(mapped_keys)]
@@ -112,7 +112,7 @@ defaulting to exposure data object type"
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
-        exposure_linking,
+        exposure_link,
         on=exposure_object_type_column,
         how="inner",
         validate="many_to_many",

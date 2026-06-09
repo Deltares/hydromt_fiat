@@ -9,7 +9,7 @@ from .exposure_geom import (
 )
 from .exposure_grid import exposure_grid_setup
 from .hazard import hazard_setup
-from .vulnerability import process_vulnerability_linking, vulnerability_setup
+from .vulnerability import process_vulnerability_link, vulnerability_setup
 
 __all__ = [
     "aggregate_spatially",
@@ -20,6 +20,6 @@ __all__ = [
     "hazard_setup",
     "max_monetary_damage",
     "prep_data_for_aggregation",
-    "process_vulnerability_linking",
+    "process_vulnerability_link",
     "vulnerability_setup",
 ]

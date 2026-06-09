@@ -3,6 +3,8 @@
 import tarfile
 import zipfile
 from pathlib import Path
+from tarfile import TarInfo
+from typing import Callable
 
 __all__ = ["untar", "unzip"]
 
@@ -14,8 +16,14 @@ def _is_archive(
     return (tarfile.is_tarfile(file), zipfile.is_zipfile(file))
 
 
+def _dummy_filter(tarinfo, path=None):
+    """Do nothing."""
+    return tarinfo
+
+
 def untar(
     file: Path,
+    filter: Callable[[TarInfo, str], TarInfo | None] | None = None,
     output_dir: Path | None = None,
 ) -> Path:
     """Unpack a tar archive.
@@ -24,6 +32,9 @@ def untar(
     ----------
     file : Path
         The path of the tar archive.
+    filter : Callable, optional
+        A custom filter to filter the data to unpack. If no filter is provided
+        all data are unpacked. By default None.
     output_dir : Path | None, optional
         The output directory in which to extract the contents. If not provided,
         the contents are extracted in the same directory as the archive.
@@ -42,7 +53,7 @@ def untar(
     output_dir.mkdir(parents=True, exist_ok=True)
     # Untar it
     with tarfile.open(file) as archive:
-        archive.extractall(path=output_dir)
+        archive.extractall(path=output_dir, filter=(filter or _dummy_filter))
     return output_dir
 
 
