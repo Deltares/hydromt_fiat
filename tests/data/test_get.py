@@ -75,9 +75,9 @@ def test_assert_remote_hash(registry: dict[str, dict[str, str]]):
     file = "global-data.tar.gz"
     entry = registry[file]
     # Get the stats from the bucket
-    stat = CLIENT.stat_object(
-        BUCKET,
-        Path(entry[PATH], entry[VERSION], file).as_posix(),
+    stat = CLIENT.head_object(
+        Bucket=BUCKET,
+        Key=Path(entry[PATH], entry[VERSION], file).as_posix(),
     )
     # Call the function
     assert_remote_hash(stat=stat, known_hash=entry["hash"])
@@ -89,9 +89,9 @@ def test_assert_remote_hash_errors(registry: dict[str, dict[str, str]]):
     file = "global-data.tar.gz"
     entry = registry[file]
     # Get the stats from the bucket
-    stat = CLIENT.stat_object(
-        BUCKET,
-        Path(entry[PATH], entry[VERSION], file).as_posix(),
+    stat = CLIENT.head_object(
+        Bucket=BUCKET,
+        Key=Path(entry[PATH], entry[VERSION], file).as_posix(),
     )
     # Call the function with a nonsense hash
     with pytest.raises(

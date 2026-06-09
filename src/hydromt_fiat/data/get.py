@@ -6,9 +6,11 @@ import os
 from pathlib import Path
 from typing import Any
 
+import boto3
 import requests
-import urllib3
-from minio import Minio, datatypes
+from boto3.s3.transfer import TransferConfig
+from botocore import client as client_type
+from botocore.config import Config
 
 from hydromt_fiat.data.unpack import _is_archive, untar, unzip
 from hydromt_fiat.data.utils import file_hash
@@ -23,6 +25,7 @@ ENDPOINT = "s3.deltares.nl"
 HASH_ALGORITM = "md5"
 HASHKEY = "hash"
 LIB_DATA_DIR = Path(__file__).parent
+PROTOCOL = "https"
 REMOTE_REGISTRY = "https://raw.githubusercontent.com/Deltares/hydromt_fiat/refs/heads/main/src/hydromt_fiat/data/registry.json"
 
 # Keys
@@ -32,19 +35,27 @@ with open(Path(LIB_DATA_DIR, "secret.key"), "r") as reader:
     SECRET_KEY = reader.read().strip()
 
 # Client
-HTTPS_CLIENT = urllib3.PoolManager(
-    timeout=urllib3.Timeout(
-        connect=10.0,  # max time to establish connection
-        read=300.0,  # max time to read response
-    ),
-    retries=False,
+CONFIG = Config(
+    retries={
+        "max_attempts": 5,
+        "mode": "standard",
+    },
+    connect_timeout=10,
+    read_timeout=300,
 )
-CLIENT = Minio(
-    endpoint=ENDPOINT,
-    access_key=ACCESS_KEY,
-    secret_key=SECRET_KEY,
-    http_client=HTTPS_CLIENT,
-    secure=True,  # Right? :p
+CLIENT: client_type.BaseClient = boto3.client(
+    service_name="s3",
+    endpoint_url=f"{PROTOCOL}://{ENDPOINT}",
+    aws_access_key_id=ACCESS_KEY,
+    aws_secret_access_key=SECRET_KEY,
+    config=CONFIG,
+)
+TRANSFER_CONFIG = TransferConfig(
+    io_chunksize=(1 * 1024**2),
+    max_concurrency=4,
+    multipart_threshold=(8 * 1024**2),
+    multipart_chunksize=(8 * 1024**2),
+    num_download_attempts=5,
 )
 # Unpack dictionary
 UNPACK = {
@@ -86,14 +97,15 @@ def get_entry(
 
 
 def assert_remote_hash(
-    stat: datatypes.Object,
+    stat: dict[str, str],
     known_hash: str,
 ) -> None:
     """Check remote hash match.
 
     Done between the file in the bucket in the known hash from the registry.
     """
-    if stat.etag != known_hash:
+    etag = stat["ETag"].strip('"')
+    if etag != known_hash:
         raise requests.RequestException(
             "Requested file does not match the hash from the registry",
         )
@@ -137,30 +149,21 @@ def download(
     write_path : Path
         The path to which to write the file.
     """
+    key = Path(entry[PATH], entry[VERSION], file).as_posix()
     # Checking for the remote hash match
     assert_remote_hash(
-        CLIENT.stat_object(
-            BUCKET,
-            Path(entry[PATH], entry[VERSION], file).as_posix(),
-        ),
+        CLIENT.head_object(Bucket=BUCKET, Key=key),
         known_hash=entry[HASHKEY],
     )
 
-    logger.info(f"Downloading {file}..")
-    # Get and write the as a stream from the bucket
-    respone = CLIENT.get_object(
-        BUCKET,
-        Path(entry[PATH], entry[VERSION], file).as_posix(),
+    logger.info(f"Downloading {file} and writing to {write_path.as_posix()}")
+    # Get and write the file as a stream from the bucket
+    CLIENT.download_file(
+        Bucket=BUCKET,
+        Key=key,
+        Filename=write_path.as_posix(),
+        Config=TRANSFER_CONFIG,
     )
-    logger.info(f"Writing file to '{write_path.as_posix()}'")
-    # Read chunks of the data and write those chunks
-    with open(write_path, "wb") as writer:
-        for chunk in respone.stream(50 * 1024**2):
-            writer.write(chunk)
-
-    # Close off
-    respone.close()
-    respone.release_conn()
 
 
 def fetch_data(

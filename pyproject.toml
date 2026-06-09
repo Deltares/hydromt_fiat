@@ -35,9 +35,10 @@ readme = "README.rst"
 
 requires-python = ">=3.12"
 dependencies = [
+    "affine",
+    "boto3",
     "geopandas",
     "hydromt>=1.4.0",
-    "minio",
     "numpy",
     "osmnx",
     "pandas",
