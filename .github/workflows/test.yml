@@ -11,6 +11,8 @@ jobs:
     defaults:
       run:
         shell: bash -e -l {0}
+    env:
+      S3_SECURE_CONN: 0
     runs-on: ${{ inputs.os }}
     timeout-minutes: 30
     steps:
@@ -64,6 +66,8 @@ jobs:
     defaults:
       run:
         shell: bash -e -l {0}
+    env:
+      S3_SECURE_CONN: 0
     runs-on: ${{ inputs.os }}
     needs: unit
     timeout-minutes: 30
