@@ -52,7 +52,7 @@ CLIENT: client_type.BaseClient = boto3.client(
 )
 TRANSFER_CONFIG = TransferConfig(
     io_chunksize=(1 * 1024**2),
-    max_concurrency=4,
+    max_concurrency=1,
     multipart_threshold=(8 * 1024**2),
     multipart_chunksize=(8 * 1024**2),
     num_download_attempts=5,
