@@ -44,7 +44,7 @@ CLIENT = Minio(
     access_key=ACCESS_KEY,
     secret_key=SECRET_KEY,
     http_client=HTTPS_CLIENT,
-    secure=int(os.getenv("S3_SECURE_CONN", 1)),
+    secure=True,
     region="eu-west-1",
 )
 # Unpack dictionary
