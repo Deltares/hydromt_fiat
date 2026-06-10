@@ -26,12 +26,13 @@ jobs:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
-      - name: Download cache
-        uses: actions/cache/restore@v5
+      - name: Download latest testdata
+        uses: ./.github/actions/testdata
         with:
-          path: .cache
-          key: test-data
-          enableCrossOsArchive: true
+          registry: "src/hydromt_fiat/data/registry.json"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
 
       - name: Test
         run: |
@@ -86,14 +87,6 @@ jobs:
           path: .cache
           key: test-data
           enableCrossOsArchive: true
-
-      - name: Download latest testdata
-        uses: ./.github/actions/testdata
-        with:
-          registry: "src/hydromt_fiat/data/registry.json"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
 
       - name: Test
         run: |
