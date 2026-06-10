@@ -2,6 +2,9 @@
 name: "Test data caching"
 description: "Simple workflow for caching the testdata stored on Minio S3 bucket."
 inputs:
+  access_key:
+    description: "MINIO public access key."
+    required: true
   bucket:
     default: "hydromt-fiat"
     description: "Bucket to get the data from."
@@ -18,6 +21,9 @@ inputs:
     default: "src/hydromt_fiat/data/registry.json"
     description: "The registry in which the bucket data is defined."
     required: false
+  secret_key:
+    description: "MINIO secret access key."
+    required: true
 
 runs:
   using: "composite"
@@ -29,8 +35,8 @@ runs:
 
     - name: Set AWS credentials
       run: |
-        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
-        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+        aws configure set aws_access_key_id "${{ inputs['access_key'] }}"
+        aws configure set aws_secret_access_key "${{ inputs['secret_key'] }}"
         aws configure set default.region eu-west-1
       shell: bash
 
