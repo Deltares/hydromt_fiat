@@ -87,6 +87,14 @@ jobs:
           key: test-data
           enableCrossOsArchive: true
 
+      - name: Download latest testdata
+        uses: ./.github/actions/testdata
+        with:
+          registry: "src/hydromt_fiat/data/registry.json"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+
       - name: Test
         run: |
           pixi run -e test-py${{ inputs.python-version }} test-integration

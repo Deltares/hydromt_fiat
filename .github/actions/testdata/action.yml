@@ -1,0 +1,69 @@
+---
+name: "Test data caching"
+description: "Simple workflow for caching the testdata stored on Minio S3 bucket."
+inputs:
+  bucket:
+    default: "hydromt-fiat"
+    description: "Bucket to get the data from."
+    required: false
+  cache_dir:
+    default: ".cache"
+    description: "Where to store the testing data."
+    required: false
+  endpoint:
+    default: "https://s3.deltares.nl"
+    description: "The bucket endpoint url."
+    required: false
+  registry:
+    default: "src/hydromt_fiat/data/registry.json"
+    description: "The registry in which the bucket data is defined."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install AWS cli
+      run: |
+        pip install awscli
+      shell: bash
+
+    - name: Set AWS credentials
+      run: |
+        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+        aws configure set default.region eu-west-1
+      shell: bash
+
+    - name: Download
+      run: |
+        set -e
+
+        # Loop though the entries in the registry
+        jq -c 'to_entries[]' "${{ inputs['registry'] }}" | while read item; do
+          FILE=$(echo "$item" | jq -r '.key')
+          PATH_PREFIX=$(echo "$item" | jq -r '.value.path')
+          VERSION=$(echo "$item" | jq -r '.value.version')
+          HASH=$(echo "$item" | jq -r '.value.hash')
+
+          # Set the output file
+          DEST=${{ inputs['cache_dir'] }}/$FILE
+          KEY=$PATH_PREFIX/$VERSION/$FILE
+
+          # Download the file(s)
+          echo "Downloading $FILE"
+          aws --endpoint-url "${{ inputs['endpoint'] }}" \
+            s3 cp "s3://${{ inputs['bucket'] }}/$KEY" "$DEST"
+
+          # Final check based on the hash
+          DOWNLOADED_HASH=$(md5sum "$DEST" | awk '{print $1}')
+          if [ "$DOWNLOADED_HASH" != "$HASH" ]; then
+            echo "Hash mismatch for $FILE"
+            exit 1
+          fi
+        done
+      shell: bash
+
+    - name: Complete
+      run: |
+        echo "Completed download"
+      shell: bash
