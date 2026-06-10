@@ -35,8 +35,8 @@ runs:
 
     - name: Debug S3 access
       env:
-        AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
-        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
+        AWS_ACCESS_KEY_ID: "${{ inputs.access_key }}"
+        AWS_SECRET_ACCESS_KEY: "${{ inputs.secret_key }}"
         AWS_DEFAULT_REGION: eu-west-1
       run: |
         aws --endpoint-url "${{ inputs.endpoint }}" \
@@ -52,20 +52,20 @@ runs:
         set -e
 
         # Loop though the entries in the registry
-        jq -c 'to_entries[]' "${{ inputs['registry'] }}" | while read item; do
+        jq -c 'to_entries[]' "${{ inputs.registry }}" | while read item; do
           FILE=$(echo "$item" | jq -r '.key')
           PATH_PREFIX=$(echo "$item" | jq -r '.value.path')
           VERSION=$(echo "$item" | jq -r '.value.version')
           HASH=$(echo "$item" | jq -r '.value.hash')
 
           # Set the output file
-          DEST="${{ inputs['cache_dir'] }}/$FILE"
+          DEST="${{ inputs.cache_dir }}/$FILE"
           KEY="$PATH_PREFIX/$VERSION/$FILE"
 
           # Download the file(s)
           echo "Downloading $FILE"
-          aws --endpoint-url "${{ inputs['endpoint'] }}" \
-            s3 cp "s3://${{ inputs['bucket'] }}/${KEY}" "$DEST"
+          aws --endpoint-url "${{ inputs.endpoint }}" \
+            s3 cp "s3://${{ inputs.bucket }}/${KEY}" "$DEST"
 
           # Final check based on the hash
           DOWNLOADED_HASH=$(md5sum "$DEST" | awk '{print $1}')
