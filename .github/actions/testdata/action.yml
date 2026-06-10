@@ -34,6 +34,12 @@ runs:
         aws configure set default.region eu-west-1
       shell: bash
 
+    - name: Debug S3 access
+      run: |
+        aws --endpoint-url "${{ inputs.endpoint }}" \
+          s3 ls "s3://${{ inputs.bucket }}/" --recursive | head -20
+      shell: bash
+
     - name: Download
       run: |
         set -e
@@ -46,13 +52,13 @@ runs:
           HASH=$(echo "$item" | jq -r '.value.hash')
 
           # Set the output file
-          DEST=${{ inputs['cache_dir'] }}/$FILE
-          KEY=$PATH_PREFIX/$VERSION/$FILE
+          DEST="${{ inputs['cache_dir'] }}/$FILE"
+          KEY="$PATH_PREFIX/$VERSION/$FILE"
 
           # Download the file(s)
           echo "Downloading $FILE"
           aws --endpoint-url "${{ inputs['endpoint'] }}" \
-            s3 cp "s3://${{ inputs['bucket'] }}/$KEY" "$DEST"
+            s3 cp "s3://${{ inputs['bucket'] }}/${KEY}" "$DEST"
 
           # Final check based on the hash
           DOWNLOADED_HASH=$(md5sum "$DEST" | awk '{print $1}')
