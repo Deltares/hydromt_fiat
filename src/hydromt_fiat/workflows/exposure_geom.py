@@ -8,7 +8,7 @@ import numpy.typing as npt
 import pandas as pd
 
 from hydromt_fiat.utils import (
-    CURVE__ID,
+    CURVE,
     FN,
     IMPACT__SUBTYPE,
     IMPACT__TYPE,
@@ -174,9 +174,9 @@ impact types {impact_type}"
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][[OBJECT__TYPE, CURVE__ID]]
+        link = vulnerability[headers == header][[OBJECT__TYPE, CURVE]]
         link.rename(
-            {OBJECT__TYPE: OBJECT__TYPE, CURVE__ID: f"{FN}_{header}"},
+            {OBJECT__TYPE: OBJECT__TYPE, CURVE: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )

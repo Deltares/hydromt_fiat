@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hydromt_fiat.utils import CURVE__ID, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
+from hydromt_fiat.utils import CURVE, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
 from hydromt_fiat.workflows import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
@@ -137,7 +137,7 @@ def test_exposure_geoms_link_vulnerability(
     # A simple that the curves set in the exposure data (linking) are present
     # in the vulnerability identifiers
     for value in exposure_vector[f"{FN}_{DAMAGE}_structure"].unique():
-        assert value in vulnerability_identifiers[CURVE__ID].values
+        assert value in vulnerability_identifiers[CURVE].values
 
 
 def test_exposure_geoms_link_vulnerability_subtype(
