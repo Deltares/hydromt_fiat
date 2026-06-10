@@ -13,6 +13,9 @@ jobs:
         shell: bash -e -l {0}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 30
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -30,9 +33,6 @@ jobs:
         uses: ./.github/actions/testdata
         with:
           registry: "src/hydromt_fiat/data/registry.json"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
 
       - name: Test
         run: |
