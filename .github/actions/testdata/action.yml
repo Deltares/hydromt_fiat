@@ -34,17 +34,7 @@ runs:
   steps:
     - name: Install AWS cli
       run: |
-        pip install awscli
-      shell: bash
-
-    - name: Debug S3 access
-      env:
-        AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
-        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
-        AWS_DEFAULT_REGION: ${{ inputs.region }}
-      run: |
-        aws --endpoint-url "${{ inputs.endpoint }}" \
-          s3 ls "s3://${{ inputs.bucket }}/" --recursive | head -20
+        pip install -q awscli
       shell: bash
 
     - name: Download
@@ -68,7 +58,7 @@ runs:
 
           # Download the file(s)
           echo "Downloading $FILE"
-          aws --endpoint-url "${{ inputs.endpoint }}" \
+          aws --no-verify-ssl --endpoint-url "${{ inputs.endpoint }}" \
             s3 cp "s3://${{ inputs.bucket }}/${KEY}" "$DEST"
 
           # Final check based on the hash
