@@ -33,20 +33,21 @@ runs:
         pip install awscli
       shell: bash
 
-    - name: Set AWS credentials
-      run: |
-        aws configure set aws_access_key_id "${{ inputs['access_key'] }}"
-        aws configure set aws_secret_access_key "${{ inputs['secret_key'] }}"
-        aws configure set default.region eu-west-1
-      shell: bash
-
     - name: Debug S3 access
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
+        AWS_DEFAULT_REGION: eu-west-1
       run: |
         aws --endpoint-url "${{ inputs.endpoint }}" \
           s3 ls "s3://${{ inputs.bucket }}/" --recursive | head -20
       shell: bash
 
     - name: Download
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
+        AWS_DEFAULT_REGION: eu-west-1
       run: |
         set -e
 
