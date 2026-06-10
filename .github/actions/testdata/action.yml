@@ -17,6 +17,10 @@ inputs:
     default: "https://s3.deltares.nl"
     description: "The bucket endpoint url."
     required: false
+  region:
+    default: "eu-west-1"
+    description: "The region location of the MINIO bucket."
+    required: false
   registry:
     default: "src/hydromt_fiat/data/registry.json"
     description: "The registry in which the bucket data is defined."
@@ -35,9 +39,9 @@ runs:
 
     - name: Debug S3 access
       env:
-        AWS_ACCESS_KEY_ID: "${{ inputs.access_key }}"
-        AWS_SECRET_ACCESS_KEY: "${{ inputs.secret_key }}"
-        AWS_DEFAULT_REGION: eu-west-1
+        AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
+        AWS_DEFAULT_REGION: ${{ inputs.region }}
       run: |
         aws --endpoint-url "${{ inputs.endpoint }}" \
           s3 ls "s3://${{ inputs.bucket }}/" --recursive | head -20
@@ -47,7 +51,7 @@ runs:
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.access_key }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.secret_key }}
-        AWS_DEFAULT_REGION: eu-west-1
+        AWS_DEFAULT_REGION: ${{ inputs.region }}
       run: |
         set -e
 
