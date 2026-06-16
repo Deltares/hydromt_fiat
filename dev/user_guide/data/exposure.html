@@ -394,8 +394,11 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_api.html">Build FIAT model with api</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_cli.html">Build FIAT model from cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/explore_data.html">Explore data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/prepare_data_catalog.html">Prepare data catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_api.html">Build FIAT model with API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_cli.html">Build FIAT model from CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/update_model.html">Update a FIAT model</a></li>
 </ul>
 </details></li>
 </ul>
@@ -463,6 +466,259 @@
                   
   <section id="exposure-data">
 <span id="user-guide-data-exposure"></span><h1>Exposure data<a class="headerlink" href="#exposure-data" title="Link to this heading">#</a></h1>
+<p>Exposure data describes the assets at risk from flooding. These are typically
+<strong>building footprints</strong> or <strong>asset locations</strong> with associated attributes such as
+occupancy type, value, and elevation.</p>
+<section id="what-is-exposure-data">
+<h2>What is exposure data?<a class="headerlink" href="#what-is-exposure-data" title="Link to this heading">#</a></h2>
+<p>In flood damage assessment, exposure data answers the question: <em>“What is at risk?”</em>
+It provides the spatial location and characteristics of assets (buildings,
+infrastructure, etc.) that can be damaged by flooding.</p>
+<p>Each asset needs at minimum:</p>
+<ul class="simple">
+<li><p>A <strong>geometry</strong> (location/footprint)</p></li>
+<li><p>An <strong>object type</strong> (e.g., residential, commercial) to link to vulnerability curves</p></li>
+<li><p>A <strong>maximum damage value</strong> to convert damage fractions to monetary losses</p></li>
+</ul>
+</section>
+<section id="expected-format">
+<h2>Expected format<a class="headerlink" href="#expected-format" title="Link to this heading">#</a></h2>
+<p>HydroMT-FIAT expects exposure data as <strong>vector files</strong> (geospatial features):</p>
+<ul class="simple">
+<li><p><strong>Supported formats:</strong> GeoPackage (<code class="docutils literal notranslate"><span class="pre">.gpkg</span></code>), FlatGeobuf (<code class="docutils literal notranslate"><span class="pre">.fgb</span></code>), GeoJSON,
+ESRI Shapefile, or any format readable by pyogrio/GDAL</p></li>
+<li><p><strong>Geometry types:</strong> Point, Polygon, or MultiPolygon</p></li>
+<li><p><strong>CRS:</strong> Any coordinate reference system (will be reprojected to match model CRS)</p></li>
+</ul>
+<section id="required-attributes">
+<h3>Required attributes<a class="headerlink" href="#required-attributes" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 20.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">geometry</span></code></p></td>
+<td><p>Geometry</p></td>
+<td><p>Spatial feature (point or polygon). Auto-included in GeoDataFrame.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Object type column</p></td>
+<td><p>String</p></td>
+<td><p>A column identifying the occupancy/building type (e.g., <code class="docutils literal notranslate"><span class="pre">residential</span></code>,
+<code class="docutils literal notranslate"><span class="pre">commercial</span></code>). The column name is specified during setup.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="optional-attributes-added-during-model-building">
+<h3>Optional attributes (added during model building)<a class="headerlink" href="#optional-attributes-added-during-model-building" title="Link to this heading">#</a></h3>
+<p>These columns are typically <strong>added by HydroMT-FIAT</strong> during the model building
+process, rather than being present in the raw input data:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Column</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">object_id</span></code></p></td>
+<td><p>Integer</p></td>
+<td><p>Unique identifier per feature (auto-generated if missing)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">object_type</span></code></p></td>
+<td><p>String</p></td>
+<td><p>Standardized object type (after linking table mapping)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fn_damage_structure</span></code></p></td>
+<td><p>String</p></td>
+<td><p>Name of the structure vulnerability curve</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fn_damage_content</span></code></p></td>
+<td><p>String</p></td>
+<td><p>Name of the content vulnerability curve</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_damage_structure</span></code></p></td>
+<td><p>Float</p></td>
+<td><p>Maximum potential structural damage (monetary)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_damage_content</span></code></p></td>
+<td><p>Float</p></td>
+<td><p>Maximum potential content damage (monetary)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">elevatio</span></code></p></td>
+<td><p>Float</p></td>
+<td><p>Ground or building floor elevation (meters)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="linking-table">
+<h3>Linking table<a class="headerlink" href="#linking-table" title="Link to this heading">#</a></h3>
+<p>A <strong>linking table</strong> maps raw object/building types from your exposure data to
+standardized types used by HydroMT-FIAT. This is a CSV file with columns:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>source_type,object_type
+apartments,residential
+house,residential
+retail,commercial
+warehouse,industrial
+school,commercial
+unknown,residential
+</pre></div>
+</div>
+<p>This allows flexible mapping from diverse data sources (e.g., OpenStreetMap <code class="docutils literal notranslate"><span class="pre">building</span></code>
+tags) to a standardized classification.</p>
+</section>
+</section>
+<section id="where-to-get-exposure-data">
+<h2>Where to get exposure data<a class="headerlink" href="#where-to-get-exposure-data" title="Link to this heading">#</a></h2>
+<p>Common sources for building/asset data:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 40.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Source</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Reference</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>OpenStreetMap (OSM)</p></td>
+<td><p>Crowd-sourced building footprints worldwide</p></td>
+<td><p><a class="reference external" href="https://www.openstreetmap.org/">openstreetmap.org</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Microsoft Building Footprints</p></td>
+<td><p>AI-derived building footprints (global coverage)</p></td>
+<td><p><a class="reference external" href="https://github.com/microsoft/GlobalMLBuildingFootprints">GitHub</a></p></td>
+</tr>
+<tr class="row-even"><td><p>Google Open Buildings</p></td>
+<td><p>ML-derived footprints for Africa, South/Southeast Asia, Latin America</p></td>
+<td><p><a class="reference external" href="https://sites.research.google/open-buildings/">sites.research.google</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>National registers (BAG, Kadaster)</p></td>
+<td><p>Official building registries (country-specific)</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Custom surveys</p></td>
+<td><p>Local asset inventories from fieldwork or local authorities</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>HydroMT-FIAT can directly query OpenStreetMap buildings using the built-in
+<code class="docutils literal notranslate"><span class="pre">osm_buildings</span></code> data source (requires network access). Use
+<code class="docutils literal notranslate"><span class="pre">fetch_data(&quot;global-data&quot;)</span></code> for offline test data.</p>
+</div>
+</section>
+<section id="data-catalog-entry">
+<h2>Data catalog entry<a class="headerlink" href="#data-catalog-entry" title="Link to this heading">#</a></h2>
+<p>Exposure data is defined in the data catalog with <code class="docutils literal notranslate"><span class="pre">data_type:</span> <span class="pre">GeoDataFrame</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">buildings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GeoDataFrame</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure/buildings.fgb</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pyogrio</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure</span>
+<span class="w">    </span><span class="nt">crs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4326</span>
+<span class="w">    </span><span class="nt">source_version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+
+<span class="c1"># Optional: linking table for type mapping</span>
+<span class="nt">buildings_link</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DataFrame</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure/buildings_link.csv</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pandas</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">index_col</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure</span>
+
+<span class="c1"># Optional: maximum damage values per type</span>
+<span class="nt">damage_values</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">data_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DataFrame</span>
+<span class="w">  </span><span class="nt">uri</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure/max_damage.csv</span>
+<span class="w">  </span><span class="nt">driver</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pandas</span>
+<span class="w">    </span><span class="nt">filesystem</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">    </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">index_col</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">exposure</span>
+</pre></div>
+</div>
+</section>
+<section id="usage-in-model-building">
+<h2>Usage in model building<a class="headerlink" href="#usage-in-model-building" title="Link to this heading">#</a></h2>
+<p>Exposure data is set up using the
+<a class="reference internal" href="../../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">setup()</span></code></a> method and related
+methods:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Step 1: Load exposure geometries</span>
+<span class="n">model</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span>
+    <span class="n">exposure_fname</span><span class="o">=</span><span class="s2">&quot;buildings&quot;</span><span class="p">,</span>
+    <span class="n">exposure_object_type_column</span><span class="o">=</span><span class="s2">&quot;building&quot;</span><span class="p">,</span>  <span class="c1"># column in your data</span>
+    <span class="n">exposure_link_fname</span><span class="o">=</span><span class="s2">&quot;buildings_link&quot;</span><span class="p">,</span>     <span class="c1"># linking table</span>
+    <span class="n">exposure_object_type_fill</span><span class="o">=</span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span>      <span class="c1"># default for missing types</span>
+<span class="p">)</span>
+
+<span class="c1"># Step 2: Link to vulnerability curves</span>
+<span class="n">model</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="o">.</span><span class="n">setup_link_vulnerability</span><span class="p">(</span>
+    <span class="n">exposure_name</span><span class="o">=</span><span class="s2">&quot;buildings&quot;</span><span class="p">,</span>
+    <span class="n">impact_type</span><span class="o">=</span><span class="s2">&quot;damage&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Step 3: Add maximum damage values</span>
+<span class="n">model</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="o">.</span><span class="n">setup_max_damage</span><span class="p">(</span>
+    <span class="n">exposure_name</span><span class="o">=</span><span class="s2">&quot;buildings&quot;</span><span class="p">,</span>
+    <span class="n">impact_type</span><span class="o">=</span><span class="s2">&quot;damage&quot;</span><span class="p">,</span>
+    <span class="n">exposure_cost_table_fname</span><span class="o">=</span><span class="s2">&quot;damage_values&quot;</span><span class="p">,</span>
+    <span class="n">country</span><span class="o">=</span><span class="s2">&quot;World&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Step 4 (optional): Set elevation</span>
+<span class="n">model</span><span class="o">.</span><span class="n">exposure_geoms</span><span class="o">.</span><span class="n">update_column</span><span class="p">(</span>
+    <span class="n">exposure_name</span><span class="o">=</span><span class="s2">&quot;buildings&quot;</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;elevatio&quot;</span><span class="p">],</span>
+    <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The <strong>vulnerability component must be set up before</strong> linking exposure to
+vulnerability curves. HydroMT-FIAT uses the vulnerability data to validate
+that the referenced curves exist.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Features in the exposure data that cannot be mapped through the linking table
+are <strong>silently dropped</strong> (with a warning logged). Ensure your linking table
+covers all object types present in the data, or use <code class="docutils literal notranslate"><span class="pre">exposure_object_type_fill</span></code>
+to assign a default type to unmapped features.</p>
+</div>
+</section>
 </section>
 
 
