@@ -92,8 +92,16 @@ def max_monetary_damage(
     if IMPACT__SUBTYPE not in vulnerability.columns:
         headers = [""]
     else:
-        headers = vulnerability[vulnerability[IMPACT__TYPE] == impact_type]
-        headers = ["_" + str(item) for item in headers[IMPACT__SUBTYPE].unique()]
+        selected = vulnerability[vulnerability[IMPACT__TYPE] == impact_type]
+        # If the impact type is present but carries no subtype, 
+        # use a single bare header
+        subtypes = selected[IMPACT__SUBTYPE].dropna().unique()
+        if len(subtypes):
+            headers = ["_" + str(item) for item in subtypes]
+        elif len(selected):
+            headers = [""]
+        else:
+            headers = []
 
     # If not headers were found, log and return
     if len(headers) == 0:

@@ -164,10 +164,12 @@ def exposure_geoms_link_vulnerability(
 impact types {impact_type}"
         )
 
-    # Get the unique exposure types
-    headers = vulnerability[IMPACT__TYPE]
+    # Get the unique exposure types. Only append the subtype where a row
+    # actually has one; rows without keep the bare impact type as header.
+    headers = vulnerability[IMPACT__TYPE].astype(str)
     if IMPACT__SUBTYPE in vulnerability:
-        headers = vulnerability[IMPACT__TYPE] + "_" + vulnerability[IMPACT__SUBTYPE]
+        sub = vulnerability[IMPACT__SUBTYPE]
+        headers = headers.mask(sub.notna(), headers + "_" + sub.astype(str))
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)

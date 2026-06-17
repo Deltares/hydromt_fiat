@@ -70,10 +70,12 @@ defaulting to the name of the exposure layer"
                 f"Missing column, '{col_name}' in exposure grid linking table"
             )
 
-    # Get the unique exposure types
-    headers = vulnerability[OBJECT__TYPE]
+    # Get the unique exposure types. Only append the subtype where a row
+    # actually has one; rows without it keep the bare object type as header.
+    headers = vulnerability[OBJECT__TYPE].astype(str)
     if IMPACT__SUBTYPE in vulnerability:
-        headers = vulnerability[OBJECT__TYPE] + "_" + vulnerability[IMPACT__SUBTYPE]
+        sub = vulnerability[IMPACT__SUBTYPE]
+        headers = headers.mask(sub.notna(), headers + "_" + sub.astype(str))
 
     # Loop through the the supplied data arrays
     for da_name, da in exposure_data.items():
