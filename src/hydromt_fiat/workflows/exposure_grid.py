@@ -75,7 +75,9 @@ defaulting to the name of the exposure layer"
     headers = vulnerability[OBJECT__TYPE].astype(str)
     if IMPACT__SUBTYPE in vulnerability:
         sub = vulnerability[IMPACT__SUBTYPE]
-        headers = headers.mask(sub.notna(), headers + "_" + sub.astype(str))
+        headers = headers.mask(
+            sub.notna() & ~(sub == ""), headers + "_" + sub.astype(str)
+        )
 
     # Loop through the the supplied data arrays
     for da_name, da in exposure_data.items():

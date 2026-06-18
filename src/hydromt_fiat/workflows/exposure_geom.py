@@ -15,6 +15,7 @@ from hydromt_fiat.utils import (
     OBJECT__ID,
     OBJECT__TYPE,
 )
+from hydromt_fiat.workflows.impact import filter_impact
 
 __all__ = [
     "exposure_geoms_add_columns",
@@ -135,7 +136,7 @@ defaulting to exposure data object type"
 def exposure_geoms_link_vulnerability(
     exposure_data: gpd.GeoDataFrame,
     vulnerability: pd.DataFrame,
-    impact_type: list[str],
+    impact_type: list[str] | str,
 ) -> gpd.GeoDataFrame:
     """Link the exposure data to the vulnerability data.
 
@@ -147,8 +148,8 @@ def exposure_geoms_link_vulnerability(
         The raw exposure data.
     vulnerability : pd.DataFrame
         The vulnerability identifier table to link up with.
-    impact_type : list[str]
-        The impact types to link for.
+    impact_type : str | list[str]
+        The impact type(s) to link for.
 
     Returns
     -------
@@ -157,19 +158,19 @@ def exposure_geoms_link_vulnerability(
     """
     logger.info("Linking the exposure data with the vulnerability data")
     # Select based on the impact type(s)
-    vulnerability = vulnerability[vulnerability[IMPACT__TYPE].isin(impact_type)]
-    if vulnerability.empty:
-        raise ValueError(
-            f"No data found in the vulnerability identifiers for these \
-impact types {impact_type}"
-        )
+    vulnerability = filter_impact(
+        vulnerability=vulnerability,
+        impact_type=impact_type,
+    )
 
     # Get the unique exposure types. Only append the subtype where a row
     # actually has one; rows without keep the bare impact type as header.
     headers = vulnerability[IMPACT__TYPE].astype(str)
     if IMPACT__SUBTYPE in vulnerability:
         sub = vulnerability[IMPACT__SUBTYPE]
-        headers = headers.mask(sub.notna(), headers + "_" + sub.astype(str))
+        headers = headers.mask(
+            sub.notna() & ~(sub == ""), headers + "_" + sub.astype(str)
+        )
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
