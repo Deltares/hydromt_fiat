@@ -187,7 +187,7 @@ def test_exposure_geom_component_write_warnings(
     assert "empty_ds is empty. Skipping..." in caplog.text
 
 
-def test_exposure_geom_component_setup(
+def test_exposure_geom_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
@@ -198,7 +198,7 @@ def test_exposure_geom_component_setup(
     assert EXPOSURE not in component.model.config.data
 
     # Setup the data
-    component.setup(
+    component.create(
         exposure_fname="buildings",
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
@@ -212,7 +212,7 @@ def test_exposure_geom_component_setup(
     assert component.model.config.get(MODEL_TYPE) == GEOM
 
 
-def test_exposure_geom_component_setup_errors(
+def test_exposure_geom_component_create_errors(
     model: FIATModel,
     build_region_small: Path,
 ):
@@ -224,14 +224,14 @@ def test_exposure_geom_component_setup_errors(
         MissingRegionError,
         match="Region is None -> use 'setup_region' before this method",
     ):
-        component.setup(
+        component.create(
             exposure_fname="bag",
             exposure_object_type_column="gebruiksdoel",
             exposure_link_fname="bag_link",
         )
 
 
-def test_exposure_geom_component_setup_link(
+def test_exposure_geom_component_create_link(
     caplog: pytest.LogCaptureFixture,
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
@@ -244,7 +244,7 @@ def test_exposure_geom_component_setup_link(
     component._data = {"foo": exposure_vector_clipped_for_link}
 
     # Call the method
-    component.setup_link_vulnerability(
+    component.create_link(
         exposure_name="foo",
         impact_type=DAMAGE,
     )
@@ -255,7 +255,7 @@ def test_exposure_geom_component_setup_link(
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
 
-def test_exposure_geom_component_setup_link_multi(
+def test_exposure_geom_component_create_link_multi(
     caplog: pytest.LogCaptureFixture,
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
@@ -268,7 +268,7 @@ def test_exposure_geom_component_setup_link_multi(
     component._data = {"foo": exposure_vector_clipped_for_link}
 
     # Call the method
-    component.setup_link_vulnerability(
+    component.create_link(
         exposure_name="foo",
         impact_type=[DAMAGE, "spooky"],  # Doesnt do much, but still
     )
@@ -279,7 +279,7 @@ def test_exposure_geom_component_setup_link_multi(
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
 
-def test_exposure_geom_component_setup_link_errors(
+def test_exposure_geom_component_create_link_errors(
     model_with_region: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
@@ -294,12 +294,12 @@ def test_exposure_geom_component_setup_link_errors(
         RuntimeError,
         match="Run `vulnerability.setup` before this method",
     ):
-        component.setup_link_vulnerability(
+        component.create_link(
             exposure_name="foo",
         )
 
 
-def test_exposure_geom_component_setup_max(
+def test_exposure_geom_component_create_max(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
@@ -312,7 +312,7 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.create_max_damage(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
@@ -323,7 +323,7 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" in component.data["buildings"].columns
 
 
-def test_exposure_geom_component_setup_max_link(
+def test_exposure_geom_component_create_max_link(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_link_path: Path,
@@ -337,7 +337,7 @@ def test_exposure_geom_component_setup_max_link(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.create_max_damage(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",

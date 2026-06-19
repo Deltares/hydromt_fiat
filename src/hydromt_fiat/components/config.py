@@ -4,14 +4,14 @@ import logging
 from pathlib import Path
 from typing import Any, cast
 
-import tomlkit
 from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
-from hydromt.readers import read_toml
 
 from hydromt_fiat.components.utils import get_item, make_config_paths_relative
+from hydromt_fiat.readers import read_config
 from hydromt_fiat.utils import OUTPUT, OUTPUT_PATH, SETTINGS
+from hydromt_fiat.writers import write_config
 
 __all__ = ["ConfigComponent"]
 
@@ -128,8 +128,8 @@ class ConfigComponent(ModelComponent):
             return
 
         # Read the data (config)
-        logger.info(f"Reading the config file at {read_path.as_posix()}")
-        self._data = read_toml(read_path)
+        logger.info("Reading model configuration")
+        self._data = read_config(read_path=read_path)
 
     @hydromt_step
     def write(
@@ -163,14 +163,9 @@ class ConfigComponent(ModelComponent):
         parent_dir = write_path.parent
         write_data = make_config_paths_relative(self.data, parent_dir)
 
-        # Write the data to the drive.
-        if not parent_dir.exists():
-            parent_dir.mkdir(parents=True)
-
         # Dump to a file
-        logger.info(f"Writing the config data to {write_path.as_posix()}")
-        with open(write_path, "w") as writer:
-            tomlkit.dump(write_data, writer)
+        logger.info("Writing model configuration")
+        write_config(data=write_data, write_path=write_path)
 
     ## Action methods
     def get(

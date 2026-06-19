@@ -161,14 +161,14 @@ def test_exposure_grid_component_write_sig(
     )
 
 
-def test_exposure_grid_component_setup(
+def test_exposure_grid_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
     # Call the method
-    component.setup(
+    component.create(
         exposure_fnames="industrial_content",
     )
 
@@ -183,14 +183,14 @@ def test_exposure_grid_component_setup(
     assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
-def test_exposure_grid_component_setup_multi(
+def test_exposure_grid_component_create_multi(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
     # Call the method
-    component.setup(
+    component.create(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
         expand=False,
@@ -202,7 +202,7 @@ def test_exposure_grid_component_setup_multi(
     assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
 
 
-def test_exposure_grid_component_setup_errors(
+def test_exposure_grid_component_create_errors(
     mocker: MockerFixture,
     model: FIATModel,
 ):
@@ -210,9 +210,9 @@ def test_exposure_grid_component_setup_errors(
     component = ExposureGridComponent(model=model)
 
     # Assert the vulnerability absent error
-    err_msg = "'setup_vulnerability' step is required before setting up exposure grid"
+    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
     with pytest.raises(RuntimeError, match=err_msg):
-        component.setup(
+        component.create(
             exposure_fnames="industrial_content",
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
@@ -226,7 +226,7 @@ def test_exposure_grid_component_setup_errors(
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
-        component.setup(
+        component.create(
             exposure_fnames="industrial_content",
             exposure_link_fname="",
         )

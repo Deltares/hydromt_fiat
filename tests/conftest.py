@@ -276,7 +276,7 @@ def model_with_region(
     model: FIATModel,
     build_region_small: Path,
 ) -> FIATModel:
-    model.setup_region(build_region_small)
+    model.set_region(build_region_small)
     return model
 
 

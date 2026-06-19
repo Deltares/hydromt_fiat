@@ -37,11 +37,11 @@ def test_build_model_geom(
     )
 
     # Add model type and region
-    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
-    model.setup_region(build_region_small)
+    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
+    model.set_region(build_region_small)
 
     # Setup the vulnerability
-    model.vulnerability.setup(
+    model.vulnerability.create(
         "jrc_curves",
         "jrc_curves_link",
         unit="m",
@@ -49,22 +49,22 @@ def test_build_model_geom(
     )
 
     # Add an hazard layer
-    model.hazard.setup(
+    model.hazard.create(
         "flood_event",
     )
 
     # Setup the exposure geometry data
-    model.exposure_geoms.setup(
+    model.exposure_geoms.create(
         exposure_fname="buildings",
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
         exposure_object_type_fill="unknown",
     )
-    model.exposure_geoms.setup_link_vulnerability(
+    model.exposure_geoms.create_link(
         exposure_name="buildings",
         impact_type=DAMAGE,
     )
-    model.exposure_geoms.setup_max_damage(
+    model.exposure_geoms.create_max_damage(
         exposure_name="buildings",
         impact_type=DAMAGE,
         exposure_cost_table_fname="jrc_damage",
@@ -116,11 +116,11 @@ def test_build_model_grid(
     )
 
     # Add model type and region
-    model.setup_config(model_type=GRID, calculation_method=FLOOD_LEVEL)
-    model.setup_region(build_region_small)
+    model.set_config(modeltype=GRID, method=FLOOD_LEVEL)
+    model.set_region(build_region_small)
 
     # Setup the vulnerability
-    model.vulnerability.setup(
+    model.vulnerability.create(
         "jrc_curves",
         "jrc_curves_link",
         unit="m",
@@ -128,12 +128,12 @@ def test_build_model_grid(
     )
 
     # Add an hazard layer
-    model.hazard.setup(
+    model.hazard.create(
         "flood_event",
     )
 
     # Setup the exposure grid data
-    model.exposure_grid.setup(
+    model.exposure_grid.create(
         exposure_fnames=["commercial_structure", "commercial_content"],
         exposure_link_fname="exposure_grid_link",
     )
