@@ -1,4 +1,5 @@
 import logging
+import re
 
 import geopandas as gpd
 import pandas as pd
@@ -167,7 +168,10 @@ def test_max_monetary_damage_errors(
     # Select kwargs leave no data
     with pytest.raises(
         ValueError,
-        match=r"Exposure type \(affected\) not found in vulnerability data",
+        match=re.escape(
+            "No data found in the vulnerability identifiers for \
+these impact types ['affected']"
+        ),
     ):
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,

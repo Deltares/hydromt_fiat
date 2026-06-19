@@ -298,10 +298,6 @@ use 'setup_region' before this method"
             # TODO Replace with custom error class
             raise RuntimeError("Run `vulnerability.setup` before this method")
 
-        # Impact type type conversion
-        if not isinstance(impact_type, list):
-            impact_type = [impact_type]
-
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
