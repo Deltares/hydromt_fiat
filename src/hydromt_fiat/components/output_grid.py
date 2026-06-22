@@ -4,9 +4,9 @@ import logging
 from pathlib import Path
 
 from hydromt.model import Model
-from hydromt.readers import open_nc
 
 from hydromt_fiat.components.grid import GridComponent
+from hydromt_fiat.readers import read_grid
 from hydromt_fiat.utils import EXPOSURE_GRID_FILE, OUTPUT_GRID_NAME
 
 __all__ = ["OutputGridComponent"]
@@ -75,12 +75,8 @@ class OutputGridComponent(GridComponent):
             return
 
         # Read the data
-        logger.info(f"Reading the hazard file at {read_path.as_posix()}")
-        # Read with the (old) read function from hydromt-core
-        ds = open_nc(
-            read_path,
-            **kwargs,
-        )
+        logger.info("Reading model output grid data")
+        ds = read_grid(read_path=read_path, **kwargs)
         # Set the data
         self.set(ds)
 

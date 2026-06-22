@@ -44,9 +44,7 @@ def test_model_basic_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.setup_config(
-        model_type=GEOM, calculation_method=FLOOD_LEVEL, some_var="some_value"
-    )
+    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL, some_var="some_value")
     # Write the model
     model.write()
     model = None
@@ -226,14 +224,14 @@ def test_model_reproject_errors(
         model.reproject()
 
 
-def test_model_setup_config(tmp_path: Path):
+def test_model_set_config(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
     # Setup some config variables
-    model.setup_config(
-        model_type=GEOM,
-        calculation_method=FLOOD_LEVEL,
+    model.set_config(
+        modeltype=GEOM,
+        method=FLOOD_LEVEL,
         **{
             "global.model": "geom",
             "global.srs.value": "EPSG:4326",
@@ -248,7 +246,7 @@ def test_model_setup_config(tmp_path: Path):
     assert model.config.get("global.srs") == {"value": "EPSG:4326"}
 
 
-def test_model_setup_config_errors(tmp_path: Path):
+def test_model_set_config_errors(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -256,51 +254,51 @@ def test_model_setup_config_errors(tmp_path: Path):
     with pytest.raises(
         ValueError, match=f"Model_type must be either '{GEOM}' or '{GRID}'"
     ):
-        model.setup_config(
-            model_type="foo",
-            calculation_method=FLOOD_LEVEL,
+        model.set_config(
+            modeltype="foo",
+            method=FLOOD_LEVEL,
         )
 
 
-def test_model_setup_region(tmp_path: Path, build_region_path: Path):
+def test_model_set_region(tmp_path: Path, build_region_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
     assert model.region is None
 
     # Setup the region
-    model.setup_region(region=build_region_path)
+    model.set_region(region=build_region_path)
     assert model.region is not None
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert len(model.region) == 1
 
 
-def test_model_setup_region_from_gdf(tmp_path: Path, build_region: gpd.GeoDataFrame):
+def test_model_set_region_from_gdf(tmp_path: Path, build_region: gpd.GeoDataFrame):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
     assert model.region is None
 
     # Setup the region
-    model.setup_region(region=build_region)
+    model.set_region(region=build_region)
     assert model.region is not None
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert len(model.region) == 1
 
 
-def test_model_setup_region_error(tmp_path: Path):
+def test_model_set_region_error(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
     # Setup the region pointing to not a file
     region_no = Path(tmp_path, f"{REGION}.geojson")
     with pytest.raises(FileNotFoundError, match=region_no.as_posix()):
-        model.setup_region(region=region_no)
+        model.set_region(region=region_no)
 
     # Setup the region with the wrong type of input
     with pytest.raises(
         TypeError,
         match="Region should either be of type `gpd.GeoDataframe` or `Path`/ `str`",
     ):
-        model.setup_region(region=2)
+        model.set_region(region=2)
 
 
 def test_model_properties(model_with_region: FIATModel):

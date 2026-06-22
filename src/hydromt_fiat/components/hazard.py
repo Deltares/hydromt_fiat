@@ -6,15 +6,13 @@ from typing import Any
 
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
-from hydromt.readers import open_nc
-from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
-from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.readers import read_grid
 from hydromt_fiat.utils import (
     HAZARD,
     HAZARD_FILE,
@@ -24,6 +22,7 @@ from hydromt_fiat.utils import (
     SRS,
     VAR_AS_BAND,
 )
+from hydromt_fiat.writers import write_grid
 
 __all__ = ["HazardComponent"]
 
@@ -98,12 +97,9 @@ class HazardComponent(GridComponent):
         # Return on nothing found
         if not read_path.is_file():
             return
-        logger.info(f"Reading the hazard file at {read_path.as_posix()}")
-        # Read with the (old) read function from hydromt-core
-        ds = open_nc(
-            read_path,
-            **kwargs,
-        )
+        logger.info("Reading hazard data")
+        # Read with the simple read function
+        ds = read_grid(read_path=read_path, **kwargs)
         # Set the dataset
         self.set(ds)
 
@@ -133,7 +129,7 @@ class HazardComponent(GridComponent):
 
         # Check for data. If no data, warn and return
         if len(self.data) == 0:
-            logger.info("No hazard data found, skip writing.")
+            logger.info("No hazard data found, skip writing")
             return
 
         # Sort out the filename
@@ -142,18 +138,13 @@ class HazardComponent(GridComponent):
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info(f"Writing the hazard data to {write_path.as_posix()}")
-        # Force north south before writing
-        self._data = force_ns(self.data)
-        write_nc(
-            self.data,
-            file_path=write_path,
+        logger.info("Writing hazard data")
+        write_grid(
+            data=self.data,
+            write_path=write_path,
             gdal_compliant=gdal_compliant,
-            rename_dims=False,
-            force_overwrite=self.root.mode.is_override_mode(),
-            force_sn=False,
-            progressbar=True,
-            to_netcdf_kwargs=kwargs,
+            overwrite=self.root.mode.is_override_mode(),
+            **kwargs,
         )
 
         # Update the config
@@ -170,7 +161,7 @@ class HazardComponent(GridComponent):
 
     # Setup methods
     @hydromt_step
-    def setup(
+    def create(
         self,
         hazard_fnames: list[Path | str] | Path | str,
         hazard_type: str = "water_depth",
@@ -182,7 +173,7 @@ class HazardComponent(GridComponent):
         region: bool = True,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        """Set up hazard maps.
+        """Create hazard maps from data sources.
 
         Parameters
         ----------
@@ -227,7 +218,7 @@ class HazardComponent(GridComponent):
 
         if self.model.region is None and region:
             raise MissingRegionError(
-                "Region component is missing for setting up hazard data."
+                "Region component is missing for setting up hazard data"
             )
 
         # Read the data

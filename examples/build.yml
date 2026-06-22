@@ -4,30 +4,30 @@ steps: # Grouping of the steps of the recipe
       region: ./test-build-data/region.geojson
 
   # Setup the vulnerability in one go
-  - vulnerability.setup:
+  - vulnerability.create:
       vulnerability_fname: jrc_curves
       vulnerability_link_fname: jrc_curves_link
       unit: m
       continent: europe
 
   # Setup the hazard based on a flood map
-  - hazard.setup:
+  - hazard.create:
       hazard_fnames: flood_event
 
   # Setup the exposure based on a vector dataset
-  - exposure_geoms.setup:
+  - exposure_geoms.create:
       exposure_fname: osm_buildings
       exposure_object_type_column: building
       exposure_link_fname: osm_buildings_link
       exposure_object_type_fill: unknown
 
   # Link with the vulnerability
-  - exposure_geoms.setup_link_vulnerability:
+  - exposure_geoms.create_link:
       exposure_name: osm_buildings
       impact_type: damage
 
   # Add the maximum damage to it
-  - exposure_geoms.setup_max_damage:
+  - exposure_geoms.create_max_damage:
       exposure_name: osm_buildings
       impact_type: damage
       exposure_cost_table_fname: jrc_damage
