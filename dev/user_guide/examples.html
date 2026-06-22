@@ -27,18 +27,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,7 +47,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/examples';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.19.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -57,7 +57,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Exploring HydroMT-FIAT Data" href="../_examples/explore_data.html" />
+    <link rel="next" title="Build Model" href="../_examples/build_api.html" />
     <link rel="prev" title="Model components" href="model/components.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -394,11 +394,8 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/explore_data.html">Explore data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/prepare_data_catalog.html">Prepare data catalog</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/build_api.html">Build FIAT model with API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/build_cli.html">Build FIAT model from CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/update_model.html">Update a FIAT model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_examples/build_api.html">Build FIAT model with api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_examples/build_cli.html">Build FIAT model from cli</a></li>
 </ul>
 </details></li>
 </ul>
@@ -465,34 +462,16 @@
 <span id="user-guide-examples"></span><h1>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h1>
 <p>This page contains examples regarding:</p>
 <ul class="simple">
-<li><p>Exploring and understanding the data used by HydroMT-FIAT</p></li>
-<li><p>Preparing a data catalog</p></li>
-<li><p>Building a Delft-FIAT model</p></li>
-<li><p>Updating an existing model</p></li>
+<li><p>Preparing the necessary data</p></li>
+<li><p>Building a data catalog</p></li>
+<li><p>Building with HydroMT-FIAT</p></li>
+<li><p>Updating with HydroMT-FIAT</p></li>
 </ul>
-<section id="exploring-data">
-<h2>Exploring Data<a class="headerlink" href="#exploring-data" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="../_examples/explore_data.html"><span class="doc">Explore HydroMT-FIAT data types</span></a></p></li>
-</ul>
-</section>
-<section id="data-catalog">
-<h2>Data Catalog<a class="headerlink" href="#data-catalog" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="../_examples/prepare_data_catalog.html"><span class="doc">Preparing a data catalog</span></a></p></li>
-</ul>
-</section>
 <section id="building">
 <h2>Building<a class="headerlink" href="#building" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="../_examples/build_api.html"><span class="doc">Build FIAT model with API</span></a></p></li>
-<li><p><a class="reference internal" href="../_examples/build_cli.html"><span class="doc">Build FIAT model from CLI</span></a></p></li>
-</ul>
-</section>
-<section id="updating">
-<h2>Updating<a class="headerlink" href="#updating" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="../_examples/update_model.html"><span class="doc">Update a FIAT model</span></a></p></li>
+<li><p><a class="reference internal" href="../_examples/build_api.html"><span class="doc">Build FIAT model with api</span></a></p></li>
+<li><p><a class="reference internal" href="../_examples/build_cli.html"><span class="doc">Build FIAT model from cli</span></a></p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>
@@ -519,11 +498,11 @@
       </div>
     </a>
     <a class="right-next"
-       href="../_examples/explore_data.html"
+       href="../_examples/build_api.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Exploring HydroMT-FIAT Data</p>
+        <p class="prev-next-title">Build Model</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -571,8 +550,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -606,7 +585,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>

@@ -27,18 +27,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -47,7 +47,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide/data_catalog';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.19.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -394,11 +394,8 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/explore_data.html">Explore data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/prepare_data_catalog.html">Prepare data catalog</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/build_api.html">Build FIAT model with API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/build_cli.html">Build FIAT model from CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../_examples/update_model.html">Update a FIAT model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_examples/build_api.html">Build FIAT model with api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_examples/build_cli.html">Build FIAT model from cli</a></li>
 </ul>
 </details></li>
 </ul>
@@ -540,7 +537,7 @@ defined as <strong>pyogrio</strong> and the data_type is always set to <strong>G
 </div>
 <p>This data entry is mainly called upon by:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></p></li>
 </ul>
 </section>
 <section id="raster">
@@ -621,8 +618,8 @@ in the case of raster data. These are listed in the small table down below:</p>
 </div>
 <p>This data entry is mainly called upon by:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.HazardComponent.setup.html#hydromt_fiat.components.HazardComponent.setup" title="hydromt_fiat.components.HazardComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">HazardComponent.setup()</span></code></a></p></li>
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">HazardComponent.setup()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></p></li>
 </ul>
 </section>
 <section id="tabular">
@@ -685,11 +682,11 @@ always set to <strong>pandas</strong>.</p>
 </div>
 <p>This data entry is mainly called upon by:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.VulnerabilityComponent.setup.html#hydromt_fiat.components.VulnerabilityComponent.setup" title="hydromt_fiat.components.VulnerabilityComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VulnerabilityComponent.setup()</span></code></a></p></li>
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup.html#hydromt_fiat.components.ExposureGeomsComponent.setup" title="hydromt_fiat.components.ExposureGeomsComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></a></p></li>
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability.html#hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability" title="hydromt_fiat.components.ExposureGeomsComponent.setup_link_vulnerability"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_link_vulnerability()</span></code></a></p></li>
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage.html#hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage" title="hydromt_fiat.components.ExposureGeomsComponent.setup_max_damage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_max_damage()</span></code></a></p></li>
-<li><p><a class="reference internal" href="../_generated/hydromt_fiat.components.ExposureGridComponent.setup.html#hydromt_fiat.components.ExposureGridComponent.setup" title="hydromt_fiat.components.ExposureGridComponent.setup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGridComponent.setup()</span></code></a></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">VulnerabilityComponent.setup()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_link_vulnerability()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGeomsComponent.setup_max_damage()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExposureGridComponent.setup()</span></code></p></li>
 </ul>
 </section>
 </section>
@@ -766,8 +763,8 @@ always set to <strong>pandas</strong>.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -801,7 +798,7 @@ always set to <strong>pandas</strong>.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>

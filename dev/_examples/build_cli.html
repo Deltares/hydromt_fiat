@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -36,10 +36,10 @@
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -50,7 +50,7 @@
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/build_cli';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.19.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -60,7 +60,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Update a FIAT Model" href="update_model.html" />
+    <link rel="next" title="API reference" href="../api/index.html" />
     <link rel="prev" title="Build Model" href="build_api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -397,11 +397,8 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../user_guide/examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="explore_data.html">Explore data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="prepare_data_catalog.html">Prepare data catalog</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build_api.html">Build FIAT model with API</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model from CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="update_model.html">Update a FIAT model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_api.html">Build FIAT model with api</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model from cli</a></li>
 </ul>
 </details></li>
 </ul>
@@ -529,21 +526,21 @@ Model plugins:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:45,476 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-16 09:46:45,477 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-16 09:46:45,478 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-16 09:46:45,479 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
-2026-06-16 09:46:45,480 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
-2026-06-16 09:46:45,487 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
-2026-06-16 09:46:45,487 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
-2026-06-16 09:46:45,488 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
-2026-06-16 09:46:46,430 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
-2026-06-16 09:46:46,563 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
-2026-06-16 09:46:52,814 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
-2026-06-16 09:46:52,822 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-16 09:46:52,823 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-16 09:46:52,825 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 73f0d8d82a1a70238a4f46673782553d
-2026-06-16 09:46:52,826 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
+2026-06-22 11:26:17,884 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-22 11:26:17,885 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-22 11:26:17,886 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-22 11:26:17,887 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
+2026-06-22 11:26:17,888 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
+2026-06-22 11:26:17,895 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
+2026-06-22 11:26:17,896 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
+2026-06-22 11:26:17,896 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
+2026-06-22 11:26:19,175 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
+2026-06-22 11:26:19,360 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
+2026-06-22 11:26:20,307 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
+2026-06-22 11:26:20,315 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-22 11:26:20,316 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-22 11:26:20,318 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 73f0d8d82a1a70238a4f46673782553d
+2026-06-22 11:26:20,319 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
 /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
 </pre></div></div>
 </div>
@@ -736,30 +733,30 @@ steps: # Grouping of the steps of the recipe
       region: ./test-build-data/region.geojson
 
   # Setup the vulnerability in one go
-  - vulnerability.setup:
+  - vulnerability.create:
       vulnerability_fname: jrc_curves
       vulnerability_link_fname: jrc_curves_link
       unit: m
       continent: europe
 
   # Setup the hazard based on a flood map
-  - hazard.setup:
+  - hazard.create:
       hazard_fnames: flood_event
 
   # Setup the exposure based on a vector dataset
-  - exposure_geoms.setup:
+  - exposure_geoms.create:
       exposure_fname: osm_buildings
       exposure_object_type_column: building
       exposure_link_fname: osm_buildings_link
       exposure_object_type_fill: unknown
 
   # Link with the vulnerability
-  - exposure_geoms.setup_link_vulnerability:
+  - exposure_geoms.create_link:
       exposure_name: osm_buildings
       impact_type: damage
 
   # Add the maximum damage to it
-  - exposure_geoms.setup_max_damage:
+  - exposure_geoms.create_max_damage:
       exposure_name: osm_buildings
       impact_type: damage
       exposure_cost_table_fname: jrc_damage
@@ -836,85 +833,69 @@ Options:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:57,238 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-16 09:46:57,432 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
-2026-06-16 09:46:58,090 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
-2026-06-16 09:46:58,102 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
-2026-06-16 09:46:58,102 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-16 09:46:58,102 - hydromt.model.model - model - INFO - build: setup_region
-2026-06-16 09:46:58,102 - hydromt.model.model - model - INFO - setup_region.replace=False
-2026-06-16 09:46:58,102 - hydromt.model.model - model - INFO - setup_region.region=/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson
-2026-06-16 09:46:58,102 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/region.geojson&#39;
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - build: vulnerability.setup
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_link_fname=jrc_curves_link
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.unit=m
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.index_name=depth
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.column_oriented=True
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.read_kwargs=None
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.read_link_kwargs=None
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.vulnerability_fname=jrc_curves
-2026-06-16 09:46:58,112 - hydromt.model.model - model - INFO - vulnerability.setup.continent=europe
-2026-06-16 09:46:58,112 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
-2026-06-16 09:46:58,113 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions.csv
-2026-06-16 09:46:58,125 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/vulnerability/jrc_damage_functions_linking.csv
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - build: hazard.setup
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.hazard_type=water_depth
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.return_periods=None
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.risk=False
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.unit=m
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.expand=True
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.region=True
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.read_kwargs=None
-2026-06-16 09:46:58,295 - hydromt.model.model - model - INFO - hazard.setup.hazard_fnames=flood_event
-2026-06-16 09:46:58,295 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
-2026-06-16 09:46:58,295 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading flood_event RasterDataset data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data/floodmaps/event.tif
-2026-06-16 09:46:58,370 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Processing water_depth hazard data
-2026-06-16 09:46:58,374 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
-2026-06-16 09:46:58,380 - hydromt.hydromt_fiat.gis.raster - raster - INFO - Checking raster extent versus region bounding box
-2026-06-16 09:46:58,381 - hydromt.hydromt_fiat.components.grid - grid - INFO - Adding flood_event to HazardComponent
-2026-06-16 09:46:58,381 - hydromt.model.model - model - INFO - build: exposure_geoms.setup
-2026-06-16 09:46:58,381 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_link_fname=osm_buildings_link
-2026-06-16 09:46:58,381 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_fill=unknown
-2026-06-16 09:46:58,382 - hydromt.model.model - model - INFO - exposure_geoms.setup.predicate=contains
-2026-06-16 09:46:58,382 - hydromt.model.model - model - INFO - exposure_geoms.setup.read_kwargs=None
-2026-06-16 09:46:58,382 - hydromt.model.model - model - INFO - exposure_geoms.setup.read_link_kwargs=None
-2026-06-16 09:46:58,382 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_fname=osm_buildings
-2026-06-16 09:46:58,382 - hydromt.model.model - model - INFO - exposure_geoms.setup.exposure_object_type_column=building
-2026-06-16 09:46:58,382 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up exposure geometries
-2026-06-16 09:46:58,382 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings GeoDataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/building
-2026-06-16 09:46:58,382 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Retrieving building data from OSM API
-2026-06-16 09:46:58,798 - hydromt.hydromt_fiat.drivers.osm_driver - osm_driver - INFO - Number of [&#39;building&#39;] items found from OSM: 578
-2026-06-16 09:46:58,803 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading osm_buildings_link DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/osm_buildings-jrc_map.csv
-2026-06-16 09:46:58,805 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Setting up the exposure data for further use
-2026-06-16 09:46:58,823 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting the model type to &#39;geom&#39;
-2026-06-16 09:46:58,823 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_link_vulnerability
-2026-06-16 09:46:58,823 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.impact_type=damage
-2026-06-16 09:46:58,823 - hydromt.model.model - model - INFO - exposure_geoms.setup_link_vulnerability.exposure_name=osm_buildings
-2026-06-16 09:46:58,824 - hydromt.hydromt_fiat.workflows.exposure_geom - exposure_geom - INFO - Linking the exposure data with the vulnerability data
-2026-06-16 09:46:58,832 - hydromt.hydromt_fiat.components.geom - geom - WARNING - Replacing geometry data: osm_buildings
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - build: exposure_geoms.setup_max_damage
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_link_fname=None
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.read_table_kwargs=None
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.read_link_kwargs=None
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_name=osm_buildings
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.impact_type=damage
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.exposure_cost_table_fname=jrc_damage
-2026-06-16 09:46:58,833 - hydromt.model.model - model - INFO - exposure_geoms.setup_max_damage.country=World
-2026-06-16 09:46:58,833 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Setting up maximum potential damage for osm_buildings
-2026-06-16 09:46:58,833 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_damage DataFrame data from /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data/exposure/jrc_damage_values.csv
-2026-06-16 09:46:58,851 - hydromt.model.model - model - INFO - build: exposure_geoms.update_column
-2026-06-16 09:46:58,852 - hydromt.model.model - model - INFO - exposure_geoms.update_column.exposure_name=osm_buildings
-2026-06-16 09:46:58,852 - hydromt.model.model - model - INFO - exposure_geoms.update_column.columns=[&#39;elevation&#39;]
-2026-06-16 09:46:58,852 - hydromt.model.model - model - INFO - exposure_geoms.update_column.values=[0]
-2026-06-16 09:46:58,852 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Updating exposure data with [&#39;elevation&#39;] columns
-2026-06-16 09:46:58,852 - hydromt.hydromt_fiat.components.region - region - INFO - Writing the model region file to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/region.geojson
-2026-06-16 09:46:58,855 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the exposure vector data..
-2026-06-16 09:46:58,855 - hydromt.hydromt_fiat.components.exposure_geom - exposure_geom - INFO - Writing the &#39;osm_buildings&#39; geometry data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/exposure/osm_buildings.fgb
-2026-06-16 09:46:58,862 - hydromt.hydromt_fiat.components.exposure_grid - exposure_grid - INFO - No exposure grid data found, skip writing.
-2026-06-16 09:46:58,863 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Writing the hazard data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/hazard.nc
-[########################################] | 100% Completed | 100.61 ms
-2026-06-16 09:46:58,974 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Writing the vulnerability data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/vulnerability/curves.csv
-2026-06-16 09:46:58,980 - hydromt.hydromt_fiat.components.config - config - INFO - Writing the config data to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/modeldata/settings.toml
+2026-06-22 11:26:24,703 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-22 11:26:24,942 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
+2026-06-22 11:26:25,673 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
+2026-06-22 11:26:25,687 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
+2026-06-22 11:26:25,687 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-22 11:26:25,688 - hydromt - log - ERROR - Unhandled exception occured.
+Traceback (most recent call last):
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/log.py&#34;, line 179, in to_file
+    yield
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;, line 304, in build
+    _validate_steps(self, steps)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/steps_validator.py&#34;, line 15, in _validate_steps
+    attr = _rgetattr(model, step, None)
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/rgetattr.py&#34;, line 12, in _rgetattr
+    return reduce(_getattr, [obj] + attr.split(&#34;.&#34;))
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/rgetattr.py&#34;, line 10, in _getattr
+    return getattr(obj, attr, *args)
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;, line 168, in __getattr__
+    return self.get_component(name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^
+  File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;, line 164, in get_component
+    return self.components[name]
+           ~~~~~~~~~~~~~~~^^^^^^
+KeyError: &#39;setup_region&#39;
+Traceback (most recent call last):
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/bin/hydromt&#34;</span>, line <span class="ansi-magenta-fg">10</span>, in <span class="ansi-magenta-fg">&lt;module&gt;</span>
+    sys.exit(<span class="ansi-red-fg">main</span><span class="ansi-red-intense-fg ansi-bold">()</span>)
+             <span class="ansi-red-fg">~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/core.py&#34;</span>, line <span class="ansi-magenta-fg">1524</span>, in <span class="ansi-magenta-fg">__call__</span>
+    return <span class="ansi-red-fg">self.main</span><span class="ansi-red-intense-fg ansi-bold">(*args, **kwargs)</span>
+           <span class="ansi-red-fg">~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^^^^^^^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/core.py&#34;</span>, line <span class="ansi-magenta-fg">1445</span>, in <span class="ansi-magenta-fg">main</span>
+    rv = self.invoke(ctx)
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/core.py&#34;</span>, line <span class="ansi-magenta-fg">1912</span>, in <span class="ansi-magenta-fg">invoke</span>
+    return _process_result(<span class="ansi-red-fg">sub_ctx.command.invoke</span><span class="ansi-red-intense-fg ansi-bold">(sub_ctx)</span>)
+                           <span class="ansi-red-fg">~~~~~~~~~~~~~~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/core.py&#34;</span>, line <span class="ansi-magenta-fg">1308</span>, in <span class="ansi-magenta-fg">invoke</span>
+    return <span class="ansi-red-fg">ctx.invoke</span><span class="ansi-red-intense-fg ansi-bold">(self.callback, **ctx.params)</span>
+           <span class="ansi-red-fg">~~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/core.py&#34;</span>, line <span class="ansi-magenta-fg">877</span>, in <span class="ansi-magenta-fg">invoke</span>
+    return callback(*args, **kwargs)
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/click/decorators.py&#34;</span>, line <span class="ansi-magenta-fg">34</span>, in <span class="ansi-magenta-fg">new_func</span>
+    return f(get_current_context(), *args, **kwargs)
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/cli/main.py&#34;</span>, line <span class="ansi-magenta-fg">259</span>, in <span class="ansi-magenta-fg">build</span>
+    <span class="ansi-red-fg">mod.build</span><span class="ansi-red-intense-fg ansi-bold">(steps=steps)</span>
+    <span class="ansi-red-fg">~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^^^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;</span>, line <span class="ansi-magenta-fg">304</span>, in <span class="ansi-magenta-fg">build</span>
+    <span class="ansi-red-fg">_validate_steps</span><span class="ansi-red-intense-fg ansi-bold">(self, steps)</span>
+    <span class="ansi-red-fg">~~~~~~~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^^^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/steps_validator.py&#34;</span>, line <span class="ansi-magenta-fg">15</span>, in <span class="ansi-magenta-fg">_validate_steps</span>
+    attr = _rgetattr(model, step, None)
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/rgetattr.py&#34;</span>, line <span class="ansi-magenta-fg">12</span>, in <span class="ansi-magenta-fg">_rgetattr</span>
+    return reduce(_getattr, [obj] + attr.split(&#34;.&#34;))
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/_utils/rgetattr.py&#34;</span>, line <span class="ansi-magenta-fg">10</span>, in <span class="ansi-magenta-fg">_getattr</span>
+    return getattr(obj, attr, *args)
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;</span>, line <span class="ansi-magenta-fg">168</span>, in <span class="ansi-magenta-fg">__getattr__</span>
+    return <span class="ansi-red-fg">self.get_component</span><span class="ansi-red-intense-fg ansi-bold">(name)</span>
+           <span class="ansi-red-fg">~~~~~~~~~~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^</span>
+  File <span class="ansi-magenta-fg">&#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/model/model.py&#34;</span>, line <span class="ansi-magenta-fg">164</span>, in <span class="ansi-magenta-fg">get_component</span>
+    return <span class="ansi-red-fg">self.components</span><span class="ansi-red-intense-fg ansi-bold">[name]</span>
+           <span class="ansi-red-fg">~~~~~~~~~~~~~~~</span><span class="ansi-red-intense-fg ansi-bold">^^^^^^</span>
+<span class="ansi-magenta-intense-fg ansi-bold">KeyError</span>: <span class="ansi-magenta-fg">&#39;setup_region&#39;</span>
 </pre></div></div>
 </div>
 <div class="line-block">
@@ -938,17 +919,9 @@ Options:
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 modeldata
-├── hydromt.log
-├── settings.toml
-├── exposure
-│   └── osm_buildings.fgb
-├── vulnerability
-│   ├── curves.csv
-│   └── curves_id.csv
-├── hazard.nc
-└── region.geojson
+└── hydromt.log
 
-2 directories, 7 files
+0 directories, 1 files
 </pre></div></div>
 </div>
 </section>
@@ -974,11 +947,11 @@ modeldata
       </div>
     </a>
     <a class="right-next"
-       href="update_model.html"
+       href="../api/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Update a FIAT Model</p>
+        <p class="prev-next-title">API reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -1026,8 +999,8 @@ modeldata
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1061,7 +1034,7 @@ modeldata
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>

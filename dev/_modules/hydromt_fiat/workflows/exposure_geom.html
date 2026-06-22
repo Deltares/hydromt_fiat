@@ -26,18 +26,18 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
@@ -46,7 +46,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/hydromt_fiat/workflows/exposure_geom';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.19.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -433,13 +433,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CURVE__ID</span><span class="p">,</span>
+    <span class="n">CURVE</span><span class="p">,</span>
     <span class="n">FN</span><span class="p">,</span>
     <span class="n">IMPACT__SUBTYPE</span><span class="p">,</span>
     <span class="n">IMPACT__TYPE</span><span class="p">,</span>
     <span class="n">OBJECT__ID</span><span class="p">,</span>
     <span class="n">OBJECT__TYPE</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hydromt_fiat.workflows.impact</span><span class="w"> </span><span class="kn">import</span> <span class="n">filter_impact</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;exposure_geoms_add_columns&quot;</span><span class="p">,</span>
@@ -450,13 +451,26 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;hydromt.</span><span class="si">{</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_guess_object_type_columns</span><span class="p">(</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">,</span>
+    <span class="n">dtypes</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Quick guess of the object type column.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">dtypes</span> <span class="o">==</span> <span class="s2">&quot;str&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">columns</span><span class="p">[</span><span class="n">dtypes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)]</span>
+    <span class="n">col</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;geometry&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">col</span>
+
+
 <div class="viewcode-block" id="exposure_geoms_setup">
 <a class="viewcode-back" href="../../../_generated/hydromt_fiat.workflows.exposure_geoms_setup.html#hydromt_fiat.workflows.exposure_geoms_setup">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">exposure_geoms_setup</span><span class="p">(</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
-    <span class="n">exposure_object_type_column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
     <span class="n">exposure_link</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">exposure_object_type_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">exposure_object_type_fill</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prep the raw exposure data for later fuctions/ methods.</span>
@@ -467,12 +481,14 @@
 <span class="sd">    ----------</span>
 <span class="sd">    exposure_data : gpd.GeoDataFrame</span>
 <span class="sd">        The raw exposure data.</span>
-<span class="sd">    exposure_object_type_column : str</span>
-<span class="sd">        The name of column that specifies the exposure type, e.g. occupancy type.</span>
 <span class="sd">    exposure_link : pd.DataFrame, optional</span>
 <span class="sd">        A custom mapping to table to first translate the exposure types in order to</span>
 <span class="sd">        better link with the vulnerability data. A translation layer really.</span>
-<span class="sd">        By default None</span>
+<span class="sd">        By default None.</span>
+<span class="sd">    exposure_object_type_column : str, optional</span>
+<span class="sd">        The name of column that specifies the object type, e.g. occupancy type. If not</span>
+<span class="sd">        provided, it is assumed that the object type is defined by the first column</span>
+<span class="sd">        containing string values (text), by default None.</span>
 <span class="sd">    exposure_object_type_fill : str, optional</span>
 <span class="sd">        Value to which missing entries in the exposure type column will be mapped to,</span>
 <span class="sd">        if provided. By default None</span>
@@ -484,6 +500,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting up the exposure data for further use&quot;</span><span class="p">)</span>
     <span class="c1"># Some checks</span>
+    <span class="n">exposure_object_type_column</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">exposure_object_type_column</span>
+        <span class="ow">or</span> <span class="n">_guess_object_type_columns</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+            <span class="n">dtypes</span><span class="o">=</span><span class="n">exposure_data</span><span class="o">.</span><span class="n">dtypes</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">exposure_object_type_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exposure_data</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exposure_object_type_column</span><span class="si">}</span><span class="s2"> not found in the exposure data&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">exposure_link</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -503,7 +526,7 @@
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exposure_object_type_column</span><span class="si">}</span><span class="s2"> not found in the provided linking data&quot;</span>
         <span class="p">)</span>
-
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Column containing the object type: </span><span class="si">{</span><span class="n">exposure_object_type_column</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># Make sure that there are no duplicated in the linking</span>
     <span class="n">exposure_link</span> <span class="o">=</span> <span class="n">exposure_link</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span>
         <span class="n">exposure_object_type_column</span><span class="p">,</span>
@@ -565,7 +588,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">exposure_geoms_link_vulnerability</span><span class="p">(</span>
     <span class="n">exposure_data</span><span class="p">:</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">,</span>
     <span class="n">vulnerability</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">impact_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">impact_type</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Link the exposure data to the vulnerability data.</span>
 
@@ -577,8 +600,8 @@
 <span class="sd">        The raw exposure data.</span>
 <span class="sd">    vulnerability : pd.DataFrame</span>
 <span class="sd">        The vulnerability identifier table to link up with.</span>
-<span class="sd">    impact_type : list[str]</span>
-<span class="sd">        The impact types to link for.</span>
+<span class="sd">    impact_type : str | list[str]</span>
+<span class="sd">        The impact type(s) to link for.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -587,26 +610,28 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Linking the exposure data with the vulnerability data&quot;</span><span class="p">)</span>
     <span class="c1"># Select based on the impact type(s)</span>
-    <span class="n">vulnerability</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">impact_type</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">vulnerability</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;No data found in the vulnerability identifiers for these </span><span class="se">\</span>
-<span class="s2">impact types </span><span class="si">{</span><span class="n">impact_type</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+    <span class="n">vulnerability</span> <span class="o">=</span> <span class="n">filter_impact</span><span class="p">(</span>
+        <span class="n">vulnerability</span><span class="o">=</span><span class="n">vulnerability</span><span class="p">,</span>
+        <span class="n">impact_type</span><span class="o">=</span><span class="n">impact_type</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="c1"># Get the unique exposure types</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__TYPE</span><span class="p">]</span>
+    <span class="c1"># Get the unique exposure types. Only append the subtype where a row</span>
+    <span class="c1"># actually has one; rows without keep the bare impact type as header.</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__TYPE</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">IMPACT__SUBTYPE</span> <span class="ow">in</span> <span class="n">vulnerability</span><span class="p">:</span>
-        <span class="n">headers</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__TYPE</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__SUBTYPE</span><span class="p">]</span>
+        <span class="n">sub</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">IMPACT__SUBTYPE</span><span class="p">]</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">mask</span><span class="p">(</span>
+            <span class="n">sub</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="p">(</span><span class="n">sub</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">headers</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">sub</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="c1"># Set the current size for a check later on</span>
     <span class="n">data_m_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exposure_data</span><span class="p">)</span>
     <span class="c1"># Go through the unique new headers</span>
     <span class="n">header_list</span> <span class="o">=</span> <span class="n">headers</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="n">header_list</span><span class="p">:</span>
-        <span class="n">link</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">headers</span> <span class="o">==</span> <span class="n">header</span><span class="p">][[</span><span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">CURVE__ID</span><span class="p">]]</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">vulnerability</span><span class="p">[</span><span class="n">headers</span> <span class="o">==</span> <span class="n">header</span><span class="p">][[</span><span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">CURVE</span><span class="p">]]</span>
         <span class="n">link</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
-            <span class="p">{</span><span class="n">OBJECT__TYPE</span><span class="p">:</span> <span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">CURVE__ID</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">FN</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="n">OBJECT__TYPE</span><span class="p">:</span> <span class="n">OBJECT__TYPE</span><span class="p">,</span> <span class="n">CURVE</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">FN</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">header</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
             <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
@@ -740,8 +765,8 @@
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -775,7 +800,7 @@
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>

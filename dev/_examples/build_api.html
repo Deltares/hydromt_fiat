@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=0790524f97105ba85085" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
@@ -36,10 +36,10 @@
     <link rel="stylesheet" type="text/css" href="../_static/theme-deltares.css?v=b26764e9" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
@@ -50,7 +50,7 @@
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_examples/build_api';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.18.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.19.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/Deltares/hydromt_fiat/gh-pages/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Build Model" href="build_cli.html" />
-    <link rel="prev" title="Preparing a Data Catalog for HydroMT-FIAT" href="prepare_data_catalog.html" />
+    <link rel="prev" title="Examples" href="../user_guide/examples.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="1.0.0.dev" />
@@ -397,11 +397,8 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../user_guide/examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="explore_data.html">Explore data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="prepare_data_catalog.html">Prepare data catalog</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model with API</a></li>
-<li class="toctree-l2"><a class="reference internal" href="build_cli.html">Build FIAT model from CLI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="update_model.html">Update a FIAT model</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model with api</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_cli.html">Build FIAT model from cli</a></li>
 </ul>
 </details></li>
 </ul>
@@ -509,19 +506,19 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:34,696 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-16 09:46:34,697 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-16 09:46:34,698 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-16 09:46:34,698 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
-2026-06-16 09:46:35,952 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading global-data.tar.gz..
-2026-06-16 09:46:36,134 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/global-data.tar.gz&#39;
-2026-06-16 09:46:36,727 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/global-data
-2026-06-16 09:46:36,734 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-16 09:46:36,734 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-16 09:46:36,735 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
-2026-06-16 09:46:36,939 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading test-build-data.tar.gz..
-2026-06-16 09:46:37,084 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/test-build-data.tar.gz&#39;
-2026-06-16 09:46:37,677 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/test-build-data
+2026-06-22 11:26:06,076 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-22 11:26:06,077 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-22 11:26:06,077 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-22 11:26:06,078 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
+2026-06-22 11:26:07,650 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading global-data.tar.gz..
+2026-06-22 11:26:07,812 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/global-data.tar.gz&#39;
+2026-06-22 11:26:08,748 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/global-data
+2026-06-22 11:26:08,755 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-22 11:26:08,756 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-22 11:26:08,756 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
+2026-06-22 11:26:08,975 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading test-build-data.tar.gz..
+2026-06-22 11:26:09,140 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/test-build-data.tar.gz&#39;
+2026-06-22 11:26:10,075 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/test-build-data
 </pre></div></div>
 </div>
 <p>Now lets setup the Model.</p>
@@ -546,9 +543,9 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:37,713 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from /home/runner/.cache/hydromt-fiat/global-data/data_catalog.yml
-2026-06-16 09:46:38,184 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from /home/runner/.cache/hydromt-fiat/test-build-data/data_catalog.yml
-2026-06-16 09:46:38,205 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
+2026-06-22 11:26:10,109 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from /home/runner/.cache/hydromt-fiat/global-data/data_catalog.yml
+2026-06-22 11:26:10,625 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from /home/runner/.cache/hydromt-fiat/test-build-data/data_catalog.yml
+2026-06-22 11:26:10,650 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
 </pre></div></div>
 </div>
 <p>Next step is to update the configurations and add a region for the model to know to collect data in.</p>
@@ -558,12 +555,10 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add some of the configurations</span>
-<span class="n">model</span><span class="o">.</span><span class="n">setup_config</span><span class="p">(</span>
-    <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;geom&quot;</span><span class="p">,</span> <span class="n">calculation_method</span><span class="o">=</span><span class="s2">&quot;flood.depth&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;output.path&quot;</span><span class="p">:</span> <span class="s2">&quot;output&quot;</span><span class="p">}</span>
-<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_config</span><span class="p">(</span><span class="n">modeltype</span><span class="o">=</span><span class="s2">&quot;geom&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;flood.depth&quot;</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;output.path&quot;</span><span class="p">:</span> <span class="s2">&quot;output&quot;</span><span class="p">})</span>
 
 <span class="c1"># Add a region to build with</span>
-<span class="n">model</span><span class="o">.</span><span class="n">setup_region</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">))</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_region</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="s2">&quot;region.geojson&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -572,8 +567,8 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:38,210 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting config entries from user input
-2026-06-16 09:46:38,210 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/.cache/hydromt-fiat/test-build-data/region.geojson&#39;
+2026-06-22 11:26:10,655 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting config entries from user input
+2026-06-22 11:26:10,656 - hydromt.hydromt_fiat.fiat - fiat - INFO - Setting region from &#39;/home/runner/.cache/hydromt-fiat/test-build-data/region.geojson&#39;
 </pre></div></div>
 </div>
 <p>Lets verify the presence of our region, which is crucial for building our hazard and exposure data.</p>
@@ -627,7 +622,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Call the setup method of the component</span>
-<span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span>
+<span class="n">model</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">vulnerability_fname</span><span class="o">=</span><span class="s2">&quot;jrc_curves&quot;</span><span class="p">,</span>
     <span class="n">vulnerability_link_fname</span><span class="o">=</span><span class="s2">&quot;jrc_curves_link&quot;</span><span class="p">,</span>
     <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;m&quot;</span><span class="p">,</span>
@@ -642,9 +637,9 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:38,246 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
-2026-06-16 09:46:38,246 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves DataFrame data from /home/runner/.cache/hydromt-fiat/global-data/vulnerability/jrc_damage_functions.csv
-2026-06-16 09:46:38,261 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves_link DataFrame data from /home/runner/.cache/hydromt-fiat/global-data/vulnerability/jrc_damage_functions_linking.csv
+2026-06-22 11:26:10,692 - hydromt.hydromt_fiat.components.vulnerability - vulnerability - INFO - Setting up the vulnerability curves
+2026-06-22 11:26:10,693 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves DataFrame data from /home/runner/.cache/hydromt-fiat/global-data/vulnerability/jrc_damage_functions.csv
+2026-06-22 11:26:10,708 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading jrc_curves_link DataFrame data from /home/runner/.cache/hydromt-fiat/global-data/vulnerability/jrc_damage_functions_linking.csv
 </pre></div></div>
 </div>
 <p>This should result in damage curve data in our vulnerability component, lets see.</p>
@@ -796,7 +791,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Call the setup method from the hazard component</span>
-<span class="n">model</span><span class="o">.</span><span class="n">hazard</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span>
+<span class="n">model</span><span class="o">.</span><span class="n">hazard</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
     <span class="n">hazard_fnames</span><span class="o">=</span><span class="s2">&quot;flood_event&quot;</span><span class="p">,</span>
     <span class="n">hazard_type</span><span class="o">=</span><span class="s2">&quot;water depth&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -808,12 +803,12 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-16 09:46:38,619 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
-2026-06-16 09:46:38,620 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading flood_event RasterDataset data from /home/runner/.cache/hydromt-fiat/test-build-data/floodmaps/event.tif
-2026-06-16 09:46:38,695 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Processing water depth hazard data
-2026-06-16 09:46:38,699 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
-2026-06-16 09:46:38,706 - hydromt.hydromt_fiat.gis.raster - raster - INFO - Checking raster extent versus region bounding box
-2026-06-16 09:46:38,707 - hydromt.hydromt_fiat.components.grid - grid - INFO - Adding flood_event to HazardComponent
+2026-06-22 11:26:11,103 - hydromt.hydromt_fiat.components.hazard - hazard - INFO - Setting up hazard raster data
+2026-06-22 11:26:11,104 - hydromt.data_catalog.sources.data_source - data_source - INFO - Reading flood_event RasterDataset data from /home/runner/.cache/hydromt-fiat/test-build-data/floodmaps/event.tif
+2026-06-22 11:26:11,184 - hydromt.hydromt_fiat.workflows.hazard - hazard - INFO - Processing water depth hazard data
+2026-06-22 11:26:11,188 - hydromt.hydromt_fiat.workflows.utils - utils - WARNING - No known grid provided to reproject to, defaulting to first specified grid for transform and extent
+2026-06-22 11:26:11,195 - hydromt.hydromt_fiat.gis.raster - raster - INFO - Checking raster extent versus region bounding box
+2026-06-22 11:26:11,196 - hydromt.hydromt_fiat.components.grid - grid - INFO - Adding flood_event to HazardComponent
 </pre></div></div>
 </div>
 <p>Let’s take a look a the current state of the hazard data after settting it up with the setup method.</p>
@@ -1381,13 +1376,13 @@ Coordinates:
 Data variables:
     flood_event  (y, x) float32 4kB dask.array&lt;chunksize=(35, 27), meta=np.ndarray&gt;
 Attributes:
-    analysis:  event</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-d04e9fa7-4cae-4da1-976e-e5bd3cd9eaff' class='xr-section-summary-in' type='checkbox' disabled /><label for='section-d04e9fa7-4cae-4da1-976e-e5bd3cd9eaff' class='xr-section-summary'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>x</span>: 27</li><li><span class='xr-has-index'>y</span>: 35</li></ul></div></li><li class='xr-section-item'><input id='section-85da390e-48ad-43b7-b291-2eb315d7b22d' class='xr-section-summary-in' type='checkbox' checked /><label for='section-85da390e-48ad-43b7-b291-2eb315d7b22d' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>x</span></div><div class='xr-var-dims'>(x)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>8.515e+04 8.525e+04 ... 8.775e+04</div><input id='attrs-e03b2ff2-611d-4861-b3b0-caf71b4cbfe0' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-e03b2ff2-611d-4861-b3b0-caf71b4cbfe0' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-f703824b-8e4a-426d-ab23-d5512e11b558' class='xr-var-data-in' type='checkbox'><label for='data-f703824b-8e4a-426d-ab23-d5512e11b558' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>axis :</span></dt><dd>X</dd><dt><span>long_name :</span></dt><dd>Easting</dd><dt><span>standard_name :</span></dt><dd>projection_x_coordinate</dd><dt><span>units :</span></dt><dd>metre</dd></dl></div><div class='xr-var-data'><pre>array([85150., 85250., 85350., 85450., 85550., 85650., 85750., 85850., 85950.,
+    analysis:  event</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.Dataset</div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-54c0f326-5888-414f-8894-51c744b11668' class='xr-section-summary-in' type='checkbox' disabled /><label for='section-54c0f326-5888-414f-8894-51c744b11668' class='xr-section-summary'>Dimensions:</label><div class='xr-section-inline-details'><ul class='xr-dim-list'><li><span class='xr-has-index'>x</span>: 27</li><li><span class='xr-has-index'>y</span>: 35</li></ul></div></li><li class='xr-section-item'><input id='section-1179bf04-ac6a-4546-b068-346eaebbcc88' class='xr-section-summary-in' type='checkbox' checked /><label for='section-1179bf04-ac6a-4546-b068-346eaebbcc88' class='xr-section-summary' title='Expand/collapse section'>Coordinates: <span>(3)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>x</span></div><div class='xr-var-dims'>(x)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>8.515e+04 8.525e+04 ... 8.775e+04</div><input id='attrs-3fd26bca-5e6a-4290-a503-1163a7d0532a' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-3fd26bca-5e6a-4290-a503-1163a7d0532a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-d5ddd95f-49ae-4c0a-b7f1-7407415899c7' class='xr-var-data-in' type='checkbox'><label for='data-d5ddd95f-49ae-4c0a-b7f1-7407415899c7' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>axis :</span></dt><dd>X</dd><dt><span>long_name :</span></dt><dd>Easting</dd><dt><span>standard_name :</span></dt><dd>projection_x_coordinate</dd><dt><span>units :</span></dt><dd>metre</dd></dl></div><div class='xr-var-data'><pre>array([85150., 85250., 85350., 85450., 85550., 85650., 85750., 85850., 85950.,
        86050., 86150., 86250., 86350., 86450., 86550., 86650., 86750., 86850.,
-       86950., 87050., 87150., 87250., 87350., 87450., 87550., 87650., 87750.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>y</span></div><div class='xr-var-dims'>(y)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>4.458e+05 4.458e+05 ... 4.424e+05</div><input id='attrs-0183ed36-a5bd-4387-83c7-c73f7ca878cd' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-0183ed36-a5bd-4387-83c7-c73f7ca878cd' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-8834c1e3-c4a4-4731-a357-5a200d171832' class='xr-var-data-in' type='checkbox'><label for='data-8834c1e3-c4a4-4731-a357-5a200d171832' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>axis :</span></dt><dd>Y</dd><dt><span>long_name :</span></dt><dd>Northing</dd><dt><span>standard_name :</span></dt><dd>projection_y_coordinate</dd><dt><span>units :</span></dt><dd>metre</dd></dl></div><div class='xr-var-data'><pre>array([445850., 445750., 445650., 445550., 445450., 445350., 445250., 445150.,
+       86950., 87050., 87150., 87250., 87350., 87450., 87550., 87650., 87750.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>y</span></div><div class='xr-var-dims'>(y)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>4.458e+05 4.458e+05 ... 4.424e+05</div><input id='attrs-f3bf2caa-cce4-40e3-8eca-55d500efad58' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-f3bf2caa-cce4-40e3-8eca-55d500efad58' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-03f92af7-1b94-474b-b16e-d8e2c30466b0' class='xr-var-data-in' type='checkbox'><label for='data-03f92af7-1b94-474b-b16e-d8e2c30466b0' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>axis :</span></dt><dd>Y</dd><dt><span>long_name :</span></dt><dd>Northing</dd><dt><span>standard_name :</span></dt><dd>projection_y_coordinate</dd><dt><span>units :</span></dt><dd>metre</dd></dl></div><div class='xr-var-data'><pre>array([445850., 445750., 445650., 445550., 445450., 445350., 445250., 445150.,
        445050., 444950., 444850., 444750., 444650., 444550., 444450., 444350.,
        444250., 444150., 444050., 443950., 443850., 443750., 443650., 443550.,
        443450., 443350., 443250., 443150., 443050., 442950., 442850., 442750.,
-       442650., 442550., 442450.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>spatial_ref</span></div><div class='xr-var-dims'>()</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0</div><input id='attrs-bd45024e-c3f8-4900-b8dc-dad9785fcee0' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-bd45024e-c3f8-4900-b8dc-dad9785fcee0' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-df2712a8-0365-4d49-9c09-ccac513e84f8' class='xr-var-data-in' type='checkbox'><label for='data-df2712a8-0365-4d49-9c09-ccac513e84f8' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>crs_wkt :</span></dt><dd>PROJCRS[&quot;Amersfoort / RD New&quot;,BASEGEOGCRS[&quot;Amersfoort&quot;,DATUM[&quot;Amersfoort&quot;,ELLIPSOID[&quot;Bessel 1841&quot;,6377397.155,299.1528128,LENGTHUNIT[&quot;metre&quot;,1]]],PRIMEM[&quot;Greenwich&quot;,0,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433]],ID[&quot;EPSG&quot;,4289]],CONVERSION[&quot;unnamed&quot;,METHOD[&quot;Oblique Stereographic&quot;,ID[&quot;EPSG&quot;,9809]],PARAMETER[&quot;Latitude of natural origin&quot;,52.1561605555556,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8801]],PARAMETER[&quot;Longitude of natural origin&quot;,5.38763888888889,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8802]],PARAMETER[&quot;Scale factor at natural origin&quot;,0.9999079,SCALEUNIT[&quot;unity&quot;,1],ID[&quot;EPSG&quot;,8805]],PARAMETER[&quot;False easting&quot;,155000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8806]],PARAMETER[&quot;False northing&quot;,463000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8807]]],CS[Cartesian,2],AXIS[&quot;easting&quot;,east,ORDER[1],LENGTHUNIT[&quot;metre&quot;,1]],AXIS[&quot;northing&quot;,north,ORDER[2],LENGTHUNIT[&quot;metre&quot;,1]],ID[&quot;EPSG&quot;,28992]]</dd><dt><span>spatial_ref :</span></dt><dd>PROJCRS[&quot;Amersfoort / RD New&quot;,BASEGEOGCRS[&quot;Amersfoort&quot;,DATUM[&quot;Amersfoort&quot;,ELLIPSOID[&quot;Bessel 1841&quot;,6377397.155,299.1528128,LENGTHUNIT[&quot;metre&quot;,1]]],PRIMEM[&quot;Greenwich&quot;,0,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433]],ID[&quot;EPSG&quot;,4289]],CONVERSION[&quot;unnamed&quot;,METHOD[&quot;Oblique Stereographic&quot;,ID[&quot;EPSG&quot;,9809]],PARAMETER[&quot;Latitude of natural origin&quot;,52.1561605555556,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8801]],PARAMETER[&quot;Longitude of natural origin&quot;,5.38763888888889,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8802]],PARAMETER[&quot;Scale factor at natural origin&quot;,0.9999079,SCALEUNIT[&quot;unity&quot;,1],ID[&quot;EPSG&quot;,8805]],PARAMETER[&quot;False easting&quot;,155000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8806]],PARAMETER[&quot;False northing&quot;,463000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8807]]],CS[Cartesian,2],AXIS[&quot;easting&quot;,east,ORDER[1],LENGTHUNIT[&quot;metre&quot;,1]],AXIS[&quot;northing&quot;,north,ORDER[2],LENGTHUNIT[&quot;metre&quot;,1]],ID[&quot;EPSG&quot;,28992]]</dd><dt><span>x_dim :</span></dt><dd>x</dd><dt><span>y_dim :</span></dt><dd>y</dd></dl></div><div class='xr-var-data'><pre>array(0)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-461e4a3d-243f-451e-8850-923f8aa60151' class='xr-section-summary-in' type='checkbox' checked /><label for='section-461e4a3d-243f-451e-8850-923f8aa60151' class='xr-section-summary' title='Expand/collapse section'>Data variables: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>flood_event</span></div><div class='xr-var-dims'>(y, x)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(35, 27), meta=np.ndarray&gt;</div><input id='attrs-be9aeab4-0fc3-4b81-890b-e19148c4eef9' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-be9aeab4-0fc3-4b81-890b-e19148c4eef9' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-ec6c9953-40af-4538-bc3d-bfe4a20b7ef4' class='xr-var-data-in' type='checkbox'><label for='data-ec6c9953-40af-4538-bc3d-bfe4a20b7ef4' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>AREA_OR_POINT :</span></dt><dd>Area</dd><dt><span>_FillValue :</span></dt><dd>nan</dd><dt><span>source_file :</span></dt><dd>event.tif</dd><dt><span>grid_mapping :</span></dt><dd>spatial_ref</dd><dt><span>name :</span></dt><dd>flood_event</dd><dt><span>type :</span></dt><dd>water depth</dd></dl></div><div class='xr-var-data'><table>
+       442650., 442550., 442450.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>spatial_ref</span></div><div class='xr-var-dims'>()</div><div class='xr-var-dtype'>int64</div><div class='xr-var-preview xr-preview'>0</div><input id='attrs-3a0c5ebc-df98-4b46-8f2e-b0bb2fa21cfd' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-3a0c5ebc-df98-4b46-8f2e-b0bb2fa21cfd' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-3e7fd888-8600-4f88-9d86-1a168005b677' class='xr-var-data-in' type='checkbox'><label for='data-3e7fd888-8600-4f88-9d86-1a168005b677' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>crs_wkt :</span></dt><dd>PROJCRS[&quot;Amersfoort / RD New&quot;,BASEGEOGCRS[&quot;Amersfoort&quot;,DATUM[&quot;Amersfoort&quot;,ELLIPSOID[&quot;Bessel 1841&quot;,6377397.155,299.1528128,LENGTHUNIT[&quot;metre&quot;,1]]],PRIMEM[&quot;Greenwich&quot;,0,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433]],ID[&quot;EPSG&quot;,4289]],CONVERSION[&quot;unnamed&quot;,METHOD[&quot;Oblique Stereographic&quot;,ID[&quot;EPSG&quot;,9809]],PARAMETER[&quot;Latitude of natural origin&quot;,52.1561605555556,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8801]],PARAMETER[&quot;Longitude of natural origin&quot;,5.38763888888889,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8802]],PARAMETER[&quot;Scale factor at natural origin&quot;,0.9999079,SCALEUNIT[&quot;unity&quot;,1],ID[&quot;EPSG&quot;,8805]],PARAMETER[&quot;False easting&quot;,155000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8806]],PARAMETER[&quot;False northing&quot;,463000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8807]]],CS[Cartesian,2],AXIS[&quot;easting&quot;,east,ORDER[1],LENGTHUNIT[&quot;metre&quot;,1]],AXIS[&quot;northing&quot;,north,ORDER[2],LENGTHUNIT[&quot;metre&quot;,1]],ID[&quot;EPSG&quot;,28992]]</dd><dt><span>spatial_ref :</span></dt><dd>PROJCRS[&quot;Amersfoort / RD New&quot;,BASEGEOGCRS[&quot;Amersfoort&quot;,DATUM[&quot;Amersfoort&quot;,ELLIPSOID[&quot;Bessel 1841&quot;,6377397.155,299.1528128,LENGTHUNIT[&quot;metre&quot;,1]]],PRIMEM[&quot;Greenwich&quot;,0,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433]],ID[&quot;EPSG&quot;,4289]],CONVERSION[&quot;unnamed&quot;,METHOD[&quot;Oblique Stereographic&quot;,ID[&quot;EPSG&quot;,9809]],PARAMETER[&quot;Latitude of natural origin&quot;,52.1561605555556,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8801]],PARAMETER[&quot;Longitude of natural origin&quot;,5.38763888888889,ANGLEUNIT[&quot;degree&quot;,0.0174532925199433],ID[&quot;EPSG&quot;,8802]],PARAMETER[&quot;Scale factor at natural origin&quot;,0.9999079,SCALEUNIT[&quot;unity&quot;,1],ID[&quot;EPSG&quot;,8805]],PARAMETER[&quot;False easting&quot;,155000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8806]],PARAMETER[&quot;False northing&quot;,463000,LENGTHUNIT[&quot;metre&quot;,1],ID[&quot;EPSG&quot;,8807]]],CS[Cartesian,2],AXIS[&quot;easting&quot;,east,ORDER[1],LENGTHUNIT[&quot;metre&quot;,1]],AXIS[&quot;northing&quot;,north,ORDER[2],LENGTHUNIT[&quot;metre&quot;,1]],ID[&quot;EPSG&quot;,28992]]</dd><dt><span>x_dim :</span></dt><dd>x</dd><dt><span>y_dim :</span></dt><dd>y</dd></dl></div><div class='xr-var-data'><pre>array(0)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-a4172f8c-8917-4340-ac4c-e80d9af2c4f2' class='xr-section-summary-in' type='checkbox' checked /><label for='section-a4172f8c-8917-4340-ac4c-e80d9af2c4f2' class='xr-section-summary' title='Expand/collapse section'>Data variables: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span>flood_event</span></div><div class='xr-var-dims'>(y, x)</div><div class='xr-var-dtype'>float32</div><div class='xr-var-preview xr-preview'>dask.array&lt;chunksize=(35, 27), meta=np.ndarray&gt;</div><input id='attrs-1ad19337-f1af-4ba4-89ca-b95d8af32832' class='xr-var-attrs-in' type='checkbox' ><label for='attrs-1ad19337-f1af-4ba4-89ca-b95d8af32832' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a8fd8b46-8584-443f-ad93-2f7f2aa09266' class='xr-var-data-in' type='checkbox'><label for='data-a8fd8b46-8584-443f-ad93-2f7f2aa09266' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'><dt><span>AREA_OR_POINT :</span></dt><dd>Area</dd><dt><span>_FillValue :</span></dt><dd>nan</dd><dt><span>source_file :</span></dt><dd>event.tif</dd><dt><span>grid_mapping :</span></dt><dd>spatial_ref</dd><dt><span>name :</span></dt><dd>flood_event</dd><dt><span>type :</span></dt><dd>water depth</dd></dl></div><div class='xr-var-data'><table>
     <tr>
         <td>
             <table style="border-collapse: collapse;">
@@ -1442,7 +1437,7 @@ Attributes:
 </svg>
         </td>
     </tr>
-</table></div></li></ul></div></li><li class='xr-section-item'><input id='section-cee73d62-5da3-437a-87f0-d81037833c28' class='xr-section-summary-in' type='checkbox' checked /><label for='section-cee73d62-5da3-437a-87f0-d81037833c28' class='xr-section-summary' title='Expand/collapse section'>Attributes: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>analysis :</span></dt><dd>event</dd></dl></div></li></ul></div></div></div>
+</table></div></li></ul></div></li><li class='xr-section-item'><input id='section-234c2e88-6b87-4f33-9569-72acf96cbf3c' class='xr-section-summary-in' type='checkbox' checked /><label for='section-234c2e88-6b87-4f33-9569-72acf96cbf3c' class='xr-section-summary' title='Expand/collapse section'>Attributes: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>analysis :</span></dt><dd>event</dd></dl></div></li></ul></div></div></div>
 </div>
 </section>
 </section>
@@ -1458,12 +1453,12 @@ Attributes:
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="prepare_data_catalog.html"
+       href="../user_guide/examples.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Preparing a Data Catalog for HydroMT-FIAT</p>
+        <p class="prev-next-title">Examples</p>
       </div>
     </a>
     <a class="right-next"
@@ -1519,8 +1514,8 @@ Attributes:
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=0790524f97105ba85085"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=0790524f97105ba85085"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1554,7 +1549,7 @@ Attributes:
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.18.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>
