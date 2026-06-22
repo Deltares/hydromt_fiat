@@ -145,6 +145,14 @@ class FIATModel(Model):
         return self.components[f"{OUTPUT}_{GRID}"]
 
     @property
+    def region(self) -> gpd.GeoDataFrame:
+        """Return the model's region.
+
+        This will return a polygon covering the current region of the model.
+        """
+        return self.components[REGION].region
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
         """Access the vulnerability component."""
         return self.components[VULNERABILITY]

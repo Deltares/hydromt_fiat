@@ -173,6 +173,12 @@ class ExposureGridComponent(GridComponent):
     ) -> None:
         """Create an exposure grid from data sources.
 
+        Warning
+        -------
+        Run the vulnerability :py:meth:`~VulnerabilityComponent.create` method
+        beforehand if the vulnerability data (curves and identifiers) are missing
+        or incorrect.
+
         Parameters
         ----------
         exposure_fnames : Path | str | list[Path | str]
