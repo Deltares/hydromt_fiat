@@ -290,12 +290,15 @@ test-system = { cmd = [
 
 ## Dependencies
 [tool.pixi.dependencies]
-numpy = "*"
+numba = "*"
 pip = "*"
 uv = "*"
 
 [tool.pixi.pypi-dependencies]
 hydromt_fiat = { path = ".", editable = true }
+
+[tool.pixi.feature.dev.dependencies]
+python-magic = "*"
 
 [tool.pixi.feature.examples.dependencies]
 pandoc = "*"

@@ -27,9 +27,9 @@ Setup methods
 .. autosummary::
     :toctree: _generated
 
-    FIATModel.setup_config
-    FIATModel.setup_region
-    components.VulnerabilityComponent.setup
+    FIATModel.set_config
+    FIATModel.set_region
+    components.VulnerabilityComponent.create
 
 I/O methods
 -----------

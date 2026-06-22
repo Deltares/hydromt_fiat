@@ -11,6 +11,53 @@ from hydromt_fiat.workflows import (
     exposure_geoms_link_vulnerability,
     exposure_geoms_setup,
 )
+from hydromt_fiat.workflows.exposure_geom import _guess_object_type_columns
+
+
+def test___guess_object_type_columns(
+    buildings_data: gpd.GeoDataFrame,
+):
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col == "rdf_seealso"
+
+
+def test___guess_object_type_columns_general(
+    buildings_data: gpd.GeoDataFrame,
+):
+    # Drop string columns
+    buildings_data.drop(
+        buildings_data.columns[(buildings_data.dtypes == "str").values],
+        axis=1,
+        inplace=True,
+    )
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col == "fid"
+
+
+def test___guess_object_type_columns_none(
+    buildings_data: gpd.GeoDataFrame,
+):
+    buildings_data = buildings_data[["geometry"]]
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col is None
 
 
 def test_exposure_geoms_setup(

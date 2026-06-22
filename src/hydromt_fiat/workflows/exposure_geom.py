@@ -26,11 +26,24 @@ __all__ = [
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
+def _guess_object_type_columns(
+    columns: pd.Index,
+    dtypes: pd.Series,
+) -> str | None:
+    """Quick guess of the object type column."""
+    if any(dtypes == "str"):
+        return columns[dtypes.tolist().index("str")]
+    col = columns[0]
+    if dtypes[col].name == "geometry":
+        return None
+    return col
+
+
 def exposure_geoms_setup(
     exposure_data: gpd.GeoDataFrame,
-    exposure_object_type_column: str,
-    *,
     exposure_link: pd.DataFrame | None = None,
+    *,
+    exposure_object_type_column: str | None = None,
     exposure_object_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
     """Prep the raw exposure data for later fuctions/ methods.
@@ -41,12 +54,14 @@ def exposure_geoms_setup(
     ----------
     exposure_data : gpd.GeoDataFrame
         The raw exposure data.
-    exposure_object_type_column : str
-        The name of column that specifies the exposure type, e.g. occupancy type.
     exposure_link : pd.DataFrame, optional
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
-        By default None
+        By default None.
+    exposure_object_type_column : str, optional
+        The name of column that specifies the object type, e.g. occupancy type. If not
+        provided, it is assumed that the object type is defined by the first column
+        containing string values (text), by default None.
     exposure_object_type_fill : str, optional
         Value to which missing entries in the exposure type column will be mapped to,
         if provided. By default None
@@ -58,6 +73,13 @@ def exposure_geoms_setup(
     """
     logger.info("Setting up the exposure data for further use")
     # Some checks
+    exposure_object_type_column = (
+        exposure_object_type_column
+        or _guess_object_type_columns(
+            columns=exposure_data.columns,
+            dtypes=exposure_data.dtypes,
+        )
+    )
     if exposure_object_type_column not in exposure_data:
         raise KeyError(f"{exposure_object_type_column} not found in the exposure data")
     if exposure_link is None:
@@ -77,7 +99,7 @@ defaulting to exposure data object type"
         raise KeyError(
             f"{exposure_object_type_column} not found in the provided linking data"
         )
-
+    logger.info(f"Column containing the object type: {exposure_object_type_column}")
     # Make sure that there are no duplicated in the linking
     exposure_link = exposure_link.drop_duplicates(
         exposure_object_type_column,

@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import cast
 
 import geopandas as gpd
 from hydromt.gis.vector import _filter_gdf
@@ -17,7 +16,9 @@ from hydromt_fiat.components.utils import (
     pathing_expand,
 )
 from hydromt_fiat.gis import create_square_vector_grid
+from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, GEOMETRY, OUTPUT_GEOM_NAME, POST
+from hydromt_fiat.writers import write_csv, write_geoms
 
 __all__ = ["OutputGeomsComponent"]
 
@@ -166,16 +167,17 @@ column will be removed"
             return
 
         # Read the output data
-        logger.info("Reading model geometry outputs")
+        logger.info("Reading model output geometry data")
         for read_path, name in zip(*files):
             # If file doesn't exist, skip it
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the '{name}' output file at {read_path.as_posix()}")
+            logger.info(f"Reading '{name}' output geometry")
             # Read the data and set it
-            data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
+            data = read_geoms(read_path=read_path, **kwargs)
             self.set(data=data, name=name)
 
+    @hydromt_step
     def write(
         self,
         **kwargs,
@@ -211,18 +213,17 @@ column will be removed"
 
             # If there is not geometry, it's a dataframe, write it to csv
             if GEOMETRY not in gdf.columns:
-                logger.info(
-                    f"Writing the '{name}' post processed tabular data to \
-{write_path.with_suffix('.csv').as_posix()}",
+                logger.info(f"Writing '{name}' post processed tabular data")
+                write_csv(
+                    data=gdf,
+                    write_path=write_path.with_suffix(".csv"),
+                    index=False,
                 )
-                gdf.to_csv(write_path.with_suffix(".csv"), index=False)
                 continue
+
             # Write the entire thing to vector file
-            logger.info(
-                f"Writing the '{name}' post processed geometry data to \
-{write_path.as_posix()}",
-            )
-            gdf.to_file(write_path, **kwargs)
+            logger.info(f"Writing '{name}' post processed geometry data")
+            write_geoms(data=gdf, write_path=write_path, **kwargs)
 
     ## Post processing methods
     @hydromt_step

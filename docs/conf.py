@@ -7,7 +7,6 @@
 import os
 import shutil
 import sys
-from distutils.dir_util import copy_tree
 
 import hydromt_fiat
 
@@ -31,7 +30,7 @@ def remove_dir_content(path: str) -> None:
 if os.path.isdir("_examples"):
     remove_dir_content("_examples")
 os.makedirs("_examples")
-copy_tree("../examples", "_examples")
+shutil.copytree("../examples", "_examples", dirs_exist_ok=True)
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
