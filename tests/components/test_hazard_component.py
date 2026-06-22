@@ -135,7 +135,7 @@ def test_hazard_component_write_sig(
     assert component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
 
 
-def test_hazard_component_setup(
+def test_hazard_component_create(
     caplog: pytest.LogCaptureFixture,
     model_with_region: FIATModel,
 ):
@@ -143,35 +143,35 @@ def test_hazard_component_setup(
     component = HazardComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
-    component.setup(hazard_fnames="flood_event")
+    component.create(hazard_fnames="flood_event")
 
     assert "Processing water_depth hazard data" in caplog.text
     assert "flood_event" in component.data.data_vars
     assert component.data.raster.shape == (7, 6)
 
 
-def test_hazard_component_setup_multi(
+def test_hazard_component_create_multi(
     model_with_region: FIATModel,
 ):
     # Setup the component
     component = HazardComponent(model=model_with_region)
 
     # Test setting data to hazard grid with data
-    component.setup(hazard_fnames=["flood_event", "flood_event_highres"], expand=False)
+    component.create(hazard_fnames=["flood_event", "flood_event_highres"], expand=False)
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars
     assert "flood_event_highres" in component.data.data_vars
 
 
-def test_hazard_component_setup_risk(
+def test_hazard_component_create_risk(
     model_with_region: FIATModel,
 ):
     # Setup the compoentn
     component = HazardComponent(model=model_with_region)
 
     # Test hazard with return period
-    component.setup(
+    component.create(
         hazard_fnames=["flood_event_highres"],
         risk=True,
         return_periods=[50000],
@@ -182,7 +182,7 @@ def test_hazard_component_setup_risk(
     assert model_with_region.config.get(HAZARD_RP) == [50000]
 
 
-def test_hazard_component_setup_errors(model: FIATModel):
+def test_hazard_component_create_errors(model: FIATModel):
     # Setup the component
     component = HazardComponent(model=model)
 
@@ -190,12 +190,12 @@ def test_hazard_component_setup_errors(model: FIATModel):
     with pytest.raises(
         ValueError, match="Cannot perform risk analysis without return periods"
     ):
-        component.setup(hazard_fnames="test.nc", risk=True)
+        component.create(hazard_fnames="test.nc", risk=True)
 
     with pytest.raises(
         ValueError, match="Return periods do not match the number of hazard files"
     ):
-        component.setup(
+        component.create(
             hazard_fnames=["test1.nc", "test2.nc"],
             risk=True,
             return_periods=[1, 2, 3],
@@ -203,6 +203,6 @@ def test_hazard_component_setup_errors(model: FIATModel):
 
     with pytest.raises(
         MissingRegionError,
-        match=("Region component is missing for setting up hazard data."),
+        match=("Region component is missing for setting up hazard data"),
     ):
-        component.setup(hazard_fnames=["flood_event"])
+        component.create(hazard_fnames=["flood_event"])

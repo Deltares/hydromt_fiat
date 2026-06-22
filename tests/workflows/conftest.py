@@ -8,6 +8,8 @@ import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full
 
+from hydromt_fiat.utils import CURVE, IMPACT__TYPE, OBJECT__TYPE
+
 
 ## Data from the data catalog
 @pytest.fixture
@@ -65,6 +67,16 @@ def hazard_event_data_highres(
         geom=build_region_small,
     )
     return ds
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curve1(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve1")
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curve2(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve2")
 
 
 @pytest.fixture
@@ -159,3 +171,15 @@ def rotated_grid() -> xr.DataArray:
     # Build using 'full' from core
     da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
     return da
+
+
+@pytest.fixture
+def vulnerability_identifiers_dummy() -> pd.DataFrame:
+    df = pd.DataFrame(
+        {
+            OBJECT__TYPE: ["foo"],
+            IMPACT__TYPE: ["damage"],
+            CURVE: ["c1"],
+        }
+    )
+    return df

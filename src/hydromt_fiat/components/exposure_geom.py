@@ -2,12 +2,10 @@
 
 import logging
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
-import geopandas as gpd
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
@@ -16,6 +14,7 @@ from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.utils import (
     EXPOSURE,
     EXPOSURE_GEOM,
@@ -23,10 +22,10 @@ from hydromt_fiat.utils import (
     FILE,
     GEOM,
     MODEL_TYPE,
-    OBJECT__ID,
     SETTINGS,
     SRS,
 )
+from hydromt_fiat.writers import write_geoms
 
 __all__ = ["ExposureGeomsComponent"]
 
@@ -96,19 +95,13 @@ class ExposureGeomsComponent(GeomsComponent):
         )
         assert files is not None  # Yh..
         # Loop through the found files
-        logger.info("Reading the exposure vector data..")
+        logger.info("Reading exposure geometry data")
         for read_path, name in zip(*files):
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the '{name}' geometry file at {read_path.as_posix()}")
-            # Get the data
-            data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
-            # Check for data in csv file, this has to be merged
-            # TODO this should be solved better with help of the config file
-            csv_path = read_path.with_suffix(".csv")
-            if csv_path.is_file():
-                csv_data = pd.read_csv(csv_path)
-                data = data.merge(csv_data, on=OBJECT__ID)
+            logger.info(f"Reading '{name}' exposure geometry")
+            # Read the data
+            data = read_geoms(read_path=read_path, **kwargs)
             # Set the data
             self.set(data=data, name=name)
 
@@ -149,7 +142,7 @@ class ExposureGeomsComponent(GeomsComponent):
         cfg = []
 
         # Loop through the datasets
-        logger.info("Writing the exposure vector data..")
+        logger.info("Writing exposure geometry data")
         for name, gdf in self.data.items():
             if len(gdf) == 0:
                 logger.warning(f"{name} is empty. Skipping...")
@@ -163,49 +156,47 @@ class ExposureGeomsComponent(GeomsComponent):
                 self.root.path,
                 filename.format(name=name),
             )
-            # Ensure the directory
-            write_dir = write_path.parent
-            write_dir.mkdir(parents=True, exist_ok=True)
-
             entry[FILE] = write_path
             # Due to header overloading, this is not solved properly in
             # the config component
             if gdf.crs is not None:
                 entry[SETTINGS] = {SRS: crs_representation(gdf.crs)}
             logger.info(
-                f"Writing the '{name}' geometry data to {write_path.as_posix()}",
+                f"Writing '{name}' exposure geometry",
             )
             # Write the entire thing to vector file
-            gdf.to_file(write_path, **kwargs)
+            write_geoms(data=gdf, write_path=write_path, **kwargs)
 
         # Set the config entries
         self.model.config.set(EXPOSURE_GEOM, cfg)
 
     ## Setup methods
     @hydromt_step
-    def setup(
+    def create(
         self,
         exposure_fname: Path | str,
-        exposure_object_type_column: str,
-        *,
         exposure_link_fname: Path | str | None = None,
+        exposure_object_type_column: str | None = None,
         exposure_object_type_fill: str | None = None,
+        *,
         predicate: str = "contains",
         read_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        """Set up the exposure from a data source.
+        """Create the exposure from a data source.
 
         Parameters
         ----------
         exposure_fname : Path | str
             The name of/ path to the raw exposure dataset.
-        exposure_object_type_column : str
-            The name of column in the raw dataset that specifies the object type,
-            e.g. the occupancy type.
-        exposure_link_fname : Path | str | None, optional
+        exposure_link_fname : Path | str, optional
             The name of/ path to the dataset containing the mapping of the exposure
             types to the vulnerability data, by default None.
+        exposure_object_type_column : str, optional
+            The name of column in the raw dataset that specifies the object type,
+            e.g. the occupancy type. If not provided, the first string value (text)
+            column (if not present, first columns in general) is presumed to be the
+            column containing the object type. By default None.
         exposure_object_type_fill : str, optional
             Value to which missing entries in the exposure object type column will be
             mapped to, if provided. By default None.
@@ -251,8 +242,8 @@ use 'setup_region' before this method"
         # Call the workflows function(s) to manipulate the data
         exposure_vector = workflows.exposure_geoms_setup(
             exposure_data=exposure_data,
-            exposure_object_type_column=exposure_object_type_column,
             exposure_link=exposure_link,
+            exposure_object_type_column=exposure_object_type_column,
             exposure_object_type_fill=exposure_object_type_fill,
         )
         # Set the data directly
@@ -263,9 +254,10 @@ use 'setup_region' before this method"
         self.model.config.set(MODEL_TYPE, GEOM)
 
     @hydromt_step
-    def setup_link_vulnerability(
+    def create_link(
         self,
         exposure_name: str,
+        *,
         impact_type: str | list[str] = "damage",
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
@@ -298,10 +290,6 @@ use 'setup_region' before this method"
             # TODO Replace with custom error class
             raise RuntimeError("Run `vulnerability.setup` before this method")
 
-        # Impact type type conversion
-        if not isinstance(impact_type, list):
-            impact_type = [impact_type]
-
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
@@ -313,7 +301,7 @@ use 'setup_region' before this method"
         self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
-    def setup_max_damage(
+    def create_max_damage(
         self,
         exposure_name: str,
         impact_type: str,
@@ -323,7 +311,7 @@ use 'setup_region' before this method"
         read_link_kwargs: dict[str, Any] | None = None,
         **select,
     ) -> None:
-        """Set up the maximum potential damage per object in an existing dataset.
+        """Create the maximum potential damage per object in an existing dataset.
 
         Warning
         -------
