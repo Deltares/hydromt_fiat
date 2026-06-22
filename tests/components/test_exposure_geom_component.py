@@ -97,7 +97,7 @@ def test_exposure_geom_component_read_sig(
 def test_exposure_geom_component_read_csv(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    exposure_vector_clipped_csv_path: Path,
+    exposure_vector_clipped_split_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),
