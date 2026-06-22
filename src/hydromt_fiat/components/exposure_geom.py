@@ -267,8 +267,9 @@ use 'setup_region' before this method"
 
         Warning
         -------
-        Run :py:meth:`~VulnerabilityComponent.setup` beforehand
-        (see vulnerability component).
+        Run the vulnerability :py:meth:`~VulnerabilityComponent.create` method
+        beforehand if the vulnerability data (curves and identifiers) are missing
+        or incorrect.
 
         Parameters
         ----------
@@ -315,7 +316,9 @@ use 'setup_region' before this method"
 
         Warning
         -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Run the vulnerability :py:meth:`~VulnerabilityComponent.create` method
+        beforehand if the vulnerability data (curves and identifiers) are missing
+        or incorrect.
 
         Parameters
         ----------

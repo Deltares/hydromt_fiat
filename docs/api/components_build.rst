@@ -52,7 +52,7 @@ VulnerabilityComponent
     VulnerabilityComponent.read
     VulnerabilityComponent.write
     VulnerabilityComponent.clear
-    VulnerabilityComponent.setup
+    VulnerabilityComponent.create
 
 HazardComponent
 ---------------
@@ -66,7 +66,7 @@ HazardComponent
     HazardComponent.clear
     HazardComponent.clip
     HazardComponent.reproject
-    HazardComponent.setup
+    HazardComponent.create
 
 ExposureGeomsComponent
 ----------------------
@@ -80,9 +80,9 @@ ExposureGeomsComponent
     ExposureGeomsComponent.clear
     ExposureGeomsComponent.clip
     ExposureGeomsComponent.reproject
-    ExposureGeomsComponent.setup
-    ExposureGeomsComponent.setup_link_vulnerability
-    ExposureGeomsComponent.setup_max_damage
+    ExposureGeomsComponent.create
+    ExposureGeomsComponent.create_link
+    ExposureGeomsComponent.create_max_damage
     ExposureGeomsComponent.update_column
 
 ExposureGridComponent
@@ -97,4 +97,4 @@ ExposureGridComponent
     ExposureGridComponent.clear
     ExposureGridComponent.clip
     ExposureGridComponent.reproject
-    ExposureGridComponent.setup
+    ExposureGridComponent.create

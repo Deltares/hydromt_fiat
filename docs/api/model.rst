@@ -59,14 +59,14 @@ I/O methods
 
 .. _api_model_setup_methods:
 
-Model setup methods
--------------------
+Model set methods
+-----------------
 
 .. autosummary::
     :toctree: ../_generated
 
-    FIATModel.setup_config
-    FIATModel.setup_region
+    FIATModel.set_config
+    FIATModel.set_region
 
 .. _api_model_mutating_methods:
 
