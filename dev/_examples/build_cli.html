@@ -60,7 +60,7 @@
     <link rel="icon" href="../_static/hydromt-icon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API reference" href="../api/index.html" />
+    <link rel="next" title="Update a FIAT Model" href="update_model.html" />
     <link rel="prev" title="Build Model" href="build_api.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -397,8 +397,11 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../user_guide/examples.html">Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="build_api.html">Build FIAT model with api</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model from cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explore_data.html">Explore data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="prepare_data_catalog.html">Prepare data catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="build_api.html">Build FIAT model with API</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Build FIAT model from CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="update_model.html">Update a FIAT model</a></li>
 </ul>
 </details></li>
 </ul>
@@ -526,21 +529,21 @@ Model plugins:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-22 11:26:17,884 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-22 11:26:17,885 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-22 11:26:17,886 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-22 11:26:17,887 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
-2026-06-22 11:26:17,888 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
-2026-06-22 11:26:17,895 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
-2026-06-22 11:26:17,896 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
-2026-06-22 11:26:17,896 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
-2026-06-22 11:26:19,175 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
-2026-06-22 11:26:19,360 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
-2026-06-22 11:26:20,307 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
-2026-06-22 11:26:20,315 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
-2026-06-22 11:26:20,316 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
-2026-06-22 11:26:20,318 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 73f0d8d82a1a70238a4f46673782553d
-2026-06-22 11:26:20,319 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
+2026-06-23 13:55:59,568 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-23 13:55:59,569 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;global-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-23 13:55:59,570 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;global-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-23 13:55:59,571 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;global-data.tar.gz&#39; matches the hash 917b3072e633fcdc2b61e2e7b1b51369
+2026-06-23 13:55:59,572 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
+2026-06-23 13:55:59,579 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;osmnx&#39; file from the hydromt-fiat s3 bucket
+2026-06-23 13:55:59,580 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;osmnx.tar.gz&#39; is already locally cached with correct hash
+2026-06-23 13:55:59,580 - hydromt.hydromt_fiat.data.get - get - INFO - File not locally cached, trying to download
+2026-06-23 13:56:00,909 - hydromt.hydromt_fiat.data.get - get - INFO - Downloading osmnx.tar.gz..
+2026-06-23 13:56:01,069 - hydromt.hydromt_fiat.data.get - get - INFO - Writing file to &#39;/home/runner/.cache/hydromt-fiat/osmnx.tar.gz&#39;
+2026-06-23 13:56:02,123 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/.cache/hydromt-fiat/osmnx
+2026-06-23 13:56:02,131 - hydromt.hydromt_fiat.data.get - get - INFO - Requesting the &#39;test-build-data&#39; file from the hydromt-fiat s3 bucket
+2026-06-23 13:56:02,131 - hydromt.hydromt_fiat.data.get - get - INFO - Checking whether &#39;test-build-data.tar.gz&#39; is already locally cached with correct hash
+2026-06-23 13:56:02,133 - hydromt.hydromt_fiat.data.get - get - INFO - Existing file: &#39;test-build-data.tar.gz&#39; matches the hash 73f0d8d82a1a70238a4f46673782553d
+2026-06-23 13:56:02,134 - hydromt.hydromt_fiat.data.get - get - INFO - Unpacking the archive to /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/test-build-data
 /home/runner/work/hydromt_fiat/hydromt_fiat/docs/_examples/global-data
 </pre></div></div>
 </div>
@@ -833,12 +836,12 @@ Options:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2026-06-22 11:26:24,703 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-22 11:26:24,942 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
-2026-06-22 11:26:25,673 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
-2026-06-22 11:26:25,687 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
-2026-06-22 11:26:25,687 - hydromt - log - INFO - HydroMT version: 1.4.0
-2026-06-22 11:26:25,688 - hydromt - log - ERROR - Unhandled exception occured.
+2026-06-23 13:56:06,454 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-23 13:56:06,684 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./global-data/data_catalog.yml
+2026-06-23 13:56:07,357 - hydromt.data_catalog.data_catalog - data_catalog - INFO - Parsing data catalog from ./test-build-data/data_catalog.yml
+2026-06-23 13:56:07,370 - hydromt.model.model - model - INFO - Initializing fiat model from hydromt_fiat (v1.0.0.dev0).
+2026-06-23 13:56:07,371 - hydromt - log - INFO - HydroMT version: 1.4.0
+2026-06-23 13:56:07,371 - hydromt - log - ERROR - Unhandled exception occured.
 Traceback (most recent call last):
   File &#34;/home/runner/work/hydromt_fiat/hydromt_fiat/.pixi/envs/docs/lib/python3.13/site-packages/hydromt/log.py&#34;, line 179, in to_file
     yield
@@ -947,11 +950,11 @@ modeldata
       </div>
     </a>
     <a class="right-next"
-       href="../api/index.html"
+       href="update_model.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API reference</p>
+        <p class="prev-next-title">Update a FIAT Model</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

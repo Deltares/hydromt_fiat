@@ -394,8 +394,11 @@
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_api.html">Build FIAT model with api</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_cli.html">Build FIAT model from cli</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/explore_data.html">Explore data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/prepare_data_catalog.html">Prepare data catalog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_api.html">Build FIAT model with API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/build_cli.html">Build FIAT model from CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../_examples/update_model.html">Update a FIAT model</a></li>
 </ul>
 </details></li>
 </ul>
@@ -460,6 +463,59 @@
                   
   <section id="data">
 <span id="user-guide-data-index"></span><h1>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h1>
+<p>HydroMT-FIAT requires three core types of input data to build a Delft-FIAT model:</p>
+<div class="sd-container-fluid sd-sphinx-override sd-mb-4 docutils">
+<div class="sd-row sd-row-cols-3 sd-row-cols-xs-3 sd-row-cols-sm-3 sd-row-cols-md-3 sd-row-cols-lg-3 sd-g-1 sd-g-xs-1 sd-g-sm-1 sd-g-md-1 sd-g-lg-1 docutils">
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><svg version="1.1" width="5.0em" height="5.0em" class="sd-octicon sd-octicon-graph" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 2.75a.75.75 0 0 0-1.5 0v18.5c0 .414.336.75.75.75H20a.75.75 0 0 0 0-1.5H2.5V2.75Z"></path><path d="M22.28 7.78a.75.75 0 0 0-1.06-1.06l-5.72 5.72-3.72-3.72a.75.75 0 0 0-1.06 0l-6 6a.75.75 0 1 0 1.06 1.06l5.47-5.47 3.72 3.72a.75.75 0 0 0 1.06 0l6.25-6.25Z"></path></svg></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text">Vulnerability</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="vulnerability.html#user-guide-data-vulnerability"><span class="std std-ref">Vulnerability data</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><svg version="1.1" width="5.0em" height="5.0em" class="sd-octicon sd-octicon-alert" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 17.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.25-8.25a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0v-4.5Z"></path><path d="M9.836 3.244c.963-1.665 3.365-1.665 4.328 0l8.967 15.504c.963 1.667-.24 3.752-2.165 3.752H3.034c-1.926 0-3.128-2.085-2.165-3.752Zm3.03.751a1.002 1.002 0 0 0-1.732 0L2.168 19.499A1.002 1.002 0 0 0 3.034 21h17.932a1.002 1.002 0 0 0 .866-1.5L12.866 3.994Z"></path></svg></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text">Hazard</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="hazard.html#user-guide-data-hazard"><span class="std std-ref">Hazard data</span></a></div>
+</div>
+<div class="sd-col sd-d-flex-row docutils">
+<div class="sd-card sd-sphinx-override sd-w-100 sd-shadow-sm sd-card-hover sd-text-center docutils">
+<div class="sd-card-body docutils">
+<p class="sd-card-text"><svg version="1.1" width="5.0em" height="5.0em" class="sd-octicon sd-octicon-location" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 13.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path><path d="M19.071 3.429h.001c3.905 3.905 3.905 10.237 0 14.142l-5.403 5.403a2.36 2.36 0 0 1-3.336 0l-5.375-5.375-.028-.028c-3.905-3.905-3.905-10.237 0-14.142 3.904-3.905 10.236-3.905 14.141 0ZM5.99 4.489v.001a8.5 8.5 0 0 0 0 12.02l.023.024.002.002 5.378 5.378a.859.859 0 0 0 1.214 0l5.403-5.404a8.5 8.5 0 0 0-.043-11.977A8.5 8.5 0 0 0 5.99 4.489Z"></path></svg></p>
+</div>
+<div class="sd-card-footer docutils">
+<p class="sd-card-text">Exposure</p>
+</div>
+<a class="sd-stretched-link sd-hide-link-text reference internal" href="exposure.html#user-guide-data-exposure"><span class="std std-ref">Exposure data</span></a></div>
+</div>
+</div>
+</div>
+<p>Each data type plays a specific role in the flood damage assessment:</p>
+<ul class="simple">
+<li><p><strong>Vulnerability</strong> data defines the relationship between hazard intensity (e.g., water
+depth) and damage as a fraction of maximum potential loss. This is expressed through
+depth-damage curves.</p></li>
+<li><p><strong>Hazard</strong> data represents the spatial distribution of the flood event, typically as
+a raster grid with water depth values.</p></li>
+<li><p><strong>Exposure</strong> data describes the assets at risk (e.g., buildings), including their
+location, type, and value.</p></li>
+</ul>
+<p>These data are combined by Delft-FIAT to compute flood damage for a given scenario.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All data is provided to HydroMT-FIAT through a
+<a class="reference internal" href="../data_catalog.html#user-guide-data-catalog"><span class="std std-ref">data catalog</span></a>. See the
+<a class="reference internal" href="../data_catalog.html#user-guide-data-catalog"><span class="std std-ref">data catalog</span></a> section for details on how to
+define data sources.</p>
+</div>
 <div class="toctree-wrapper compound">
 </div>
 </section>
