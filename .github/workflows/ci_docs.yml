@@ -15,6 +15,7 @@ on:
   pull_request:
     branches:
       - main
+      - docs/v1
     paths:
       - docs/**/*
       - examples/*
