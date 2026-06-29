@@ -4,8 +4,17 @@ import logging
 from typing import Any
 
 import xarray as xr
+from pint import UnitRegistry
 
-from hydromt_fiat.utils import ANALYSIS, EVENT, RISK, RP, TYPE, standard_unit
+from hydromt_fiat.utils import (
+    ANALYSIS,
+    EVENT,
+    RISK,
+    RP,
+    TYPE,
+    UNIT_REGISTRY,
+    standard_unit,
+)
 from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
 
 __all__ = ["hazard_setup"]
@@ -21,6 +30,8 @@ def hazard_setup(
     return_periods: list[int] | None = None,
     risk: bool = False,
     unit: str = "m",
+    unit_default: str | None = None,
+    unit_registry: UnitRegistry = UNIT_REGISTRY,  # type: ignore[type-arg]
 ) -> xr.Dataset:
     """Read and transform hazard data.
 
@@ -38,6 +49,14 @@ def hazard_setup(
         Designate hazard files for risk analysis, by default False.
     unit : str, optional
         The unit which the hazard data is in, by default 'm'.
+    unit_default : str, optional
+        The default unit to translate hazard data to when `unit` is not the
+        same. If not provided, the default unit is taken from the `unit_registry`
+        for the corresponding category (e.g. 'length' for meters). By default None.
+    unit_registry : UnitRegistry, optional
+        The unit registry (system) to use when mapping the unit to the default unit
+        from the same category. If not provided,
+        the default registry is assumed to be that of the metric system.
 
     Returns
     -------
@@ -50,7 +69,7 @@ def hazard_setup(
         da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
-        conversion = standard_unit(unit)
+        conversion = standard_unit(unit, registry=unit_registry, default=unit_default)
         da *= conversion.magnitude
 
         attrs: dict[str, Any] = {

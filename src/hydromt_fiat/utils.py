@@ -111,6 +111,7 @@ def create_query(**kwargs) -> str:
 
 def standard_unit(
     unit: str,
+    registry: UnitRegistry = UNIT_REGISTRY,  # type: ignore[type-arg]
     default: str | None = None,
 ) -> PlainQuantity | Quantity:  # type: ignore[type-arg]
     """Translate unit to standard unit for category.
@@ -119,6 +120,8 @@ def standard_unit(
     ----------
     unit : Scalar
         A unit.
+    registry : UnitRegistry, optional
+        The unit registry following a certain unit system.
     default : str, optional
         A unit to convert to. If None, the standard unit according to pint is taken
         for each category, e.g. 'm/s' for velocity. By default None.
@@ -129,8 +132,8 @@ def standard_unit(
         Quantity holding the standard unit and conversion magnitude.
     """
     # Check for the dafault unit
-    quantity = UNIT_REGISTRY(unit)
-    default = default or str(UNIT_REGISTRY.get_base_units(unit)[1])
+    quantity = registry(unit)
+    default = default or str(registry.get_base_units(unit)[1])
     default_quantity = quantity.to(default)
     if default_quantity.magnitude == 1:
         return quantity

@@ -169,6 +169,7 @@ class HazardComponent(GridComponent):
         return_periods: list[int] | None = None,
         risk: bool = False,
         unit: str = "m",
+        unit_default: str | None = None,
         expand: bool = True,
         region: bool = True,
         read_kwargs: dict[str, Any] | None = None,
@@ -189,6 +190,11 @@ class HazardComponent(GridComponent):
             by default False.
         unit : str, optional
             The unit which the hazard data is in, by default 'm' (meters).
+        unit_default : str, optional
+            The default unit to translate the hazard data to when `unit` is not
+            the same. If not provided, the default unit is taken from the
+            current model unit system for the corresponding category
+            (e.g. 'length' for meters). By default None.
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -245,6 +251,8 @@ class HazardComponent(GridComponent):
             return_periods=return_periods,
             risk=risk,
             unit=unit,
+            unit_default=unit_default,
+            unit_registry=self.model._units,
         )
 
         # Expand if necessary

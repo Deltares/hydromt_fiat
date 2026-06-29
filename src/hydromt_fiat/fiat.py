@@ -8,6 +8,7 @@ import geopandas as gpd
 from hydromt.model import Model
 from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pint import UnitRegistry
 from pyproj.crs import CRS
 
 from hydromt_fiat.components import (
@@ -32,6 +33,7 @@ from hydromt_fiat.utils import (
     OUTPUT,
     REGION,
     SETTINGS,
+    UNIT_REGISTRY,
     VULNERABILITY,
 )
 
@@ -74,6 +76,10 @@ class FIATModel(Model):
         data_libs: list[Path | str] | Path | str | None = None,
         **catalog_keys,
     ):
+        # Set own attributes
+        self._units = UNIT_REGISTRY
+
+        # Super charge with the base model
         super().__init__(
             root,
             components={REGION: RegionComponent(model=self)},
@@ -305,3 +311,23 @@ class FIATModel(Model):
             )
         # Set the region in the region component
         self.components[REGION].set(geom, replace=replace)
+
+    @hydromt_step
+    def set_unit_system(
+        self,
+        system: str,
+    ) -> None:
+        """Set the system of units.
+
+        From this system the defaults are taken to which the data is scaled to.
+        If system e.g. is set to 'imperial', data provided in meters are translated
+        to yards.
+
+        Parameters
+        ----------
+        system : str
+            The unit system, e.g. 'mks', 'imperial'. For more information visit
+            `this page <https://pint.readthedocs.io/en/stable/user/systems.html>`_ of
+            the pint documentation.
+        """
+        self._units = UnitRegistry(system=system)

@@ -55,3 +55,17 @@ def test_standard_unit_length(caplog: pytest.LogCaptureFixture):
     assert (
         "Given unit (foot) does not match the standard/ default unit (meter)"
     ) in caplog.text
+
+
+def test_standard_unit_default(caplog: pytest.LogCaptureFixture):
+    caplog.set_level(logging.WARNING)
+    # Call the function with meter as unit, but kilometer as the default
+    unit = "m"
+    quantity = standard_unit(unit, default="km")
+
+    # Assert conversion
+    assert np.isclose(quantity.magnitude, 0.001)
+    assert str(quantity.units) == "kilometer"
+    assert (
+        "Given unit (meter) does not match the standard/ default unit (kilometer)"
+    ) in caplog.text

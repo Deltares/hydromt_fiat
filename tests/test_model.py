@@ -301,6 +301,20 @@ def test_model_set_region_error(tmp_path: Path):
         model.set_region(region=2)
 
 
+def test_model_set_unit_system(tmp_path: Path):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Assert the default system
+    assert model._units.default_system == "mks"
+
+    # Call the method
+    model.set_unit_system(system="imperial")
+
+    # Assert the default system after
+    assert model._units.default_system == "imperial"
+
+
 def test_model_properties(model_with_region: FIATModel):
     # Setup an empty fiat model
     model = model_with_region
