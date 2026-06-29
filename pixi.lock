@@ -6271,6 +6271,7 @@ packages:
   - osmnx
   - pandas
   - pint
+  - pydantic
   - pyproj
   - requests
   - shapely

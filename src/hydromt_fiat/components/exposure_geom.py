@@ -15,15 +15,10 @@ from hydromt_fiat.components.utils import pathing_config, pathing_expand
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_geoms
+from hydromt_fiat.settings import ExposureGeometry, ExposureGeometrySettings
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GEOM,
-    EXPOSURE_GEOM_FILE,
-    FILE,
     GEOM,
-    MODEL_TYPE,
-    SETTINGS,
-    SRS,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -90,7 +85,10 @@ class ExposureGeomsComponent(GeomsComponent):
         # Hierarchy: 1) signature, 2) settings file, 3) default
         files = (
             pathing_expand(self.root.path, filename=filename)
-            or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
+            or pathing_config(
+                self.model.config.dir,
+                self.model.config.data.exposure.geom,
+            )
             or pathing_expand(self.root.path, filename=self._filename)
         )
         assert files is not None  # Yh..
@@ -148,27 +146,27 @@ class ExposureGeomsComponent(GeomsComponent):
                 logger.warning(f"{name} is empty. Skipping...")
                 continue
 
-            # Abuse the fact that a dictionary is mutable and passed by ref
-            entry: dict[str, Any] = {}
-            cfg.append(entry)
             # Create the outgoing file path
             write_path = Path(
                 self.root.path,
                 filename.format(name=name),
             )
-            entry[FILE] = write_path
+            entry = ExposureGeometry(file=write_path)
             # Due to header overloading, this is not solved properly in
             # the config component
             if gdf.crs is not None:
-                entry[SETTINGS] = {SRS: crs_representation(gdf.crs)}
+                entry.settings = ExposureGeometrySettings(
+                    srs=crs_representation(gdf.crs)
+                )
             logger.info(
                 f"Writing '{name}' exposure geometry",
             )
             # Write the entire thing to vector file
             write_geoms(data=gdf, write_path=write_path, **kwargs)
+            cfg.append(entry)
 
         # Set the config entries
-        self.model.config.set(EXPOSURE_GEOM, cfg)
+        self.model.config.data.exposure.geom = cfg
 
     ## Setup methods
     @hydromt_step
@@ -251,7 +249,7 @@ use 'setup_region' before this method"
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
-        self.model.config.set(MODEL_TYPE, GEOM)
+        self.model.config.data.model.type = GEOM
 
     @hydromt_step
     def create_link(

@@ -9,14 +9,12 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings import ExposureGeometry
 from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
-    EXPOSURE_GEOM,
-    FILE,
     FN,
     GEOM,
-    MODEL_TYPE,
 )
 
 
@@ -62,7 +60,7 @@ def test_exposure_geom_component_read_none(
     # Setup the component
     component = ExposureGeomsComponent(model=mock_model_config)
     # Set the config to point to nonsense path
-    component.model.config.data["exposure"]["geom"] = [{"file": "foo.fgb"}]
+    component.model.config.data.exposure.geom[0] = ExposureGeometry(file="foo.fgb")
 
     # Assert it's empty
     assert component._data is None
@@ -139,9 +137,9 @@ def test_exposure_geom_component_write(
     assert Path(tmp_path, component._filename.format(name="buildings2")).is_file()
 
     # Assert the config file entries
-    geom_cfg = mock_model_config.config.get(EXPOSURE_GEOM)
+    geom_cfg = mock_model_config.config.data.exposure.geom
     assert len(geom_cfg) == 2
-    assert geom_cfg[0][FILE] == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
+    assert geom_cfg[0].file == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
 
 
 def test_exposure_geom_component_write_sig(
@@ -209,7 +207,7 @@ def test_exposure_geom_component_create(
     assert len(component.data["buildings"]) != 0
 
     # Assert entries in the config
-    assert component.model.config.get(MODEL_TYPE) == GEOM
+    assert component.model.config.data.model.type == GEOM
 
 
 def test_exposure_geom_component_create_errors(

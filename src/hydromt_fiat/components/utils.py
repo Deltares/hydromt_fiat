@@ -7,6 +7,8 @@ from typing import Any
 
 from hydromt._utils.naming_convention import _expand_uri_placeholders
 
+from hydromt_fiat.settings import ExposureGeometry
+
 MOUNT_PATTERN = re.compile(r"(^\/(\w+)\/|^(\w+):\/).*$")
 
 
@@ -63,30 +65,6 @@ def make_config_paths_relative(
     return data
 
 
-def get_item(
-    parts: list[str],
-    current: dict[str, Any],
-    root: Path | str,
-    fallback: Any | None = None,
-    abs_path: bool = False,
-) -> Any | None:
-    """Get item from a dictionary."""
-    num_parts = len(parts)
-    for i, part in enumerate(parts):
-        if isinstance(current, list):
-            return [
-                get_item(parts[i:], item, root, fallback, abs_path) for item in current
-            ]
-        if i < num_parts - 1:
-            current = current.get(part, {})
-        else:
-            value = current.get(part, fallback)
-            if abs_path and isinstance(value, (Path, str)):
-                value = Path(root, value)
-            return value
-    return None
-
-
 def pathing_expand(
     root: Path, filename: Path | str | None = None
 ) -> tuple[list[Path], list[str]] | None:
@@ -119,12 +97,13 @@ def ensure_path_listing(
 
 
 def pathing_config(
-    p: list[Path] | list[Path | str] | Path | str | None,
+    root: Path,
+    config_files: list[ExposureGeometry] | None,
 ) -> tuple[list[Path], list[str]] | None:
     """Sort pathing based on config entries (i.e. a list)."""
-    ep = ensure_path_listing(p)
-    if ep is None:
+    if config_files is None:
         return None
     # Remove entries with no files and get the names of the remaining ones
-    n = [item.stem for item in ep]
-    return ep, n
+    p = [Path(root, item.file) for item in config_files]
+    n = [item.stem for item in p]
+    return p, n

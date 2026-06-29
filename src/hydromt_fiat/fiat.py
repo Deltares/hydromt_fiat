@@ -27,8 +27,6 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
-    MODEL_CALC,
-    MODEL_TYPE,
     OUTPUT,
     REGION,
     SETTINGS,
@@ -265,13 +263,10 @@ class FIATModel(Model):
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        if modeltype not in [GEOM, GRID]:
-            raise ValueError(f"Model_type must be either '{GEOM}' or '{GRID}'")
-        self.config.set(MODEL_TYPE, modeltype)
-        self.config.set(MODEL_CALC, method)
+        self.config.data.model.type = modeltype
+        self.config.data.model.method = method
         # Set the other defined settings
-        for key, value in settings.items():
-            self.config.set(key, value)
+        self.config.update(**settings)
 
     @hydromt_step
     def set_region(

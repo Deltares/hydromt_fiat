@@ -13,14 +13,12 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
+from hydromt_fiat.settings import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
     EXPOSURE,
     EXPOSURE_GRID_FILE,
-    EXPOSURE_GRID_SETTINGS,
     GRID,
     MODEL_TYPE,
-    SRS,
-    VAR_AS_BAND,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -88,7 +86,11 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get(EXPOSURE_GRID_FILE, abs_path=True)
+            or (
+                self.model.config.data.exposure.grid.file
+                if self.model.config.data.exposure.grid is not None
+                else None
+            )
             or self._filename
         )
         # Read the data
@@ -149,15 +151,9 @@ class ExposureGridComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set(EXPOSURE_GRID_FILE, write_path)
-        # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", False)
-        if len(self.data.data_vars) > 1:
-            self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", True)
-        # Set the srs
-        self.model.config.set(
-            f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
-            crs_representation(self.data.raster.crs),
+        self.model.config.data.exposure.grid = ExposureGrid(
+            file=write_path,
+            settings=ExposureGridSettings(srs=crs_representation(self.data.raster.crs)),
         )
 
     ## Setup methods

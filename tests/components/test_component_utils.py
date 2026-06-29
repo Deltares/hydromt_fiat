@@ -4,11 +4,11 @@ from hydromt_fiat.components.utils import (
     _mount,
     _relpath,
     ensure_path_listing,
-    get_item,
     make_config_paths_relative,
     pathing_config,
     pathing_expand,
 )
+from hydromt_fiat.settings import ExposureGeometry
 
 
 def test__mount():
@@ -73,69 +73,20 @@ def test_make_config_paths_relative(
     config_dummy: dict,
 ):
     # Assert that a full path is present
-    p = config_dummy["baz"]["file1"]
+    p = config_dummy["hazard"]["file"]
     assert Path(p).is_absolute()
-    assert config_dummy["spooky"]["ghost"] == [1, 2, 3]
-    assert config_dummy["baz"]["file2"] == "tmp/tmp.txt"
+    assert config_dummy["hazard"]["rp"] == [1, 2, 3]
+    assert config_dummy["vulnerability"]["file"] == Path("foo.csv")
 
     # Call the function
     cfg = make_config_paths_relative(config_dummy, tmp_path)
 
     # Assert the outcome
     # Assert that a full path is present
-    p = cfg["baz"]["file1"]
+    p = cfg["hazard"]["file"]
     assert not Path(p).is_absolute()  # Not anymore
-    assert cfg["spooky"]["ghost"] == [1, 2, 3]
-    assert cfg["baz"]["file2"] == "tmp/tmp.txt"
-
-
-def test_get_item(
-    config_dummy: dict,
-):
-    # Call the function
-    res = get_item(["foo"], config_dummy, "")
-    # Assert the output
-    assert res == "bar"
-
-    # With multiple parts
-    res = get_item(["spooky", "ghost"], config_dummy, "")
-    # Assert the output
-    assert res == [1, 2, 3]
-
-    # Get an entry that doesnt exists, return fallback
-    res = get_item(["No"], config_dummy, "", fallback=2)
-    # Assert the entry
-    assert res == 2
-
-
-def test_get_item_path(
-    tmp_path: Path,
-    config_dummy: dict,
-):
-    # Call the function
-    res = get_item(["baz", "file2"], config_dummy, root=tmp_path, abs_path=True)
-    # Assert the output
-    assert res == Path(tmp_path, "tmp/tmp.txt")
-
-
-def test_get_item_multi(
-    config_dummy: dict,
-):
-    # Call the function
-    res = get_item(["multi", "file"], config_dummy, "")
-    # Assert the output
-    assert isinstance(res, list)
-    assert len(res) == 2
-    assert res[0] == "tmp/tmp.txt"
-
-
-def test_get_item_none(
-    config_dummy: dict,
-):
-    # Call the function
-    res = get_item([], config_dummy, "")
-    # Assert the output
-    assert res is None
+    assert cfg["hazard"]["rp"] == [1, 2, 3]
+    assert config_dummy["vulnerability"]["file"] == "foo.csv"
 
 
 def test_ensure_path_listing():
@@ -195,7 +146,9 @@ def test_pathing_expand_none(
 
 def test_pathing_config():
     # Call the function
-    paths, names = pathing_config(["tmp/tmp.txt", None, "foo.txt"])
+    paths, names = pathing_config(
+        [ExposureGeometry(file="tmp.txt"), ExposureGeometry(file="foo.txt")]
+    )
     # Assert the output
     assert all([isinstance(item, Path) for item in paths])
     assert names == ["tmp", "foo"]
@@ -204,10 +157,5 @@ def test_pathing_config():
 def test_pathing_config_none():
     # Call the function
     out = pathing_config(None)
-    # Assert the output
-    assert out is None
-
-    # Call the function
-    out = pathing_config([None, None])
     # Assert the output
     assert out is None
