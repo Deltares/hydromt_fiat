@@ -22,7 +22,7 @@ def hazard_setup(
     risk: bool = False,
     unit: str = "m",
 ) -> xr.Dataset:
-    """Read and transform hazard data.hazard_setup.
+    """Read and transform hazard data.
 
     Parameters
     ----------
@@ -41,7 +41,7 @@ def hazard_setup(
 
     Returns
     -------
-    xr.Dataset
+    xr.Dataset.hazard_setup.
         Unified xarray dataset containing the hazard data.
     """
     logger.info(f"Processing {hazard_type} hazard data")
