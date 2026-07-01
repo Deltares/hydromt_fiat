@@ -22,7 +22,7 @@ def hazard_setup(
     risk: bool = False,
     unit: str = "m",
 ) -> xr.Dataset:
-    """Read and transform hazard data.
+    """Read and transform hazard data.hazard_setup.
 
     Parameters
     ----------
