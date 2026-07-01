@@ -41,7 +41,7 @@ def hazard_setup(
 
     Returns
     -------
-    xr.Dataset.hazard_setup.
+    xr.Dataset
         Unified xarray dataset containing the hazard data.
     """
     logger.info(f"Processing {hazard_type} hazard data")
