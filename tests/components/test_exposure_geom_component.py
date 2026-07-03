@@ -222,7 +222,7 @@ def test_exposure_geom_component_create_errors(
     # Assert that no available region lead to an error
     with pytest.raises(
         MissingRegionError,
-        match="Region is None -> use 'setup_region' before this method",
+        match="Region is None -> use 'set_region' before this method",
     ):
         component.create(
             exposure_fname="bag",
