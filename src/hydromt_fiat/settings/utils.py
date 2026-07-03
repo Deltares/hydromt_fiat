@@ -38,7 +38,7 @@ def _relpath(
 
 
 def get_config_list_files(
-    config_files: list[InputFileModel] | None,
+    config_files: list["InputFileModel"] | None,
 ) -> list[Path] | None:
     """Sort pathing based on config entries (i.e. a list)."""
     if config_files is None:
