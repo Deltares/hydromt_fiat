@@ -212,6 +212,27 @@ class FIATModel(Model):
             component.clip(self.region, inplace=True)
 
     @hydromt_step
+    def move(
+        self,
+        root: Path,
+    ):
+        """Move the model to a new directory.
+
+        Could be seen as a model copy,
+        when calling :py:meth:`~FIATModel.write` directly afterwards.
+
+        Warning
+        -------
+        Does not directly write the data to the new directory.
+
+        Parameters
+        ----------
+        root : Path
+            The path to the new model directory.
+        """
+        self.root.set(path=root, mode="w+")
+
+    @hydromt_step
     def reproject(
         self,
         crs: CRS | int | str | None = None,

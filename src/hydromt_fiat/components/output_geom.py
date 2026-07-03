@@ -11,13 +11,12 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import (
-    ensure_path_listing,
-    pathing_config,
-    pathing_expand,
+    expand_path_wildcards,
 )
 from hydromt_fiat.gis import create_square_vector_grid
 from hydromt_fiat.readers import read_geoms
-from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, GEOMETRY, OUTPUT_GEOM_NAME, POST
+from hydromt_fiat.settings.utils import get_config_list_files
+from hydromt_fiat.utils import GEOMETRY, POST
 from hydromt_fiat.writers import write_csv, write_geoms
 
 __all__ = ["OutputGeomsComponent"]
@@ -135,47 +134,36 @@ column will be removed"
         # Sort out the pathing
         # Hierarchy: 1) signature 2) settings
         # Sort the signature first
-        files = pathing_expand(self.model.config.dir, filename)
+        files = expand_path_wildcards(self.model.config.dir, filename)
 
         # Look at the in and outputs of the config file
-        infiles = (
-            ensure_path_listing(
-                self.model.config.get(EXPOSURE_GEOM_FILE),
-            )
-            or []
-        )
+        infiles = get_config_list_files(self.model.config.data.exposure.geom) or []
         infiles = [
             Path(self.model.config.output_dir, item.name).with_suffix(".gpkg")
             for item in infiles
         ]
         # Get the directly specified output files
-        outfiles = ensure_path_listing(
-            self.model.config.get(
-                OUTPUT_GEOM_NAME,
-                abs_path=True,
-                root=self.model.config.output_dir,
-            )
-        )
+        outfiles = get_config_list_files(self.model.config.data.output.geom)
         # Supplement the defined output with input (names are the same in that case)
         if outfiles is None:
             outfiles = infiles
         outfiles += infiles[len(outfiles) :]
 
         # Set the files
-        files = files or pathing_config(outfiles)
+        files = files or outfiles
         if files is None:
             return
 
         # Read the output data
         logger.info("Reading model output geometry data")
-        for read_path, name in zip(*files):
+        for read_path in files:
             # If file doesn't exist, skip it
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading '{name}' output geometry")
+            logger.info(f"Reading '{read_path.stem}' output geometry")
             # Read the data and set it
             data = read_geoms(read_path=read_path, **kwargs)
-            self.set(data=data, name=name)
+            self.set(data=data, name=read_path.stem)
 
     @hydromt_step
     def write(

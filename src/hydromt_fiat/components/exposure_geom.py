@@ -11,11 +11,15 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.geom import GeomsComponent
-from hydromt_fiat.components.utils import pathing_config, pathing_expand
+from hydromt_fiat.components.utils import expand_path_wildcards
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_geoms
-from hydromt_fiat.settings import ExposureGeometry, ExposureGeometrySettings
+from hydromt_fiat.settings.exposure import (
+    ExposureGeometry,
+    ExposureGeometrySettings,
+)
+from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     EXPOSURE,
     GEOM,
@@ -84,24 +88,21 @@ class ExposureGeomsComponent(GeomsComponent):
         # Sort the filenames
         # Hierarchy: 1) signature, 2) settings file, 3) default
         files = (
-            pathing_expand(self.root.path, filename=filename)
-            or pathing_config(
-                self.model.config.dir,
-                self.model.config.data.exposure.geom,
-            )
-            or pathing_expand(self.root.path, filename=self._filename)
+            expand_path_wildcards(self.root.path, filename=filename)
+            or get_config_list_files(self.model.config.data.exposure.geom)
+            or expand_path_wildcards(self.root.path, filename=self._filename)
         )
         assert files is not None  # Yh..
         # Loop through the found files
         logger.info("Reading exposure geometry data")
-        for read_path, name in zip(*files):
+        for read_path in files:
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading '{name}' exposure geometry")
+            logger.info(f"Reading '{read_path.stem}' exposure geometry")
             # Read the data
             data = read_geoms(read_path=read_path, **kwargs)
             # Set the data
-            self.set(data=data, name=name)
+            self.set(data=data, name=read_path.stem)
 
     @hydromt_step
     def write(
@@ -118,8 +119,8 @@ class ExposureGeomsComponent(GeomsComponent):
         filename : Path | str, optional
             Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            If None, the value(s) is/ are either taken from the model configurations or
-            the `_filename` attribute, by default None.
+            If None, the value(s) is/ are derived from the `_filename` attribute,
+            by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -156,7 +157,7 @@ class ExposureGeomsComponent(GeomsComponent):
             # the config component
             if gdf.crs is not None:
                 entry.settings = ExposureGeometrySettings(
-                    srs=crs_representation(gdf.crs)
+                    crs=crs_representation(gdf.crs)
                 )
             logger.info(
                 f"Writing '{name}' exposure geometry",

@@ -9,7 +9,7 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.settings import ExposureGeometry
+from hydromt_fiat.settings.exposure import ExposureGeometry
 from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,

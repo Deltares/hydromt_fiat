@@ -8,13 +8,10 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.utils import (
     CURVES,
     EXPOSURE,
-    EXPOSURE_GRID_SETTINGS,
     GEOM,
     HAZARD,
-    MODEL_TYPE,
     REGION,
     SETTINGS,
-    VAR_AS_BAND,
     VULNERABILITY,
 )
 
@@ -28,8 +25,7 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     model.read()
 
     # Assert its state
-    assert len(model.config.data) == 4
-    assert model.config.get(MODEL_TYPE) == GEOM
+    assert model.config.data.model.type == GEOM
     assert isinstance(model.region, gpd.GeoDataFrame)
     np.testing.assert_almost_equal(model.region.total_bounds[0], 85675, decimal=0)
     assert len(model.exposure_geoms.data) == 1
@@ -56,5 +52,3 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
     assert Path(tmp_path, VULNERABILITY, f"{CURVES}_id.csv").is_file()
-    # Assert the addition of some settings set during I/O
-    assert model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")

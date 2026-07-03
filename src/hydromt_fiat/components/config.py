@@ -7,9 +7,9 @@ from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
 
-from hydromt_fiat.components.utils import make_config_paths_relative
 from hydromt_fiat.readers import read_config
 from hydromt_fiat.settings import DEFAULT_SETTINGS, Settings
+from hydromt_fiat.settings.file import FileContext
 from hydromt_fiat.utils import SETTINGS
 from hydromt_fiat.writers import write_config
 
@@ -59,6 +59,11 @@ class ConfigComponent(ModelComponent):
                 self.read()
 
     ## Properties
+    @property
+    def context(self) -> FileContext:
+        """Return the context for the pydantic config."""
+        return FileContext(config_dir=self.dir, output_dir=self.output_dir)
+
     @property
     def data(self) -> Settings:
         """Model config values."""
@@ -130,7 +135,7 @@ class ConfigComponent(ModelComponent):
         # Read the data (config)
         logger.info("Reading model configuration")
         data = read_config(read_path=read_path)
-        self._data = Settings.model_validate(data)
+        self._data = Settings.model_validate(data, context=self.context)
 
     @hydromt_step
     def write(
@@ -157,11 +162,7 @@ class ConfigComponent(ModelComponent):
 
         # Solve the pathing in the data
         # Extra check for dir_input
-        parent_dir = write_path.parent
-        write_data = make_config_paths_relative(
-            self.data.model_dump(exclude_none=True),
-            parent_dir,
-        )
+        write_data = self.data.to_dict(context=self.context)
 
         # Dump to a file
         logger.info("Writing model configuration")
@@ -188,5 +189,6 @@ class ConfigComponent(ModelComponent):
             Settigns to up update the configuration with.
         """
         self._data = Settings.model_validate(
-            {**self.data.model_dump(exclude_none=True), **settings},
+            {**self.data.to_dict(), **settings},
+            context=self.context,
         )

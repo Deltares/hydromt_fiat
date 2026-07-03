@@ -13,12 +13,11 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
-from hydromt_fiat.settings import ExposureGrid, ExposureGridSettings
+from hydromt_fiat.settings import get_file_from_settings_component
+from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GRID_FILE,
     GRID,
-    MODEL_TYPE,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -86,11 +85,7 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or (
-                self.model.config.data.exposure.grid.file
-                if self.model.config.data.exposure.grid is not None
-                else None
-            )
+            or get_file_from_settings_component(self.model.config.data.exposure.grid)
             or self._filename
         )
         # Read the data
@@ -116,8 +111,8 @@ class ExposureGridComponent(GridComponent):
         Parameters
         ----------
         filename : Path | str, optional
-            Filename relative to model root. If None, the value is either taken from
-            the model configurations or the `_filename` attribute, by default None.
+            Filename relative to model root. If None, the value is taken from
+            the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -134,10 +129,8 @@ class ExposureGridComponent(GridComponent):
             return
 
         # Sort out the filename
-        # Hierarchy: 1) signature, 2) config file, 3) default
-        filename = (
-            filename or self.model.config.get(EXPOSURE_GRID_FILE) or self._filename
-        )
+        # Hierarchy: 1) signature, 2) default
+        filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
@@ -153,7 +146,7 @@ class ExposureGridComponent(GridComponent):
         # Update the config
         self.model.config.data.exposure.grid = ExposureGrid(
             file=write_path,
-            settings=ExposureGridSettings(srs=crs_representation(self.data.raster.crs)),
+            settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     ## Setup methods
@@ -250,4 +243,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set(MODEL_TYPE, GRID)
+        self.model.config.data.model.type = GRID
