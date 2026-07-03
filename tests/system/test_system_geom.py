@@ -17,7 +17,7 @@ except ImportError:
 
 
 @pytest.mark.skipif(
-    not HAS_FIAT or Version(__version__) < Version("1"),
+    not HAS_FIAT or Version(__version__) < Version("1.0.0.dev0"),
     reason="At least Delft-FIAT version 1.0.0 is required.",
 )
 @pytest.mark.system
@@ -36,11 +36,11 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.setup_config(model_type=GEOM, calculation_method=FLOOD_LEVEL)
-    model.setup_region(build_region_small)
+    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
+    model.set_region(build_region_small)
 
     # Setup the vulnerability
-    model.vulnerability.setup(
+    model.vulnerability.create(
         "jrc_curves",
         "jrc_curves_link",
         unit="m",
@@ -48,19 +48,19 @@ def test_system_geom_model(
     )
 
     # Add an hazard layer
-    model.hazard.setup(
+    model.hazard.create(
         "flood_event",
     )
 
     # Setup the exposure geometry data
-    model.exposure_geoms.setup(
+    model.exposure_geoms.create(
         exposure_fname="buildings",
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
-    model.exposure_geoms.setup_max_damage(
+    model.exposure_geoms.create_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
@@ -77,6 +77,7 @@ def test_system_geom_model(
     ## FIAT
     # Read the config file
     cfg = Configurations.from_file(Path(model.root.path, model.config._filename))
+
     # Read the data in the fiat model
     fmodel = GeomModel(cfg)
 
