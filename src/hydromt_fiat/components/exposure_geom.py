@@ -215,10 +215,8 @@ class ExposureGeomsComponent(GeomsComponent):
         logger.info("Setting up exposure geometries")
         # Check for region
         if self.model.region is None:
-            # TODO Replace with custom error class
             raise MissingRegionError(
-                "Region is None -> \
-use 'setup_region' before this method"
+                "Region is None -> use 'set_region' before this method"
             )
 
         # Get the name based on the stem of a path
