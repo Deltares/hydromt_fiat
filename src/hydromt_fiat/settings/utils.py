@@ -31,9 +31,9 @@ def _relpath(
         return value
     value = Path(value)
     if _mount(value.as_posix()) == _mount(root.as_posix()):
-        value = Path(relpath(value, root))
-        if len(value.parts) < 5:
-            return value.as_posix()
+        value_rel = Path(relpath(value, root))
+        if len(value_rel.parts) < 5:
+            return value_rel.as_posix()
     return value.as_posix()
 
 

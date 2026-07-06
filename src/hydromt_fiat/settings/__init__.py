@@ -33,18 +33,22 @@ class Settings(BaseModel):
         default=Model(type="geom"),
         description="FIAT model settings.",
     )
+
     output: Output = Field(
         default=Output(),
         description="Output settings for the model.",
     )
+
     exposure: Exposure = Field(
         default=Exposure(),
         description="Exposure settings for the model.",
     )
+
     vulnerability: Vulnerability | None = Field(
         default=None,
         description="Vulnerability settings for the model.",
     )
+
     hazard: Hazard | None = Field(
         default=None,
         description="Hazard settings for the model.",

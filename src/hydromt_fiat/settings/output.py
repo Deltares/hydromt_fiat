@@ -27,10 +27,12 @@ class Output(BaseModel):
         default=Path("output"),
         description="Directory to store the output of the model.",
     )
+
     geom: list[OutputGeometry] | None = Field(
         default=None,
         description="Output settings for the geometry model.",
     )
+
     grid: OutputGrid | None = Field(
         default=None,
         description="Output settings for the grid model.",

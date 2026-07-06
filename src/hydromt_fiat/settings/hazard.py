@@ -23,10 +23,16 @@ class HazardSettings(BaseModel):
 class Hazard(InputFileModel):
     """Hazard settings for the FIAT model."""
 
+    resalg: str = Field(
+        default="nearest",
+        description="Resampling method when reprojecting.",
+    )
+
     rp: list[float] | None = Field(
         default=None,
         description="Return periods for the hazard values.",
     )
+
     settings: HazardSettings | None = Field(
         default=None,
         description="Settings for reading the hazard data.",

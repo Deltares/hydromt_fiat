@@ -37,6 +37,16 @@ def test__relpath_abs(tmp_path: Path):
     assert p == "../tmp.txt"
 
 
+def test__relpath_abs_5(tmp_path: Path):
+    porig = Path(tmp_path, "tmp/tmp/tmp/tmp/tmp/tmp/tmp/tmp.txt")
+    # Call the function, while far away from the our path
+    p = _relpath(porig, tmp_path)
+
+    # Assert the output
+    assert isinstance(p, str)
+    assert p == porig.as_posix()
+
+
 def test__relpath_rel(tmp_path: Path):
     # Call the function on a path that is already relative
     p = _relpath("tmp/tmp.txt", tmp_path)

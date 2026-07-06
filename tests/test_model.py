@@ -4,6 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 import xarray as xr
+from hydromt.model.mode import ModelMode
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import (
@@ -137,6 +138,24 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     assert model.hazard.data.flood_event.shape == (7, 6)
     assert model.output_geoms.data["foo"].shape[0] == 12
     assert model.output_grid.data.commercial_content.shape == (11, 12)
+
+
+def test_model_move(
+    tmp_path: Path,
+):
+    # Create a model in read mode
+    model = FIATModel(tmp_path, mode="r")
+    # Assert current properties
+    assert model.root.mode == ModelMode.READ
+    assert model.root.path == tmp_path
+
+    # Move the root to another directory
+    model.move(root=Path(tmp_path, "new_root"))
+
+    # Assert properties and directory
+    assert model.root.mode == ModelMode.FORCED_WRITE
+    assert model.root.path == Path(tmp_path, "new_root")
+    assert Path(tmp_path, "new_root").exists()
 
 
 def test_model_reproject(
