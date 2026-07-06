@@ -218,22 +218,28 @@ class FIATModel(Model):
     def move(
         self,
         root: Path,
+        write: bool = False,
     ):
         """Move the model to a new directory.
 
         Could be seen as a model copy,
-        when calling :py:meth:`~FIATModel.write` directly afterwards.
+        when calling :py:meth:`~FIATModel.write` directly afterwards or setting
+        write to True.
 
         Warning
         -------
-        Does not directly write the data to the new directory.
+        Does not directly write the data to the new director when write is set to False.
 
         Parameters
         ----------
         root : Path
             The path to the new model directory.
+        write : bool, optional
+            If True, also writes the model to the new directory. By Default False.
         """
         self.root.set(path=root, mode="w+")
+        if write:
+            self.write()
 
     @hydromt_step
     def reproject(

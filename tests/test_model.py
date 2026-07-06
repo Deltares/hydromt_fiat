@@ -156,6 +156,24 @@ def test_model_move(
     assert model.root.mode == ModelMode.FORCED_WRITE
     assert model.root.path == Path(tmp_path, "new_root")
     assert Path(tmp_path, "new_root").exists()
+    # Assert it's empty
+    assert len(list(model.root.path.iterdir())) == 0
+
+
+def test_model_move_write(
+    tmp_path: Path,
+):
+    # Create a model in read mode
+    model = FIATModel(tmp_path, mode="r")
+
+    # Move the root to another directory
+    model.move(root=Path(tmp_path, "new_root"), write=True)
+
+    # Assert directory
+    assert Path(tmp_path, "new_root").exists()
+    # Assert it's not empty
+    assert len(list(model.root.path.iterdir())) == 1
+    assert Path(model.root.path, "settings.toml").is_file()
 
 
 def test_model_reproject(
