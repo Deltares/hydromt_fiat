@@ -4,6 +4,7 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 import xarray as xr
+from hydromt.model.mode import ModelMode
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import (
@@ -16,15 +17,13 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
+from hydromt_fiat.settings import DEFAULT_SETTINGS, Settings
 from hydromt_fiat.utils import (
     CONFIG,
     FLOOD_LEVEL,
     GEOM,
-    GRID,
-    MODEL,
     REGION,
     SETTINGS,
-    TYPE,
 )
 
 
@@ -44,7 +43,7 @@ def test_model_basic_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL, some_var="some_value")
+    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
     # Write the model
     model.write()
     model = None
@@ -55,7 +54,8 @@ def test_model_basic_read_write(tmp_path: Path):
     model.read()
     model.read_output()
 
-    assert len(model.config.data) != 0
+    # Due to flood level
+    assert model.config.data != DEFAULT_SETTINGS
 
 
 def test_model_clear(  # Dont like this too much, as it is a bit of an integration test
@@ -71,7 +71,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
 
     # Set data like a dummy
     model.components[REGION]._data = build_region_small
-    model.config._data = {MODEL: {TYPE: GEOM}}
+    model.config._data = Settings()
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.exposure_grid._data = exposure_grid
     model.hazard._data = hazard
@@ -81,7 +81,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     # Assert the current state
     assert isinstance(model.region, gpd.GeoDataFrame)
     assert model.crs.to_epsg() == 28992
-    assert len(model.config.data) == 1
+    assert model.config.data.model.type == GEOM
     assert len(model.exposure_geoms.data) == 1
     assert len(model.exposure_grid.data.data_vars) == 4
     assert len(model.hazard.data.data_vars) == 1
@@ -94,7 +94,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     # Assert the state afterwards
     assert model.region is None
     assert model.crs is None
-    assert len(model.config.data) == 0
+    assert model.config.data.model.type == GEOM
     assert len(model.exposure_geoms.data) == 0
     assert len(model.exposure_grid.data.data_vars) == 0
     assert len(model.hazard.data.data_vars) == 0
@@ -138,6 +138,42 @@ def test_model_clip(  # Dont like this too much, as it is a bit of an integratio
     assert model.hazard.data.flood_event.shape == (7, 6)
     assert model.output_geoms.data["foo"].shape[0] == 12
     assert model.output_grid.data.commercial_content.shape == (11, 12)
+
+
+def test_model_move(
+    tmp_path: Path,
+):
+    # Create a model in read mode
+    model = FIATModel(tmp_path, mode="r")
+    # Assert current properties
+    assert model.root.mode == ModelMode.READ
+    assert model.root.path == tmp_path
+
+    # Move the root to another directory
+    model.move(root=Path(tmp_path, "new_root"))
+
+    # Assert properties and directory
+    assert model.root.mode == ModelMode.FORCED_WRITE
+    assert model.root.path == Path(tmp_path, "new_root")
+    assert Path(tmp_path, "new_root").exists()
+    # Assert it's empty
+    assert len(list(model.root.path.iterdir())) == 0
+
+
+def test_model_move_write(
+    tmp_path: Path,
+):
+    # Create a model in read mode
+    model = FIATModel(tmp_path, mode="r")
+
+    # Move the root to another directory
+    model.move(root=Path(tmp_path, "new_root"), write=True)
+
+    # Assert directory
+    assert Path(tmp_path, "new_root").exists()
+    # Assert it's not empty
+    assert len(list(model.root.path.iterdir())) == 1
+    assert Path(model.root.path, "settings.toml").is_file()
 
 
 def test_model_reproject(
@@ -232,18 +268,13 @@ def test_model_set_config(tmp_path: Path):
     model.set_config(
         modeltype=GEOM,
         method=FLOOD_LEVEL,
-        **{
-            "global.model": "geom",
-            "global.srs.value": "EPSG:4326",
-            "output.path": "output",
-        },
+        **{"output.path": "output"},
     )
 
     # Assert the config component
-    assert model.config.data["output"] == {"path": "output"}
-    assert model.config.get("output.path") == "output"
-    assert len(model.config.get("global")) == 2
-    assert model.config.get("global.srs") == {"value": "EPSG:4326"}
+    assert model.config.data.model.type == GEOM
+    assert model.config.data.model.method == FLOOD_LEVEL
+    assert model.config.data.output.path == Path("output")
 
 
 def test_model_set_config_errors(tmp_path: Path):
@@ -251,9 +282,7 @@ def test_model_set_config_errors(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Set the nonsense model type
-    with pytest.raises(
-        ValueError, match=f"Model_type must be either '{GEOM}' or '{GRID}'"
-    ):
+    with pytest.raises(ValueError, match="1 validation error for Settings"):
         model.set_config(
             modeltype="foo",
             method=FLOOD_LEVEL,

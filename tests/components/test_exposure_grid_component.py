@@ -12,12 +12,8 @@ from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GRID_FILE,
-    EXPOSURE_GRID_SETTINGS,
     FN_CURVE,
     GRID,
-    MODEL_TYPE,
-    VAR_AS_BAND,
     VULNERABILITY,
 )
 
@@ -108,34 +104,11 @@ def test_exposure_grid_component_write(
     # Assert the output
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
     # Assert the config
-    assert component.model.config.get(EXPOSURE_GRID_FILE) == Path(
+    assert component.model.config.data.exposure.grid.file == Path(
         tmp_path,
         EXPOSURE,
         "spatial.nc",
     )
-    assert component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
-
-
-def test_exposure_grid_component_write_config(
-    tmp_path: Path,
-    mock_model_config: MagicMock,
-    exposure_grid_clipped: xr.Dataset,
-):
-    # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
-
-    # Set data like a dummy
-    component._data = exposure_grid_clipped["industrial_content"].to_dataset()
-    # Add to the config
-    component.model.config.set(EXPOSURE_GRID_FILE, "foo.nc")
-
-    # Write the data
-    component.write()
-
-    # Assert the output
-    assert Path(tmp_path, "foo.nc").is_file()
-    # Assert the config
-    assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
 def test_exposure_grid_component_write_sig(
@@ -155,7 +128,7 @@ def test_exposure_grid_component_write_sig(
     # Assert the output
     assert Path(tmp_path, "baz.nc").is_file()
     # Assert the config file
-    assert component.model.config.get(EXPOSURE_GRID_FILE) == Path(
+    assert component.model.config.data.exposure.grid.file == Path(
         tmp_path,
         "baz.nc",
     )
@@ -179,8 +152,7 @@ def test_exposure_grid_component_create(
     assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
-    assert component.model.config.get(MODEL_TYPE) == GRID
-    assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
+    assert component.model.config.data.model.type == GRID
 
 
 def test_exposure_grid_component_create_multi(

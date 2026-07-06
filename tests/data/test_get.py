@@ -155,49 +155,49 @@ def test_download(
 @check_connection()
 def test_fetch_data():
     # Call the function in it's default state
-    path = fetch_data(name="fiat-model-c", cache_dir=CACHE_DIR)
+    path = fetch_data(name="global-data", cache_dir=CACHE_DIR)
 
     # Get the cache dir location
-    data_dir = Path(CACHE_DIR, "fiat-model-c")
+    data_dir = Path(CACHE_DIR, "global-data")
 
     # Assert the output
-    assert Path(CACHE_DIR, "fiat-model-c.tar.gz").is_file()
+    assert Path(CACHE_DIR, "global-data.tar.gz").is_file()
     assert data_dir.is_dir()
     assert data_dir == path
-    assert Path(data_dir, "exposure").is_dir()
-    assert Path(data_dir, "settings.toml").is_file()
+    assert Path(data_dir, "vulnerability").is_dir()
+    assert Path(data_dir, "data_catalog.yml").is_file()
 
 
 @check_connection(error=False)
 def test_fetch_data_cache_dir(tmp_path: Path):
     # Call the function in it's default state
-    path = fetch_data(name="fiat-model-c", cache_dir=tmp_path)
+    path = fetch_data(name="global-data", cache_dir=tmp_path)
 
     # Get the cache dir location
-    data_dir = Path(tmp_path, "fiat-model-c")
+    data_dir = Path(tmp_path, "global-data")
 
     # Assert the output
-    assert Path(tmp_path, "fiat-model-c.tar.gz").is_file()
+    assert Path(tmp_path, "global-data.tar.gz").is_file()
     assert data_dir.is_dir()
     assert data_dir == path
-    assert Path(data_dir, "exposure").is_dir()
-    assert Path(data_dir, "settings.toml").is_file()
+    assert Path(data_dir, "vulnerability").is_dir()
+    assert Path(data_dir, "data_catalog.yml").is_file()
 
 
 def test_fetch_data_no_subdir(tmp_path: Path):
     # Call the function in it's default state
     path = fetch_data(
-        name="fiat-model-c",
+        name="global-data",
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir=tmp_path,
     )
 
     # Assert the output
-    assert Path(CACHE_DIR, "fiat-model-c.tar.gz").is_file()
+    assert Path(CACHE_DIR, "global-data.tar.gz").is_file()
     assert tmp_path == path
-    assert Path(tmp_path, "exposure").is_dir()
-    assert Path(tmp_path, "settings.toml").is_file()
+    assert Path(tmp_path, "vulnerability").is_dir()
+    assert Path(tmp_path, "data_catalog.yml").is_file()
 
 
 def test_fetch_data_relative_output_dir(tmp_path: Path):
@@ -207,7 +207,7 @@ def test_fetch_data_relative_output_dir(tmp_path: Path):
 
     # Call the function in it's default state
     path = fetch_data(
-        name="fiat-model-c",
+        name="global-data",
         sub_dir=False,
         cache_dir=CACHE_DIR,
         output_dir="data",
@@ -217,10 +217,10 @@ def test_fetch_data_relative_output_dir(tmp_path: Path):
     data_dir = Path(tmp_path, "data")
 
     # Assert the output
-    assert Path(CACHE_DIR, "fiat-model-c.tar.gz").is_file()
+    assert Path(CACHE_DIR, "global-data.tar.gz").is_file()
     assert data_dir == path
-    assert Path(data_dir, "exposure").is_dir()
-    assert Path(data_dir, "settings.toml").is_file()
+    assert Path(data_dir, "vulnerability").is_dir()
+    assert Path(data_dir, "data_catalog.yml").is_file()
 
     # Change the cwd back
     os.chdir(cur_cwd)

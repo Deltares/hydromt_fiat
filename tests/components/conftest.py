@@ -1,4 +1,3 @@
-import platform
 import shutil
 from pathlib import Path
 from typing import Callable
@@ -13,14 +12,6 @@ from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ConfigComponent
-
-
-## OS related fixture
-@pytest.fixture(scope="session")
-def mount_string() -> str:
-    if platform.system().lower() == "windows":
-        return "d:/"
-    return "/d/"  # Posix paths
 
 
 ## Models and Mocked objects

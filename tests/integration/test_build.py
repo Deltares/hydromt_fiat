@@ -14,7 +14,6 @@ from hydromt_fiat.utils import (
     GRID,
     HAZARD,
     MAX,
-    MODEL_TYPE,
     REGION,
     SETTINGS,
     VULNERABILITY,
@@ -79,7 +78,7 @@ def test_build_model_geom(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.get(MODEL_TYPE) == GEOM
+    assert model.config.data.model.type == GEOM
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
@@ -140,7 +139,7 @@ def test_build_model_grid(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.get(MODEL_TYPE) == GRID
+    assert model.config.data.model.type == GRID
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars

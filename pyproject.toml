@@ -43,6 +43,7 @@ dependencies = [
     "osmnx",
     "pandas",
     "pint",
+    "pydantic",
     "pyproj",
     "requests",
     "shapely",

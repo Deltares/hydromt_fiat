@@ -1,11 +1,11 @@
 {
     "fiat-model-c.tar.gz": {
-        "hash": "d7fcdb5182558c06e6fd6a9669018f3c",
+        "hash": "3e76212e27b50db0e5b439580d8828fb",
         "path": "test-data",
         "version": "v1.0.0"
     },
     "fiat-model.tar.gz": {
-        "hash": "a89dd269151a209edbb2b8ad076ee6c2",
+        "hash": "e14eb05daa01721b19349ba6c5f2ec44",
         "path": "test-data",
         "version": "v1.0.0"
     },

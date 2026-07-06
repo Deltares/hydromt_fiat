@@ -13,11 +13,7 @@ from hydromt_fiat.components import HazardComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.utils import (
     HAZARD,
-    HAZARD_FILE,
-    HAZARD_RP,
-    HAZARD_SETTINGS,
-    MODEL_RISK,
-    VAR_AS_BAND,
+    RP,
 )
 
 
@@ -109,8 +105,7 @@ def test_hazard_component_write(
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
 
     # Assert the config file
-    assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, f"{HAZARD}.nc")
-    assert not component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
+    assert component.model.config.data.hazard.file == Path(tmp_path, f"{HAZARD}.nc")
 
 
 def test_hazard_component_write_sig(
@@ -131,8 +126,7 @@ def test_hazard_component_write_sig(
     assert Path(tmp_path, "other", "baz.nc").is_file()
 
     # Assert the config file
-    assert component.model.config.get(HAZARD_FILE) == Path(tmp_path, "other", "baz.nc")
-    assert component.model.config.get(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}")
+    assert component.model.config.data.hazard.file == Path(tmp_path, "other", "baz.nc")
 
 
 def test_hazard_component_create(
@@ -178,8 +172,8 @@ def test_hazard_component_create_risk(
     )
 
     assert isinstance(component.data, xr.Dataset)
-    assert model_with_region.config.get(MODEL_RISK)
-    assert model_with_region.config.get(HAZARD_RP) == [50000]
+    assert component.data.flood_event_highres.attrs[RP] == 50000
+    assert model_with_region.config.data.model.risk
 
 
 def test_hazard_component_create_errors(model: FIATModel):

@@ -11,19 +11,18 @@ from hydromt.model.steps import hydromt_step
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.geom import GeomsComponent
-from hydromt_fiat.components.utils import pathing_config, pathing_expand
+from hydromt_fiat.components.utils import expand_path_wildcards
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_geoms
+from hydromt_fiat.settings.exposure import (
+    ExposureGeometry,
+    ExposureGeometrySettings,
+)
+from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GEOM,
-    EXPOSURE_GEOM_FILE,
-    FILE,
     GEOM,
-    MODEL_TYPE,
-    SETTINGS,
-    SRS,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -89,21 +88,21 @@ class ExposureGeomsComponent(GeomsComponent):
         # Sort the filenames
         # Hierarchy: 1) signature, 2) settings file, 3) default
         files = (
-            pathing_expand(self.root.path, filename=filename)
-            or pathing_config(self.model.config.get(EXPOSURE_GEOM_FILE, abs_path=True))
-            or pathing_expand(self.root.path, filename=self._filename)
+            expand_path_wildcards(self.root.path, filename=filename)
+            or get_config_list_files(self.model.config.data.exposure.geom)
+            or expand_path_wildcards(self.root.path, filename=self._filename)
         )
         assert files is not None  # Yh..
         # Loop through the found files
         logger.info("Reading exposure geometry data")
-        for read_path, name in zip(*files):
+        for read_path in files:
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading '{name}' exposure geometry")
+            logger.info(f"Reading '{read_path.stem}' exposure geometry")
             # Read the data
             data = read_geoms(read_path=read_path, **kwargs)
             # Set the data
-            self.set(data=data, name=name)
+            self.set(data=data, name=read_path.stem)
 
     @hydromt_step
     def write(
@@ -120,8 +119,8 @@ class ExposureGeomsComponent(GeomsComponent):
         filename : Path | str, optional
             Filename relative to model root. Should contain a {name} placeholder
             which will be used to determine the names/keys of the geometries.
-            If None, the value(s) is/ are either taken from the model configurations or
-            the `_filename` attribute, by default None.
+            If None, the value(s) is/ are derived from the `_filename` attribute,
+            by default None.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -148,27 +147,27 @@ class ExposureGeomsComponent(GeomsComponent):
                 logger.warning(f"{name} is empty. Skipping...")
                 continue
 
-            # Abuse the fact that a dictionary is mutable and passed by ref
-            entry: dict[str, Any] = {}
-            cfg.append(entry)
             # Create the outgoing file path
             write_path = Path(
                 self.root.path,
                 filename.format(name=name),
             )
-            entry[FILE] = write_path
+            entry = ExposureGeometry(file=write_path)
             # Due to header overloading, this is not solved properly in
             # the config component
             if gdf.crs is not None:
-                entry[SETTINGS] = {SRS: crs_representation(gdf.crs)}
+                entry.settings = ExposureGeometrySettings(
+                    crs=crs_representation(gdf.crs)
+                )
             logger.info(
                 f"Writing '{name}' exposure geometry",
             )
             # Write the entire thing to vector file
             write_geoms(data=gdf, write_path=write_path, **kwargs)
+            cfg.append(entry)
 
         # Set the config entries
-        self.model.config.set(EXPOSURE_GEOM, cfg)
+        self.model.config.data.exposure.geom = cfg
 
     ## Setup methods
     @hydromt_step
@@ -251,7 +250,7 @@ use 'setup_region' before this method"
 
         # Update the config
         logger.info("Setting the model type to 'geom'")
-        self.model.config.set(MODEL_TYPE, GEOM)
+        self.model.config.data.model.type = GEOM
 
     @hydromt_step
     def create_link(

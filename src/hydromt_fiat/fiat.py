@@ -27,11 +27,12 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
-    MODEL_CALC,
-    MODEL_TYPE,
+    METHOD,
+    MODEL,
     OUTPUT,
     REGION,
     SETTINGS,
+    TYPE,
     VULNERABILITY,
 )
 
@@ -214,6 +215,33 @@ class FIATModel(Model):
             component.clip(self.region, inplace=True)
 
     @hydromt_step
+    def move(
+        self,
+        root: Path,
+        write: bool = False,
+    ):
+        """Move the model to a new directory.
+
+        Could be seen as a model copy,
+        when calling :py:meth:`~FIATModel.write` directly afterwards or setting
+        write to True.
+
+        Warning
+        -------
+        Does not directly write the data to the new director when write is set to False.
+
+        Parameters
+        ----------
+        root : Path
+            The path to the new model directory.
+        write : bool, optional
+            If True, also writes the model to the new directory. By Default False.
+        """
+        self.root.set(path=root, mode="w+")
+        if write:
+            self.write()
+
+    @hydromt_step
     def reproject(
         self,
         crs: CRS | int | str | None = None,
@@ -265,13 +293,9 @@ class FIATModel(Model):
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        if modeltype not in [GEOM, GRID]:
-            raise ValueError(f"Model_type must be either '{GEOM}' or '{GRID}'")
-        self.config.set(MODEL_TYPE, modeltype)
-        self.config.set(MODEL_CALC, method)
+        model_settings = {TYPE: modeltype, METHOD: method}
         # Set the other defined settings
-        for key, value in settings.items():
-            self.config.set(key, value)
+        self.config.update(**{MODEL: model_settings, **settings})
 
     @hydromt_step
     def set_region(

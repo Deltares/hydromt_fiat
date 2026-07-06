@@ -13,14 +13,10 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
+from hydromt_fiat.settings import get_file_from_settings_component
+from hydromt_fiat.settings.hazard import Hazard, HazardSettings
 from hydromt_fiat.utils import (
     HAZARD,
-    HAZARD_FILE,
-    HAZARD_RP,
-    HAZARD_SETTINGS,
-    MODEL_RISK,
-    SRS,
-    VAR_AS_BAND,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -88,7 +84,7 @@ class HazardComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get(HAZARD_FILE, abs_path=True)
+            or get_file_from_settings_component(self.model.config.data.hazard)
             or self._filename
         )
 
@@ -115,8 +111,8 @@ class HazardComponent(GridComponent):
         Parameters
         ----------
         filename : Path | str, optional
-            Filename relative to model root. If None, the value is either taken from
-            the model configurations or the `_filename` attribute, by default None.
+            Filename relative to model root. If None, the value is taken from
+            the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -133,8 +129,8 @@ class HazardComponent(GridComponent):
             return
 
         # Sort out the filename
-        # Hierarchy: 1) signature, 2) config file, 3) default
-        filename = filename or self.model.config.get(HAZARD_FILE) or self._filename
+        # Hierarchy: 1) signature, 2) default
+        filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
@@ -148,15 +144,9 @@ class HazardComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.set(HAZARD_FILE, write_path)
-        # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}", False)
-        if len(self.data.data_vars) > 1:
-            self.model.config.set(f"{HAZARD_SETTINGS}.{VAR_AS_BAND}", True)
-        # Set the srs
-        self.model.config.set(
-            f"{HAZARD_SETTINGS}.{SRS}",
-            crs_representation(self.data.raster.crs),
+        self.model.config.data.hazard = Hazard(
+            file=write_path,
+            settings=HazardSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     # Setup methods
@@ -258,6 +248,4 @@ class HazardComponent(GridComponent):
         self.set(ds)
 
         # Set the config entries
-        self.model.config.set(MODEL_RISK, risk)
-        if risk:
-            self.model.config.set(HAZARD_RP, return_periods)
+        self.model.config.data.model.risk = risk
