@@ -1,7 +1,6 @@
 """Some utility for the settings."""
 
 import re
-from os.path import relpath
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -34,7 +33,7 @@ def _relpath(
         return value
     value = Path(value)
     if _mount(value.as_posix()) == _mount(root.as_posix()):
-        value_rel = Path(relpath(value, root))
+        value_rel = value.relative_to(root, walk_up=True)
         if len(value_rel.parts) < 5:
             return value_rel.as_posix()
     return value.as_posix()
