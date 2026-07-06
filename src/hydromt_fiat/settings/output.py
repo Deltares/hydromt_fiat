@@ -11,6 +11,8 @@ from pydantic import (
 
 from hydromt_fiat.settings.file import OutputFileModel
 
+__all__ = ["Output"]
+
 
 class OutputGeometry(OutputFileModel):
     """Geometry model output settings."""

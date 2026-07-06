@@ -8,6 +8,8 @@ from pydantic import (
 
 from hydromt_fiat.utils import FLOOD_DEPTH, GEOM, GRID, HAZARD
 
+__all__ = ["Model"]
+
 
 class ModelGeom(BaseModel):
     """Settings for the geometry based model."""

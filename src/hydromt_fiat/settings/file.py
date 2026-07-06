@@ -13,6 +13,8 @@ from pydantic import (
 
 from hydromt_fiat.settings.utils import _relpath
 
+__all__ = ["InputFileModel", "OutputFileModel"]
+
 
 class FileContext(BaseModel):
     """Context for in- and output files."""
@@ -73,7 +75,7 @@ class OutputFileModel(BaseModel):
     @field_validator("file", mode="before")
     @classmethod
     def validate_file(cls, value: Path | str, info: ValidationInfo):
-        """Make the path absolute with the config file directory."""
+        """Make the path absolute with the output file directory."""
         context: FileContext = info.context or DEFAULT_CONTEXT
         path = Path(value)
         if path.is_absolute():
@@ -85,7 +87,7 @@ class OutputFileModel(BaseModel):
 
     @field_serializer("file")
     def serialize_file(self, value: Path, info: SerializationInfo) -> str:
-        """Make the paths relative to the config file."""
+        """Make the paths relative to the output file directory."""
         context: FileContext = info.context or DEFAULT_CONTEXT
         if context.output_dir is not None:
             return _relpath(value=value, root=context.output_dir)

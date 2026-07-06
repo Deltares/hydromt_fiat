@@ -9,6 +9,8 @@ from pydantic import (
 
 from hydromt_fiat.settings.file import InputFileModel
 
+__all__ = ["Exposure", "ExposureGeometry", "ExposureGrid"]
+
 
 class ExposureGeometrySettings(BaseModel):
     """Settings for reading the exposure geometry data."""

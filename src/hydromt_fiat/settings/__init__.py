@@ -16,6 +16,8 @@ from .model import Model
 from .output import Output
 from .vulnerability import Vulnerability
 
+__all__ = ["Settings"]
+
 
 def get_file_from_settings_component(
     component: ExposureGeometry | ExposureGrid | Hazard | Vulnerability,

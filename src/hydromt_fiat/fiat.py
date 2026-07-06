@@ -27,9 +27,12 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
+    METHOD,
+    MODEL,
     OUTPUT,
     REGION,
     SETTINGS,
+    TYPE,
     VULNERABILITY,
 )
 
@@ -284,10 +287,9 @@ class FIATModel(Model):
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        self.config.data.model.type = modeltype
-        self.config.data.model.method = method
+        model_settings = {TYPE: modeltype, METHOD: method}
         # Set the other defined settings
-        self.config.update(**settings)
+        self.config.update(**{MODEL: model_settings, **settings})
 
     @hydromt_step
     def set_region(

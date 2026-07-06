@@ -8,6 +8,8 @@ from pydantic import (
 
 from hydromt_fiat.settings.file import InputFileModel
 
+__all__ = ["Hazard"]
+
 
 class HazardSettings(BaseModel):
     """Settings for reading the hazard data."""

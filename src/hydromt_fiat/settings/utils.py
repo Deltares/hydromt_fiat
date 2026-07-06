@@ -3,12 +3,15 @@
 import re
 from os.path import relpath
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from hydromt_fiat.settings.file import InputFileModel
+from typing import Any, Protocol
 
 MOUNT_PATTERN = re.compile(r"(^\/(\w+)\/|^(\w+):\/).*$")
+
+
+class FileModel(Protocol):
+    """Simple type hinting helper."""
+
+    file: Path
 
 
 ## Config/ pathing related
@@ -38,7 +41,7 @@ def _relpath(
 
 
 def get_config_list_files(
-    config_files: list["InputFileModel"] | None,
+    config_files: list[FileModel] | None,
 ) -> list[Path] | None:
     """Sort pathing based on config entries (i.e. a list)."""
     if config_files is None:
