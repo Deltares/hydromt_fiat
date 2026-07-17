@@ -8,14 +8,14 @@ import numpy.typing as npt
 import pandas as pd
 
 from hydromt_fiat.utils import (
-    CURVE_ID,
-    EXPOSURE_LINK,
-    EXPOSURE_TYPE,
+    CURVE,
     FN,
-    OBJECT_ID,
-    OBJECT_TYPE,
-    SUBTYPE,
+    IMPACT__SUBTYPE,
+    IMPACT__TYPE,
+    OBJECT__ID,
+    OBJECT__TYPE,
 )
+from hydromt_fiat.workflows.impact import filter_impact
 
 __all__ = [
     "exposure_geoms_add_columns",
@@ -26,12 +26,25 @@ __all__ = [
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
+def _guess_object_type_columns(
+    columns: pd.Index,
+    dtypes: pd.Series,
+) -> str | None:
+    """Quick guess of the object type column."""
+    if any(dtypes == "str"):
+        return columns[dtypes.tolist().index("str")]
+    col = columns[0]
+    if dtypes[col].name == "geometry":
+        return None
+    return col
+
+
 def exposure_geoms_setup(
     exposure_data: gpd.GeoDataFrame,
-    exposure_type_column: str,
+    exposure_link: pd.DataFrame | None = None,
     *,
-    exposure_linking: pd.DataFrame | None = None,
-    exposure_type_fill: str | None = None,
+    exposure_object_type_column: str | None = None,
+    exposure_object_type_fill: str | None = None,
 ) -> gpd.GeoDataFrame:
     """Prep the raw exposure data for later fuctions/ methods.
 
@@ -41,13 +54,15 @@ def exposure_geoms_setup(
     ----------
     exposure_data : gpd.GeoDataFrame
         The raw exposure data.
-    exposure_type_column : str
-        The name of column that specifies the exposure type, e.g. occupancy type.
-    exposure_linking : pd.DataFrame, optional
+    exposure_link : pd.DataFrame, optional
         A custom mapping to table to first translate the exposure types in order to
         better link with the vulnerability data. A translation layer really.
-        By default None
-    exposure_type_fill : str, optional
+        By default None.
+    exposure_object_type_column : str, optional
+        The name of column that specifies the object type, e.g. occupancy type. If not
+        provided, it is assumed that the object type is defined by the first column
+        containing string values (text), by default None.
+    exposure_object_type_fill : str, optional
         Value to which missing entries in the exposure type column will be mapped to,
         if provided. By default None
 
@@ -58,47 +73,70 @@ def exposure_geoms_setup(
     """
     logger.info("Setting up the exposure data for further use")
     # Some checks
-    if exposure_type_column not in exposure_data:
-        raise KeyError(f"{exposure_type_column} not found in the exposure data")
-    if exposure_linking is None:
+    exposure_object_type_column = (
+        exposure_object_type_column
+        or _guess_object_type_columns(
+            columns=exposure_data.columns,
+            dtypes=exposure_data.dtypes,
+        )
+    )
+    if exposure_object_type_column not in exposure_data:
+        raise KeyError(f"{exposure_object_type_column} not found in the exposure data")
+    if exposure_link is None:
         logger.warning(
             "No exposure link table provided, \
 defaulting to exposure data object type"
         )
-        exposure_linking = pd.DataFrame(
+        exposure_link = pd.DataFrame(
             {
-                exposure_type_column: exposure_data[exposure_type_column].values,
-                OBJECT_TYPE: exposure_data[exposure_type_column].values,
+                exposure_object_type_column: exposure_data[
+                    exposure_object_type_column
+                ].values,
+                OBJECT__TYPE: exposure_data[exposure_object_type_column].values,
             }
         )
-    if exposure_type_column not in exposure_linking:
-        raise KeyError(f"{exposure_type_column} not found in the provided linking data")
-
+    if exposure_object_type_column not in exposure_link:
+        raise KeyError(
+            f"{exposure_object_type_column} not found in the provided linking data"
+        )
+    logger.info(f"Column containing the object type: {exposure_object_type_column}")
     # Make sure that there are no duplicated in the linking
-    exposure_linking = exposure_linking.drop_duplicates(
-        exposure_type_column,
+    exposure_link = exposure_link.drop_duplicates(
+        exposure_object_type_column,
         keep="first",
     )
     # Drop the row with None as key, prevents duplicates later
-    exposure_linking = exposure_linking.dropna(subset=exposure_type_column)
+    exposure_link = exposure_link.dropna(subset=exposure_object_type_column)
     # Also drop the remaining unused columns
-    exposure_linking = exposure_linking[[exposure_type_column, OBJECT_TYPE]]
+    exposure_link = exposure_link[[exposure_object_type_column, OBJECT__TYPE]]
 
     # Set the nodata fill
-    if exposure_type_fill is not None:
-        exposure_linking.loc[len(exposure_linking), :] = [None, exposure_type_fill]
-        exposure_linking[OBJECT_TYPE] = exposure_linking.loc[:, OBJECT_TYPE].fillna(
-            exposure_type_fill
+    if exposure_object_type_fill is not None:
+        exposure_link.loc[len(exposure_link), :] = [
+            None,
+            exposure_object_type_fill,
+        ]
+        exposure_link[OBJECT__TYPE] = exposure_link.loc[:, OBJECT__TYPE].fillna(
+            exposure_object_type_fill
         )
 
     # Store the length of the data
     data_or_size = len(exposure_data)
 
+    # Pre-compute which source values won't survive the inner merge so we can
+    # name them in the warning if any get dropped.
+    mapped_keys = set(exposure_link[exposure_object_type_column].dropna())
+    missing_counts = (
+        exposure_data[exposure_object_type_column]
+        .loc[lambda s: ~s.isin(mapped_keys)]
+        .value_counts(dropna=False)
+    )
+
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
-        exposure_linking,
-        on=exposure_type_column,
+        exposure_link,
+        on=exposure_object_type_column,
         how="inner",
         validate="many_to_many",
     )
@@ -106,9 +144,11 @@ defaulting to exposure data object type"
 
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
+        breakdown = ", ".join(f"{name!r}: {n}" for name, n in missing_counts.items())
         logger.warning(
-            f"{data_or_size - data_m_size} features could not be internally linked, \
-these were removed"
+            f"{data_or_size - data_m_size} features could not be internally linked, "
+            f"these were removed. Unmapped values in "
+            f"'{exposure_object_type_column}': {breakdown}"
         )
 
     # Return the data
@@ -118,6 +158,7 @@ these were removed"
 def exposure_geoms_link_vulnerability(
     exposure_data: gpd.GeoDataFrame,
     vulnerability: pd.DataFrame,
+    impact_type: list[str] | str,
 ) -> gpd.GeoDataFrame:
     """Link the exposure data to the vulnerability data.
 
@@ -129,6 +170,8 @@ def exposure_geoms_link_vulnerability(
         The raw exposure data.
     vulnerability : pd.DataFrame
         The vulnerability identifier table to link up with.
+    impact_type : str | list[str]
+        The impact type(s) to link for.
 
     Returns
     -------
@@ -136,26 +179,36 @@ def exposure_geoms_link_vulnerability(
         The resulting exposure data linked with the vulnerability data.
     """
     logger.info("Linking the exposure data with the vulnerability data")
-    # Get the unique exposure types
-    headers = vulnerability[EXPOSURE_TYPE]
-    if SUBTYPE in vulnerability:
-        headers = vulnerability[EXPOSURE_TYPE] + "_" + vulnerability[SUBTYPE]
+    # Select based on the impact type(s)
+    vulnerability = filter_impact(
+        vulnerability=vulnerability,
+        impact_type=impact_type,
+    )
+
+    # Get the unique exposure types. Only append the subtype where a row
+    # actually has one; rows without keep the bare impact type as header.
+    headers = vulnerability[IMPACT__TYPE].astype(str)
+    if IMPACT__SUBTYPE in vulnerability:
+        sub = vulnerability[IMPACT__SUBTYPE]
+        headers = headers.mask(
+            sub.notna() & ~(sub == ""), headers + "_" + sub.astype(str)
+        )
 
     # Set the current size for a check later on
     data_m_size = len(exposure_data)
     # Go through the unique new headers
     header_list = headers.unique().tolist()
     for header in header_list:
-        link = vulnerability[headers == header][[EXPOSURE_LINK, CURVE_ID]]
+        link = vulnerability[headers == header][[OBJECT__TYPE, CURVE]]
         link.rename(
-            {EXPOSURE_LINK: OBJECT_TYPE, CURVE_ID: f"{FN}_{header}"},
+            {OBJECT__TYPE: OBJECT__TYPE, CURVE: f"{FN}_{header}"},
             axis=1,
             inplace=True,
         )
         # And merge the data
         exposure_data = exposure_data.merge(
-            link.drop_duplicates(subset=OBJECT_TYPE),
-            on=OBJECT_TYPE,
+            link.drop_duplicates(subset=OBJECT__TYPE),
+            on=OBJECT__TYPE,
             how="left",
         )
 
@@ -175,8 +228,8 @@ vulnerability data, these were removed"
         )
 
     # Reset the index as default for object_id
-    if OBJECT_ID not in exposure_data.columns:
-        exposure_data.reset_index(names=OBJECT_ID, inplace=True)
+    if OBJECT__ID not in exposure_data.columns:
+        exposure_data.reset_index(names=OBJECT__ID, inplace=True)
 
     return exposure_data
 

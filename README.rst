@@ -28,10 +28,11 @@ HydroMT-FIAT relies on these excellent libraries:
 - affine
 - geopandas
 - hydromt
+- minio
 - numpy
 - osmnx
 - pint
-- pooch
+- pydantic
 - pyproj
 - requests
 - shapely

@@ -1,11 +1,27 @@
 {
-    "data": {
-        "fiat-model-c.tar.gz": "fb9669e77e469f6984d60c4499b8147a005945c8188ac7ce60c525fe4bcc1794",
-        "fiat-model.tar.gz": "33ff877f1cfc37affa0bd2e798cc0f92c6b605041ab90fa6fbbdf1133a7d6cb7",
-        "global-data.tar.gz": "c9d99af72010b20dd331d7ee9214c3a4b5c21fd8ab17ae25b04015d37f746d21",
-        "osmnx.tar.gz": "3baee58a4ccaea5f1a523806b9f629d5f54a146ff475eb3514efd06531c54712",
-        "test-build-data.tar.gz": "0d2c8576ba623c89679f2ed04b6290fcb017b7cc104accd87219b2c5babcf88a"
+    "fiat-model-c.tar.gz": {
+        "hash": "3e76212e27b50db0e5b439580d8828fb",
+        "path": "test-data",
+        "version": "v1.0.0"
     },
-    "url": "doi:10.5281/zenodo.17727394",
-    "version": "v0.1.11"
+    "fiat-model.tar.gz": {
+        "hash": "e14eb05daa01721b19349ba6c5f2ec44",
+        "path": "test-data",
+        "version": "v1.0.0"
+    },
+    "global-data.tar.gz": {
+        "hash": "917b3072e633fcdc2b61e2e7b1b51369",
+        "path": "global-data",
+        "version": "v1.0.0"
+    },
+    "osmnx.tar.gz": {
+        "hash": "48d1d7287268b21206c3b3638c4703b9",
+        "path": "test-data",
+        "version": "v1.0.0"
+    },
+    "test-build-data.tar.gz": {
+        "hash": "73f0d8d82a1a70238a4f46673782553d",
+        "path": "test-data",
+        "version": "v1.0.0"
+    }
 }

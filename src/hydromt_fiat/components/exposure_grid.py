@@ -2,27 +2,24 @@
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
-from hydromt.readers import open_nc
-from hydromt.writers import write_nc
 
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
-from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.readers import read_grid
+from hydromt_fiat.settings import get_file_from_settings_component
+from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GRID_FILE,
-    EXPOSURE_GRID_SETTINGS,
     GRID,
-    MODEL_TYPE,
-    SRS,
-    VAR_AS_BAND,
 )
+from hydromt_fiat.writers import write_grid
 
 __all__ = ["ExposureGridComponent"]
 
@@ -88,7 +85,7 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or self.model.config.get(EXPOSURE_GRID_FILE, abs_path=True)
+            or get_file_from_settings_component(self.model.config.data.exposure.grid)
             or self._filename
         )
         # Read the data
@@ -96,12 +93,9 @@ class ExposureGridComponent(GridComponent):
         # Return on nothing found
         if not read_path.is_file():
             return
-        logger.info(f"Reading the exposure grid file at {read_path.as_posix()}")
-        # Read with the (old) read function from hydromt-core
-        ds = open_nc(
-            read_path,
-            **kwargs,
-        )
+        logger.info("Reading exposure grid data")
+        # Read with the simple read function
+        ds = read_grid(read_path=read_path, **kwargs)
         # Set the dataset
         self.set(ds)
 
@@ -117,8 +111,8 @@ class ExposureGridComponent(GridComponent):
         Parameters
         ----------
         filename : Path | str, optional
-            Filename relative to model root. If None, the value is either taken from
-            the model configurations or the `_filename` attribute, by default None.
+            Filename relative to model root. If None, the value is taken from
+            the `_filename` attribute, by default None.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -135,48 +129,38 @@ class ExposureGridComponent(GridComponent):
             return
 
         # Sort out the filename
-        # Hierarchy: 1) signature, 2) config file, 3) default
-        filename = (
-            filename or self.model.config.get(EXPOSURE_GRID_FILE) or self._filename
-        )
+        # Hierarchy: 1) signature, 2) default
+        filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
         # Write it in a gdal compliant manner by default
-        logger.info(f"Writing the exposure grid data to {write_path.as_posix()}")
-        # Force north south before writing
-        self._data = force_ns(self.data)
-        write_nc(
-            self.data,
-            file_path=write_path,
+        logger.info("Writing exposure grid data")
+        write_grid(
+            data=self.data,
+            write_path=write_path,
             gdal_compliant=gdal_compliant,
-            rename_dims=False,
-            force_overwrite=self.root.mode.is_override_mode(),
-            force_sn=False,
-            progressbar=True,
-            to_netcdf_kwargs=kwargs,
+            overwrite=self.root.mode.is_override_mode(),
+            **kwargs,
         )
 
         # Update the config
-        self.model.config.set(EXPOSURE_GRID_FILE, write_path)
-        # Check for multiple bands, because gdal and netcdf..
-        self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", False)
-        if len(self.data.data_vars) > 1:
-            self.model.config.set(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}", True)
-        # Set the srs
-        self.model.config.set(
-            f"{EXPOSURE_GRID_SETTINGS}.{SRS}",
-            crs_representation(self.data.raster.crs),
+        self.model.config.data.exposure.grid = ExposureGrid(
+            file=write_path,
+            settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     ## Setup methods
     @hydromt_step
-    def setup(
+    def create(
         self,
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
+        *,
         expand: bool = True,
+        read_kwargs: dict[str, Any] | None = None,
+        read_link_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        """Set up an exposure grid.
+        """Create an exposure grid from data sources.
 
         Parameters
         ----------
@@ -189,22 +173,30 @@ class ExposureGridComponent(GridComponent):
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
             By default True.
+        read_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_fnames` data. These
+            arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
+        read_link_kwargs : dict, optional
+            Optional keyword arguments for reading the `exposure_link_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
         logger.info("Setting up gridded exposure")
 
-        if self.model.vulnerability.data.identifiers.empty == True:
+        if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(
-                "'setup_vulnerability' step is required \
+                "'vulnerability.create' step is required \
 before setting up exposure grid"
             )
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
-        exposure_linking = None
+        exposure_link = None
         if exposure_link_fname is not None:
-            exposure_linking = self.model.data_catalog.get_dataframe(
-                exposure_link_fname,
+            exposure_link = self.model.data_catalog.get_dataframe(
+                exposure_link_fname, **(read_link_kwargs or {})
             )
 
         # Sort the input out as iterator
@@ -216,12 +208,15 @@ before setting up exposure grid"
 
         # Read exposure data files from data catalog
         exposure_data = {}
+        kwargs = {"buffer": 1}
+        kwargs.update(read_kwargs or {})
+        # Loop over the entries
         for fname in exposure_fnames:
             name = Path(fname).stem
             da = self.model.data_catalog.get_rasterdataset(
                 fname,
                 geom=self.model.region,
-                buffer=1,
+                **kwargs,
             )
             exposure_data[name] = da
 
@@ -232,7 +227,7 @@ before setting up exposure grid"
         ds = workflows.exposure_grid_setup(
             grid_like=grid_like,
             exposure_data=exposure_data,
-            exposure_linking=exposure_linking,
+            exposure_link=exposure_link,
             vulnerability=self.model.vulnerability.data.identifiers,
         )
 
@@ -248,4 +243,4 @@ before setting up exposure grid"
 
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
-        self.model.config.set(MODEL_TYPE, GRID)
+        self.model.config.data.model.type = GRID

@@ -58,6 +58,7 @@ class GridComponent(SpatialModelComponent):
     def _region_data(self) -> gpd.GeoDataFrame | None:
         """Returns the geometry of the model area of interest."""
         if len(self.data) > 0:
+            assert self.bounds is not None
             return gpd.GeoDataFrame(geometry=[sg.box(*self.bounds)], crs=self.crs)
         logger.warning("Region could not be derived from the data.")
         return None

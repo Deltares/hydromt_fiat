@@ -1,3 +1,5 @@
+import math
+from functools import wraps
 from pathlib import Path
 
 import geopandas as gpd
@@ -5,35 +7,45 @@ import pandas as pd
 import pytest
 import xarray as xr
 from hydromt import DataCatalog
+from hydromt.gis import full_from_transform
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
+from urllib3.exceptions import HTTPError
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
+from hydromt_fiat.utils import SQUARE__ID
 
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
 
-def check_connection(fn):
-    def inner(*args, **kwargs):
-        try:
-            r = fn(*args, **kwargs)
-        except RequestException as e:
-            raise ConnectionError(
-                "Failed to download hydromt test data, check your connection"
-            ) from e
-        else:
-            return r
+def check_connection(error: bool = True):
+    def outer(fn):
+        @wraps(fn)
+        def inner(*args, **kwargs):
+            try:
+                r = fn(*args, **kwargs)
+            except (HTTPError, OSError, RequestException) as e:
+                if not error:
+                    pytest.skip(reason="Connection timeout..")
+                    return
+                raise ConnectionError(
+                    "Failed to download test data, check your connection"
+                ) from e
+            else:
+                return r
 
-    return inner
+        return inner
+
+    return outer
 
 
 ## Build data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def build_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("test-build-data", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("test-build-data", cache_dir=CACHE_DIR)
     assert Path(p, "buildings", "buildings.fgb").is_file()
     return p
 
@@ -82,10 +94,10 @@ def build_data_catalog(build_data_catalog_path: Path) -> DataCatalog:
 
 ## Global data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def global_data_path() -> Path:  # The HydroMT-FIAT build data w/ catalog
     # Fetch the data
-    p = fetch_data("global-data", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("global-data", cache_dir=CACHE_DIR)
     assert Path(p, "exposure", "jrc_damage_values.csv").is_file()
     return p
 
@@ -106,10 +118,10 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 
 ## Model data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def model_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -164,10 +176,10 @@ def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
 
 ## Model data (clipped)
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def model_data_clipped_path() -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -190,8 +202,7 @@ def exposure_vector_clipped_for_damamge(
             "cost_type",
             "max_damage_structure",
             "max_damage_content",
-            "ref",
-            "method",
+            "elevation",
         ],
         axis=1,
         inplace=True,
@@ -212,6 +223,25 @@ def exposure_vector_clipped_for_link(
         inplace=True,
     )
     return exposure_vector_clipped_for_damamge
+
+
+@pytest.fixture
+def exposure_vector_clipped_split_path(
+    tmp_path: Path,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+) -> Path:
+    p = Path(tmp_path, "foo.fgb")
+    # Seperate the geometry data
+    geom = exposure_vector_clipped.loc[:, ["object_id", "geometry"]]
+    geom.to_file(p)
+    assert p.is_file()
+    # Separate the tabular data
+    cols = exposure_vector_clipped.columns.values.tolist()
+    cols.remove("geometry")
+    data = exposure_vector_clipped.loc[:, cols]
+    data.to_csv(p.with_suffix(".csv"), index=False)
+    assert p.with_suffix(".csv").is_file()
+    return p
 
 
 @pytest.fixture
@@ -237,10 +267,10 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
 
 ## OSM data
 @pytest.fixture(scope="session")
-@check_connection
+@check_connection()
 def osm_data_path() -> Path:
     # Fetch the data
-    p = fetch_data("osmnx", retries=1, cache_dir=CACHE_DIR)
+    p = fetch_data("osmnx", cache_dir=CACHE_DIR)
     assert len(list(p.iterdir())) != 0
     return p
 
@@ -265,7 +295,7 @@ def model_with_region(
     model: FIATModel,
     build_region_small: Path,
 ) -> FIATModel:
-    model.setup_region(build_region_small)
+    model.set_region(build_region_small)
     return model
 
 
@@ -280,6 +310,21 @@ def box_geometry() -> gpd.GeoDataFrame:
 
 
 @pytest.fixture
+def config_dummy(tmp_path: Path) -> dict:
+    data = {
+        "model": {"type": "geom", "threads": 4},
+        "hazard": {"file": Path(tmp_path, "foo.nc"), "rp": [1, 2, 3]},
+        "vulnerability": {"file": Path("foo.csv")},
+        "exposure": {
+            "geom": [
+                {"file": "foo.fgb"},
+            ]
+        },
+    }
+    return data
+
+
+@pytest.fixture
 def exposure_cost_link() -> pd.DataFrame:
     df = pd.DataFrame(
         data={
@@ -288,3 +333,23 @@ def exposure_cost_link() -> pd.DataFrame:
         }
     )
     return df
+
+
+@pytest.fixture
+def vector_grid(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    bbox = exposure_vector_clipped.total_bounds
+    # Get the sizes in y and x directions
+    dy = bbox[3] - bbox[1]
+    dx = bbox[2] - bbox[0]
+    res = 100
+
+    # Setup the vector grid
+    vg: gpd.GeoDataFrame = full_from_transform(
+        transform=(res, 0.0, bbox[0], 0.0, -res, bbox[3]),
+        shape=(math.ceil(dy / res), math.ceil(dx / res)),
+        crs=exposure_vector_clipped.crs,
+    ).raster.vector_grid()
+    vg[SQUARE__ID] = range(len(vg))
+
+    # Return the vector grid
+    return vg

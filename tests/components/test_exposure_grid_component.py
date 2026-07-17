@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 import pytest
 import xarray as xr
 from hydromt.model import ModelRoot
+from hydromt.model.mode import ModelMode
 from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
@@ -11,12 +12,8 @@ from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.utils import (
     EXPOSURE,
-    EXPOSURE_GRID_FILE,
-    EXPOSURE_GRID_SETTINGS,
     FN_CURVE,
     GRID,
-    MODEL_TYPE,
-    VAR_AS_BAND,
     VULNERABILITY,
 )
 
@@ -70,11 +67,14 @@ def test_exposure_grid_component_read_sig(
 
 
 def test_exposure_grid_component_read_nothing(
-    tmp_path: Path,
+    mocker: MockerFixture,
     mock_model_config: MagicMock,
 ):
-    type(mock_model_config).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    mocker.patch.object(
+        type(mock_model_config.root),
+        "mode",
+        new_callable=PropertyMock,
+        return_value=ModelMode("r"),
     )
     # Setup the component
     component = ExposureGridComponent(model=mock_model_config)
@@ -104,34 +104,11 @@ def test_exposure_grid_component_write(
     # Assert the output
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
     # Assert the config
-    assert component.model.config.get(EXPOSURE_GRID_FILE) == Path(
+    assert component.model.config.data.exposure.grid.file == Path(
         tmp_path,
         EXPOSURE,
         "spatial.nc",
     )
-    assert component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
-
-
-def test_exposure_grid_component_write_config(
-    tmp_path: Path,
-    mock_model_config: MagicMock,
-    exposure_grid_clipped: xr.Dataset,
-):
-    # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
-
-    # Set data like a dummy
-    component._data = exposure_grid_clipped["industrial_content"].to_dataset()
-    # Add to the config
-    component.model.config.set(EXPOSURE_GRID_FILE, "foo.nc")
-
-    # Write the data
-    component.write()
-
-    # Assert the output
-    assert Path(tmp_path, "foo.nc").is_file()
-    # Assert the config
-    assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
 
 
 def test_exposure_grid_component_write_sig(
@@ -151,20 +128,20 @@ def test_exposure_grid_component_write_sig(
     # Assert the output
     assert Path(tmp_path, "baz.nc").is_file()
     # Assert the config file
-    assert component.model.config.get(EXPOSURE_GRID_FILE) == Path(
+    assert component.model.config.data.exposure.grid.file == Path(
         tmp_path,
         "baz.nc",
     )
 
 
-def test_exposure_grid_component_setup(
+def test_exposure_grid_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
     # Call the method
-    component.setup(
+    component.create(
         exposure_fnames="industrial_content",
     )
 
@@ -175,18 +152,17 @@ def test_exposure_grid_component_setup(
     assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
-    assert component.model.config.get(MODEL_TYPE) == GRID
-    assert not component.model.config.get(f"{EXPOSURE_GRID_SETTINGS}.{VAR_AS_BAND}")
+    assert component.model.config.data.model.type == GRID
 
 
-def test_exposure_grid_component_setup_multi(
+def test_exposure_grid_component_create_multi(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
     component = ExposureGridComponent(model=model_exposure_setup)
 
     # Call the method
-    component.setup(
+    component.create(
         exposure_fnames=["industrial_content", "industrial_structure"],
         exposure_link_fname="exposure_grid_link",
         expand=False,
@@ -198,7 +174,7 @@ def test_exposure_grid_component_setup_multi(
     assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
 
 
-def test_exposure_grid_component_setup_errors(
+def test_exposure_grid_component_create_errors(
     mocker: MockerFixture,
     model: FIATModel,
 ):
@@ -206,19 +182,23 @@ def test_exposure_grid_component_setup_errors(
     component = ExposureGridComponent(model=model)
 
     # Assert the vulnerability absent error
-    err_msg = "'setup_vulnerability' step is required before setting up exposure grid"
+    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
     with pytest.raises(RuntimeError, match=err_msg):
-        component.setup(
+        component.create(
             exposure_fnames="industrial_content",
             exposure_link_fname="",  # Can be nonsense, error is raised earlier
         )
 
+    # Fake component
+    fake_component = mocker.Mock()
+    fake_component.data.identifiers.empty = False
+
     # Assert missing region error
-    mocker.patch.object(FIATModel, VULNERABILITY)
+    mocker.patch.object(FIATModel, VULNERABILITY, fake_component)
     with pytest.raises(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
-        component.setup(
+        component.create(
             exposure_fnames="industrial_content",
             exposure_link_fname="",
         )

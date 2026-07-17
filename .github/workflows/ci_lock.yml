@@ -24,7 +24,7 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
-          pixi-version: "v0.65.0"
+          pixi-version: "v0.70.1"
           run-install: false
 
       - name: Update lockfile
@@ -33,7 +33,7 @@ jobs:
           pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md
 
       - name: Create pull request
-        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e
+        uses: peter-evans/create-pull-request@98357b18bf14b5342f975ff684046ec3b2a07725
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Update pixi lockfile

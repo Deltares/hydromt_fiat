@@ -1,4 +1,5 @@
 import logging
+import re
 
 import geopandas as gpd
 import pandas as pd
@@ -23,7 +24,7 @@ def test_max_monetary_damage(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         country="World",  # Select kwargs
     )
@@ -47,7 +48,7 @@ def test_max_monetary_damage_link(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
         country="World",  # Select kwargs
@@ -73,7 +74,7 @@ def test_max_monetary_damage_link_partial(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
         country="World",  # Select kwargs
@@ -96,7 +97,7 @@ def test_max_monetary_damage_geo_crs(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         country="World",  # Select kwargs
     )
@@ -120,7 +121,7 @@ def test_max_monetary_damage_no_subtype(
     exposure_vector = max_monetary_damage(
         exposure_data=exposure_vector_data_alt,
         exposure_cost_table=exposure_cost_table,
-        exposure_type=DAMAGE,
+        impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers_alt,
         country="World",  # Select kwargs
     )
@@ -147,7 +148,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=None,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
         )
 
@@ -159,7 +160,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
             country="Unknown",
         )
@@ -167,12 +168,15 @@ def test_max_monetary_damage_errors(
     # Select kwargs leave no data
     with pytest.raises(
         ValueError,
-        match=r"Exposure type \(affected\) not found in vulnerability data",
+        match=re.escape(
+            "No data found in the vulnerability identifiers for \
+these impact types ['affected']"
+        ),
     ):
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type="affected",
+            impact_type="affected",
             vulnerability=vulnerability_identifiers,
             country="World",
         )
@@ -185,7 +189,7 @@ def test_max_monetary_damage_errors(
         _ = max_monetary_damage(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
-            exposure_type=DAMAGE,
+            impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
             country="World",
             exposure_cost_link=pd.DataFrame(),

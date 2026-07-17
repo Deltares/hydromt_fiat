@@ -9,14 +9,12 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings.exposure import ExposureGeometry
 from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
-    EXPOSURE_GEOM,
-    FILE,
     FN,
     GEOM,
-    MODEL_TYPE,
 )
 
 
@@ -52,6 +50,28 @@ def test_exposure_geom_component_read(
     assert "buildings" in component.data
 
 
+def test_exposure_geom_component_read_none(
+    mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
+):
+    type(mock_model_config).root = PropertyMock(
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config)
+    # Set the config to point to nonsense path
+    component.model.config.data.exposure.geom[0] = ExposureGeometry(file="foo.fgb")
+
+    # Assert it's empty
+    assert component._data is None
+
+    # Calling read to read in the data
+    component.read()
+
+    # Assert the output
+    assert len(component._data) == 0
+
+
 def test_exposure_geom_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -75,7 +95,7 @@ def test_exposure_geom_component_read_sig(
 def test_exposure_geom_component_read_csv(
     tmp_path: Path,
     mock_model_config: MagicMock,
-    exposure_vector_clipped_csv_path: Path,
+    exposure_vector_clipped_split_path: Path,
 ):
     type(mock_model_config).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),
@@ -93,7 +113,7 @@ def test_exposure_geom_component_read_csv(
     assert len(component._data) == 1
     assert len(component.data["foo"]) == 12
     assert "object_id" in component.data["foo"].columns
-    assert "ref" in component.data["foo"].columns
+    assert "elevation" in component.data["foo"].columns
 
 
 def test_exposure_geom_component_write(
@@ -117,9 +137,9 @@ def test_exposure_geom_component_write(
     assert Path(tmp_path, component._filename.format(name="buildings2")).is_file()
 
     # Assert the config file entries
-    geom_cfg = mock_model_config.config.get(EXPOSURE_GEOM)
+    geom_cfg = mock_model_config.config.data.exposure.geom
     assert len(geom_cfg) == 2
-    assert geom_cfg[0][FILE] == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
+    assert geom_cfg[0].file == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
 
 
 def test_exposure_geom_component_write_sig(
@@ -165,7 +185,7 @@ def test_exposure_geom_component_write_warnings(
     assert "empty_ds is empty. Skipping..." in caplog.text
 
 
-def test_exposure_geom_component_setup(
+def test_exposure_geom_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
@@ -176,43 +196,21 @@ def test_exposure_geom_component_setup(
     assert EXPOSURE not in component.model.config.data
 
     # Setup the data
-    component.setup(
+    component.create(
         exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
+        exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
 
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
-    assert f"{FN}_{DAMAGE}_structure" in component.data["buildings"].columns
 
     # Assert entries in the config
-    assert component.model.config.get(MODEL_TYPE) == GEOM
+    assert component.model.config.data.model.type == GEOM
 
 
-def test_exposure_geom_component_setup_no_link(
-    model_with_region: FIATModel,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_with_region)
-
-    # Setup the data
-    component.setup(
-        exposure_fname="buildings",
-        exposure_type_column="gebruiksdoel",
-        exposure_link_fname="buildings_link",
-        link_to_vulnerability=False,
-    )
-
-    # Assert the output
-    assert "buildings" in component.data
-    assert len(component.data["buildings"]) != 0
-    # This is not present when not linked to the vulnerability
-    assert f"{FN}_{DAMAGE}_structure" not in component.data["buildings"].columns
-
-
-def test_exposure_geom_component_setup_errors(
+def test_exposure_geom_component_create_errors(
     model: FIATModel,
     build_region_small: Path,
 ):
@@ -224,33 +222,14 @@ def test_exposure_geom_component_setup_errors(
         MissingRegionError,
         match="Region is None -> use 'setup_region' before this method",
     ):
-        component.setup(
+        component.create(
             exposure_fname="bag",
-            exposure_type_column="gebruiksdoel",
+            exposure_object_type_column="gebruiksdoel",
             exposure_link_fname="bag_link",
         )
 
 
-def test_exposure_geom_component_setup_link(
-    model_exposure_setup: FIATModel,
-    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
-):
-    # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
-
-    # Call the method
-    component.setup_link_vulnerability(
-        exposure_name="foo",
-        exposure_data=exposure_vector_clipped_for_link,
-    )
-
-    # Assert the output
-    assert "foo" in component.data
-    assert len(component.data["foo"]) == 12
-    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
-
-
-def test_exposure_geom_component_setup_link_data(
+def test_exposure_geom_component_create_link(
     caplog: pytest.LogCaptureFixture,
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
@@ -263,8 +242,9 @@ def test_exposure_geom_component_setup_link_data(
     component._data = {"foo": exposure_vector_clipped_for_link}
 
     # Call the method
-    component.setup_link_vulnerability(
+    component.create_link(
         exposure_name="foo",
+        impact_type=DAMAGE,
     )
 
     # Assert the output
@@ -273,25 +253,51 @@ def test_exposure_geom_component_setup_link_data(
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
 
-def test_exposure_geom_component_setup_link_errors(
+def test_exposure_geom_component_create_link_multi(
+    caplog: pytest.LogCaptureFixture,
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    caplog.set_level(logging.WARNING)
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
+    # Call the method
+    component.create_link(
+        exposure_name="foo",
+        impact_type=[DAMAGE, "spooky"],  # Doesnt do much, but still
+    )
+
+    # Assert the output
+    assert "Replacing geometry data: foo" in caplog.text
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_create_link_errors(
     model_with_region: FIATModel,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
     # Setup the component
     component = ExposureGeomsComponent(model=model_with_region)
 
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
     # No vulnerability data
     with pytest.raises(
         RuntimeError,
         match="Run `vulnerability.setup` before this method",
     ):
-        component.setup_link_vulnerability(
+        component.create_link(
             exposure_name="foo",
-            exposure_data=exposure_vector_clipped_for_link,
         )
 
 
-def test_exposure_geom_component_setup_max(
+def test_exposure_geom_component_create_max(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
@@ -304,9 +310,9 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.create_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="World",
     )
@@ -315,7 +321,7 @@ def test_exposure_geom_component_setup_max(
     assert "max_damage_structure" in component.data["buildings"].columns
 
 
-def test_exposure_geom_component_setup_max_link(
+def test_exposure_geom_component_create_max_link(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_link_path: Path,
@@ -329,9 +335,9 @@ def test_exposure_geom_component_setup_max_link(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.setup_max_damage(
+    component.create_max_damage(
         exposure_name="buildings",
-        exposure_type="damage",
+        impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         exposure_cost_link_fname=exposure_cost_link_path,
         country="World",

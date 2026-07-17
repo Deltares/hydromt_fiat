@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Literal
 
 import geopandas as gpd
 from hydromt.model import Model
@@ -26,9 +27,12 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
+    METHOD,
+    MODEL,
     OUTPUT,
     REGION,
     SETTINGS,
+    TYPE,
     VULNERABILITY,
 )
 
@@ -113,37 +117,37 @@ class FIATModel(Model):
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the config component."""
+        """Access the config component."""
         return self.components[CONFIG]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
-        """Return the exposure geoms component."""
+        """Access the exposure geoms component."""
         return self.components[f"{EXPOSURE}_{GEOM}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
-        """Return the exposure grid component."""
+        """Access the exposure grid component."""
         return self.components[f"{EXPOSURE}_{GRID}"]
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return the hazard component."""
+        """Access the hazard component."""
         return self.components[HAZARD]
 
     @property
     def output_geoms(self) -> OutputGeomsComponent:
-        """Return the output geoms component."""
+        """Access the output geoms component."""
         return self.components[f"{OUTPUT}_{GEOM}"]
 
     @property
     def output_grid(self) -> OutputGridComponent:
-        """Return the output grid component."""
+        """Access the output grid component."""
         return self.components[f"{OUTPUT}_{GRID}"]
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
-        """Return the vulnerability component."""
+        """Access the vulnerability component."""
         return self.components[VULNERABILITY]
 
     ## I/O
@@ -200,7 +204,7 @@ class FIATModel(Model):
             file or a geopandas GeoDataFrame.
         """
         # First update the region to the new region, thereby replace
-        self.setup_region(region, replace=True)
+        self.set_region(region, replace=True)
         logger.info(
             f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
         )
@@ -209,6 +213,33 @@ class FIATModel(Model):
             if not isinstance(component, SpatialModelComponent) or name == REGION:
                 continue
             component.clip(self.region, inplace=True)
+
+    @hydromt_step
+    def move(
+        self,
+        root: Path,
+        write: bool = False,
+    ):
+        """Move the model to a new directory.
+
+        Could be seen as a model copy,
+        when calling :py:meth:`~FIATModel.write` directly afterwards or setting
+        write to True.
+
+        Warning
+        -------
+        Does not directly write the data to the new director when write is set to False.
+
+        Parameters
+        ----------
+        root : Path
+            The path to the new model directory.
+        write : bool, optional
+            If True, also writes the model to the new directory. By Default False.
+        """
+        self.root.set(path=root, mode="w+")
+        if write:
+            self.write()
 
     @hydromt_step
     def reproject(
@@ -238,26 +269,36 @@ class FIATModel(Model):
                 continue
             component.reproject(crs, inplace=True)
 
-    ## Setup methods
+    ## Set methods
     @hydromt_step
-    def setup_config(
+    def set_config(
         self,
+        *,
+        modeltype: Literal["geom", "grid"],
+        method: Literal["flood.depth", "flood.level"],
         **settings,
     ) -> None:
         """Set config file entries.
 
         Parameters
         ----------
+        modeltype : {'geom', 'grid'}
+            The type of the model, either 'geom' for a geometry-based model or 'grid'
+            for a grid-based model.
+        method : {'flood.level', 'flood.depth'}
+            The method to be used for the risk calculation, either 'flood.level' or
+            'flood.depth'.
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        for key, value in settings.items():
-            self.config.set(key, value)
+        model_settings = {TYPE: modeltype, METHOD: method}
+        # Set the other defined settings
+        self.config.update(**{MODEL: model_settings, **settings})
 
     @hydromt_step
-    def setup_region(
+    def set_region(
         self,
         region: Path | str | gpd.GeoDataFrame,
         replace: bool = False,
@@ -270,7 +311,7 @@ class FIATModel(Model):
             Path to the region vector file or a loaded vector file that takes the form
             of a geopandas GeoDataFrame.
         replace : bool, optional
-            If False, a union is created between given and existing geometries.
+            If False, a union is created between provided and existing geometries.
             By default False.
         """
         if isinstance(region, (Path, str)):

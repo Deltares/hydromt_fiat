@@ -2,16 +2,16 @@
 
 import logging
 from pathlib import Path
-from typing import Any, cast
 
-import tomlkit
 from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
-from hydromt.readers import read_toml
 
-from hydromt_fiat.components.utils import get_item, make_config_paths_relative
-from hydromt_fiat.utils import OUTPUT, OUTPUT_PATH, SETTINGS
+from hydromt_fiat.readers import read_config
+from hydromt_fiat.settings import DEFAULT_SETTINGS, Settings
+from hydromt_fiat.settings.file import FileContext
+from hydromt_fiat.utils import SETTINGS
+from hydromt_fiat.writers import write_config
 
 __all__ = ["ConfigComponent"]
 
@@ -41,7 +41,7 @@ class ConfigComponent(ModelComponent):
         *,
         filename: Path | str = f"{SETTINGS}.toml",
     ):
-        self._data: dict[str, Any] | None = None
+        self._data: Settings | None = None
         self._filename: Path | str = filename
         super().__init__(
             model,
@@ -54,17 +54,22 @@ class ConfigComponent(ModelComponent):
     ) -> None:
         """Initialize the model config."""
         if self._data is None:
-            self._data = {}
+            self._data = Settings()
             if not skip_read and self.root.is_reading_mode():
                 self.read()
 
     ## Properties
     @property
-    def data(self) -> dict[str, Any]:
+    def context(self) -> FileContext:
+        """Return the context for the pydantic config."""
+        return FileContext(config_dir=self.dir, output_dir=self.output_dir)
+
+    @property
+    def data(self) -> Settings:
         """Model config values."""
         if self._data is None:
             self._initialize()
-        assert isinstance(self._data, dict)
+        assert isinstance(self._data, Settings)
         return self._data
 
     @property
@@ -92,12 +97,12 @@ class ConfigComponent(ModelComponent):
 
         The value is based on `ConfigComponent.dir`.
         """
-        return Path(self.dir, self.get(OUTPUT_PATH, fallback=OUTPUT))
+        return self.dir / self.data.output.path
 
     @output_dir.setter
     def output_dir(self, value: Path | str):
         """Set the output directory."""
-        self.set("output.path", value=value)
+        self.data.output.path = Path(value)
 
     ## I/O methods
     @hydromt_step
@@ -128,8 +133,9 @@ class ConfigComponent(ModelComponent):
             return
 
         # Read the data (config)
-        logger.info(f"Reading the config file at {read_path.as_posix()}")
-        self._data = read_toml(read_path)
+        logger.info("Reading model configuration")
+        data = read_config(read_path=read_path)
+        self._data = Settings.model_validate(data, context=self.context)
 
     @hydromt_step
     def write(
@@ -147,10 +153,6 @@ class ConfigComponent(ModelComponent):
         """
         self.root._assert_write_mode()
 
-        # If no data, return
-        if not self.data:
-            logger.warning("No data in config component, writing empty file..")
-
         # Path from signature or internal default
         # Hierarchy is 1) signature, 2) default
         p = filename or self._filename
@@ -160,57 +162,15 @@ class ConfigComponent(ModelComponent):
 
         # Solve the pathing in the data
         # Extra check for dir_input
-        parent_dir = write_path.parent
-        write_data = make_config_paths_relative(self.data, parent_dir)
-
-        # Write the data to the drive.
-        if not parent_dir.exists():
-            parent_dir.mkdir(parents=True)
+        write_data = self.data.to_dict(context=self.context)
 
         # Dump to a file
-        logger.info(f"Writing the config data to {write_path.as_posix()}")
-        with open(write_path, "w") as writer:
-            tomlkit.dump(write_data, writer)
-
-    ## Action methods
-    def get(
-        self,
-        key: str,
-        fallback: Any | None = None,
-        abs_path: bool = False,
-        root: Path | str | None = None,
-    ) -> Any:
-        """Get a configurations value.
-
-        Parameters
-        ----------
-        key : str
-            Key can given as a string with '.' indicating a new level: ('key1.key2').
-        fallback: Any, optional
-            Fallback value if key not found in config, by default None.
-        abs_path: bool, optional
-            If True return the absolute path relative to the configurations directory,
-            by default False.
-        root: Path | str, optional
-            Provide a root that might be different than the configurations directory.
-            By default None.
-
-        Returns
-        -------
-        value : Any
-            Dictionary value
-        """
-        parts = key.split(".")
-        current = dict(self.data)  # reads config at first call
-        value = get_item(
-            parts,
-            current,
-            root=(root or self.dir),
-            fallback=fallback,
-            abs_path=abs_path,
-        )
-        # Return the value
-        return value
+        logger.info("Writing model configuration")
+        if self.data == DEFAULT_SETTINGS:
+            logger.warning(
+                "No alterations were made to the default settings, writing default",
+            )
+        write_config(data=write_data, write_path=write_path)
 
     ## Mutating methods
     @hydromt_step
@@ -219,35 +179,16 @@ class ConfigComponent(ModelComponent):
         self._data = None
         self._initialize(skip_read=True)
 
-    def set(
-        self,
-        key: str,
-        value: Any,
-    ) -> None:
-        """Set an entry in the configurations.
+    @hydromt_step
+    def update(self, **settings) -> None:
+        """Update the configuration settings.
 
         Parameters
         ----------
-        key : str
-            A string with '.' indicating a new level: 'key1.key2' will translate
-            to {"key1":{"key2": value}}.
-        value : Any
-            The value to set the config to.
+        settings : dict[str, Any]
+            Settigns to up update the configuration with.
         """
-        self._initialize()
-        if isinstance(value, dict):
-            for subkey, subvalue in value.items():
-                self.set(f"{key}.{subkey}", subvalue)
-                return
-        if value is None:  # Not allowed in toml files
-            return
-        parts = key.split(".")
-        num_parts = len(parts)
-        current = cast(dict[str, Any], self._data)
-        for i, part in enumerate(parts):
-            if part not in current or not isinstance(current[part], dict):
-                current[part] = {}
-            if i < num_parts - 1:
-                current = current[part]
-            else:
-                current[part] = value
+        self._data = Settings.model_validate(
+            {**self.data.to_dict(), **settings},
+            context=self.context,
+        )

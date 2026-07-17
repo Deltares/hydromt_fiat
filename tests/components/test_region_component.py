@@ -5,8 +5,9 @@ from unittest.mock import MagicMock, PropertyMock
 import geopandas as gpd
 import numpy as np
 import pytest
-from hydromt.model import ModelRoot
+from hydromt.model.mode import ModelMode
 from pyproj.crs import CRS
+from pytest_mock import MockerFixture
 from shapely.geometry import MultiPolygon, Polygon
 
 from hydromt_fiat.components import RegionComponent
@@ -192,12 +193,16 @@ def test_region_component_set_union(
 
 def test_region_component_read(
     tmp_path: Path,
+    mocker: MockerFixture,
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
     # Setup the component
-    type(mock_model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
+    mocker.patch.object(
+        type(mock_model.root),
+        "mode",
+        new_callable=PropertyMock,
+        return_value=ModelMode("r"),
     )
     component = RegionComponent(model=mock_model)
     component.read()

@@ -8,6 +8,8 @@ import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full
 
+from hydromt_fiat.utils import CURVE, IMPACT__TYPE, OBJECT__TYPE
+
 
 ## Data from the data catalog
 @pytest.fixture
@@ -67,6 +69,16 @@ def hazard_event_data_highres(
     return ds
 
 
+@pytest.fixture(scope="session")
+def vulnerability_curve1(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve1")
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curve2(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve2")
+
+
 @pytest.fixture
 def vulnerability_data(global_data_catalog: DataCatalog) -> pd.DataFrame:
     df = global_data_catalog.get_dataframe("jrc_curves")
@@ -83,14 +95,14 @@ def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
 
 
 @pytest.fixture
-def vulnerability_linking(global_data_catalog: DataCatalog) -> pd.DataFrame:
+def vulnerability_link(global_data_catalog: DataCatalog) -> pd.DataFrame:
     df = global_data_catalog.get_dataframe("jrc_curves_link")
     assert len(df) != 0
     return df
 
 
 @pytest.fixture
-def vulnerability_linking_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
+def vulnerability_link_alt(global_data_catalog: DataCatalog) -> pd.DataFrame:
     df = global_data_catalog.get_dataframe("jrc_curves_link_alt")
     assert len(df) != 0
     return df
@@ -141,6 +153,16 @@ def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
 
 
 ## Extra data structure
+@pytest.fixture
+def prepped_aggr_data(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    # Keep only floating point columns
+    data: gpd.GeoDataFrame = exposure_vector_clipped.select_dtypes(
+        include=[float, "geometry"],
+    )
+    # Return the data
+    return data
+
+
 @pytest.fixture(scope="session")
 def rotated_grid() -> xr.DataArray:
     # Create coordinates
@@ -149,3 +171,15 @@ def rotated_grid() -> xr.DataArray:
     # Build using 'full' from core
     da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
     return da
+
+
+@pytest.fixture
+def vulnerability_identifiers_dummy() -> pd.DataFrame:
+    df = pd.DataFrame(
+        {
+            OBJECT__TYPE: ["foo"],
+            IMPACT__TYPE: ["damage"],
+            CURVE: ["c1"],
+        }
+    )
+    return df
