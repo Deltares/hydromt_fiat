@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
@@ -300,21 +301,27 @@ use 'setup_region' before this method"
         self.set(exposure_vector, name=exposure_name)
 
     @hydromt_step
-    def create_max_damage(
+    def create_max_value(
         self,
         exposure_name: str,
         impact_type: str,
-        exposure_cost_table_fname: Path | str,
+        exposure_cost_table_fname: Path | str | None = None,
+        exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
+        exposure_cost_value: float | int | np.ndarray | None = None,
         exposure_cost_link_fname: Path | str | None = None,
+        per_unit: bool = False,
         read_table_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
         **select,
     ) -> None:
-        """Create the maximum potential damage per object in an existing dataset.
+        """Create the maximum potential value per object in an existing dataset.
+
+        This can be either monetary or something else. It just represents the
+        maximum value that can be 'lost' per object.
 
         Warning
         -------
-        Run `setup_vulnerability` beforehand (see vulnerability component).
+        Run `vulnerability.create` beforehand (see vulnerability component).
 
         Parameters
         ----------
@@ -359,12 +366,13 @@ use 'setup_region' before this method"
             )
 
         # Call the workflows function to add the max damage
-        exposure_vector = workflows.max_monetary_damage(
+        exposure_vector = workflows.max_value(
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             impact_type=impact_type,
             vulnerability=self.model.vulnerability.data.identifiers,
             exposure_cost_link=exposure_cost_link,
+            per_unit=per_unit,
             **select,
         )
 

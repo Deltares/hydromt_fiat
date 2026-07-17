@@ -310,7 +310,7 @@ def test_exposure_geom_component_create_max(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.create_max_damage(
+    component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
@@ -335,7 +335,7 @@ def test_exposure_geom_component_create_max_link(
     assert "max_damage_structure" not in component.data["buildings"].columns
 
     # Call the setup method
-    component.create_max_damage(
+    component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",

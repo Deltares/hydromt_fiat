@@ -6,10 +6,10 @@ import pandas as pd
 import pytest
 
 from hydromt_fiat.utils import DAMAGE, MAX
-from hydromt_fiat.workflows import max_monetary_damage
+from hydromt_fiat.workflows import max_value
 
 
-def test_max_monetary_damage(
+def test_max_value(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
@@ -21,7 +21,7 @@ def test_max_monetary_damage(
     id_before = id(exposure_vector_clipped_for_damamge)
 
     # Call the function
-    exposure_vector = max_monetary_damage(
+    exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
         impact_type=DAMAGE,
@@ -38,14 +38,14 @@ def test_max_monetary_damage(
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
 
 
-def test_max_monetary_damage_link(
+def test_max_value_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
     exposure_cost_link: pd.DataFrame,
 ):
     # Call the function
-    exposure_vector = max_monetary_damage(
+    exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
         impact_type=DAMAGE,
@@ -60,7 +60,7 @@ def test_max_monetary_damage_link(
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
 
 
-def test_max_monetary_damage_link_partial(
+def test_max_value_link_partial(
     caplog: pytest.LogCaptureFixture,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
@@ -71,7 +71,7 @@ def test_max_monetary_damage_link_partial(
     # Remove a row from the linking table
     exposure_cost_link.drop(2, inplace=True)  # 2 is industrial
     # Call the function
-    exposure_vector = max_monetary_damage(
+    exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table,
         impact_type=DAMAGE,
@@ -88,13 +88,13 @@ def test_max_monetary_damage_link_partial(
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 822446
 
 
-def test_max_monetary_damage_geo_crs(
+def test_max_value_geo_crs(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Call the function
-    exposure_vector = max_monetary_damage(
+    exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
         exposure_cost_table=exposure_cost_table,
         impact_type=DAMAGE,
@@ -106,7 +106,7 @@ def test_max_monetary_damage_geo_crs(
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 662887
 
 
-def test_max_monetary_damage_no_subtype(
+def test_max_value_no_subtype(
     exposure_vector_data_alt: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers_alt: pd.DataFrame,
@@ -118,7 +118,7 @@ def test_max_monetary_damage_no_subtype(
     id_before = id(exposure_vector_data_alt)
 
     # Call the function
-    exposure_vector = max_monetary_damage(
+    exposure_vector = max_value(
         exposure_data=exposure_vector_data_alt,
         exposure_cost_table=exposure_cost_table,
         impact_type=DAMAGE,
@@ -135,7 +135,7 @@ def test_max_monetary_damage_no_subtype(
     assert int(exposure_vector[f"{MAX}_{DAMAGE}"].mean()) == 1363905
 
 
-def test_max_monetary_damage_errors(
+def test_max_value_errors(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
@@ -145,7 +145,7 @@ def test_max_monetary_damage_errors(
         ValueError,
         match="Exposure costs table cannot be None",
     ):
-        _ = max_monetary_damage(
+        _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=None,
             impact_type=DAMAGE,
@@ -157,7 +157,7 @@ def test_max_monetary_damage_errors(
         ValueError,
         match=r"Select kwargs \(\{'country': 'Unknown'\}\) resulted in no remaining",
     ):
-        _ = max_monetary_damage(
+        _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             impact_type=DAMAGE,
@@ -173,7 +173,7 @@ def test_max_monetary_damage_errors(
 these impact types ['affected']"
         ),
     ):
-        _ = max_monetary_damage(
+        _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             impact_type="affected",
@@ -186,7 +186,7 @@ these impact types ['affected']"
         ValueError,
         match="Cost link table either missing object_type or cost_type",
     ):
-        _ = max_monetary_damage(
+        _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table,
             impact_type=DAMAGE,
