@@ -3,8 +3,17 @@ name: Test
 on:
   workflow_call:
     inputs:
-      os:               { type: string, required: true }
-      python-version:   { type: string, required: true }
+      os:
+        type: string
+        required: true
+      python-version:
+        type: string
+        required: true
+    secrets:
+      MINIO_ACCESS_KEY:
+        required: true
+      MINIO_SECRET_KEY:
+        required: true
 
 jobs:
   unit:
@@ -17,6 +26,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Download latest testdata
+        uses: ./.github/actions/testdata
+        with:
+          access_key: ${{ secrets.MINIO_ACCESS_KEY }}
+          secret_key: ${{ secrets.MINIO_SECRET_KEY }}
+          registry: src/hydromt_fiat/data/registry.json
+
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@28eb668aafebd9dede9d97c4ba1cd9989a4d0004
         with:
@@ -25,13 +41,6 @@ jobs:
           locked: false
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-
-      - name: Download cache
-        uses: actions/cache/restore@v5
-        with:
-          path: .cache
-          key: test-data
-          enableCrossOsArchive: true
 
       - name: Test
         run: |
