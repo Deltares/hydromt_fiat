@@ -99,7 +99,7 @@ defaulting to exposure data object type"
         raise KeyError(
             f"{exposure_object_type_column} not found in the provided linking data"
         )
-    logger.info(f"Column containing the object type: {exposure_object_type_column}")
+    logger.info(f"Column containing the object type: '{exposure_object_type_column}'")
     # Make sure that there are no duplicated in the linking
     exposure_link = exposure_link.drop_duplicates(
         exposure_object_type_column,
@@ -123,32 +123,32 @@ defaulting to exposure data object type"
     # Store the length of the data
     data_or_size = len(exposure_data)
 
-    # Pre-compute which source values won't survive the inner merge so we can
-    # name them in the warning if any get dropped.
-    mapped_keys = set(exposure_link[exposure_object_type_column].dropna())
-    missing_counts = (
-        exposure_data[exposure_object_type_column]
-        .loc[lambda s: ~s.isin(mapped_keys)]
-        .value_counts(dropna=False)
-    )
-
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
         exposure_link,
         on=exposure_object_type_column,
-        how="inner",
+        how="left",
+        indicator=True,
         validate="many_to_many",
     )
+    # Missing
+    missing_data = exposure_data[exposure_data["_merge"] != "both"]
+    # Remaining exposure data
+    exposure_data = exposure_data[exposure_data["_merge"] == "both"]
+    exposure_data.drop(columns="_merge", inplace=True)
+    # Remaining size
     data_m_size = len(exposure_data)
 
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
-        breakdown = ", ".join(f"{name!r}: {n}" for name, n in missing_counts.items())
+        missing_counts = missing_data[exposure_object_type_column].value_counts(
+            dropna=False
+        )
+        breakdown = ", ".join(f"{name!r} [{n}]" for name, n in missing_counts.items())
         logger.warning(
             f"{data_or_size - data_m_size} features could not be internally linked, "
-            f"these were removed. Unmapped values in "
-            f"'{exposure_object_type_column}': {breakdown}"
+            f"these were removed. The unmapped types were: {breakdown}"
         )
 
     # Return the data

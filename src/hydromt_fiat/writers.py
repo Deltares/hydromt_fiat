@@ -93,6 +93,7 @@ def write_geoms(
 def write_grid(
     data: xr.Dataset,
     write_path: Path | str,
+    compress: bool = False,
     gdal_compliant: bool = True,
     overwrite: bool = True,
     **kwargs,
@@ -107,6 +108,8 @@ def write_grid(
         The data to write.
     write_path : Path | str
         The path to write to.
+    compress : bool, optional
+        Whether or not to compress the data, by default False.
     gdal_compliant : bool, optional
         Whether or not to write the data in a gdal compliant manner, i.e. in such a
         way that the data can be understood by GDAL. By default True.
@@ -121,6 +124,7 @@ def write_grid(
     write_nc(
         force_ns(data),
         file_path=write_path,
+        compress=compress,
         gdal_compliant=gdal_compliant,
         rename_dims=False,
         force_overwrite=overwrite,

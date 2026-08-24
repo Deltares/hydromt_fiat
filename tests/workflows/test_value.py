@@ -5,13 +5,53 @@ import geopandas as gpd
 import pandas as pd
 import pytest
 
-from hydromt_fiat.utils import DAMAGE, MAX
-from hydromt_fiat.workflows import max_value
+from hydromt_fiat.utils import COST__TYPE, DAMAGE, MAX
+from hydromt_fiat.workflows import max_value, process_cost_table
+
+
+def test_process_cost_table(
+    exposure_cost_table: pd.DataFrame,
+):
+    # Call the function
+    cost_table = process_cost_table(
+        exposure_cost_table=exposure_cost_table,
+        **{"country": "World"},
+    )
+
+    # Assert the content
+    assert isinstance(cost_table, pd.DataFrame)
+    assert len(cost_table) == 14
+    assert "commercial" in cost_table[COST__TYPE].values
+    assert "commercial_structure" in cost_table[COST__TYPE].values
+
+
+def test_process_cost_table_dict(exposure_cost_dict: dict[str, float]):
+    # Call the function
+    cost_table = process_cost_table(exposure_cost_table=exposure_cost_dict)
+
+    # Assert the content
+    assert isinstance(cost_table, pd.DataFrame)
+    assert len(cost_table) == 8
+    assert "commercial_structure" in cost_table[COST__TYPE].values
+
+
+def test_process_cost_table_errors(
+    exposure_cost_table: pd.DataFrame,
+):
+    # Select kwargs leave no data
+    with pytest.raises(
+        ValueError,
+        match=r"Select kwargs \(\{'country': 'Foo'\}\) resulted in no remaining",
+    ):
+        _ = process_cost_table(
+            exposure_cost_table=exposure_cost_table,
+            country="Foo",
+        )
 
 
 def test_max_value(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
@@ -23,10 +63,9 @@ def test_max_value(
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
-        exposure_cost_table=exposure_cost_table,
+        exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
-        country="World",  # Select kwargs
     )
     id_after = id(exposure_vector)
 
@@ -40,18 +79,17 @@ def test_max_value(
 
 def test_max_value_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
     exposure_cost_link: pd.DataFrame,
 ):
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
-        exposure_cost_table=exposure_cost_table,
+        exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
-        country="World",  # Select kwargs
     )
 
     # Assert the content
@@ -63,7 +101,7 @@ def test_max_value_link(
 def test_max_value_link_partial(
     caplog: pytest.LogCaptureFixture,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
     exposure_cost_link: pd.DataFrame,
 ):
@@ -73,11 +111,10 @@ def test_max_value_link_partial(
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
-        exposure_cost_table=exposure_cost_table,
+        exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
         exposure_cost_link=exposure_cost_link,
-        country="World",  # Select kwargs
     )
 
     # Assert the logging
@@ -90,16 +127,15 @@ def test_max_value_link_partial(
 
 def test_max_value_geo_crs(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
-        exposure_cost_table=exposure_cost_table,
+        exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers,
-        country="World",  # Select kwargs
     )
 
     # Assert the content
@@ -108,7 +144,7 @@ def test_max_value_geo_crs(
 
 def test_max_value_no_subtype(
     exposure_vector_data_alt: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers_alt: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
@@ -120,10 +156,9 @@ def test_max_value_no_subtype(
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_data_alt,
-        exposure_cost_table=exposure_cost_table,
+        exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
         vulnerability=vulnerability_identifiers_alt,
-        country="World",  # Select kwargs
     )
     id_after = id(exposure_vector)
 
@@ -137,34 +172,9 @@ def test_max_value_no_subtype(
 
 def test_max_value_errors(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
-    exposure_cost_table: pd.DataFrame,
+    exposure_cost_table_processed: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
 ):
-    # Supply none for the cost table
-    with pytest.raises(
-        ValueError,
-        match="Exposure costs table cannot be None",
-    ):
-        _ = max_value(
-            exposure_data=exposure_vector_clipped_for_damamge,
-            exposure_cost_table=None,
-            impact_type=DAMAGE,
-            vulnerability=vulnerability_identifiers,
-        )
-
-    # Select kwargs leave no data
-    with pytest.raises(
-        ValueError,
-        match=r"Select kwargs \(\{'country': 'Unknown'\}\) resulted in no remaining",
-    ):
-        _ = max_value(
-            exposure_data=exposure_vector_clipped_for_damamge,
-            exposure_cost_table=exposure_cost_table,
-            impact_type=DAMAGE,
-            vulnerability=vulnerability_identifiers,
-            country="Unknown",
-        )
-
     # Select kwargs leave no data
     with pytest.raises(
         ValueError,
@@ -175,10 +185,9 @@ these impact types ['affected']"
     ):
         _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
-            exposure_cost_table=exposure_cost_table,
+            exposure_cost_table=exposure_cost_table_processed,
             impact_type="affected",
             vulnerability=vulnerability_identifiers,
-            country="World",
         )
 
     # Exposure cost link table missing columns
@@ -188,9 +197,8 @@ these impact types ['affected']"
     ):
         _ = max_value(
             exposure_data=exposure_vector_clipped_for_damamge,
-            exposure_cost_table=exposure_cost_table,
+            exposure_cost_table=exposure_cost_table_processed,
             impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
-            country="World",
             exposure_cost_link=pd.DataFrame(),
         )

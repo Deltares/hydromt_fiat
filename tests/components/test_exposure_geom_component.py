@@ -15,6 +15,7 @@ from hydromt_fiat.utils import (
     EXPOSURE,
     FN,
     GEOM,
+    MAX,
 )
 
 
@@ -319,6 +320,37 @@ def test_exposure_geom_component_create_max(
 
     # Assert that the data is there
     assert "max_damage_structure" in component.data["buildings"].columns
+    assert (
+        int(component.data["buildings"][f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
+    )
+
+
+def test_exposure_geom_component_create_max_from_dict(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+    exposure_cost_dict: dict[str, float],
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Assert max damage column is not present
+    assert "max_damage_structure" not in component.data["buildings"].columns
+
+    # Call the setup method
+    component.create_max_value(
+        exposure_name="buildings",
+        impact_type="damage",
+        exposure_cost_table=exposure_cost_dict,
+        country="World",
+    )
+
+    # Assert that the data is there
+    assert "max_damage_structure" in component.data["buildings"].columns
+    assert (
+        int(component.data["buildings"][f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
+    )
 
 
 def test_exposure_geom_component_create_max_link(

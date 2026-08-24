@@ -41,6 +41,7 @@ SETTINGS = "settings"
 SQUARE = "square"
 SRS = "srs"
 TYPE = "type"
+VALUE = "value"
 VERSION = "version"
 VULNERABILITY = "vulnerability"
 

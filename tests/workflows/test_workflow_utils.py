@@ -30,7 +30,7 @@ def test__process_dataarray_rotated(
     da = _process_dataarray(da=rotated_grid, da_name="foo")
 
     # Assert the output
-    assert "Hazard grid is rotated." in caplog.text
+    assert "Grid is rotated." in caplog.text
     assert "xc" not in da.coords
 
 

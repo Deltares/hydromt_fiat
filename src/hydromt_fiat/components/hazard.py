@@ -103,6 +103,7 @@ class HazardComponent(GridComponent):
     def write(
         self,
         filename: Path | str | None = None,
+        compress: bool = False,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -113,6 +114,8 @@ class HazardComponent(GridComponent):
         filename : Path | str, optional
             Filename relative to model root. If None, the value is taken from
             the `_filename` attribute, by default None.
+        compress : bool, optional
+            Whether or not to compress the data, by default False.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -138,6 +141,7 @@ class HazardComponent(GridComponent):
         write_grid(
             data=self.data,
             write_path=write_path,
+            compress=compress,
             gdal_compliant=gdal_compliant,
             overwrite=self.root.mode.is_override_mode(),
             **kwargs,

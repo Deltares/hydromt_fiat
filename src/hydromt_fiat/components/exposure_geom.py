@@ -307,9 +307,8 @@ use 'setup_region' before this method"
         impact_type: str,
         exposure_cost_table_fname: Path | str | None = None,
         exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
-        exposure_cost_value: float | int | np.ndarray | None = None,
         exposure_cost_link_fname: Path | str | None = None,
-        per_unit: bool = False,
+        per_unit: bool = True,
         read_table_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
         **select,
@@ -349,13 +348,26 @@ use 'setup_region' before this method"
             E.g. a column is present named 'country' and the wanted values are in the
             row with 'UK', provided country='UK' as keyword argument.
         """
-        logger.info(f"Setting up maximum potential damage for {exposure_name}")
+        logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
         # Get the exposure costs table from the data catalog
-        exposure_cost_table = self.model.data_catalog.get_dataframe(
-            exposure_cost_table_fname,
-            **(read_table_kwargs or {}),
+        if exposure_cost_table_fname is not None:
+            exposure_cost_table = (
+                exposure_cost_table
+                or self.model.data_catalog.get_dataframe(
+                    exposure_cost_table_fname,
+                    **(read_table_kwargs or {}),
+                )
+            )
+        if exposure_cost_table is None:
+            raise ValueError(
+                "'exposure_cost_table' is required. \
+Either provide a filename or a dictionary/ DataFrame."
+            )
+        exposure_cost_table = workflows.process_cost_table(
+            exposure_cost_table=exposure_cost_table,
+            **select,
         )
         # Get the exposure cost link is not None
         exposure_cost_link = None
@@ -373,10 +385,48 @@ use 'setup_region' before this method"
             vulnerability=self.model.vulnerability.data.identifiers,
             exposure_cost_link=exposure_cost_link,
             per_unit=per_unit,
-            **select,
         )
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
+        self.set(exposure_vector, exposure_name)
+
+    def create_max_value_direct(
+        self,
+        exposure_name: str,
+        values: float | int | np.ndarray | pd.DataFrame,
+        impact_type: str,
+        impact_subtype: str | None = None,
+        per_unit: bool = True,
+    ) -> None:
+        """_summary_.
+
+        Parameters
+        ----------
+        exposure_name : str
+            _description_
+        values : float | int | np.ndarray | pd.DataFrame
+            _description_
+        impact_type : str
+            _description_
+        impact_subtype : str | None, optional
+            _description_, by default None
+        per_unit : bool, optional
+            _description_, by default True
+        """
+        logger.info(f"Setting up maximum value from direct values for {exposure_name}")
+        # Some checks on the input
+        self._assert_entry(exposure_name)
+        # Call the workflows function to add the max damage
+        exposure_vector = workflows.max_value_direct(
+            self.data[exposure_name],
+            values=values,
+            impact_type=impact_type,
+            impact_subtype=impact_subtype,
+            per_unit=per_unit,
+        )
+
+        # Set the data back,
+        # Again... its a bit symbolic as the dataframe is mutable...
         self.set(exposure_vector, exposure_name)
 
     @hydromt_step

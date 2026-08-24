@@ -13,6 +13,7 @@ from hydromt_fiat.utils import (
     IMPACT__SUBTYPE,
     MAX,
     OBJECT__TYPE,
+    VALUE,
     create_query,
 )
 from hydromt_fiat.workflows.impact import filter_impact
@@ -57,15 +58,46 @@ def spatial_dimensions(
             return exposure_data.area
 
 
-def exposure_cost_typing(
-    exposure_cost: dict[str, float | int]
-    | float
-    | int
-    | np.ndarray
-    | pd.Series
-    | pd.DataFrame
-    | None = None,
-): ...
+def process_cost_table(
+    exposure_cost_table: pd.DataFrame | dict[str, float | int],
+    **select,
+) -> pd.DataFrame:
+    """Process the exposure cost table data.
+
+    Parameters
+    ----------
+    exposure_cost_table : pd.DataFrame | dict[str, float  |  int]
+        The exposure cost table data, which can be provided as a DataFrame
+        or a dictionary. The dictionary should have the object types as keys and the
+        corresponding cost values as values.
+    **select : dict, optional
+        Keyword arguments to filter the exposure cost table.
+
+    Returns
+    -------
+    pd.DataFrame
+        The processed exposure cost table as a DataFrame.
+    """
+    # If the table is in dict format, convert it to a DataFrame
+    if isinstance(exposure_cost_table, dict):
+        exposure_cost_table = pd.DataFrame.from_dict(
+            exposure_cost_table, orient="index", columns=[VALUE]
+        ).reset_index(names=COST__TYPE)
+        # Return the dataframe
+        return exposure_cost_table
+
+    # Create a query from the kwargs
+    if len(select) != 0:
+        query = create_query(**select)
+        exposure_cost_table = exposure_cost_table.query(query)
+        # Check if the resulting DataFrame is empty after selection
+        if len(exposure_cost_table) == 0:
+            raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
+        # Transpose the cost table, rename index to object_type to easily merge
+        # This is not the object type, but the specific max costs of that element
+        exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
+
+    return exposure_cost_table
 
 
 def max_value(
@@ -73,9 +105,8 @@ def max_value(
     exposure_cost_table: pd.DataFrame,
     impact_type: str,
     vulnerability: pd.DataFrame,
-    per_unit: bool = False,
+    per_unit: bool = True,
     exposure_cost_link: pd.DataFrame | None = None,
-    **select,
 ) -> gpd.GeoDataFrame:
     """Determine maximum monetary damage per object.
 
@@ -105,22 +136,11 @@ def max_value(
     gpd.GeoDataFrame
         The resulting exposure data with the maximum damage included.
     """
-    if exposure_cost_table is None:
-        raise ValueError("Exposure costs table cannot be None")
-
     # Select based on the impact type(s)
     vulnerability = filter_impact(
         vulnerability=vulnerability,
         impact_type=impact_type,
     )
-
-    # Create a query from the kwargs
-    if len(select) != 0:
-        query = create_query(**select)
-        exposure_cost_table = exposure_cost_table.query(query)
-
-    if len(exposure_cost_table) == 0:
-        raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
 
     # If not cost link table is defined, define it self
     if exposure_cost_link is None:
@@ -155,9 +175,6 @@ def max_value(
 
     # Get unique linking names
     unique_link = np.unique(combined)
-    # Transpose the cost table, rename index to object_type to easily merge
-    # This is not the object type, but the specific max costs of that element
-    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
     # Index the cost table
     exposure_cost_table = exposure_cost_table[
         exposure_cost_table[COST__TYPE].isin(unique_link)
@@ -213,3 +230,37 @@ damage values, these were removed"
         )
 
     return exposure_data
+
+
+def max_value_direct(
+    exposure_data: gpd.GeoDataFrame,
+    value: float | int,
+    impact_type: str,
+    impact_subtype: str | None = None,
+    per_unit: bool = True,
+) -> gpd.GeoDataFrame:
+    """Set the max value from a single value directly.
+
+    Parameters
+    ----------
+    exposure_data : gpd.GeoDataFrame
+        The exposure data.
+    value : float | int
+        The maximum value.
+    impact_type : str
+        The impact type.
+    impact_subtype : str | None, optional
+        The impact subtype, by default None.
+    per_unit : bool, optional
+        Whether or not to apply the value per unit area, by default True.
+
+    Returns
+    -------
+    gpd.GeoDataFrame
+        The resulting exposure data with the maximum damage included.
+    """
+    # Get the area, make sure its a projected crs
+    size = pd.Series(np.ones(exposure_data.shape[0]))
+    if per_unit:
+        size = spatial_dimensions(exposure_data)
+    return size
