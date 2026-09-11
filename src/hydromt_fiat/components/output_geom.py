@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 
 import geopandas as gpd
+import pandas as pd
 from hydromt.gis.vector import _filter_gdf
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
@@ -64,7 +65,7 @@ method with '{name}' as input"
 
     def _set(
         self,
-        data: gpd.GeoDataFrame,
+        data: gpd.GeoDataFrame | pd.DataFrame,
         name: str,
     ):
         """Set post processed data in the corresponding dictionary.

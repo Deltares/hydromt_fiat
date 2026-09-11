@@ -22,8 +22,10 @@ from hydromt_fiat.settings.exposure import (
 )
 from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
+    COST__TYPE,
     EXPOSURE,
     GEOM,
+    OBJECT__TYPE,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -164,7 +166,11 @@ class ExposureGeomsComponent(GeomsComponent):
                 f"Writing '{name}' exposure geometry",
             )
             # Write the entire thing to vector file
-            write_geoms(data=gdf, write_path=write_path, **kwargs)
+            write_geoms(
+                data=gdf.drop([COST__TYPE, OBJECT__TYPE], axis=1, errors="ignore"),
+                write_path=write_path,
+                **kwargs,
+            )
             cfg.append(entry)
 
         # Set the config entries
@@ -179,11 +185,15 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_object_type_column: str | None = None,
         exposure_object_type_fill: str | None = None,
         *,
+        name: str | None = None,
+        redo: bool = False,
+        strip: bool = False,
+        keep: list[str] | None = None,
         predicate: str = "contains",
         read_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        """Create the exposure from a data source.
+        """Create/ prepare the exposure from a data source.
 
         Parameters
         ----------
@@ -200,6 +210,18 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_object_type_fill : str, optional
             Value to which missing entries in the exposure object type column will be
             mapped to, if provided. By default None.
+        name : str, optional
+            The name of the dataset to be created. If None, the name is derived from
+            the stem of the `exposure_fname` argument. By default None.
+        redo : bool, optional
+            If True, the exposure data is taken from the internal data of the component
+            in order to re-prepare it for the next steps. By default False.
+        strip : bool, optional
+            If True, all columns except for the object type column and the geometry
+            column are stripped away. By default False.
+        keep : list[str], optional
+            List of column names to keep in addition to the object type column and
+            the geometry column. By default None.
         predicate : str, optional
             Method on how to select the data that falls within the region geometry.
             For more information see `geopandas.sjoin`. By default 'contains'.
@@ -214,22 +236,27 @@ class ExposureGeomsComponent(GeomsComponent):
         """
         logger.info("Setting up exposure geometries")
         # Check for region
-        if self.model.region is None:
+        if self.model.region is None and not redo:
             # TODO Replace with custom error class
             raise MissingRegionError(
                 "Region is None -> \
-use 'setup_region' before this method"
+use 'set_region' before this method"
             )
 
         # Get the name based on the stem of a path
-        name = Path(exposure_fname).stem
+        name = name or Path(exposure_fname).stem
+
+        # Check if we want to re-setup the exposure data and internal link
+        if redo:
+            self._assert_entry(exposure_fname)
+            exposure_fname = self.data[exposure_fname]
 
         # Get ze data
         kwargs = {"predicate": predicate}
         kwargs.update(**read_kwargs or {})
         exposure_data = self.model.data_catalog.get_geodataframe(
             data_like=exposure_fname,
-            geom=self.model.region,
+            geom=(self.model.region if not redo else None),
             **kwargs,
         )
         exposure_link = None
@@ -245,6 +272,8 @@ use 'setup_region' before this method"
             exposure_link=exposure_link,
             exposure_object_type_column=exposure_object_type_column,
             exposure_object_type_fill=exposure_object_type_fill,
+            strip=strip,
+            keep=keep,
         )
         # Set the data directly
         self.set(exposure_vector, name=name)
@@ -393,25 +422,28 @@ Either provide a filename or a dictionary/ DataFrame."
     def create_max_value_direct(
         self,
         exposure_name: str,
-        values: float | int | np.ndarray | pd.DataFrame,
+        value: float | int | np.ndarray | pd.DataFrame,
         impact_type: str,
         impact_subtype: str | None = None,
         per_unit: bool = True,
     ) -> None:
-        """_summary_.
+        """Create the maximum potential value directly from a provided value.
+
+        The new column name will be 'max_<impact_type>_<impact_subtupe>'.
 
         Parameters
         ----------
         exposure_name : str
-            _description_
+            The name of the existing dataset.
         values : float | int | np.ndarray | pd.DataFrame
-            _description_
+            The value, either total or per unit area or length.
         impact_type : str
-            _description_
+            Type of impact corresponding with the vulnerability data, e.g. 'damage'.
         impact_subtype : str | None, optional
-            _description_, by default None
+            The subtype of the impact type. This value can defined to separate
+            individual components. By default None.
         per_unit : bool, optional
-            _description_, by default True
+            Whether 'value' is per unit area or length, by default True.
         """
         logger.info(f"Setting up maximum value from direct values for {exposure_name}")
         # Some checks on the input
@@ -419,7 +451,7 @@ Either provide a filename or a dictionary/ DataFrame."
         # Call the workflows function to add the max damage
         exposure_vector = workflows.max_value_direct(
             self.data[exposure_name],
-            values=values,
+            value=value,
             impact_type=impact_type,
             impact_subtype=impact_subtype,
             per_unit=per_unit,

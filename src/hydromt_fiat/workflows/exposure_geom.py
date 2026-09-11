@@ -10,6 +10,7 @@ import pandas as pd
 from hydromt_fiat.utils import (
     CURVE,
     FN,
+    GEOMETRY,
     IMPACT__SUBTYPE,
     IMPACT__TYPE,
     OBJECT__ID,
@@ -45,6 +46,8 @@ def exposure_geoms_setup(
     *,
     exposure_object_type_column: str | None = None,
     exposure_object_type_fill: str | None = None,
+    strip: bool = False,
+    keep: list[str] | None = None,
 ) -> gpd.GeoDataFrame:
     """Prep the raw exposure data for later fuctions/ methods.
 
@@ -100,6 +103,12 @@ defaulting to exposure data object type"
             f"{exposure_object_type_column} not found in the provided linking data"
         )
     logger.info(f"Column containing the object type: '{exposure_object_type_column}'")
+    # Strip everything away when wanted, except for the object type column
+    # And optional provided columns
+    if strip:
+        exposure_data = exposure_data[
+            [exposure_object_type_column, GEOMETRY] + (keep or [])
+        ]
     # Make sure that there are no duplicated in the linking
     exposure_link = exposure_link.drop_duplicates(
         exposure_object_type_column,

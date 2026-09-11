@@ -263,4 +263,12 @@ def max_value_direct(
     size = pd.Series(np.ones(exposure_data.shape[0]))
     if per_unit:
         size = spatial_dimensions(exposure_data)
-    return size
+
+    # Set the column header
+    col_name = f"{MAX}_{impact_type}"
+    if impact_subtype is not None:
+        col_name += f"_{impact_subtype}"
+
+    # Add the values and return
+    exposure_data.loc[:, col_name] = value * size
+    return exposure_data

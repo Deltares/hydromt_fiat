@@ -103,7 +103,7 @@ class ExposureGridComponent(GridComponent):
     def write(
         self,
         filename: Path | str | None = None,
-        compress: bool = False,
+        compress: bool = True,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -115,7 +115,7 @@ class ExposureGridComponent(GridComponent):
             Filename relative to model root. If None, the value is taken from
             the `_filename` attribute, by default None.
         compress : bool, optional
-            Whether or not to compress the data, by default False.
+            Whether or not to compress the data, by default True.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.

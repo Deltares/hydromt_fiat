@@ -16,6 +16,7 @@ from hydromt_fiat.utils import (
     FN,
     GEOM,
     MAX,
+    OBJECT__TYPE,
 )
 
 
@@ -211,6 +212,33 @@ def test_exposure_geom_component_create(
     assert component.model.config.data.model.type == GEOM
 
 
+def test_exposure_geom_component_create_redo(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+    # Comfirm that the the linking column is there
+    assert OBJECT__TYPE in component._data["foo"].columns
+    # Drop the column
+    component._data["foo"].drop(OBJECT__TYPE, axis=1, inplace=True)
+    assert OBJECT__TYPE not in component._data["foo"].columns
+
+    # Run the method
+    component.create(
+        exposure_fname="foo",
+        exposure_object_type_column="gebruiksdoel",
+        exposure_link_fname="buildings_link",
+        redo=True,
+    )
+
+    # Assert the column has been recreated
+    assert OBJECT__TYPE in component._data["foo"].columns
+
+
 def test_exposure_geom_component_create_errors(
     model: FIATModel,
     build_region_small: Path,
@@ -221,7 +249,7 @@ def test_exposure_geom_component_create_errors(
     # Assert that no available region lead to an error
     with pytest.raises(
         MissingRegionError,
-        match="Region is None -> use 'setup_region' before this method",
+        match="Region is None -> use 'set_region' before this method",
     ):
         component.create(
             exposure_fname="bag",
@@ -377,6 +405,48 @@ def test_exposure_geom_component_create_max_link(
 
     # Assert that the data is there
     assert "max_damage_structure" in component.data["buildings"].columns
+
+
+def test_exposure_geom_component_create_max_errors(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Call the method with no cost table input
+    with pytest.raises(
+        ValueError,
+        match="'exposure_cost_table' is required.",
+    ):
+        component.create_max_value(
+            exposure_name="buildings",
+            impact_type="damage",
+        )
+
+
+def test_exposure_geom_component_create_max_direct(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+):
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_exposure_setup)
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Call the method
+    component.create_max_value_direct(
+        "buildings",
+        value=100,
+        impact_type="damage",
+        per_unit=False,
+    )
+
+    # Assert the output
+    assert "max_damage" in component.data["buildings"].columns
+    assert int(component.data["buildings"]["max_damage"].mean()) == 100
 
 
 def test_exposure_geom_component_update_cols(
