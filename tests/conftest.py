@@ -325,6 +325,21 @@ def config_dummy(tmp_path: Path) -> dict:
 
 
 @pytest.fixture
+def exposure_cost_dict() -> dict[str, float]:
+    data = {
+        "residential_structure": 294.910236432,
+        "residential_content": 147.455118216,
+        "commercial_structure": 319.45019868,
+        "commercial_content": 319.45019868,
+        "industrial_structure": 217.356427584,
+        "industrial_content": 326.034641376,
+        "unknown_structure": 277.238954232,
+        "unknown_content": 249.51505880880003,
+    }
+    return data
+
+
+@pytest.fixture
 def exposure_cost_link() -> pd.DataFrame:
     df = pd.DataFrame(
         data={

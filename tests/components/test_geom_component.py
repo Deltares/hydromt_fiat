@@ -50,8 +50,8 @@ def test_geom_component__assert_entry_errors(
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'baz' as input"
         ),
     ):
         component._assert_entry(name="baz")
@@ -60,8 +60,8 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'bar' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'bar' as input"
         ),
     ):
         component._assert_entry(name="bar")

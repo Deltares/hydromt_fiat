@@ -1,7 +1,6 @@
 """HydroMT-FIAT workflow function."""
 
 from .aggregate import aggregate_spatially, prep_data_for_aggregation
-from .damage import max_monetary_damage
 from .exposure_geom import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
@@ -9,6 +8,7 @@ from .exposure_geom import (
 )
 from .exposure_grid import exposure_grid_setup
 from .hazard import hazard_setup
+from .value import max_value, max_value_direct, process_cost_table
 from .vulnerability import (
     merge_vulnerability_curves,
     merge_vulnerability_identifiers,
@@ -23,10 +23,12 @@ __all__ = [
     "exposure_geoms_setup",
     "exposure_grid_setup",
     "hazard_setup",
-    "max_monetary_damage",
+    "max_value",
+    "max_value_direct",
     "merge_vulnerability_curves",
     "merge_vulnerability_identifiers",
     "prep_data_for_aggregation",
+    "process_cost_table",
     "process_vulnerability_link",
     "vulnerability_setup",
 ]

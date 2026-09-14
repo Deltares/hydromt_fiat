@@ -188,7 +188,6 @@ class GridComponent(SpatialModelComponent):
         if not self._check_spatial():
             return None
 
-        logger.info(f"Reproject data in {self.__class__.__name__}")
         # Check for the crs's
         if self.crs is None:
             return None
@@ -199,6 +198,7 @@ class GridComponent(SpatialModelComponent):
         if crs == self.crs:
             return None
 
+        logger.info(f"Reproject data in {self.__class__.__name__}")
         # Reproject the data
         data = self.data.raster.reproject(dst_crs=crs)
         # If inplace, just set the data and return nothing

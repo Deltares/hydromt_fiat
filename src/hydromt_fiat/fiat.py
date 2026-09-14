@@ -169,13 +169,13 @@ class FIATModel(Model):
             component.read()
 
     @hydromt_step
-    def write(self) -> None:
+    def write(self, **write_kwargs) -> None:
         """Write the FIAT model."""
         names = [item.name_in_model for item in self.components.values() if item._build]
         names.remove(CONFIG)
         for name in names:
-            self.components[name].write()
-        self.config.write()
+            self.components[name].write(**(write_kwargs.get(name) or {}))
+        self.config.write(**(write_kwargs.get(CONFIG) or {}))
 
     ## Mutating methods
     @hydromt_step

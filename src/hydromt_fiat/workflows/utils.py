@@ -20,9 +20,8 @@ def _process_dataarray(
     # Check if map is rotated and if yes, reproject to a non-rotated grid
     if "xc" in da.coords:
         logger.warning(
-            "Hazard grid is rotated. It will be reprojected"
-            " to a non rotated grid using nearest neighbor"
-            "interpolation"
+            "Grid is rotated. It will be reprojected \
+to a non rotated grid using nearest neighbor interpolation"
         )
         da = da.raster.reproject(dst_crs=da.rio.crs)
     if "grid_mapping" in da.encoding:

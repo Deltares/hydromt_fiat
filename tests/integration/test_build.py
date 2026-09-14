@@ -63,7 +63,7 @@ def test_build_model_geom(
         exposure_name="buildings",
         impact_type=DAMAGE,
     )
-    model.exposure_geoms.create_max_damage(
+    model.exposure_geoms.create_max_value(
         exposure_name="buildings",
         impact_type=DAMAGE,
         exposure_cost_table_fname="jrc_damage",
