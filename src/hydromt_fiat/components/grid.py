@@ -11,7 +11,7 @@ from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
-from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
 
 __all__ = ["GridComponent"]
 
@@ -37,21 +37,19 @@ class GridComponent(SpatialModelComponent):
         )
 
     ## Private methods
+    def _assert_entry(self, name: str):
+        if name not in self.data.data_vars:
+            keys = [
+                item for item in self.data.data_vars if check_spatial(self.data[item])
+            ]
+            raise RuntimeError(f"Choose from already present data variables: {keys}")
+
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""
         if self._data is None:
             self._data = xr.Dataset()
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
-
-    def _check_spatial(self) -> bool:
-        try:
-            self.data.raster.set_spatial_dims()
-            self.data.raster.res
-        except ValueError:
-            return False
-        else:
-            return True
 
     ## Properties
     @property
@@ -91,6 +89,13 @@ class GridComponent(SpatialModelComponent):
             self._initialize()
         assert self._data is not None
         return self._data
+
+    @property
+    def like(self) -> xr.Dataset | None:
+        """Return the spatial representation of the data."""
+        if check_spatial(self.data):
+            return self.data
+        return None
 
     @property
     def res(self) -> tuple[float] | None:
@@ -151,7 +156,7 @@ class GridComponent(SpatialModelComponent):
             Return a dataset if the inplace is False.
         """
         # Check the spatial component
-        if not self._check_spatial():
+        if not check_spatial(self.data):
             return None
 
         logger.info(f"Clipping data of {self.__class__.__name__}")
@@ -185,7 +190,7 @@ class GridComponent(SpatialModelComponent):
             Return a dataset if the inplace is False.
         """
         # Check the spatial component
-        if not self._check_spatial():
+        if not check_spatial(self.data):
             return None
 
         # Check for the crs's

@@ -12,6 +12,7 @@ __all__ = ["create_query"]
 ANALYSIS = "analysis"
 AREA = "area"
 CALC = "calc"
+CATEGORIES = "categories"
 CONFIG = "config"
 CURVE = "curve"
 DAMAGE = "damage"

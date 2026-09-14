@@ -187,7 +187,7 @@ class ExposureGridComponent(GridComponent):
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
         logger.info("Setting up gridded exposure")
-
+        # Check for the vulnerability
         if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(
                 "'vulnerability.create' step is required \
@@ -224,15 +224,12 @@ before setting up exposure grid"
             )
             exposure_data[name] = da
 
-        # Get grid like from existing exposure data if there is any
-        grid_like = self.data if self.data else None
-
         # Execute the workflow function
-        ds = workflows.exposure_grid_setup(
-            grid_like=grid_like,
+        ds = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
-            exposure_link=exposure_link,
             vulnerability=self.model.vulnerability.data.identifiers,
+            grid_like=self.like,
+            exposure_link=exposure_link,
         )
 
         # Expand if necessary
@@ -248,3 +245,99 @@ before setting up exposure grid"
         # Set the config entries
         logger.info("Setting the model type to 'grid'")
         self.model.config.data.model.type = GRID
+
+    @hydromt_step
+    def create_table_based(
+        self,
+        exposure_fname: Path | str,
+        *,
+        exposure_name: str | None = None,
+        read_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        """_summary_.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            _description_
+        exposure_name : str | None, optional
+            _description_, by default None
+        read_kwargs : dict[str, Any] | None, optional
+            _description_, by default None
+
+        Raises
+        ------
+        RuntimeError
+            _description_
+        """
+        logger.info("Setting up gridded value-table based exposure")
+        # Check for the vulnerability data
+        if self.model.vulnerability.data.identifiers.empty:
+            raise RuntimeError(
+                "'vulnerability.create' step is required \
+before setting up exposure grid"
+            )
+        if self.model.region is None:
+            raise MissingRegionError("Region is required for setting up exposure grid")
+
+        # Read the exposure data
+        kwargs = {"buffer": 1}
+        kwargs.update(read_kwargs or {})
+        exposure_data = self.data_catalog.get_rasterdataset(
+            exposure_fname,
+            geom=self.model.region,
+            **kwargs,
+        )
+
+        # Execute the workflow function
+        exposure_grid = workflows.exposure_grid_table_based_setup(
+            exposure_data=exposure_data,
+            vulnerability=self.model.vulnerability.data.identifiers,
+            name=(exposure_name or Path(exposure_fname).stem),
+            grid_like=self.like,
+        )
+
+        # Set the data
+        self.set(exposure_grid)
+
+        # Set the config entries
+        logger.info("Setting the model type to 'grid'")
+        self.model.config.data.model.type = GRID
+
+    @hydromt_step
+    def create_table_values(
+        self,
+        exposure_name: str,
+        *,
+        table_fname: Path | str | None = None,
+        table: dict[int, float | int] | None = None,
+        default: float | int = 100,
+        read_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        """_summary_.
+
+        Parameters
+        ----------
+        exposure_name : str
+            _description_
+        table_fname : Path | str | None, optional
+            _description_, by default None
+        table : dict[int, float  |  int] | None, optional
+            _description_, by default None
+        default : float | int, optional
+            _description_, by default 100
+        read_kwargs : dict[str, Any] | None, optional
+            _description_, by default None
+        """
+        # Assert the variable is present
+        self._assert_entry(exposure_name)
+
+        # Call the workflow function
+        exposure_table = workflows.exposure_grid_table_values(
+            exposure_data=self.data[exposure_name],
+            values=table,
+            default=default,
+        )
+
+        # Set the data
+        self.set(exposure_table)
