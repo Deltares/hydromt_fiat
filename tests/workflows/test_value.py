@@ -32,17 +32,15 @@ def test_get_geometry_type():
 
 
 def test_get_geometry_type_errors():
+    gdf = gpd.GeoDataFrame(
+        geometry=[sg.GeometryCollection([sg.box(0, 0, 1, 1), sg.box(2, 2, 3, 3)])]
+    )
     # Call the function with a non-supported geometry type
     with pytest.raises(
-        ValueError, match="Unsupported geometry types: {'GeometryCollection'}"
+        ValueError,
+        match="Unsupported geometry types: {'GeometryCollection'}",
     ):
-        _ = get_geometry_type(
-            gdf=gpd.GeoDataFrame(
-                geometry=[
-                    sg.GeometryCollection([sg.box(0, 0, 1, 1), sg.box(2, 2, 3, 3)])
-                ]
-            )
-        )
+        _ = get_geometry_type(gdf=gdf)
 
 
 def test_spatial_dimensions():
@@ -75,13 +73,12 @@ def test_spatial_dimensions_crs():
 
 
 def test_spatial_dimensions_erros():
+    gdf = gpd.GeoDataFrame(geometry=[sg.Point(1, 1)])
     # Call the function with point geometry
     with pytest.raises(
         ValueError, match="Point geometries do not have a spatial dimension"
     ):
-        _ = spatial_dimensions(
-            exposure_data=gpd.GeoDataFrame(geometry=[sg.Point(1, 1)])
-        )
+        _ = spatial_dimensions(exposure_data=gdf)
 
 
 def test_process_cost_table(
@@ -265,6 +262,7 @@ these impact types ['affected']"
             vulnerability=vulnerability_identifiers,
         )
 
+    df = pd.DataFrame()
     # Exposure cost link table missing columns
     with pytest.raises(
         ValueError,
@@ -275,7 +273,7 @@ these impact types ['affected']"
             exposure_cost_table=exposure_cost_table_processed,
             impact_type=DAMAGE,
             vulnerability=vulnerability_identifiers,
-            exposure_cost_link=pd.DataFrame(),
+            exposure_cost_link=df,
         )
 
 
