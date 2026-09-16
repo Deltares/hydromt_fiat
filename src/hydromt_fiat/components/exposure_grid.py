@@ -18,6 +18,7 @@ from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
     EXPOSURE,
     GRID,
+    VALUE,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -247,28 +248,32 @@ before setting up exposure grid"
         self.model.config.data.model.type = GRID
 
     @hydromt_step
-    def create_table_based(
+    def create_categorized(
         self,
         exposure_fname: Path | str,
         *,
         exposure_name: str | None = None,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
-        """_summary_.
+        """Create categorized gridded exposure data.
+
+        The data is 'measured' against the available vulnerability curves that match
+        the categories in the exposure data.
 
         Parameters
         ----------
         exposure_fname : Path | str
-            _description_
+            The name of (or path to) the exposure data to be setup. The data should
+            consist of integer based categories that (idealy) match the entries in the
+            vulnerability data.
         exposure_name : str | None, optional
-            _description_, by default None
+            The name of the variable that the data will have in the dataset.
+            If not provided the name is inferred from the stem of `expousre_fname`.
+            By default None.
         read_kwargs : dict[str, Any] | None, optional
-            _description_, by default None
-
-        Raises
-        ------
-        RuntimeError
-            _description_
+            Optional keyword arguments for reading the `exposure_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
         """
         logger.info("Setting up gridded value-table based exposure")
         # Check for the vulnerability data
@@ -290,7 +295,7 @@ before setting up exposure grid"
         )
 
         # Execute the workflow function
-        exposure_grid = workflows.exposure_grid_table_based_setup(
+        exposure_grid = workflows.exposure_grid_categorized_setup(
             exposure_data=exposure_data,
             vulnerability=self.model.vulnerability.data.identifiers,
             name=(exposure_name or Path(exposure_fname).stem),
@@ -305,39 +310,76 @@ before setting up exposure grid"
         self.model.config.data.model.type = GRID
 
     @hydromt_step
-    def create_table_values(
+    def create_categorized_values(
         self,
         exposure_name: str,
         *,
-        table_fname: Path | str | None = None,
-        table: dict[int, float | int] | None = None,
+        exposure_table_fname: Path | str | None = None,
+        exposure_table: dict[int, float | int] | None = None,
         default: float | int = 100,
+        unit: str = "m**2",
         read_kwargs: dict[str, Any] | None = None,
+        **select,
     ) -> None:
-        """_summary_.
+        """Create linked values to the categorized gridded exposure data.
+
+        This is specific to on of the variables present the exposure data.
+        A coordinates and (a) variable(s) are created that link to the values in the
+        exposure data variable in terms of values and name.
 
         Parameters
         ----------
         exposure_name : str
-            _description_
-        table_fname : Path | str | None, optional
-            _description_, by default None
-        table : dict[int, float  |  int] | None, optional
-            _description_, by default None
+            The name of the variable in the gridded exposure data to setup the
+            values for.
+        exposure_table_fname : Path | str | None, optional
+            Table containing the values of the categories corresponding with the values
+            in the exposure data. Multiple columns are accepted and then added to the
+            resulting dataset. If not provided, the default value will be used for all
+            categories. By default None.
+        exposure_table : dict[int, float  |  int] | None, optional
+            As an alternative to `exposure_table_fname`, a direct mapping (dictionary)
+            of the categories to their values can be provided. The keys will be the
+            categories and their values.. the values. By default None.
         default : float | int, optional
-            _description_, by default 100
+            The default value when the table is not provided or has missing values
+            compared to the categorized exposure data, by default 100.
+        unit : str, optional
+            The unit (per) of the values, if not the standard (e.g. m**2) the values
+            are translated to the standard unit of that category
+            (e.g. m**2 for length squared). By default "m**2".
         read_kwargs : dict[str, Any] | None, optional
-            _description_, by default None
+            Optional keyword arguments for reading the `exposure_table_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
+        logger.info("Setting up table values for tabled based exposure grid")
         # Assert the variable is present
         self._assert_entry(exposure_name)
 
+        # Get the exposure table from the data catalog, or from input
+        if exposure_table_fname is not None:
+            exposure_table = exposure_table or self.model.data_catalog.get_dataframe(
+                exposure_table_fname,
+                **(read_kwargs or {}),
+            )
+
+        # Process the input
+        if exposure_table is not None:
+            exposure_table = workflows.process_table(
+                table=exposure_table,
+                column_name=VALUE,
+                index_name=exposure_name,
+                **select,
+            )
+
         # Call the workflow function
-        exposure_table = workflows.exposure_grid_table_values(
+        exposure_grid_table = workflows.exposure_grid_category_values(
             exposure_data=self.data[exposure_name],
-            values=table,
+            table=exposure_table,
+            unit=unit,
             default=default,
         )
 
         # Set the data
-        self.set(exposure_table)
+        self.set(exposure_grid_table)

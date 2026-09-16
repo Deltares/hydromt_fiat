@@ -8,7 +8,9 @@ import pandas as pd
 import xarray as xr
 
 from hydromt_fiat.gis.raster import merge_rasters
+from hydromt_fiat.gis.raster_utils import cell_size
 from hydromt_fiat.utils import (
+    AREA__SQM,
     CATEGORIES,
     CURVE,
     EXPOSURE__TYPE,
@@ -16,6 +18,7 @@ from hydromt_fiat.utils import (
     IMPACT__SUBTYPE,
     OBJECT__TYPE,
     TYPE,
+    standard_unit,
 )
 
 __all__ = ["exposure_grid_default_setup"]
@@ -29,7 +32,7 @@ def exposure_grid_default_setup(
     grid_like: xr.Dataset | None = None,
     exposure_link: pd.DataFrame | None = None,
 ) -> xr.Dataset:
-    """Read and transform exposure grid data.
+    """Process and transform exposure grid data.
 
     Parameters
     ----------
@@ -112,12 +115,34 @@ defaulting to the name of the exposure layer"
     return merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
 
 
-def exposure_grid_table_based_setup(
+def exposure_grid_categorized_setup(
     exposure_data: xr.DataArray,
     vulnerability: pd.DataFrame,
     name: str,
     grid_like: xr.Dataset | xr.DataArray | None = None,
 ) -> xr.Dataset:
+    """Process categorized gridded exposure.
+
+    Parameters
+    ----------
+    exposure_data : xr.DataArray
+        The exposure data consisting of integers representing the individual
+        categories. Only integer based data is accepted.
+    vulnerability : pd.DataFrame
+        The vulnerability identifiers. The curve identifiers in the 'curve' column, if
+        they are of the integer type, are taken to match against the value in the
+        exposure data.
+    name : str
+        The name of the exposure data.
+    grid_like : xr.Dataset | xr.DataArray | None, optional
+        A grid (definition) to reproject/ resample the data to in order to match
+        the resolution and extent, by default None.
+
+    Returns
+    -------
+    xr.Dataset
+        The processed categorized gridded exposure data.
+    """
     # Adjust the data slightly
     exposure_data.name = name
     exposure_data = exposure_data.raster.mask_nodata(0)
@@ -135,32 +160,96 @@ def exposure_grid_table_based_setup(
     # Inform the user that certain types are not available, both ways
     disc = np.setdiff1d(unique, curves).tolist()
     if len(disc) > 0:
-        logger.warning(f"The following values have no correspoding curve: {disc}")
+        logger.warning(f"The following categories have no correspoding curve: {disc}")
 
     # Set some metadata
-    exposure_data.attrs.update({CATEGORIES: unique.tolist(), TYPE: "tabled"})
+    exposure_data.attrs.update(
+        {
+            CATEGORIES: unique.tolist(),
+            AREA__SQM: cell_size(exposure_data),
+            TYPE: "tabled",
+        },
+    )
 
     # Return the merged data (symbolic, but can still reproject)
     return merge_rasters(dataarrays=[exposure_data], grid_like=grid_like)
 
 
-def exposure_grid_table_values(
+def exposure_grid_category_values(
     exposure_data: xr.DataArray,
-    values: pd.DataFrame,
-    default: float | int,
+    table: pd.DataFrame | None = None,
+    default: float | int = 100,
+    unit: str = "m**2",
 ) -> xr.Dataset:
+    """Create a dataset of linked values corresponding to the exposure data.
+
+    Parameters
+    ----------
+    exposure_data : xr.DataArray
+        The exposure data.
+    table : pd.DataFrame | None, optional
+        A dataframe containing the values linked to the categories in the exposyre data.
+        If not provided, all values are set to the default, by default None.
+    default : float | int, optional
+        The default value when the table is not provided or has missing values compared
+        to the categorized exposure data, by default 100.
+    unit : str, optional
+        The unit (per) of the values, if not the standard (e.g. m**2) the values are
+        translated to the standard unit of that category (e.g. m**2 for length squared).
+        By default "m**2".
+
+    Returns
+    -------
+    xr.Dataset
+        The dataset containing the values linked to the categories, the categories are
+        an integer based dimension.
+    """
     # Check for the categories attribute
     if CATEGORIES not in exposure_data.attrs:
-        raise AttributeError("")
+        raise AttributeError(
+            "'categories' attribute should be present in the exposure DataArray"
+        )
 
-    # Set some metadata
+    # Get some metadata
     name = exposure_data.name
-    table_size = max(exposure_data.attrs[CATEGORIES]) + 1
+    cat = exposure_data.attrs[CATEGORIES]
+    table_size = max(cat) + 1
 
+    # Add the coordinate for the table values based on the maximum value
+    coord_name = f"{name}_tc"
     ds = xr.Dataset(
-        coords={f"{name}_tc": range(0, table_size + 1)},
+        coords={coord_name: range(0, table_size + 1)},
     )
-    ds = ds.assign({"avg": ((f"{name}_tc"), np.ones(table_size + 1) * default)})
+    ds[coord_name] = ds[coord_name].astype(exposure_data.dtype)
+
+    # If no table provided set a default variables
+    if table is None:
+        logger.info(
+            f"No table values were provided, defaulting to the default value: {default}"
+        )
+        ds = ds.assign(
+            {f"{name}_def": ((coord_name), np.ones(table_size + 1) * default)},
+        )
+        return ds
+
+    # Otherwise move through the table
+    table.drop_duplicates(subset=name, inplace=True)
+    table.set_index(name, inplace=True)
+    table = table[table.index < table_size]
+    # Set a warning for those values falling that do not have a value associated with it
+    disc = np.setdiff1d(cat, table.index).tolist()
+    if len(disc) > 0:
+        logger.warning(
+            f"The following categories have no corresponding value: {disc}, these will \
+be set to the default value of {default}"
+        )
+
+    # Loop though the columns
+    conversion = standard_unit(unit)
+    for col in table.columns:
+        data = np.ones(table_size + 1, dtype=np.float32) * default
+        data[table.index] = table[col].values * conversion.magnitude
+        ds = ds.assign({f"{name}_{col}": ((coord_name), data)})
 
     # return the dataset
     return ds
