@@ -4,24 +4,25 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from hydromt_fiat.gis.raster import expand_raster_to_bounds
+from hydromt_fiat.gis.raster import expand_raster_to_bounds, merge_rasters
 
 
 def test_expand_raster_to_bounds(
     caplog: pytest.LogCaptureFixture,
     raster: xr.DataArray,
 ):
+    foo = raster()
     caplog.set_level(logging.INFO)
     # Assert current attibutes
     np.testing.assert_array_almost_equal(
-        raster.raster.bounds,
+        foo.raster.bounds,
         [0.0, 0.0, 10.0, 10.0],
         decimal=1,
     )
 
     # Call the function
     da = expand_raster_to_bounds(
-        ds=raster,
+        ds=foo,
         bbox=(-5.0, -5.0, 10.0, 20.0),  # Double the height, bit extra on the minimum
     )
 
@@ -44,26 +45,39 @@ def test_expand_raster_to_bounds_nothing(
     caplog: pytest.LogCaptureFixture,
     raster: xr.DataArray,
 ):
+    foo = raster()
     caplog.set_level(logging.INFO)
     # Assert current attibutes
     np.testing.assert_array_almost_equal(
-        raster.raster.bounds,
+        foo.raster.bounds,
         [0.0, 0.0, 10.0, 10.0],
         decimal=1,
     )
 
     # Call the function
     da = expand_raster_to_bounds(
-        ds=raster,
+        ds=foo,
         bbox=(0.0, 0.0, 10.0, 10.0),  # Same extent
     )
 
     # Assert the output
     np.testing.assert_array_almost_equal(
         da.raster.bounds,
-        raster.raster.bounds,
+        foo.raster.bounds,
         decimal=1,
     )
     assert da.shape == (10, 10)
     assert "Checking raster extent versus region bounding box" in caplog.text
     assert "Raster smaller than the region bounding box" not in caplog.text
+
+
+def test_merge_rasters(
+    raster: xr.DataArray,
+):
+    # Small list of dataarray's
+    das = [raster(), raster("baz")]
+    # Call the function
+    ds = merge_rasters(dataarrays=das)
+
+    # Assert the warning message and output
+    assert isinstance(ds, xr.Dataset)

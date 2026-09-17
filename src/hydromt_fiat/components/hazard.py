@@ -228,14 +228,11 @@ class HazardComponent(GridComponent):
             )
             hazard_data[Path(entry).stem] = da
 
-        # Check if there is already data set to this grid component.
-        grid_like = self.data if self.data.sizes != {} else None
-
         # Parse hazard files to an xarray dataset
         ds = workflows.hazard_setup(
-            grid_like=grid_like,
             hazard_data=hazard_data,
             hazard_type=hazard_type,
+            grid_like=self.like,
             return_periods=return_periods,
             risk=risk,
             unit=unit,
@@ -253,3 +250,7 @@ class HazardComponent(GridComponent):
 
         # Set the config entries
         self.model.config.data.model.risk = risk
+
+        # Set the region is not present and not needed when settings up the hazard
+        if self.model.region is None and not region:
+            self.model.set_region(self._region_data)

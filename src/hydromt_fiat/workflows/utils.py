@@ -1,56 +1,56 @@
 """Workflow utilities."""
 
-import logging
+import pandas as pd
 
-import xarray as xr
-from hydromt.model.processes.grid import grid_from_rasterdataset
-
-logger = logging.getLogger(f"hydromt.{__name__}")
+from hydromt_fiat.utils import INDEX, VALUE, create_query
 
 
-def _process_dataarray(
-    da: xr.DataArray,
-    da_name: str,
-) -> xr.DataArray:
-    # Convert to gdal compliant
-    da.encoding["_FillValue"] = None
-    da = da.raster.gdal_compliant()
-    da = da.rename(da_name)
+def process_table(
+    table: pd.DataFrame | dict[str, float | int],
+    column_name: str = VALUE,
+    index_name: str = INDEX,
+    **select,
+) -> pd.DataFrame:
+    """Process the exposure cost table data.
 
-    # Check if map is rotated and if yes, reproject to a non-rotated grid
-    if "xc" in da.coords:
-        logger.warning(
-            "Grid is rotated. It will be reprojected \
-to a non rotated grid using nearest neighbor interpolation"
-        )
-        da = da.raster.reproject(dst_crs=da.rio.crs)
-    if "grid_mapping" in da.encoding:
-        _ = da.encoding.pop("grid_mapping")
-    return da
+    Parameters
+    ----------
+    table : pd.DataFrame | dict[str, float  |  int]
+        The tablular data, which can be provided as a DataFrame
+        or a dictionary. The dictionary should have the object types as keys and the
+        corresponding cost values as values.
+    column_name : str, optional
+        The name of the column when a dictionary is provided as input.
+        By default 'value'.
+    index_name : str, optional
+        The name of the index column when a DataFrame is provided as input. It is also
+        set as the name of index column (keys) when a dictionary is provided.
+        By default 'index'.
+    **select : dict, optional
+        Keyword arguments to filter the table.
 
+    Returns
+    -------
+    pd.DataFrame
+        The processed table as a DataFrame.
+    """
+    # If the table is in dict format, convert it to a DataFrame
+    if isinstance(table, dict):
+        table = pd.DataFrame.from_dict(
+            table, orient="index", columns=[column_name]
+        ).reset_index(names=index_name)
+        # Return the dataframe
+        return table
 
-def _merge_dataarrays(
-    grid_like: xr.Dataset | xr.DataArray | None,
-    dataarrays: list[xr.DataArray],
-) -> xr.Dataset:
-    if grid_like is None:
-        logger.warning(
-            "No known grid provided to reproject to, \
-defaulting to first specified grid for transform and extent"
-        )
-        grid_like = dataarrays[0]
+    # Create a query from the kwargs
+    if len(select) != 0:
+        query = create_query(**select)
+        table = table.query(query)
+        # Check if the resulting DataFrame is empty after selection
+        if len(table) == 0:
+            raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
+        # Transpose the cost table, rename index to object_type to easily merge
+        # This is not the object type, but the specific max costs of that element
+        table = table.T.reset_index(names=index_name)
 
-    # Reproject to gridlike
-    if isinstance(grid_like, xr.DataArray):
-        grid_like = grid_like.to_dataset()
-
-    # Reproject if necessary
-    for idx, da in enumerate(dataarrays):
-        dataarrays[idx] = grid_from_rasterdataset(grid_like=grid_like, ds=da)
-
-    ds = xr.merge(dataarrays)
-    ds.attrs = {}  # Ensure that the dataset doesnt copy a merged instance of
-    # the data variables' attributes
-
-    # Return the data
-    return ds
+    return table

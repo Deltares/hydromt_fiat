@@ -26,6 +26,7 @@ from hydromt_fiat.utils import (
     EXPOSURE,
     GEOM,
     OBJECT__TYPE,
+    VALUE,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -111,6 +112,7 @@ class ExposureGeomsComponent(GeomsComponent):
     def write(
         self,
         filename: Path | str | None = None,
+        drop_intermediates: bool = True,
         **kwargs,
     ) -> None:
         """Write exposure geometries to a vector file.
@@ -124,6 +126,9 @@ class ExposureGeomsComponent(GeomsComponent):
             which will be used to determine the names/keys of the geometries.
             If None, the value(s) is/ are derived from the `_filename` attribute,
             by default None.
+        drop_intermediates : bool, optional
+            Whether or not to drop the columns created for internal use in HydroMT-FIAT
+            when writing. By default True.
         **kwargs : dict
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
@@ -166,8 +171,10 @@ class ExposureGeomsComponent(GeomsComponent):
                 f"Writing '{name}' exposure geometry",
             )
             # Write the entire thing to vector file
+            if drop_intermediates:
+                gdf = gdf.drop([COST__TYPE, OBJECT__TYPE], axis=1, errors="ignore")
             write_geoms(
-                data=gdf.drop([COST__TYPE, OBJECT__TYPE], axis=1, errors="ignore"),
+                data=gdf,
                 write_path=write_path,
                 **kwargs,
             )
@@ -394,8 +401,10 @@ use 'set_region' before this method"
                 "'exposure_cost_table' is required. \
 Either provide a filename or a dictionary/ DataFrame."
             )
-        exposure_cost_table = workflows.process_cost_table(
-            exposure_cost_table=exposure_cost_table,
+        exposure_cost_table = workflows.process_table(
+            table=exposure_cost_table,
+            column_name=VALUE,
+            index_name=COST__TYPE,
             **select,
         )
         # Get the exposure cost link is not None

@@ -24,7 +24,7 @@ from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
-    GEOM,
+    GEOMS,
     GRID,
     HAZARD,
     METHOD,
@@ -90,7 +90,7 @@ class FIATModel(Model):
             ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
-            f"{EXPOSURE}_{GEOM}",
+            f"{EXPOSURE}_{GEOMS}",
             ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
@@ -102,7 +102,7 @@ class FIATModel(Model):
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            f"{OUTPUT}_{GEOM}",
+            f"{OUTPUT}_{GEOMS}",
             OutputGeomsComponent(model=self),
         )
         self.add_component(
@@ -123,7 +123,7 @@ class FIATModel(Model):
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
         """Access the exposure geoms component."""
-        return self.components[f"{EXPOSURE}_{GEOM}"]
+        return self.components[f"{EXPOSURE}_{GEOMS}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
@@ -138,7 +138,7 @@ class FIATModel(Model):
     @property
     def output_geoms(self) -> OutputGeomsComponent:
         """Access the output geoms component."""
-        return self.components[f"{OUTPUT}_{GEOM}"]
+        return self.components[f"{OUTPUT}_{GEOMS}"]
 
     @property
     def output_grid(self) -> OutputGridComponent:
