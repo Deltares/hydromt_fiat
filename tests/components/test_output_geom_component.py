@@ -14,7 +14,7 @@ from hydromt_fiat.components import OutputGeomsComponent
 
 def test_output_geom_component_empty(mock_model: MagicMock):
     # Set up the component
-    component = OutputGeomsComponent(model=mock_model)
+    component = OutputGeomsComponent(model=mock_model("geom"))
 
     # Assert the state
     assert component._data is None
@@ -76,7 +76,7 @@ def test_output_geom_component__set(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = OutputGeomsComponent(model=mock_model)
+    component = OutputGeomsComponent(model=mock_model("geom"))
     assert len(component.processed_data) == 0  # No data yet
 
     # Add a geometry dataset
@@ -102,7 +102,7 @@ def test_output_geom_component__set_fid(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = OutputGeomsComponent(model=mock_model)
+    component = OutputGeomsComponent(model=mock_model("geom"))
     assert len(component.processed_data) == 0  # No data yet
     # Add fid column
     build_region["fid"] = [1]
@@ -121,11 +121,13 @@ def test_output_geom_component_read_none(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=model)
 
     # Assert the state
     assert len(component.data) == 0
@@ -141,11 +143,13 @@ def test_output_geom_component_read_not_found(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=model)
 
     # Assert the state
     assert len(component.data) == 0
@@ -161,11 +165,13 @@ def test_output_geom_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=model)
 
     # Assert the state
     assert len(component.data) == 0
@@ -185,7 +191,7 @@ def test_output_geom_component_write(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=mock_model_config("geom"))
     # Set data like a dummy
     component._processed_data = {
         "aggr1": exposure_vector_clipped,
@@ -207,7 +213,7 @@ def test_output_geom_component_write_df(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=mock_model_config("geom"))
     # Drop the geometry column
     exposure_vector_clipped.drop(["geometry"], axis=1, inplace=True)
     # Set data like a dummy
@@ -235,7 +241,7 @@ def test_output_geom_component_write_warnings(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = OutputGeomsComponent(model=mock_model_config)
+    component = OutputGeomsComponent(model=mock_model_config("geom"))
 
     # Call write with no post processed data
     component.write()
@@ -250,6 +256,7 @@ def test_output_geom_component_spatial_aggregate(
     vector_grid: gpd.GeoDataFrame,
 ):
     # Set up the component
+    model_with_region._type = "geom"
     component = OutputGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
@@ -282,6 +289,7 @@ def test_output_geom_component_spatial_square_aggregate(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Set up the component
+    model_with_region._type = "geom"
     component = OutputGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
@@ -315,6 +323,7 @@ def test_output_geom_component_spatial_square_aggregate_no_clip(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Set up the component
+    model._type = "geom"
     component = OutputGeomsComponent(model=model)
 
     # Set data like a dummy

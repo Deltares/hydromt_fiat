@@ -9,7 +9,7 @@ from hydromt_fiat.components import OutputGridComponent
 
 def test_output_grid_component_empty(mock_model: MagicMock):
     # Set up the component
-    component = OutputGridComponent(model=mock_model)
+    component = OutputGridComponent(model=mock_model("grid"))
 
     # Assert the state
     assert component._data is None
@@ -20,11 +20,13 @@ def test_output_grid_component_read_none(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGridComponent(model=mock_model_config)
+    component = OutputGridComponent(model=model)
 
     # Assert the state
     assert len(component.data.data_vars) == 0
@@ -40,11 +42,13 @@ def test_output_grid_component_read_not_found(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGridComponent(model=mock_model_config)
+    component = OutputGridComponent(model=model)
 
     # Assert the state
     assert len(component.data.data_vars) == 0
@@ -60,11 +64,13 @@ def test_output_grid_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Set up the component
-    component = OutputGridComponent(model=mock_model_config)
+    component = OutputGridComponent(model=model)
 
     # Assert the state
     assert len(component.data.data_vars) == 0

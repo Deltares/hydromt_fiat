@@ -20,6 +20,7 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.components.config import SETTINGS_DICT
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
@@ -27,8 +28,6 @@ from hydromt_fiat.utils import (
     GEOM,
     GRID,
     HAZARD,
-    METHOD,
-    MODEL,
     OUTPUT,
     REGION,
     SETTINGS,
@@ -83,6 +82,8 @@ class FIATModel(Model):
             data_libs=data_libs,
             **catalog_keys,
         )
+        ## It's own attributes
+        self._type: str | None = None
 
         ## Setup components
         self.add_component(
@@ -144,6 +145,11 @@ class FIATModel(Model):
     def output_grid(self) -> OutputGridComponent:
         """Access the output grid component."""
         return self.components[f"{OUTPUT}_{GRID}"]
+
+    @property
+    def type(self) -> str | None:
+        """Return the model type."""
+        return self._type
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
@@ -273,29 +279,19 @@ class FIATModel(Model):
     @hydromt_step
     def set_config(
         self,
-        *,
-        modeltype: Literal["geom", "grid"],
-        method: Literal["flood.depth", "flood.level"],
         **settings,
     ) -> None:
         """Set config file entries.
 
         Parameters
         ----------
-        modeltype : {'geom', 'grid'}
-            The type of the model, either 'geom' for a geometry-based model or 'grid'
-            for a grid-based model.
-        method : {'flood.level', 'flood.depth'}
-            The method to be used for the risk calculation, either 'flood.level' or
-            'flood.depth'.
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        model_settings = {TYPE: modeltype, METHOD: method}
         # Set the other defined settings
-        self.config.update(**{MODEL: model_settings, **settings})
+        self.config.update(**settings)
 
     @hydromt_step
     def set_region(
@@ -329,3 +325,26 @@ class FIATModel(Model):
             )
         # Set the region in the region component
         self.components[REGION].set(geom, replace=replace)
+
+    @hydromt_step
+    def set_type(
+        self,
+        model_type: Literal["geom", "grid"],
+    ) -> None:
+        """Set the type of the FIAT model.
+
+        This can be either 'geom' for the geometry model or 'grid' for the raster
+        based model.
+
+        Parameters
+        ----------
+        model_type : Literal[&quot;geom&quot;, &quot;grid&quot;]
+            The type of model.
+        """
+        self._type = model_type
+        settings_dict = self.config.data.to_dict()
+        settings_dict.pop(TYPE, None)
+        self.config._data = SETTINGS_DICT[self.type].model_validate(
+            settings_dict,
+            context=self.config.context,
+        )

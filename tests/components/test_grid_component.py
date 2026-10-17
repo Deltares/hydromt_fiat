@@ -15,7 +15,7 @@ GridComponent.__abstractmethods__ = set()
 
 def test_grid_component_empty(mock_model: MagicMock):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Assert the state
     assert component._data is None
@@ -61,7 +61,7 @@ def test_grid_component_clear(
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Set data like a dummy
     component._data = hazard
@@ -98,7 +98,7 @@ def test_grid_component_clip_no_data(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert the current state
     assert component._data is None
 
@@ -208,7 +208,7 @@ def test_grid_component_set(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -234,7 +234,7 @@ def test_grid_component_set_replace(
 ):
     caplog.set_level(logging.WARNING)
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -255,7 +255,7 @@ def test_grid_component_set_errors(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Dataarray without a name
     da = exposure_grid_clipped["commercial_content"]

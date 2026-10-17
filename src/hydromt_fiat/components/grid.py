@@ -37,12 +37,14 @@ class GridComponent(SpatialModelComponent):
         )
 
     ## Private methods
-    def _initialize(self, skip_read: bool = False) -> None:
-        """Initialize the internal dataset."""
-        if self._data is None:
-            self._data = xr.Dataset()
-            if self.root.is_reading_mode() and not skip_read:
-                self.read()
+    def _assert_model_type(self, model_type: str, error: bool = True):
+        flag = self.model.type == model_type
+        if error and not flag:
+            raise TypeError(
+                f"Model is in the wrong type '{self.model.type}', \
+the method requires '{model_type}'"
+            )
+        return flag
 
     def _check_spatial(self) -> bool:
         try:
@@ -52,6 +54,13 @@ class GridComponent(SpatialModelComponent):
             return False
         else:
             return True
+
+    def _initialize(self, skip_read: bool = False) -> None:
+        """Initialize the internal dataset."""
+        if self._data is None:
+            self._data = xr.Dataset()
+            if self.root.is_reading_mode() and not skip_read:
+                self.read()
 
     ## Properties
     @property
