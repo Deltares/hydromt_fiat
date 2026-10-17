@@ -250,3 +250,7 @@ class HazardComponent(GridComponent):
 
         # Set the config entries
         self.model.config.data.risk = risk
+
+        # Set the region if not present and defined by the hazard setup
+        if not region and self.model.region is None:
+            self.model.set_region(self._region_data)

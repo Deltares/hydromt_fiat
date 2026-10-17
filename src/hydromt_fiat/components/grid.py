@@ -2,6 +2,7 @@
 
 import logging
 from abc import abstractmethod
+from typing import Any
 
 import geopandas as gpd
 import shapely.geometry as sg
@@ -54,6 +55,15 @@ class GridComponent(SpatialModelComponent):
 the method requires '{model_type}'"
             )
         return flag
+
+    def _get_attributes(self, attr: str, spatial: bool = False) -> list[Any]:
+        """Return attribute from spatial variables."""
+        attrs = []
+        for var in self.data.data_vars:
+            if spatial and not check_spatial(self.data[var]):
+                continue
+            attrs.append(self.data[var].attrs.get(attr, None))
+        return attrs
 
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""

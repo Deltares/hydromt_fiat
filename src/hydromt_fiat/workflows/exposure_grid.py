@@ -10,7 +10,9 @@ import xarray as xr
 from hydromt_fiat.gis.raster import merge_rasters
 from hydromt_fiat.utils import (
     CATEGORIES,
+    CATEGORIZED,
     CURVE,
+    DEFAULT,
     EXPOSURE__TYPE,
     FN_CURVE,
     IMPACT__SUBTYPE,
@@ -104,7 +106,12 @@ defaulting to the name of the exposure layer"
         fn_curve = link[CURVE].values[0]
 
         # Process the arrays, .e.g make gdal compliant
-        da = da.assign_attrs({FN_CURVE: fn_curve})
+        da.attrs.update(
+            {
+                FN_CURVE: fn_curve,
+                TYPE: DEFAULT,
+            },
+        )
         exposure_dataarrays.append(da)
 
     if len(exposure_dataarrays) == 0:
@@ -164,7 +171,7 @@ def exposure_grid_categorized_setup(
     exposure_data.attrs.update(
         {
             CATEGORIES: unique.tolist(),
-            TYPE: "tabled",
+            TYPE: CATEGORIZED,
         },
     )
 
@@ -185,7 +192,7 @@ def exposure_grid_category_values(
     exposure_data : xr.DataArray
         The exposure data.
     table : pd.DataFrame | None, optional
-        A dataframe containing the values linked to the categories in the exposyre data.
+        A dataframe containing the values linked to the categories in the exposure data.
         If not provided, all values are set to the default, by default None.
     default : float | int, optional
         The default value when the table is not provided or has missing values compared
@@ -213,7 +220,7 @@ def exposure_grid_category_values(
     table_size = max(cat) + 1
 
     # Add the coordinate for the table values based on the maximum value
-    coord_name = f"{name}_tc"
+    coord_name = f"{name}_cat"
     ds = xr.Dataset(
         coords={coord_name: range(0, table_size + 1)},
     )

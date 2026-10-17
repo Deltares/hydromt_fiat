@@ -52,6 +52,8 @@ class FIATModel(Model):
         Model root, by default None.
     config_fname : Path | str, optional
         Name of the configurations file, by default 'settings.toml'.
+    type : str, optional
+        Set the type of the FIAT model, either 'geom' or 'grid'. By default None.
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w".
     data_libs : list[Path | str] | Path | str, optional
@@ -69,6 +71,7 @@ class FIATModel(Model):
         self,
         root: Path | str | None = None,
         config_fname: Path | str = f"{SETTINGS}.toml",
+        type: str | None = None,
         *,
         mode: str = "r",
         data_libs: list[Path | str] | Path | str | None = None,
@@ -114,6 +117,10 @@ class FIATModel(Model):
             VULNERABILITY,
             VulnerabilityComponent(model=self),
         )
+
+        # Finish initialization
+        if type is not None:
+            self.set_type(type)
 
     ## Properties
     @property
@@ -329,7 +336,7 @@ class FIATModel(Model):
     @hydromt_step
     def set_type(
         self,
-        model_type: Literal["geom", "grid"],
+        type: Literal["geom", "grid"],
     ) -> None:
         """Set the type of the FIAT model.
 
@@ -338,12 +345,17 @@ class FIATModel(Model):
 
         Parameters
         ----------
-        model_type : Literal[&quot;geom&quot;, &quot;grid&quot;]
+        type : Literal[&quot;geom&quot;, &quot;grid&quot;]
             The type of model.
         """
-        self._type = model_type
+        logger.info(f"Settings model type to: '{type}'")
+        # Set the type
+        self._type = type
+        # Get the model settings minus type and exposure
         settings_dict = self.config.data.to_dict()
         settings_dict.pop(TYPE, None)
+        settings_dict.pop(EXPOSURE, None)
+        # Create and set new config settings pydantic basemodel
         self.config._data = SETTINGS_DICT[self.type].model_validate(
             settings_dict,
             context=self.config.context,

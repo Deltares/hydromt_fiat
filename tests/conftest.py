@@ -8,6 +8,7 @@ import pytest
 import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full_from_transform
+from hydromt.readers import open_nc
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 from urllib3.exceptions import HTTPError
@@ -139,7 +140,7 @@ def exposure_vector(model_data_path: Path) -> gpd.GeoDataFrame:
 def exposure_grid(model_data_path: Path) -> xr.Dataset:
     p = Path(model_data_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -151,7 +152,7 @@ def hazard(model_data_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -248,7 +249,7 @@ def exposure_vector_clipped_split_path(
 def exposure_grid_clipped(model_data_clipped_path: Path) -> xr.Dataset:
     p = Path(model_data_clipped_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -260,7 +261,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p)
     assert len(ds.data_vars) != 0
     return ds
 

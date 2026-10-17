@@ -16,8 +16,11 @@ from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
+    COMBINED,
     EXPOSURE,
+    EXPOSURE__GRID__TYPE,
     GRID,
+    TYPE,
     VALUE,
 )
 from hydromt_fiat.writers import write_grid
@@ -136,6 +139,16 @@ class ExposureGridComponent(GridComponent):
             logger.info("No exposure grid data found, skip writing.")
             return
 
+        # Get the exposure grid type
+        types = set(self._get_attributes(TYPE, spatial=True))
+        if (
+            not types
+            or None in types
+            or not all(item in EXPOSURE__GRID__TYPE for item in types)
+        ):
+            raise ValueError(f"Invalid grid type in data: {types}")
+        grid_type = list(types)[0] if len(types) == 1 else COMBINED
+
         # Sort out the filename
         # Hierarchy: 1) signature, 2) default
         filename = filename or self._filename
@@ -156,6 +169,7 @@ class ExposureGridComponent(GridComponent):
         self.model.config.data.exposure = ExposureGrid(
             file=write_path,
             settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
+            type=grid_type,
         )
 
     ## Setup methods
@@ -276,6 +290,7 @@ before setting up exposure grid"
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
         """
+        self._assert_model_type(GRID)
         logger.info("Setting up gridded value-table based exposure")
         # Check for the vulnerability data
         if self.model.vulnerability.data.identifiers.empty:
@@ -305,10 +320,6 @@ before setting up exposure grid"
 
         # Set the data
         self.set(exposure_grid)
-
-        # Set the config entries
-        logger.info("Setting the model type to 'grid'")
-        self.model.config.data.model.type = GRID
 
     @hydromt_step
     def create_categorized_values(
@@ -354,9 +365,10 @@ before setting up exposure grid"
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
-        logger.info("Setting up table values for tabled based exposure grid")
+        self._assert_model_type(GRID)
+        logger.info("Setting up category values for tabled based exposure grid")
         # Assert the variable is present
-        self._assert_entry(exposure_name)
+        self._assert_entry(exposure_name, spatial=True)
 
         # Get the exposure table from the data catalog, or from input
         if exposure_table_fname is not None:
