@@ -38,6 +38,7 @@ def test_build_model_geom(
     # Add model type and region
     model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
     model.set_region(build_region_small)
+    model.set_type(GEOM)
 
     # Setup the vulnerability
     model.vulnerability.create(
@@ -78,7 +79,7 @@ def test_build_model_geom(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.data.model.type == GEOM
+    assert model.config.data.type == GEOM
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars
@@ -117,6 +118,7 @@ def test_build_model_grid(
     # Add model type and region
     model.set_config(modeltype=GRID, method=FLOOD_LEVEL)
     model.set_region(build_region_small)
+    model.set_type(GRID)
 
     # Setup the vulnerability
     model.vulnerability.create(
@@ -139,7 +141,7 @@ def test_build_model_grid(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.data.model.type == GRID
+    assert model.config.data.type == GRID
     assert len(model.vulnerability.data.curves) == 1001
     assert "rs1" in model.vulnerability.data.curves.columns
     assert "flood_event" in model.hazard.data.data_vars

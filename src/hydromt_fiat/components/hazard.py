@@ -252,4 +252,4 @@ class HazardComponent(GridComponent):
         self.set(ds)
 
         # Set the config entries
-        self.model.config.data.model.risk = risk
+        self.model.config.data.risk = risk

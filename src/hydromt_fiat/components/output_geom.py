@@ -17,7 +17,7 @@ from hydromt_fiat.components.utils import (
 from hydromt_fiat.gis import create_square_vector_grid
 from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.settings.utils import get_config_list_files
-from hydromt_fiat.utils import GEOMETRY, POST
+from hydromt_fiat.utils import GEOM, GEOMETRY, POST
 from hydromt_fiat.writers import write_csv, write_geoms
 
 __all__ = ["OutputGeomsComponent"]
@@ -129,6 +129,9 @@ column will be removed"
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
+        if not self._assert_model_type(GEOM, error=False):
+            return
+        # Assert the mode
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
 
@@ -138,13 +141,13 @@ column will be removed"
         files = expand_path_wildcards(self.model.config.dir, filename)
 
         # Look at the in and outputs of the config file
-        infiles = get_config_list_files(self.model.config.data.exposure.geom) or []
+        infiles = get_config_list_files(self.model.config.data.exposure) or []
         infiles = [
             Path(self.model.config.output_dir, item.name).with_suffix(".gpkg")
             for item in infiles
         ]
         # Get the directly specified output files
-        outfiles = get_config_list_files(self.model.config.data.output.geom)
+        outfiles = get_config_list_files(self.model.config.data.output)
         # Supplement the defined output with input (names are the same in that case)
         if outfiles is None:
             outfiles = infiles
@@ -251,6 +254,8 @@ column will be removed"
             If not provided, 'output_name' is used with the 'sp_aggr' suffix.
             By default None.
         """
+        if not self._assert_model_type(GEOM, error=False):
+            return
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 
@@ -307,6 +312,8 @@ using the '{method}' aggregation method"
             If not provided, 'output_name' is used with the 'sq_aggr' suffix.
             By default None.
         """
+        if not self._assert_model_type(GEOM, error=False):
+            return
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 

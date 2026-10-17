@@ -22,7 +22,7 @@ from hydromt_fiat.utils import (
 
 def test_exposure_geom_component_empty(mock_model: MagicMock):
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model)
+    component = ExposureGeomsComponent(model=mock_model("geom"))
 
     # Assert some basics
     assert component._filename == f"{EXPOSURE}/{{name}}.fgb"
@@ -34,11 +34,14 @@ def test_exposure_geom_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Set the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
+    model.config.read("settings_geom.toml")
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=model)
 
     # Assert it's empty
     assert component._data is None
@@ -56,13 +59,16 @@ def test_exposure_geom_component_read_none(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Set the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
+    model.config.read("settings_geom.toml")
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=model)
     # Set the config to point to nonsense path
-    component.model.config.data.exposure.geom[0] = ExposureGeometry(file="foo.fgb")
+    component.model.config.data.exposure[0] = ExposureGeometry(file="foo.fgb")
 
     # Assert it's empty
     assert component._data is None
@@ -78,11 +84,13 @@ def test_exposure_geom_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Set the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=model)
 
     # Assert it's empty
     assert component._data is None
@@ -99,11 +107,13 @@ def test_exposure_geom_component_read_csv(
     mock_model_config: MagicMock,
     exposure_vector_clipped_split_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Set the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="r"),
     )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=model)
 
     # Assert it's empty
     assert component._data is None
@@ -123,8 +133,10 @@ def test_exposure_geom_component_write(
     mock_model_config: MagicMock,
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
+    # Set the model
+    model = mock_model_config("geom")
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=model)
     # Set data like a dummy
     component._data = {
         "buildings": exposure_vector_clipped,
@@ -139,7 +151,7 @@ def test_exposure_geom_component_write(
     assert Path(tmp_path, component._filename.format(name="buildings2")).is_file()
 
     # Assert the config file entries
-    geom_cfg = mock_model_config.config.data.exposure.geom
+    geom_cfg = model.config.data.exposure
     assert len(geom_cfg) == 2
     assert geom_cfg[0].file == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
 
@@ -150,7 +162,7 @@ def test_exposure_geom_component_write_sig(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model_config)
+    component = ExposureGeomsComponent(model=mock_model_config("geom"))
     # Set data like a dummy
     component._data = {
         "buildings": exposure_vector_clipped,
@@ -168,12 +180,14 @@ def test_exposure_geom_component_write_warnings(
     caplog: pytest.LogCaptureFixture,
     mock_model: MagicMock,
 ):
+    # Setup the model
+    model = mock_model("geom")
     caplog.set_level(logging.DEBUG)
-    type(mock_model).root = PropertyMock(
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(tmp_path, mode="w"),
     )
     # Setup the component
-    component = ExposureGeomsComponent(model=mock_model)
+    component = ExposureGeomsComponent(model=model)
 
     # Write while not data present
     component.write()
@@ -191,7 +205,7 @@ def test_exposure_geom_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
 
     # Assert that the data is empty
     assert len(component.data) == 0
@@ -209,7 +223,7 @@ def test_exposure_geom_component_create(
     assert len(component.data["buildings"]) != 0
 
     # Assert entries in the config
-    assert component.model.config.data.model.type == GEOM
+    assert component.model.config.data.type == GEOM
 
 
 def test_exposure_geom_component_create_redo(
@@ -217,7 +231,7 @@ def test_exposure_geom_component_create_redo(
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector_clipped_for_link}
@@ -244,6 +258,7 @@ def test_exposure_geom_component_create_errors(
     build_region_small: Path,
 ):
     # Setup the component
+    model._type = "geom"
     component = ExposureGeomsComponent(model=model)
 
     # Assert that no available region lead to an error
@@ -265,7 +280,7 @@ def test_exposure_geom_component_create_link(
 ):
     caplog.set_level(logging.WARNING)
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector_clipped_for_link}
@@ -289,7 +304,7 @@ def test_exposure_geom_component_create_link_multi(
 ):
     caplog.set_level(logging.WARNING)
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector_clipped_for_link}
@@ -311,6 +326,7 @@ def test_exposure_geom_component_create_link_errors(
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
     # Setup the component
+    model_with_region._type = "geom"
     component = ExposureGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
@@ -331,7 +347,7 @@ def test_exposure_geom_component_create_max(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
@@ -359,7 +375,7 @@ def test_exposure_geom_component_create_max_from_dict(
     exposure_cost_dict: dict[str, float],
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
@@ -387,7 +403,7 @@ def test_exposure_geom_component_create_max_link(
     exposure_cost_link_path: Path,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
@@ -412,7 +428,7 @@ def test_exposure_geom_component_create_max_errors(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
@@ -432,7 +448,7 @@ def test_exposure_geom_component_create_max_direct(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = ExposureGeomsComponent(model=model_exposure_setup)
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
@@ -454,6 +470,7 @@ def test_exposure_geom_component_update_cols(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
+    model_with_region._type = "geom"
     component = ExposureGeomsComponent(model=model_with_region)
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="bag")

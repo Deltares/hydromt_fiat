@@ -78,6 +78,8 @@ class ExposureGridComponent(GridComponent):
             from xarray.
         """
         # Check the state
+        if not self._assert_model_type(GRID, error=False):
+            return
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
 
@@ -85,7 +87,7 @@ class ExposureGridComponent(GridComponent):
         # Hierarchy: 1) signature, 2) config file, 3) default
         filename = (
             filename
-            or get_file_from_settings_component(self.model.config.data.exposure.grid)
+            or get_file_from_settings_component(self.model.config.data.exposure)
             or self._filename
         )
         # Read the data
@@ -124,6 +126,8 @@ class ExposureGridComponent(GridComponent):
             xarray.
         """
         # Check the state
+        if not self._assert_model_type(GRID, error=False):
+            return
         self.root._assert_write_mode()
 
         # Check for data. If no data, warn and return
@@ -148,7 +152,7 @@ class ExposureGridComponent(GridComponent):
         )
 
         # Update the config
-        self.model.config.data.exposure.grid = ExposureGrid(
+        self.model.config.data.exposure = ExposureGrid(
             file=write_path,
             settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
         )
@@ -186,6 +190,7 @@ class ExposureGridComponent(GridComponent):
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
+        self._assert_model_type(GRID)
         logger.info("Setting up gridded exposure")
 
         if self.model.vulnerability.data.identifiers.empty:
@@ -244,7 +249,3 @@ before setting up exposure grid"
 
         # Set the dataset
         self.set(ds)
-
-        # Set the config entries
-        logger.info("Setting the model type to 'grid'")
-        self.model.config.data.model.type = GRID

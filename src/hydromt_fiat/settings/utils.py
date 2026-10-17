@@ -26,13 +26,13 @@ def _mount(
 
 def _relpath(
     value: Any,
-    root: Path,
+    root: Path | None = None,
 ) -> str | Any:
     """Generate a relative path."""
     if not isinstance(value, Path):
         return value
     value = Path(value)
-    if _mount(value.as_posix()) == _mount(root.as_posix()):
+    if root is not None and _mount(value.as_posix()) == _mount(root.as_posix()):
         value_rel = value.relative_to(root, walk_up=True)
         if len(value_rel.parts) < 5:
             return value_rel.as_posix()
