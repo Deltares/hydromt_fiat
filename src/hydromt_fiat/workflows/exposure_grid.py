@@ -8,9 +8,7 @@ import pandas as pd
 import xarray as xr
 
 from hydromt_fiat.gis.raster import merge_rasters
-from hydromt_fiat.gis.raster_utils import cell_size
 from hydromt_fiat.utils import (
-    AREA__SQM,
     CATEGORIES,
     CURVE,
     EXPOSURE__TYPE,
@@ -166,7 +164,6 @@ def exposure_grid_categorized_setup(
     exposure_data.attrs.update(
         {
             CATEGORIES: unique.tolist(),
-            AREA__SQM: cell_size(exposure_data),
             TYPE: "tabled",
         },
     )

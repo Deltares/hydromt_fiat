@@ -37,11 +37,13 @@ class GridComponent(SpatialModelComponent):
         )
 
     ## Private methods
-    def _assert_entry(self, name: str):
-        if name not in self.data.data_vars:
-            keys = [
-                item for item in self.data.data_vars if check_spatial(self.data[item])
-            ]
+    def _assert_entry(self, name: str, spatial: bool = False):
+        keys = [
+            item
+            for item in self.data.data_vars
+            if check_spatial(self.data[item]) == spatial
+        ]
+        if name not in keys:
             raise RuntimeError(f"Choose from already present data variables: {keys}")
 
     def _initialize(self, skip_read: bool = False) -> None:
