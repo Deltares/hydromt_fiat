@@ -13,8 +13,6 @@ from hydromt_fiat.utils import (
     IMPACT__SUBTYPE,
     MAX,
     OBJECT__TYPE,
-    VALUE,
-    create_query,
 )
 from hydromt_fiat.workflows.impact import filter_impact
 
@@ -56,48 +54,6 @@ def spatial_dimensions(
             return exposure_data.length
         case 2:
             return exposure_data.area
-
-
-def process_cost_table(
-    exposure_cost_table: pd.DataFrame | dict[str, float | int],
-    **select,
-) -> pd.DataFrame:
-    """Process the exposure cost table data.
-
-    Parameters
-    ----------
-    exposure_cost_table : pd.DataFrame | dict[str, float  |  int]
-        The exposure cost table data, which can be provided as a DataFrame
-        or a dictionary. The dictionary should have the object types as keys and the
-        corresponding cost values as values.
-    **select : dict, optional
-        Keyword arguments to filter the exposure cost table.
-
-    Returns
-    -------
-    pd.DataFrame
-        The processed exposure cost table as a DataFrame.
-    """
-    # If the table is in dict format, convert it to a DataFrame
-    if isinstance(exposure_cost_table, dict):
-        exposure_cost_table = pd.DataFrame.from_dict(
-            exposure_cost_table, orient="index", columns=[VALUE]
-        ).reset_index(names=COST__TYPE)
-        # Return the dataframe
-        return exposure_cost_table
-
-    # Create a query from the kwargs
-    if len(select) != 0:
-        query = create_query(**select)
-        exposure_cost_table = exposure_cost_table.query(query)
-        # Check if the resulting DataFrame is empty after selection
-        if len(exposure_cost_table) == 0:
-            raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
-        # Transpose the cost table, rename index to object_type to easily merge
-        # This is not the object type, but the specific max costs of that element
-        exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
-
-    return exposure_cost_table
 
 
 def max_value(

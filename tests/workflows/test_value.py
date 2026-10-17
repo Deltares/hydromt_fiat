@@ -7,8 +7,8 @@ import pandas as pd
 import pytest
 import shapely.geometry as sg
 
-from hydromt_fiat.utils import COST__TYPE, DAMAGE, MAX
-from hydromt_fiat.workflows import max_value, max_value_direct, process_cost_table
+from hydromt_fiat.utils import DAMAGE, MAX
+from hydromt_fiat.workflows import max_value, max_value_direct
 from hydromt_fiat.workflows.value import get_geometry_type, spatial_dimensions
 
 
@@ -79,46 +79,6 @@ def test_spatial_dimensions_erros():
         ValueError, match="Point geometries do not have a spatial dimension"
     ):
         _ = spatial_dimensions(exposure_data=gdf)
-
-
-def test_process_cost_table(
-    exposure_cost_table: pd.DataFrame,
-):
-    # Call the function
-    cost_table = process_cost_table(
-        exposure_cost_table=exposure_cost_table,
-        **{"country": "World"},
-    )
-
-    # Assert the content
-    assert isinstance(cost_table, pd.DataFrame)
-    assert len(cost_table) == 14
-    assert "commercial" in cost_table[COST__TYPE].values
-    assert "commercial_structure" in cost_table[COST__TYPE].values
-
-
-def test_process_cost_table_dict(exposure_cost_dict: dict[str, float]):
-    # Call the function
-    cost_table = process_cost_table(exposure_cost_table=exposure_cost_dict)
-
-    # Assert the content
-    assert isinstance(cost_table, pd.DataFrame)
-    assert len(cost_table) == 8
-    assert "commercial_structure" in cost_table[COST__TYPE].values
-
-
-def test_process_cost_table_errors(
-    exposure_cost_table: pd.DataFrame,
-):
-    # Select kwargs leave no data
-    with pytest.raises(
-        ValueError,
-        match=r"Select kwargs \(\{'country': 'Foo'\}\) resulted in no remaining",
-    ):
-        _ = process_cost_table(
-            exposure_cost_table=exposure_cost_table,
-            country="Foo",
-        )
 
 
 def test_max_value(

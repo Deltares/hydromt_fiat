@@ -1,4 +1,5 @@
 import logging
+import re
 from unittest.mock import MagicMock
 
 import geopandas as gpd
@@ -25,8 +26,45 @@ def test_grid_component_empty(mock_model: MagicMock):
     assert component._region_data is None
     assert component.bounds is None
     assert component.crs is None
+    assert component.like is None
     assert component.res is None
     assert component.transform is None
+
+
+def test_grid_component__assert_entry(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = xr.Dataset(data_vars={"foo": xr.DataArray()})
+
+    # Assert it's fine to call foo
+    component._assert_entry(name="foo")
+
+
+def test_grid_component__assert_entry_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = xr.Dataset(data_vars={"foo": xr.DataArray()})
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape("Choose from already present data variables: ['foo']"),
+    ):
+        component._assert_entry(name="baz", spatial=False)
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape("Choose from already present data variables: []"),
+    ):
+        component._assert_entry(name="baz", spatial=True)
 
 
 def test_grid_component_properties(

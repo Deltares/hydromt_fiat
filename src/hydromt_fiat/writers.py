@@ -10,7 +10,8 @@ import tomlkit
 import xarray as xr
 from hydromt.writers import write_nc
 
-from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.raster_utils import cell_size, force_ns
+from hydromt_fiat.utils import AREA__SQM
 
 __all__ = [
     "write_config",
@@ -121,6 +122,7 @@ def write_grid(
     """
     _write_dir(write_path)
     logger.info(f"Writing grid file to {Path(write_path).as_posix()}")
+    data.attrs.update({AREA__SQM: cell_size(data)})
     write_nc(
         force_ns(data),
         file_path=write_path,

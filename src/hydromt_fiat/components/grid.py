@@ -2,6 +2,7 @@
 
 import logging
 from abc import abstractmethod
+from typing import Any
 
 import geopandas as gpd
 import shapely.geometry as sg
@@ -11,7 +12,7 @@ from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
-from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
 
 __all__ = ["GridComponent"]
 
@@ -37,6 +38,15 @@ class GridComponent(SpatialModelComponent):
         )
 
     ## Private methods
+    def _assert_entry(self, name: str, spatial: bool = False):
+        keys = [
+            item
+            for item in self.data.data_vars
+            if check_spatial(self.data[item]) == spatial
+        ]
+        if name not in keys:
+            raise RuntimeError(f"Choose from already present data variables: {keys}")
+
     def _assert_model_type(self, model_type: str, error: bool = True):
         flag = self.model.type == model_type
         if error and not flag:
@@ -46,14 +56,14 @@ the method requires '{model_type}'"
             )
         return flag
 
-    def _check_spatial(self) -> bool:
-        try:
-            self.data.raster.set_spatial_dims()
-            self.data.raster.res
-        except ValueError:
-            return False
-        else:
-            return True
+    def _get_attributes(self, attr: str, spatial: bool = False) -> list[Any]:
+        """Return attribute from spatial variables."""
+        attrs = []
+        for var in self.data.data_vars:
+            if spatial and not check_spatial(self.data[var]):
+                continue
+            attrs.append(self.data[var].attrs.get(attr, None))
+        return attrs
 
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""
@@ -100,6 +110,13 @@ the method requires '{model_type}'"
             self._initialize()
         assert self._data is not None
         return self._data
+
+    @property
+    def like(self) -> xr.Dataset | None:
+        """Return the spatial representation of the data."""
+        if check_spatial(self.data):
+            return self.data
+        return None
 
     @property
     def res(self) -> tuple[float] | None:
@@ -160,7 +177,7 @@ the method requires '{model_type}'"
             Return a dataset if the inplace is False.
         """
         # Check the spatial component
-        if not self._check_spatial():
+        if not check_spatial(self.data):
             return None
 
         logger.info(f"Clipping data of {self.__class__.__name__}")
@@ -194,7 +211,7 @@ the method requires '{model_type}'"
             Return a dataset if the inplace is False.
         """
         # Check the spatial component
-        if not self._check_spatial():
+        if not check_spatial(self.data):
             return None
 
         # Check for the crs's
