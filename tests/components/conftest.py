@@ -20,28 +20,37 @@ def model_exposure_setup(
     model_with_region: FIATModel,
     vulnerability_curves: pd.DataFrame,
     vulnerability_identifiers: pd.DataFrame,
-) -> FIATModel:
-    model = model_with_region
-    model.vulnerability.set(
-        vulnerability_curves,
-        name="curves",
-    )
-    model.vulnerability.set(
-        vulnerability_identifiers,
-        name="identifiers",
-    )
-    return model
+) -> Callable[[str], FIATModel]:
+    def _factory(model_type: str) -> FIATModel:
+        model = model_with_region
+        model._type = model_type
+        model.vulnerability.set(
+            vulnerability_curves,
+            name="curves",
+        )
+        model.vulnerability.set(
+            vulnerability_identifiers,
+            name="identifiers",
+        )
+        return model
+
+    return _factory
 
 
 @pytest.fixture
 def mock_model_factory(
     mocker: MockerFixture, tmp_path: Path
 ) -> Callable[[Path, str], FIATModel]:
-    def _factory(path: Path = tmp_path, mode: str = "w") -> MagicMock:
+    def _factory(
+        path: Path = tmp_path,
+        mode: str = "w",
+        model_type: str = "geom",
+    ) -> MagicMock:
         model = mocker.create_autospec(FIATModel)
         model.root = ModelRoot(path, mode=mode)
         model.data_catalog = mocker.create_autospec(DataCatalog)
         model.crs = CRS.from_epsg(4326)
+        model.type = model_type
         return model
 
     return _factory
@@ -49,18 +58,24 @@ def mock_model_factory(
 
 @pytest.fixture
 def mock_model(mock_model_factory: Callable[[Path, str], FIATModel]) -> MagicMock:
-    model = mock_model_factory()
-    return model
+    def _factory(model_type: str) -> MagicMock:
+        model = mock_model_factory(model_type=model_type)
+        return model
+
+    return _factory
 
 
 @pytest.fixture
 def mock_model_config(
     mock_model_factory: Callable[[Path, str], FIATModel],
-) -> MagicMock:
-    model = mock_model_factory()
-    config = ConfigComponent(model)
-    type(model).config = PropertyMock(side_effect=lambda: config)
-    return model
+) -> Callable[[str], FIATModel]:
+    def _factory(model_type: str) -> MagicMock:
+        model = mock_model_factory(model_type=model_type)
+        config = ConfigComponent(model)
+        type(model).config = PropertyMock(side_effect=lambda: config)
+        return model
+
+    return _factory
 
 
 ## Extra data paths

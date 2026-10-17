@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from hydromt_fiat.settings import Settings
-from hydromt_fiat.settings.exposure import Exposure, ExposureGeometry
+from hydromt_fiat.settings import BaseSettings, GeomSettings
+from hydromt_fiat.settings.exposure import ExposureGeometry
 from hydromt_fiat.settings.file import FileContext, InputFileModel, OutputFileModel
-from hydromt_fiat.settings.output import Output
 
 
 def test_serialize_input_file():
@@ -41,12 +40,12 @@ def test_serialize_input_file_relative(tmp_path: Path):
 
 def test_serialize_output():
     # Initialize
-    o = Output()
+    bs = BaseSettings()
     # Assert the path
-    assert o.path == Path("output")
+    assert bs.output_dir == Path("output")
 
     # When dumping it should become a string
-    assert o.model_dump()["path"] == "output"
+    assert bs.model_dump()["output_dir"] == "output"
 
 
 def test_serialize_output_file():
@@ -84,13 +83,13 @@ def test_serialize_output_file_relative(tmp_path: Path):
 
 def test_serialize_settings():
     # Create settings
-    s = Settings()
+    s = GeomSettings(type="geom")
 
     # When dumping no exposure should be there
     assert "exposure" not in s.model_dump(exclude_none=True)
 
     # But settings a single geometry, should leave it in there
-    s.exposure = Exposure(geom=ExposureGeometry(file="foo.txt"))
+    s.exposure = ExposureGeometry(file="foo.txt")
 
     # When dumping the exposure should be present
     assert "exposure" in s.model_dump(exclude_none=True)

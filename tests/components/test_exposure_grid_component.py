@@ -22,7 +22,7 @@ def test_exposure_grid_component_empty(
     mock_model: MagicMock,
 ):
     # Setup the component
-    component = ExposureGridComponent(model=mock_model)
+    component = ExposureGridComponent(model=mock_model("grid"))
 
     # Assert some basics
     assert component._filename == f"{EXPOSURE}/spatial.nc"
@@ -34,11 +34,14 @@ def test_exposure_grid_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
+    model.config.read("settings_grid.toml")
     # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
+    component = ExposureGridComponent(model=model)
 
     # Read the data by calling the data property
     component.data
@@ -52,11 +55,13 @@ def test_exposure_grid_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
+    component = ExposureGridComponent(model=model)
 
     # Read the data using the signature of the read method
     component.read(f"{EXPOSURE}/spatial.nc")
@@ -70,14 +75,16 @@ def test_exposure_grid_component_read_nothing(
     mocker: MockerFixture,
     mock_model_config: MagicMock,
 ):
+    # Setup the model
+    model = mock_model_config("grid")
     mocker.patch.object(
-        type(mock_model_config.root),
+        type(model.root),
         "mode",
         new_callable=PropertyMock,
         return_value=ModelMode("r"),
     )
     # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
+    component = ExposureGridComponent(model=model)
     # Assert current state
     assert len(component.data) == 0
 
@@ -93,7 +100,7 @@ def test_exposure_grid_component_write(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
+    component = ExposureGridComponent(model=mock_model_config("grid"))
 
     # Set data like a dummy
     component._data = exposure_grid_clipped
@@ -104,7 +111,7 @@ def test_exposure_grid_component_write(
     # Assert the output
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
     # Assert the config
-    assert component.model.config.data.exposure.grid.file == Path(
+    assert component.model.config.data.exposure.file == Path(
         tmp_path,
         EXPOSURE,
         "spatial.nc",
@@ -117,7 +124,7 @@ def test_exposure_grid_component_write_sig(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Setup the component
-    component = ExposureGridComponent(model=mock_model_config)
+    component = ExposureGridComponent(model=mock_model_config("grid"))
 
     # Set data like a dummy
     component._data = exposure_grid_clipped
@@ -128,7 +135,7 @@ def test_exposure_grid_component_write_sig(
     # Assert the output
     assert Path(tmp_path, "baz.nc").is_file()
     # Assert the config file
-    assert component.model.config.data.exposure.grid.file == Path(
+    assert component.model.config.data.exposure.file == Path(
         tmp_path,
         "baz.nc",
     )
@@ -138,7 +145,7 @@ def test_exposure_grid_component_create(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
-    component = ExposureGridComponent(model=model_exposure_setup)
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
 
     # Call the method
     component.create(
@@ -152,14 +159,14 @@ def test_exposure_grid_component_create(
     assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
-    assert component.model.config.data.model.type == GRID
+    assert component.model.config.data.type == GRID
 
 
 def test_exposure_grid_component_create_multi(
     model_exposure_setup: FIATModel,
 ):
     # Setup the component
-    component = ExposureGridComponent(model=model_exposure_setup)
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
 
     # Call the method
     component.create(
@@ -179,6 +186,7 @@ def test_exposure_grid_component_create_errors(
     model: FIATModel,
 ):
     # Setup the component
+    model._type = "grid"
     component = ExposureGridComponent(model=model)
 
     # Assert the vulnerability absent error

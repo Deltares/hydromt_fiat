@@ -312,14 +312,11 @@ def box_geometry() -> gpd.GeoDataFrame:
 @pytest.fixture
 def config_dummy(tmp_path: Path) -> dict:
     data = {
-        "model": {"type": "geom", "threads": 4},
+        "type": "geom",
+        "threads": 4,
         "hazard": {"file": Path(tmp_path, "foo.nc"), "rp": [1, 2, 3]},
         "vulnerability": {"file": Path("foo.csv")},
-        "exposure": {
-            "geom": [
-                {"file": "foo.fgb"},
-            ]
-        },
+        "exposure": [{"file": "foo.fgb"}],
     }
     return data
 

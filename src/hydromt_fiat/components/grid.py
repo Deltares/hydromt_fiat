@@ -46,6 +46,15 @@ class GridComponent(SpatialModelComponent):
         if name not in keys:
             raise RuntimeError(f"Choose from already present data variables: {keys}")
 
+    def _assert_model_type(self, model_type: str, error: bool = True):
+        flag = self.model.type == model_type
+        if error and not flag:
+            raise TypeError(
+                f"Model is in the wrong type '{self.model.type}', \
+the method requires '{model_type}'"
+            )
+        return flag
+
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""
         if self._data is None:

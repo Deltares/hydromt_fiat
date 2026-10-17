@@ -86,6 +86,8 @@ class ExposureGeomsComponent(GeomsComponent):
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
+        if not self._assert_model_type(GEOM, error=False):
+            return
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
 
@@ -93,7 +95,7 @@ class ExposureGeomsComponent(GeomsComponent):
         # Hierarchy: 1) signature, 2) settings file, 3) default
         files = (
             expand_path_wildcards(self.root.path, filename=filename)
-            or get_config_list_files(self.model.config.data.exposure.geom)
+            or get_config_list_files(self.model.config.data.exposure)
             or expand_path_wildcards(self.root.path, filename=self._filename)
         )
         assert files is not None  # Yh..
@@ -133,6 +135,8 @@ class ExposureGeomsComponent(GeomsComponent):
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
         """
+        if not self._assert_model_type(GEOM, error=False):
+            return
         self.root._assert_write_mode()
 
         # If no data to write, return
@@ -181,7 +185,7 @@ class ExposureGeomsComponent(GeomsComponent):
             cfg.append(entry)
 
         # Set the config entries
-        self.model.config.data.exposure.geom = cfg
+        self.model.config.data.exposure = cfg
 
     ## Setup methods
     @hydromt_step
@@ -241,6 +245,7 @@ class ExposureGeomsComponent(GeomsComponent):
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
+        self._assert_model_type(GEOM)
         logger.info("Setting up exposure geometries")
         # Check for region
         if self.model.region is None and not redo:
@@ -285,10 +290,6 @@ use 'set_region' before this method"
         # Set the data directly
         self.set(exposure_vector, name=name)
 
-        # Update the config
-        logger.info("Setting the model type to 'geom'")
-        self.model.config.data.model.type = GEOM
-
     @hydromt_step
     def create_link(
         self,
@@ -317,6 +318,7 @@ use 'set_region' before this method"
             a list of strings. By default 'damage'.
         """
         # Check for data
+        self._assert_model_type(GEOM)
         self._assert_entry(exposure_name)
         exposure_data = self.data[exposure_name]
 
@@ -384,6 +386,7 @@ use 'set_region' before this method"
             E.g. a column is present named 'country' and the wanted values are in the
             row with 'UK', provided country='UK' as keyword argument.
         """
+        self._assert_model_type(GEOM)
         logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
@@ -454,6 +457,7 @@ Either provide a filename or a dictionary/ DataFrame."
         per_unit : bool, optional
             Whether 'value' is per unit area or length, by default True.
         """
+        self._assert_model_type(GEOM)
         logger.info(f"Setting up maximum value from direct values for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
@@ -494,6 +498,7 @@ Either provide a filename or a dictionary/ DataFrame."
             all columns, a list of values corresponding to the number of columns or
             a 2d array.
         """
+        self._assert_model_type(GEOM)
         logger.info(f"Updating exposure data with {columns} columns")
         # Some checks on the input
         self._assert_entry(exposure_name)

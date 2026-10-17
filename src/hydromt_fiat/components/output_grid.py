@@ -8,6 +8,7 @@ from hydromt.model import Model
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
+from hydromt_fiat.utils import GRID
 
 __all__ = ["OutputGridComponent"]
 
@@ -50,6 +51,8 @@ class OutputGridComponent(GridComponent):
             Additional keyword arguments that are passed to the
             `xr.open_dataset` function.
         """
+        if not self._assert_model_type(GRID, error=False):
+            return
         # Assert the mode
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
@@ -57,8 +60,8 @@ class OutputGridComponent(GridComponent):
         # Sort out the read path
         # Hierarchy: 1) signature 2) output defined 3) input derived
         config_filename = (
-            get_file_from_settings_component(self.model.config.data.output.grid)
-            or get_file_from_settings_component(self.model.config.data.exposure.grid)
+            get_file_from_settings_component(self.model.config.data.output)
+            or get_file_from_settings_component(self.model.config.data.exposure)
             or ""
         )
         filename = (
