@@ -150,8 +150,8 @@ class GeomSettings(BaseSettings):
 
     type: Literal["geom"] = "geom"
 
-    geom: ModelGeom = Field(
-        default=ModelGeom(),
+    geom: ModelGeom | None = Field(
+        default=None,
         description="The model settings specific to the geometry model.",
     )
 
@@ -191,8 +191,8 @@ class GridSettings(BaseSettings):
 
     type: Literal["grid"] = "grid"
 
-    grid: ModelGrid = Field(
-        default=ModelGrid(),
+    grid: ModelGrid | None = Field(
+        default=None,
         description="The model settings specific to the grid model.",
     )
 
