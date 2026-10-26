@@ -2,7 +2,7 @@ import geopandas as gpd
 import numpy as np
 
 from hydromt_fiat.workflows.aggregate import (
-    aggregate_spatially,
+    aggregate_geom_spatially,
     prep_data_for_aggregation,
 )
 
@@ -36,12 +36,12 @@ def test_prep_data_for_aggregation_crs(
     assert o.crs.to_epsg() == 32631  # Reprojected to projected crs
 
 
-def test_aggregate_spatially(
+def test_aggregate_geom_spatially(
     prepped_aggr_data: gpd.GeoDataFrame,
     vector_grid: gpd.GeoDataFrame,
 ):
     # Call the function
-    vg = aggregate_spatially(
+    vg = aggregate_geom_spatially(
         output_data=prepped_aggr_data,
         aggregation_areas=vector_grid,
         method="mean",
@@ -57,12 +57,12 @@ def test_aggregate_spatially(
     )
 
 
-def test_aggregate_spatially_sum(
+def test_aggregate_geom_spatially_sum(
     prepped_aggr_data: gpd.GeoDataFrame,
     vector_grid: gpd.GeoDataFrame,
 ):
     # Call the function
-    vg = aggregate_spatially(
+    vg = aggregate_geom_spatially(
         output_data=prepped_aggr_data,
         aggregation_areas=vector_grid,
         method="sum",
@@ -78,12 +78,12 @@ def test_aggregate_spatially_sum(
     )
 
 
-def test_aggregate_spatially_areal_mean(
+def test_aggregate_geom_spatially_areal_mean(
     prepped_aggr_data: gpd.GeoDataFrame,
     vector_grid: gpd.GeoDataFrame,
 ):
     # Call the function
-    vg = aggregate_spatially(
+    vg = aggregate_geom_spatially(
         output_data=prepped_aggr_data,
         aggregation_areas=vector_grid,
         method="sum",
@@ -100,12 +100,12 @@ def test_aggregate_spatially_areal_mean(
     )
 
 
-def test_aggregate_spatially_areal_mean_per(
+def test_aggregate_geom_spatially_areal_mean_per(
     prepped_aggr_data: gpd.GeoDataFrame,
     vector_grid: gpd.GeoDataFrame,
 ):
     # Call the function
-    vg = aggregate_spatially(
+    vg = aggregate_geom_spatially(
         output_data=prepped_aggr_data,
         aggregation_areas=vector_grid,
         method="sum",

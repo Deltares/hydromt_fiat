@@ -272,7 +272,7 @@ using the '{method}' aggregation method"
             output_data=self.combined_data[output_name],
         )
         # Aggregation
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas.to_crs(output_data.crs),
             method=method,
@@ -335,7 +335,7 @@ using the '{method}' aggregation method"
         )
 
         # Call the aggregation function
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas,
             method=method,

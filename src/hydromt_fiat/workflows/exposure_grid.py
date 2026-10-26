@@ -14,7 +14,7 @@ from hydromt_fiat.utils import (
     CURVE,
     DEFAULT,
     EXPOSURE__TYPE,
-    FN_CURVE,
+    FN__CURVE,
     IMPACT__SUBTYPE,
     OBJECT__TYPE,
     TYPE,
@@ -108,7 +108,7 @@ defaulting to the name of the exposure layer"
         # Process the arrays, .e.g make gdal compliant
         da.attrs.update(
             {
-                FN_CURVE: fn_curve,
+                FN__CURVE: fn_curve,
                 TYPE: DEFAULT,
             },
         )

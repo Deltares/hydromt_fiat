@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 import xarray as xr
 
-from hydromt_fiat.utils import EXPOSURE__TYPE, FN_CURVE, OBJECT__TYPE
+from hydromt_fiat.utils import EXPOSURE__TYPE, FN__CURVE, OBJECT__TYPE
 from hydromt_fiat.workflows import exposure_grid_default_setup
 
 
@@ -22,7 +22,7 @@ def test_exposure_grid_default_setup(
     # Assert the output
     assert isinstance(ds, xr.Dataset)
     assert len(ds.data_vars) == 1
-    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert ds.industrial_content.attrs.get(FN__CURVE) == "in2"
 
 
 def test_exposure_grid_default_setup_linking(
@@ -40,7 +40,7 @@ def test_exposure_grid_default_setup_linking(
 
     # Assert the output
     assert isinstance(ds, xr.Dataset)
-    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert ds.industrial_content.attrs.get(FN__CURVE) == "in2"
 
 
 def test_exposure_grid_default_setup_link_no(
@@ -57,7 +57,7 @@ def test_exposure_grid_default_setup_link_no(
 
     # Assert the output
     assert isinstance(ds, xr.Dataset)
-    assert ds.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert ds.industrial_content.attrs.get(FN__CURVE) == "in2"
 
 
 def test_exposure_grid_default_setup_alt(

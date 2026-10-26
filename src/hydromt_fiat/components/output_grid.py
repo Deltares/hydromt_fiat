@@ -4,7 +4,9 @@ import logging
 from pathlib import Path
 
 from hydromt.model import Model
+from hydromt.model.steps import hydromt_step
 
+from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
@@ -88,3 +90,37 @@ class OutputGridComponent(GridComponent):
         raise NotImplementedError(
             f"Writing not available for {self.__class__.__name__}",
         )
+
+    @hydromt_step
+    def aggregate(
+        self,
+        output_name: str,
+        res: float | int,
+        method: str = "mean",
+        name: str | None = None,
+    ) -> None:
+        """_summary_.
+
+        Parameters
+        ----------
+        output_name : str
+            The name of the data variables in the FIAT model output data.
+        res : float | int
+            The resolution of the aggregated data. The resolution is required to be
+            bigger than the resolution of the provided data.
+        method : str, optional
+            The aggregation method, by default "mean".
+        """
+        if not self._assert_model_type(GRID, error=False):
+            return
+        # Assert the model entry
+        self._assert_entry(name=output_name, spatial=True)
+
+        # Call the workflow function
+        aggregated = workflows.aggregate_grid(
+            output_data=self.data[output_name],
+            res=res,
+            method=method,
+        )
+
+        self._set(aggregated, name=name or output_name + f"_aggr_{res}")

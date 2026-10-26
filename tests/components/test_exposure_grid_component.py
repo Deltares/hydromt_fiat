@@ -12,7 +12,7 @@ from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.utils import (
     EXPOSURE,
-    FN_CURVE,
+    FN__CURVE,
     GRID,
     VULNERABILITY,
 )
@@ -155,7 +155,7 @@ def test_exposure_grid_component_create(
     # Assert the output
     assert isinstance(component.data, xr.Dataset)
     assert "industrial_content" in component.data.data_vars
-    assert component.data.industrial_content.attrs.get(FN_CURVE) == "in2"
+    assert component.data.industrial_content.attrs.get(FN__CURVE) == "in2"
     assert component.data.raster.shape == (11, 11)
 
     # Assert entries in the config
@@ -178,7 +178,7 @@ def test_exposure_grid_component_create_multi(
     # Assert the output
     assert "industrial_content" in component.data.data_vars
     assert "industrial_structure" in component.data.data_vars
-    assert component.data.industrial_structure.attrs.get(FN_CURVE) == "in1"
+    assert component.data.industrial_structure.attrs.get(FN__CURVE) == "in1"
 
 
 def test_exposure_grid_component_create_errors(
