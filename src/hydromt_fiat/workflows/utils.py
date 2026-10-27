@@ -1,12 +1,13 @@
 """Workflow utilities."""
 
+import geopandas as gpd
 import pandas as pd
 
 from hydromt_fiat.utils import INDEX, VALUE, create_query
 
 
 def process_table(
-    table: pd.DataFrame | dict[str, float | int],
+    table: gpd.GeoDataFrame | pd.DataFrame | dict[str, float | int],
     column_name: str = VALUE,
     index_name: str = INDEX,
     **select,
@@ -15,7 +16,7 @@ def process_table(
 
     Parameters
     ----------
-    table : pd.DataFrame | dict[str, float  |  int]
+    table : gpd.GeoDataFrame | pd.DataFrame | dict[str, float | int]
         The tablular data, which can be provided as a DataFrame
         or a dictionary. The dictionary should have the object types as keys and the
         corresponding cost values as values.
@@ -31,7 +32,7 @@ def process_table(
 
     Returns
     -------
-    pd.DataFrame
+    gpd.GeoDataFrame | pd.DataFrame
         The processed table as a DataFrame.
     """
     # If the table is in dict format, convert it to a DataFrame

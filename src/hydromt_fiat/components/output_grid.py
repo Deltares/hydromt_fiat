@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+import xarray as xr
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
@@ -10,7 +11,7 @@ from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.utils import GRID
+from hydromt_fiat.utils import GRID, POST
 
 __all__ = ["OutputGridComponent"]
 
@@ -32,10 +33,45 @@ class OutputGridComponent(GridComponent):
         self,
         model: Model,
     ):
+        self._filename: str = f"{POST}/{{name}}.nc"
+        self._processed_data: dict[str, xr.DataArray] | None = None
         super().__init__(
             model=model,
             region_component=None,
         )
+
+    ## Private methods
+    def _initialize(self, skip_read=False):
+        if self._processed_data is None:
+            self._processed_data = {}
+        return super()._initialize(skip_read)
+
+    def _set(
+        self,
+        data: xr.DataArray,
+        name: str,
+    ):
+        """Set post processed data.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            The data to add.
+        name : str
+            The name of the data in the data dictionary.
+        """
+        self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        self._processed_data[name] = data
+
+    ## Properties
+    @property
+    def processed_data(self) -> dict[str, xr.DataArray]:
+        """Return the post processed data."""
+        if self._processed_data is None:
+            self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        return self._processed_data
 
     ## I/O Methods
     def read(

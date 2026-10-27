@@ -11,6 +11,7 @@ from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
+from hydromt_fiat.gis.raster_utils import check_spatial
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
@@ -267,7 +268,7 @@ before setting up exposure grid"
         self,
         exposure_fname: Path | str,
         *,
-        exposure_name: str | None = None,
+        name: str | None = None,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Create categorized gridded exposure data.
@@ -281,7 +282,7 @@ before setting up exposure grid"
             The name of (or path to) the exposure data to be setup. The data should
             consist of integer based categories that (idealy) match the entries in the
             vulnerability data.
-        exposure_name : str | None, optional
+        name : str | None, optional
             The name of the variable that the data will have in the dataset.
             If not provided the name is inferred from the stem of `expousre_fname`.
             By default None.
@@ -314,7 +315,7 @@ before setting up exposure grid"
         exposure_grid = workflows.exposure_grid_categorized_setup(
             exposure_data=exposure_data,
             vulnerability=self.model.vulnerability.data.identifiers,
-            name=(exposure_name or Path(exposure_fname).stem),
+            name=(name or Path(exposure_fname).stem),
             grid_like=self.like,
         )
 
@@ -328,6 +329,7 @@ before setting up exposure grid"
         *,
         exposure_table_fname: Path | str | None = None,
         exposure_table: dict[int, float | int] | None = None,
+        columns: list[str] | str | None = None,
         default: float | int = 100,
         unit: str = "m**2",
         read_kwargs: dict[str, Any] | None = None,
@@ -353,6 +355,9 @@ before setting up exposure grid"
             As an alternative to `exposure_table_fname`, a direct mapping (dictionary)
             of the categories to their values can be provided. The keys will be the
             categories and their values.. the values. By default None.
+        columns : list[str] | str, optional
+            List of columns to select from the provided table. If not provided,
+            all columns from the provided table are used. By Default None.
         default : float | int, optional
             The default value when the table is not provided or has missing values
             compared to the categorized exposure data, by default 100.
@@ -364,6 +369,9 @@ before setting up exposure grid"
             Optional keyword arguments for reading the `exposure_table_fname` data.
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
+        **select : dict
+            Keyword arguments used to select data from the exposure category values
+            table.
         """
         self._assert_model_type(GRID)
         logger.info("Setting up category values for tabled based exposure grid")
@@ -391,8 +399,77 @@ before setting up exposure grid"
             exposure_data=self.data[exposure_name],
             table=exposure_table,
             unit=unit,
+            columns=columns,
             default=default,
         )
 
         # Set the data
         self.set(exposure_grid_table)
+
+    @hydromt_step
+    def create_from_geom(
+        self,
+        exposure_fname: Path | str,
+        column: str,
+        *,
+        name: str | None = None,
+        mult: float | int = 1,
+        add: float | int = 0,
+        all_touched: bool = True,
+        **select,
+    ) -> None:
+        """Create exposure grid data from geometry data.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            Path to or entry in the data catalog of the exposure geometry dataset.
+        column : str
+            The column from which the value will be burned in.
+        name : str | None, optional
+            The name of the variable that the data will have in the dataset.
+            If not provided the name is inferred from the stem of `expousre_fname`.
+            By default None.
+        mult : float | int, optional
+            The multiplication factor put on top of the burned in values, by default 1.
+        add : float | int, optional
+            The value added on top of the burned in value, by default 0.
+        all_touched : bool, optional
+            Whether to burn in the value for all cells touched by the geometry or to
+            only focus on whether the centroid of the cell is touched. by default True.
+        **select : dict
+            Keyword arguments used to select data from the exposure geometry data.
+            E.g. for 'occupancy_type' one can select 'residential'.
+        """
+        # Check for the model region
+        if self.model.region is None:
+            raise MissingRegionError(
+                "Region is required for setting up exposure grid",
+            )
+        if not check_spatial(self.data):
+            raise RuntimeError(
+                "An existing grid definition is needed for this method\
+either use `create_grid` to create purely the grid definition or other create methods"
+            )
+
+        logger.info("Creating exposure grid data from exposure geometry data")
+        # Get the data from the catalog
+        exposure_data = self.data_catalog.get_geodataframe(
+            exposure_fname,
+            geom=self.region,
+        )
+        # Select values based on a query
+        exposure_data = workflows.process_table(table=exposure_data, **select)
+
+        # Call the workflows function
+        exposure_grid = workflows.exposure_grid_from_geometries(
+            exposure_data=exposure_data,
+            column=column,
+            ds_like=self.like,
+            mult=mult,
+            add=add,
+            all_touched=all_touched,
+        )
+
+        # Set the data
+        self.set(exposure_grid, name=(name or Path(exposure_fname).stem))

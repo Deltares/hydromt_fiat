@@ -3,9 +3,12 @@
 import logging
 
 import dask.array as dar
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
+from hydromt.gis import full_like
+from rasterio.enums import MergeAlg
 
 from hydromt_fiat.gis.raster import merge_rasters
 from hydromt_fiat.utils import (
@@ -21,7 +24,12 @@ from hydromt_fiat.utils import (
     standard_unit,
 )
 
-__all__ = ["exposure_grid_default_setup"]
+__all__ = [
+    "exposure_grid_categorized_setup",
+    "exposure_grid_category_values",
+    "exposure_grid_default_setup",
+    "exposure_grid_from_geometries",
+]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
@@ -182,6 +190,7 @@ def exposure_grid_categorized_setup(
 def exposure_grid_category_values(
     exposure_data: xr.DataArray,
     table: pd.DataFrame | None = None,
+    columns: list[str] | str | None = None,
     default: float | int = 100,
     unit: str = "m**2",
 ) -> xr.Dataset:
@@ -194,6 +203,9 @@ def exposure_grid_category_values(
     table : pd.DataFrame | None, optional
         A dataframe containing the values linked to the categories in the exposure data.
         If not provided, all values are set to the default, by default None.
+    columns : list[str] | str, optional
+        List of columns to select from the provided table. If not provided, all columns
+        from the provided table are used. By Default None.
     default : float | int, optional
         The default value when the table is not provided or has missing values compared
         to the categorized exposure data, by default 100.
@@ -248,12 +260,81 @@ def exposure_grid_category_values(
 be set to the default value of {default}"
         )
 
+    # Get the columns
+    columns = columns or table.columns.to_list()
+    # Assert columns type
+    if not isinstance(columns, (list, tuple)):
+        columns = [columns]
+    # Select only those that are actually in the table
+    selected_columns = [item for item in columns if item in table.columns]
+    if len(selected_columns) == 0:
+        raise ValueError(f"{columns} columns no available in provided table data")
+    logger.info(
+        f"Setting up category values from the following \
+table columns: {selected_columns}",
+    )
+
     # Loop though the columns
     conversion = standard_unit(unit)
-    for col in table.columns:
+    for col in selected_columns:
         data = np.ones(table_size + 1, dtype=np.float32) * default
         data[table.index] = table[col].values * conversion.magnitude
         ds = ds.assign({f"{name}_{col}": ((coord_name), data)})
 
     # return the dataset
     return ds
+
+
+def exposure_grid_from_geometries(
+    exposure_data: gpd.GeoDataFrame,
+    column: str,
+    ds_like: xr.DataArray | xr.Dataset,
+    *,
+    mult: float | int = 1,
+    add: float | int = 0,
+    all_touched: bool = True,
+) -> xr.DataArray:
+    """Create exposure grid data from geometry data.
+
+    Parameters
+    ----------
+    exposure_data : gpd.GeoDataFrame
+        The exposure geometry data.
+    column : str
+        The column from which the value will be burned in.
+    ds_like : xr.DataArray | xr.Dataset
+        The raster definition.
+    mult : float | int, optional
+        The multiplication factor put on top of the burned in values, by default 1.
+    add : float | int, optional
+        The value added on top of the burned in value, by default 0.
+    all_touched : bool, optional
+        Whether to burn in the value for all cells touched by the geometry or to only
+        focus on whether the centroid of the cell is touched. by default True.
+
+    Returns
+    -------
+    xr.DataArray
+        The resulting array with burned in values.
+    """
+    if column not in exposure_data.columns:
+        raise ValueError(f"'{column}' column not found in exposure geometry data")
+
+    # Create the new data array based on the existing raster definition
+    da = full_like(other=ds_like, nodata=np.nan, dtype=np.float32, lazy=True)
+    # Rasterize it
+    da = da.raster.rasterize(
+        exposure_data,
+        col_name=column,
+        nodata=np.nan,
+        all_touched=all_touched,
+        dtype=np.float32,
+        merge_alg=MergeAlg.add,
+    )
+    # Update values
+    da = (da * mult) + add
+    # Set the nodata back to -9999
+    da = da.raster.mask_nodata(-9999)
+
+    # Return the array
+    return da

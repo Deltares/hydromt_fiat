@@ -87,6 +87,7 @@ class ExposureGeomsComponent(GeomsComponent):
             `geopandas.read_file` function.
         """
         if not self._assert_model_type(GEOM, error=False):
+            logger.info("Model type not set to 'geom', skipping reading")
             return
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
@@ -136,6 +137,7 @@ class ExposureGeomsComponent(GeomsComponent):
             `geopandas.to_file` function.
         """
         if not self._assert_model_type(GEOM, error=False):
+            logger.info("Model type not set to 'geom', skipping writing")
             return
         self.root._assert_write_mode()
 
@@ -324,7 +326,7 @@ use 'set_region' before this method"
 
         # Check for vulnerability
         vulnerability = self.model.vulnerability.data
-        if any([item.empty for item in vulnerability]):
+        if any(item.empty for item in vulnerability):
             # TODO Replace with custom error class
             raise RuntimeError("Run `vulnerability.setup` before this method")
 

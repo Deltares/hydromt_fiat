@@ -14,6 +14,7 @@ from .exposure_grid import (
     exposure_grid_categorized_setup,
     exposure_grid_category_values,
     exposure_grid_default_setup,
+    exposure_grid_from_geometries,
 )
 from .hazard import hazard_setup
 from .utils import process_table
@@ -35,6 +36,7 @@ __all__ = [
     "exposure_grid_categorized_setup",
     "exposure_grid_category_values",
     "exposure_grid_default_setup",
+    "exposure_grid_from_geometries",
     "hazard_setup",
     "max_value",
     "max_value_direct",

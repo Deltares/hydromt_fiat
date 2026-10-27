@@ -5,6 +5,7 @@ from abc import abstractmethod
 from typing import Any
 
 import geopandas as gpd
+import numpy as np
 import shapely.geometry as sg
 import xarray as xr
 from hydromt.model import Model
@@ -12,6 +13,7 @@ from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
+from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
 
 __all__ = ["GridComponent"]
@@ -188,6 +190,53 @@ the method requires '{model_type}'"
             self._data = data
             return None
         return data
+
+    @hydromt_step
+    def create_grid(
+        self,
+        res: float | int | None = None,
+        ds_like: xr.DataArray | xr.Dataset | None = None,
+        crs: CRS | int | str | None = None,
+    ) -> None:
+        """Create grid coordinates based on model region or another raster.
+
+        Parameters
+        ----------
+        res : float | int, optional
+            The resolution of the grid made from scratch. The grid will created based
+            on this resolution and the extent of the model region. By default None.
+        ds_like : xr.DataArray | xr.Dataset, optional
+            Create coordinates based on another spatial dataset. This argument is
+            ignored if `res` is provided, by default None.
+        crs : CRS | int | str, optional
+            The coordinate system the data is in, by default None.
+        """
+        # Quick check on whether we can set it up
+        if check_spatial(self.data):
+            raise RuntimeError(
+                f"{self.__class__.__name__} already contains spatial coordinates",
+            )
+        # Quick check on the region
+        if self.model.region is None and ds_like is None:
+            raise MissingRegionError("Region is required for setting up exposure grid")
+        # Check on the input
+        if res is None and ds_like is None:
+            raise ValueError("Provide either `res` or `ds_like`")
+
+        # Get the origin
+        if res is not None:
+            xo, yno, xno, yo = self.model.region.total_bounds
+            # Create the coordinates
+            ycoords = np.arange(yo - 0.5 * res, yno - 0.5 * res, -res)
+            xcoords = np.arange(xo + 0.5 * res, xno + 0.5 * res, res)
+        elif ds_like is not None:
+            # Get the coordinates
+            ycoords = ds_like[ds_like.raster.y_dim].values
+            xcoords = ds_like[ds_like.raster.x_dim].values
+
+        # Assign the coordinates
+        self._data = self.data.assign_coords(coords={"y": ycoords, "x": xcoords})
+        self.data.raster.set_crs(crs)
 
     @hydromt_step
     def reproject(

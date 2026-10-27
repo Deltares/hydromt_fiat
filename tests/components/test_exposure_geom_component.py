@@ -80,6 +80,27 @@ def test_exposure_geom_component_read_none(
     assert len(component._data) == 0
 
 
+def test_exposure_geom_component_read_skip(
+    caplog: pytest.LogCaptureFixture,
+    mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
+):
+    # Set the model
+    caplog.set_level(logging.DEBUG)
+    model = mock_model_config("grid")
+    type(model).root = PropertyMock(
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=model)
+
+    # Read with wrong model type
+    component.read()
+
+    # Assert logging message
+    assert "Model type not set to 'geom', skipping reading" in caplog.text
+
+
 def test_exposure_geom_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
@@ -154,6 +175,22 @@ def test_exposure_geom_component_write(
     geom_cfg = model.config.data.exposure
     assert len(geom_cfg) == 2
     assert geom_cfg[0].file == Path(tmp_path, f"{EXPOSURE}/buildings.fgb")
+
+
+def test_exposure_geom_component_write_skip(
+    caplog: pytest.LogCaptureFixture,
+    mock_model_config: MagicMock,
+):
+    # Set the model
+    caplog.set_level(logging.DEBUG)
+    # Setup the component
+    component = ExposureGeomsComponent(model=mock_model_config("grid"))
+
+    # Read with wrong model type
+    component.write()
+
+    # Assert logging message
+    assert "Model type not set to 'geom', skipping writing" in caplog.text
 
 
 def test_exposure_geom_component_write_sig(

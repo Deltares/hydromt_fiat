@@ -173,6 +173,20 @@ def test_config_component_write_warnings(
     assert Path(tmp_path, component._filename).is_file()
 
 
+def test_config_component_write_errors(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model(None))
+
+    # Write the data with no model specific settings
+    with pytest.raises(
+        TypeError,
+        match="No model type defined, will not write settings",
+    ):
+        component.write()
+
+
 def test_config_component_update(
     tmp_path: Path,
     mock_model: MagicMock,
