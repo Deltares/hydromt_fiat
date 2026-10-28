@@ -7,10 +7,8 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import xarray as xr
-from hydromt.gis import full_like
-from rasterio.enums import MergeAlg
 
-from hydromt_fiat.gis.raster import merge_rasters
+from hydromt_fiat.gis.raster import merge_rasters, rasterize
 from hydromt_fiat.utils import (
     CATEGORIES,
     CATEGORIZED,
@@ -19,8 +17,10 @@ from hydromt_fiat.utils import (
     EXPOSURE__TYPE,
     FN__CURVE,
     IMPACT__SUBTYPE,
+    INDEX,
     OBJECT__TYPE,
     TYPE,
+    VALUE,
     standard_unit,
 )
 
@@ -120,6 +120,8 @@ defaulting to the name of the exposure layer"
                 TYPE: DEFAULT,
             },
         )
+        # Mask the data to -9999, seems like a good default value
+        da = da.raster.mask_nodata(-9999)
         exposure_dataarrays.append(da)
 
     if len(exposure_dataarrays) == 0:
@@ -159,6 +161,7 @@ def exposure_grid_categorized_setup(
     # Adjust the data slightly
     exposure_data.name = name
     exposure_data = exposure_data.raster.mask_nodata(0)
+    exposure_data = exposure_data.astype(np.uint32)
 
     # Get all integer based columns
     curves = (
@@ -191,6 +194,7 @@ def exposure_grid_category_values(
     exposure_data: xr.DataArray,
     table: pd.DataFrame | None = None,
     columns: list[str] | str | None = None,
+    index_name: str = INDEX,
     default: float | int = 100,
     unit: str = "m**2",
 ) -> xr.Dataset:
@@ -206,6 +210,9 @@ def exposure_grid_category_values(
     columns : list[str] | str, optional
         List of columns to select from the provided table. If not provided, all columns
         from the provided table are used. By Default None.
+    index_name : str, optional
+        The name of the index column in the table data, if the table data is provided.
+        By default 'index'.
     default : float | int, optional
         The default value when the table is not provided or has missing values compared
         to the categorized exposure data, by default 100.
@@ -234,7 +241,7 @@ def exposure_grid_category_values(
     # Add the coordinate for the table values based on the maximum value
     coord_name = f"{name}_cat"
     ds = xr.Dataset(
-        coords={coord_name: range(0, table_size + 1)},
+        coords={coord_name: range(table_size)},
     )
     ds[coord_name] = ds[coord_name].astype(exposure_data.dtype)
 
@@ -243,14 +250,16 @@ def exposure_grid_category_values(
         logger.info(
             f"No table values were provided, defaulting to the default value: {default}"
         )
+        data = np.ones(table_size) * default
+        data[0] = 0
         ds = ds.assign(
-            {f"{name}_def": ((coord_name), np.ones(table_size + 1) * default)},
+            {f"{name}_{VALUE}": ((coord_name), data)},
         )
         return ds
 
     # Otherwise move through the table
-    table.drop_duplicates(subset=name, inplace=True)
-    table.set_index(name, inplace=True)
+    table.drop_duplicates(subset=index_name, inplace=True)
+    table.set_index(index_name, inplace=True)
     table = table[table.index < table_size]
     # Set a warning for those values falling that do not have a value associated with it
     disc = np.setdiff1d(cat, table.index).tolist()
@@ -277,7 +286,8 @@ table columns: {selected_columns}",
     # Loop though the columns
     conversion = standard_unit(unit)
     for col in selected_columns:
-        data = np.ones(table_size + 1, dtype=np.float32) * default
+        data = np.ones(table_size, dtype=np.float32) * default
+        data[0] = 0
         data[table.index] = table[col].values * conversion.magnitude
         ds = ds.assign({f"{name}_{col}": ((coord_name), data)})
 
@@ -288,11 +298,13 @@ table columns: {selected_columns}",
 def exposure_grid_from_geometries(
     exposure_data: gpd.GeoDataFrame,
     column: str,
+    curve: str,
+    vulnerability: pd.DataFrame,
     ds_like: xr.DataArray | xr.Dataset,
     *,
     mult: float | int = 1,
     add: float | int = 0,
-    all_touched: bool = True,
+    method: str = "add",
 ) -> xr.DataArray:
     """Create exposure grid data from geometry data.
 
@@ -302,39 +314,47 @@ def exposure_grid_from_geometries(
         The exposure geometry data.
     column : str
         The column from which the value will be burned in.
+    curve : str
+        The name of the vulnerability curve identifier.
+    vulnerability : pd.DataFrame
+        The vulnerability identifiers. The curve identifiers in the 'curve' column, if
+        they are of the integer type, are taken to match against the value in the
+        exposure data.
     ds_like : xr.DataArray | xr.Dataset
         The raster definition.
     mult : float | int, optional
         The multiplication factor put on top of the burned in values, by default 1.
     add : float | int, optional
         The value added on top of the burned in value, by default 0.
-    all_touched : bool, optional
-        Whether to burn in the value for all cells touched by the geometry or to only
-        focus on whether the centroid of the cell is touched. by default True.
+    method : str, optional
+        The method of which to merge values when rasterizing values into the same
+        cell, choose between 'add' and 'replace'. By default 'add'.
 
     Returns
     -------
     xr.DataArray
         The resulting array with burned in values.
     """
-    if column not in exposure_data.columns:
-        raise ValueError(f"'{column}' column not found in exposure geometry data")
-
-    # Create the new data array based on the existing raster definition
-    da = full_like(other=ds_like, nodata=np.nan, dtype=np.float32, lazy=True)
-    # Rasterize it
-    da = da.raster.rasterize(
-        exposure_data,
-        col_name=column,
-        nodata=np.nan,
-        all_touched=all_touched,
-        dtype=np.float32,
-        merge_alg=MergeAlg.add,
+    da = rasterize(
+        geom=exposure_data,
+        column=column,
+        ds_like=ds_like,
+        method=method,
     )
+    da.name = VALUE
     # Update values
     da = (da * mult) + add
-    # Set the nodata back to -9999
-    da = da.raster.mask_nodata(-9999)
+
+    # Call the method to setup the data
+    ds = exposure_grid_default_setup(
+        exposure_data={VALUE: da},
+        vulnerability=vulnerability,
+        exposure_link=pd.DataFrame({EXPOSURE__TYPE: [VALUE], OBJECT__TYPE: [curve]}),
+    )
+
+    # Quick check on the data
+    if VALUE not in ds.data_vars:
+        raise RuntimeError(f"Could not resolve vulnerability curve: {curve}")
 
     # Return the array
-    return da
+    return ds[VALUE]

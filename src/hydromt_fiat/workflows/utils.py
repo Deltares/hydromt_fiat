@@ -10,6 +10,7 @@ def process_table(
     table: gpd.GeoDataFrame | pd.DataFrame | dict[str, float | int],
     column_name: str = VALUE,
     index_name: str = INDEX,
+    transpose: bool = True,
     **select,
 ) -> pd.DataFrame:
     """Process the exposure cost table data.
@@ -27,6 +28,9 @@ def process_table(
         The name of the index column when a DataFrame is provided as input. It is also
         set as the name of index column (keys) when a dictionary is provided.
         By default 'index'.
+    transpose : bool, optional
+        Whether or not to transpose the table. Handy in some situations not so much in
+        others. By default True.
     **select : dict, optional
         Keyword arguments to filter the table.
 
@@ -51,7 +55,8 @@ def process_table(
         if len(table) == 0:
             raise ValueError(f"Select kwargs ({select}) resulted in no remaining data")
         # Transpose the cost table, rename index to object_type to easily merge
-        # This is not the object type, but the specific max costs of that element
-        table = table.T.reset_index(names=index_name)
+        # This is not the object type, but the specific max costs of that element.
+        if transpose:
+            table = table.T.reset_index(names=index_name)
 
     return table

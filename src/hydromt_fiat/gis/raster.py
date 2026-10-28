@@ -3,10 +3,13 @@
 import logging
 import math
 
+import geopandas as gpd
 import numpy as np
 import xarray as xr
 from affine import Affine
+from hydromt.gis import full
 from hydromt.model.processes.grid import grid_from_rasterdataset
+from rasterio.enums import MergeAlg
 
 __all__ = ["expand_raster_to_bounds"]
 
@@ -122,3 +125,79 @@ def merge_rasters(
 
     # Return the data
     return ds
+
+
+def rasterize(
+    geom: gpd.GeoDataFrame,
+    column: str,
+    ds_like: xr.DataArray | xr.Dataset,
+    *,
+    dtype=np.float32,
+    nodata=np.nan,
+    fill_value=np.nan,
+    all_touched: bool = True,
+    method: str = "add",
+) -> xr.DataArray:
+    """Rasterize geometrie column value into a data array.
+
+    This will be a newly created data array based on a similar raster (`ds_like`).
+
+    Parameters
+    ----------
+    geom : gpd.GeoDataFrame
+        The geometry data.
+    column : str
+        The column values to rasterize.
+    ds_like : xr.DataArray | xr.Dataset
+        The blueprint data array.
+    dtype : _type_, optional
+        The data type of the output data array, by default np.float32.
+    nodata : _type_, optional
+        The nodata value, by default np.nan.
+    fill_value : _type_, optional
+        The fill value. This value is ignored when `method` is set to 'add'.
+        By default np.nan.
+    all_touched : bool, optional
+        Whether to add the value to every cell touched by the geometry or only when the
+        centroid of the geometry is covered by the geometry. By default True.
+    method : str, optional
+        The method of which to merge values when rasterizing values into the same
+        cell, choose between 'add' and 'replace'. By default 'add'.
+
+    Returns
+    -------
+    xr.DataArray
+        The resulting rasterized data.
+    """
+    if column not in geom.columns:
+        raise ValueError(f"'{column}' column not found in exposure geometry data")
+
+    temp_nodata = nodata
+    if method == "add":
+        temp_nodata = 0
+        fill_value = 0
+    # Create the new data array based on the existing raster definition
+    da = full(
+        coords={d: c for d, c in ds_like.coords.items() if d in ds_like.dims},
+        nodata=temp_nodata,
+        fill_value=fill_value,
+        dtype=dtype,
+        crs=ds_like.raster.crs,
+        name="data",
+        lazy=True,
+    )
+    # Rasterize it
+    da = da.raster.rasterize(
+        geom,
+        col_name=column,
+        nodata=temp_nodata,
+        all_touched=all_touched,
+        dtype=dtype,
+        merge_alg=getattr(MergeAlg, method),
+    )
+
+    # Return the nodata setting to the one provided
+    da = da.raster.mask_nodata(nodata)
+
+    # Return the rasterized data
+    return da

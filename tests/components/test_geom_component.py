@@ -67,6 +67,46 @@ i.e. a GeoDataFrame or run the appropriate `create` method with 'bar' as input"
         component._assert_entry(name="bar")
 
 
+def test_geom_component__assert_model_type(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model("geom"))
+
+    # Assert it's fine to call
+    flag = component._assert_model_type()
+
+    # Assert the flag
+    assert flag
+
+
+def test_geom_component__assert_model_type_false(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model("grid"))
+
+    # Assert it's fine to call
+    flag = component._assert_model_type(error=False)
+
+    # Assert the flag
+    assert not flag
+
+
+def test_geom_component__assert_model_type_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model("grid"))
+
+    # Assert it errors
+    with pytest.raises(
+        TypeError,
+        match="Model is in the wrong type",
+    ):
+        _ = component._assert_model_type()
+
+
 def test_geom_component_clear(
     mock_model: MagicMock,
     exposure_vector: gpd.GeoDataFrame,

@@ -14,7 +14,9 @@ from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
+from hydromt_fiat.utils import GRID
 
 __all__ = ["GridComponent"]
 
@@ -49,12 +51,12 @@ class GridComponent(SpatialModelComponent):
         if name not in keys:
             raise RuntimeError(f"Choose from already present data variables: {keys}")
 
-    def _assert_model_type(self, model_type: str, error: bool = True):
-        flag = self.model.type == model_type
+    def _assert_model_type(self, error: bool = True):
+        flag = self.model.type == GRID
         if error and not flag:
             raise TypeError(
                 f"Model is in the wrong type '{self.model.type}', \
-the method requires '{model_type}'"
+the method requires '{GRID}'"
             )
         return flag
 
@@ -216,12 +218,15 @@ the method requires '{model_type}'"
             raise RuntimeError(
                 f"{self.__class__.__name__} already contains spatial coordinates",
             )
-        # Quick check on the region
-        if self.model.region is None and ds_like is None:
-            raise MissingRegionError("Region is required for setting up exposure grid")
         # Check on the input
         if res is None and ds_like is None:
             raise ValueError("Provide either `res` or `ds_like`")
+        # Quick check on the region
+        if self.model.region is None and res is not None:
+            raise MissingRegionError(
+                "Region is required for creating grid dimensions with \
+only resolution set"
+            )
 
         # Get the origin
         if res is not None:
@@ -275,7 +280,16 @@ the method requires '{model_type}'"
 
         logger.info(f"Reproject data in {self.__class__.__name__}")
         # Reproject the data
-        data = self.data.raster.reproject(dst_crs=crs)
+        data = []
+        attrs = self.data.attrs
+        for var in self.data.data_vars:
+            if not check_spatial(self.data[var]):
+                data.append(self.data[var])
+                continue
+            data.append(self.data[var].raster.reproject(dst_crs=crs))
+        # Merge the data back together
+        data = xr.merge(data)
+        data.attrs = attrs
         # If inplace, just set the data and return nothing
         if inplace:
             self._data = data
@@ -286,6 +300,7 @@ the method requires '{model_type}'"
         self,
         data: xr.Dataset | xr.DataArray,
         name: str | None = None,
+        expand: bool = False,
     ) -> None:
         """Set gridded data in the component.
 
@@ -296,6 +311,9 @@ the method requires '{model_type}'"
         name : str | None, optional
             The name of the data when data is of type DataArray and the DataArray
             has not name yet, by default None.
+        expand : bool, optional
+            Whether to expand the data to the bounding box of the model region.
+            Nothing is done when the data already covers the region. By default False.
         """
         # Make sure the grid exists
         self._initialize()
@@ -305,11 +323,22 @@ the method requires '{model_type}'"
         if isinstance(data, xr.DataArray):
             if data.name is None and name is None:
                 raise ValueError("DataArray can't be set without a name")
-            data.name = name
+            data.name = name or data.name
             data = data.to_dataset()
         if not isinstance(data, xr.Dataset):
             raise TypeError(f"Wrong input data type: '{data.__class__.__name__}'")
 
+        # Expand if necessary
+        if (
+            check_spatial(data)
+            and self.model.region is not None
+            and data.raster.crs is not None
+            and expand
+        ):
+            data = expand_raster_to_bounds(
+                ds=data,
+                bbox=self.model.region.to_crs(data.raster.crs).total_bounds,
+            )
         # Force ns orientation
         data = force_ns(data)
         # Set thet data

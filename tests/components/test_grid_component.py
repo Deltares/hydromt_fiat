@@ -7,8 +7,10 @@ import numpy as np
 import pytest
 import xarray as xr
 from pyproj.crs import CRS
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.components.grid import GridComponent
+from hydromt_fiat.errors import MissingRegionError
 
 # Overwrite the abstractmethods to be able to initialize it
 GridComponent.__abstractmethods__ = set()
@@ -65,6 +67,46 @@ def test_grid_component__assert_entry_errors(
         match=re.escape("Choose from already present data variables: []"),
     ):
         component._assert_entry(name="baz", spatial=True)
+
+
+def test_grid_component__assert_model_type(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Assert it's fine to call
+    flag = component._assert_model_type()
+
+    # Assert the flag
+    assert flag
+
+
+def test_grid_component__assert_model_type_false(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("geom"))
+
+    # Assert it's fine to call
+    flag = component._assert_model_type(error=False)
+
+    # Assert the flag
+    assert not flag
+
+
+def test_grid_component__assert_model_type_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("geom"))
+
+    # Assert it errors
+    with pytest.raises(
+        TypeError,
+        match="Model is in the wrong type",
+    ):
+        _ = component._assert_model_type()
 
 
 def test_grid_component_properties(
@@ -166,6 +208,76 @@ def test_grid_component_clip_inplace(
     assert component.data.flood_event.shape == (5, 4)
 
 
+def test_grid_component_create_grid(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    model = mock_model("grid")
+    mocker.patch.object(model, "region", build_region.to_crs(28992))
+    # Set up the component
+    component = GridComponent(model=model)
+    # Assert current state
+    assert "y" not in component.data.dims
+
+    # Call the method
+    component.create_grid(res=10)
+
+    # Assert the output
+    assert "y" in component.data.dims
+    assert component.data.raster.shape == (338, 252)
+
+
+def test_grid_component_create_grid_like(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Create grid from raster blueprint
+    component.create_grid(ds_like=hazard)
+
+    # Assert the output
+    assert "y" in component.data.dims
+    assert component.data.raster.shape == (35, 27)
+
+
+def test_grid_component_create_grid_errors(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+    exposure_grid_clipped: xr.Dataset,
+):
+    model = mock_model("grid")
+    # Setup the component
+    component = GridComponent(model=model)
+
+    # Call with no input
+    with pytest.raises(
+        ValueError,
+        match="Provide either `res` or `ds_like`",
+    ):
+        component.create_grid()
+
+    mocker.patch.object(model, "region", None)
+    # With no region when setting res
+    with pytest.raises(
+        MissingRegionError,
+        match="Region is required for creating grid dimensions",
+    ):
+        component.create_grid(res=10)
+
+    # Set data like a dummy
+    component._data = exposure_grid_clipped
+
+    # Spatial dimensions are there
+    with pytest.raises(
+        RuntimeError,
+        match="GridComponent already contains spatial coordinates",
+    ):
+        component.create_grid(res=10)
+
+
 def test_grid_component_reproject(
     mock_model: MagicMock,
     hazard: xr.Dataset,
@@ -254,14 +366,14 @@ def test_grid_component_set(
     component.set(exposure_grid_clipped)
 
     # Assert the state
-    assert len(component.data.data_vars) == 4
+    assert len(component.data.data_vars) == 7
     assert "commercial_content" in component.data.data_vars
 
     # Set data as a dataarray
     component.set(exposure_grid_clipped["commercial_content"], name="foo")
 
     # Assert the state
-    assert len(component.data.data_vars) == 5
+    assert len(component.data.data_vars) == 8
     assert "foo" in component.data.data_vars
 
 
@@ -284,7 +396,7 @@ def test_grid_component_set_replace(
     assert "Replacing grid map: 'commercial_content'" in caplog.text
 
     # Assert the state
-    assert len(component.data.data_vars) == 4  # not 8
+    assert len(component.data.data_vars) == 7  # not 14
     assert "commercial_content" in component.data.data_vars
 
 

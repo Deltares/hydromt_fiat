@@ -140,7 +140,7 @@ def exposure_vector(model_data_path: Path) -> gpd.GeoDataFrame:
 def exposure_grid(model_data_path: Path) -> xr.Dataset:
     p = Path(model_data_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = open_nc(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 

@@ -79,6 +79,6 @@ def test_output_grid_component_read_sig(
     component.read(Path(model_data_clipped_path, "exposure", "spatial.nc"))
 
     # Assert the state after
-    assert len(component.data.data_vars) == 4
+    assert len(component.data.data_vars) == 7
     assert "commercial_structure" in component.data.data_vars
     assert component.data["commercial_structure"].shape == (11, 11)

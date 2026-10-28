@@ -65,6 +65,8 @@ def hazard_setup(
 
         # Set the event data arrays to the hazard grid component
         da = da.assign_attrs(attrs)
+        # Set the nodata value and mask to -9999, which seems a good default
+        da = da.raster.mask_nodata(-9999)
         hazard_dataarrays.append(da)
 
     # Reproject to gridlike

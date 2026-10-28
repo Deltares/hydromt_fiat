@@ -10,7 +10,6 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
@@ -229,7 +228,7 @@ class HazardComponent(GridComponent):
             hazard_data[Path(entry).stem] = da
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_setup(
+        hazard_grid = workflows.hazard_setup(
             hazard_data=hazard_data,
             hazard_type=hazard_type,
             grid_like=self.like,
@@ -238,15 +237,8 @@ class HazardComponent(GridComponent):
             unit=unit,
         )
 
-        # Expand if necessary
-        if self.model.region is not None and ds.raster.crs is not None and expand:
-            ds = expand_raster_to_bounds(
-                ds=ds,
-                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
-            )
-
         # Set the data to the hazard grid component
-        self.set(ds)
+        self.set(hazard_grid, expand=expand)
 
         # Set the config entries
         self.model.config.data.risk = risk

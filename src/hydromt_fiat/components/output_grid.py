@@ -11,7 +11,7 @@ from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.utils import GRID, POST
+from hydromt_fiat.utils import POST
 
 __all__ = ["OutputGridComponent"]
 
@@ -89,7 +89,7 @@ class OutputGridComponent(GridComponent):
             Additional keyword arguments that are passed to the
             `xr.open_dataset` function.
         """
-        if not self._assert_model_type(GRID, error=False):
+        if not self._assert_model_type(error=False):
             return
         # Assert the mode
         self.root._assert_read_mode()
@@ -147,7 +147,7 @@ class OutputGridComponent(GridComponent):
         method : str, optional
             The aggregation method, by default "mean".
         """
-        if not self._assert_model_type(GRID, error=False):
+        if not self._assert_model_type(error=False):
             return
         # Assert the model entry
         self._assert_entry(name=output_name, spatial=True)
