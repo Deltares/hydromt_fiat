@@ -94,6 +94,7 @@ def read_geoms(
 
 def read_grid(
     read_path: Path | str,
+    mask: bool = False,
     **kwargs,
 ) -> xr.Dataset:
     """Read a FIAT related raster file.
@@ -102,6 +103,8 @@ def read_grid(
     ----------
     read_path : Path | str
         The path to the file.
+    mask : bool, optional
+        Whether to mask the nodata values as NaN or not. By default False.
     **kwargs : dict
         Additional keyword arguments to be passed to the `open_dataset` function
         from xarray.
@@ -112,8 +115,10 @@ def read_grid(
         The gridded data in a north south orientation.
     """
     logger.info(f"Reading grid file at {Path(read_path).as_posix()}")
+    _ = kwargs.pop("mask_and_scale", None)
     ds = open_nc(
         read_path,
+        mask_and_scale=mask,
         **kwargs,
     )
     ds = force_ns(ds)

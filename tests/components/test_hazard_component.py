@@ -165,21 +165,22 @@ def test_hazard_component_create_multi(
 
 
 def test_hazard_component_create_risk(
-    model_with_region: FIATModel,
+    model: FIATModel,
 ):
     # Setup the compoentn
-    component = HazardComponent(model=model_with_region)
+    component = HazardComponent(model=model)
 
     # Test hazard with return period
     component.create(
         hazard_fnames=["flood_event_highres"],
         risk=True,
         return_periods=[50000],
+        region=False,
     )
 
     assert isinstance(component.data, xr.Dataset)
     assert component.data.flood_event_highres.attrs[RP] == 50000
-    assert model_with_region.config.data.risk
+    assert model.config.data.risk
 
 
 def test_hazard_component_create_errors(model: FIATModel):

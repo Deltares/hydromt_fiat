@@ -49,15 +49,6 @@ class GeomsComponent(SpatialModelComponent):
 i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as input"
             )
 
-    def _assert_model_type(self, model_type: str, error: bool = True):
-        flag = self.model.type == model_type
-        if error and not flag:
-            raise TypeError(
-                f"Model is in the wrong type '{self.model.type}', \
-the method requires '{model_type}'"
-            )
-        return flag
-
     def _initialize(
         self,
         skip_read: bool = False,

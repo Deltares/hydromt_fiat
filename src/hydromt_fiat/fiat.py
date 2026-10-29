@@ -25,7 +25,7 @@ from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
-    GEOM,
+    GEOMS,
     GRID,
     HAZARD,
     OUTPUT,
@@ -52,6 +52,8 @@ class FIATModel(Model):
         Model root, by default None.
     config_fname : Path | str, optional
         Name of the configurations file, by default 'settings.toml'.
+    type : str, optional
+        Set the type of the FIAT model, either 'geom' or 'grid'. By default None.
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w".
     data_libs : list[Path | str] | Path | str, optional
@@ -69,6 +71,7 @@ class FIATModel(Model):
         self,
         root: Path | str | None = None,
         config_fname: Path | str = f"{SETTINGS}.toml",
+        type: str | None = None,
         *,
         mode: str = "r",
         data_libs: list[Path | str] | Path | str | None = None,
@@ -91,7 +94,7 @@ class FIATModel(Model):
             ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
-            f"{EXPOSURE}_{GEOM}",
+            f"{EXPOSURE}_{GEOMS}",
             ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
@@ -103,7 +106,7 @@ class FIATModel(Model):
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            f"{OUTPUT}_{GEOM}",
+            f"{OUTPUT}_{GEOMS}",
             OutputGeomsComponent(model=self),
         )
         self.add_component(
@@ -115,6 +118,20 @@ class FIATModel(Model):
             VulnerabilityComponent(model=self),
         )
 
+        # Finish initialization
+        if type is not None:
+            self.set_type(type)
+
+    ## Private methods
+    def _assert_model_type(self, type: str, error: bool = True):
+        flag = self.type == type
+        if error and not flag:
+            raise TypeError(
+                f"Model is in the wrong type '{self.type}', \
+the method requires '{type}'"
+            )
+        return flag
+
     ## Properties
     @property
     def config(self) -> ConfigComponent:
@@ -124,7 +141,7 @@ class FIATModel(Model):
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
         """Access the exposure geoms component."""
-        return self.components[f"{EXPOSURE}_{GEOM}"]
+        return self.components[f"{EXPOSURE}_{GEOMS}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
@@ -139,7 +156,7 @@ class FIATModel(Model):
     @property
     def output_geoms(self) -> OutputGeomsComponent:
         """Access the output geoms component."""
-        return self.components[f"{OUTPUT}_{GEOM}"]
+        return self.components[f"{OUTPUT}_{GEOMS}"]
 
     @property
     def output_grid(self) -> OutputGridComponent:
@@ -329,7 +346,7 @@ class FIATModel(Model):
     @hydromt_step
     def set_type(
         self,
-        model_type: Literal["geom", "grid"],
+        type: Literal["geom", "grid"],
     ) -> None:
         """Set the type of the FIAT model.
 
@@ -338,12 +355,17 @@ class FIATModel(Model):
 
         Parameters
         ----------
-        model_type : Literal[&quot;geom&quot;, &quot;grid&quot;]
+        type : Literal[&quot;geom&quot;, &quot;grid&quot;]
             The type of model.
         """
-        self._type = model_type
+        logger.info(f"Settings model type to: '{type}'")
+        # Set the type
+        self._type = type
+        # Get the model settings minus type and exposure
         settings_dict = self.config.data.to_dict()
         settings_dict.pop(TYPE, None)
+        settings_dict.pop(EXPOSURE, None)
+        # Create and set new config settings pydantic basemodel
         self.config._data = SETTINGS_DICT[self.type].model_validate(
             settings_dict,
             context=self.config.context,

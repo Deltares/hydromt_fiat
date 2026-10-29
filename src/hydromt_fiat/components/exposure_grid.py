@@ -10,14 +10,17 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.gis.raster import expand_raster_to_bounds
+from hydromt_fiat.gis.raster_utils import check_spatial
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
     EXPOSURE,
+    EXPOSURE__GRID__TYPE,
     GRID,
+    TYPE,
+    VALUE,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -78,7 +81,7 @@ class ExposureGridComponent(GridComponent):
             from xarray.
         """
         # Check the state
-        if not self._assert_model_type(GRID, error=False):
+        if not self.model._assert_model_type(GRID, error=False):
             return
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
@@ -126,7 +129,7 @@ class ExposureGridComponent(GridComponent):
             xarray.
         """
         # Check the state
-        if not self._assert_model_type(GRID, error=False):
+        if not self.model._assert_model_type(GRID, error=False):
             return
         self.root._assert_write_mode()
 
@@ -134,6 +137,15 @@ class ExposureGridComponent(GridComponent):
         if len(self.data) == 0:
             logger.info("No exposure grid data found, skip writing.")
             return
+
+        # Get the exposure grid type
+        types = set(self._get_attributes(TYPE, spatial=True))
+        if (
+            not types
+            or None in types
+            or not all(item in EXPOSURE__GRID__TYPE for item in types)
+        ):
+            raise ValueError(f"Invalid grid type in data: {types}")
 
         # Sort out the filename
         # Hierarchy: 1) signature, 2) default
@@ -178,8 +190,8 @@ class ExposureGridComponent(GridComponent):
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None.
         expand : bool, optional
-            Whether to expand the hazard data to the bounding box of the model region.
-            Nothing is done when the hazard data already covers the region.
+            Whether to expand the exposure grid data to the bounding box of the model
+            region. Nothing is done when the exposure data already covers the region.
             By default True.
         read_kwargs : dict, optional
             Optional keyword arguments for reading the `exposure_fnames` data. These
@@ -190,9 +202,9 @@ class ExposureGridComponent(GridComponent):
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
-        self._assert_model_type(GRID)
-        logger.info("Setting up gridded exposure")
-
+        self.model._assert_model_type(GRID)
+        logger.info("Creating gridded exposure")
+        # Check for the vulnerability
         if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(
                 "'vulnerability.create' step is required \
@@ -229,23 +241,253 @@ before setting up exposure grid"
             )
             exposure_data[name] = da
 
-        # Get grid like from existing exposure data if there is any
-        grid_like = self.data if self.data else None
-
         # Execute the workflow function
-        ds = workflows.exposure_grid_setup(
-            grid_like=grid_like,
+        exposure_grid = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
-            exposure_link=exposure_link,
             vulnerability=self.model.vulnerability.data.identifiers,
+            grid_like=self.like,
+            exposure_link=exposure_link,
         )
 
-        # Expand if necessary
-        if self.model.region is not None and ds.raster.crs is not None and expand:
-            ds = expand_raster_to_bounds(
-                ds=ds,
-                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
+        # Set the dataset
+        self.set(exposure_grid, expand=expand)
+
+    @hydromt_step
+    def create_categorized(
+        self,
+        exposure_fname: Path | str,
+        *,
+        name: str | None = None,
+        expand: bool = True,
+        read_kwargs: dict[str, Any] | None = None,
+    ) -> None:
+        """Create categorized gridded exposure data.
+
+        The data is 'measured' against the available vulnerability curves that match
+        the categories in the exposure data.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            The name of (or path to) the exposure data to be setup. The data should
+            consist of integer based categories that (idealy) match the entries in the
+            vulnerability data.
+        name : str | None, optional
+            The name of the variable that the data will have in the dataset.
+            If not provided the name is inferred from the stem of `expousre_fname`.
+            By default None.
+        expand : bool, optional
+            Whether to expand the exposure grid data to the bounding box of the model
+            region. Nothing is done when the exposure data already covers the region.
+            By default True.
+        read_kwargs : dict[str, Any] | None, optional
+            Optional keyword arguments for reading the `exposure_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
+        """
+        self.model._assert_model_type(GRID)
+        logger.info("Creating gridded value-table based exposure")
+        # Check for the vulnerability data
+        if self.model.vulnerability.data.identifiers.empty:
+            raise RuntimeError(
+                "'vulnerability.create' step is required \
+before setting up exposure grid"
+            )
+        if self.model.region is None:
+            raise MissingRegionError("Region is required for setting up exposure grid")
+
+        # Read the exposure data
+        kwargs = {"buffer": 1}
+        kwargs.update(read_kwargs or {})
+        exposure_data = self.data_catalog.get_rasterdataset(
+            exposure_fname,
+            geom=self.model.region,
+            **kwargs,
+        )
+
+        # Execute the workflow function
+        exposure_grid = workflows.exposure_grid_categorized_setup(
+            exposure_data=exposure_data,
+            vulnerability=self.model.vulnerability.data.identifiers,
+            name=(name or Path(exposure_fname).stem),
+            grid_like=self.like,
+        )
+
+        # Set the data
+        self.set(exposure_grid, expand=expand)
+
+    @hydromt_step
+    def create_categorized_values(
+        self,
+        exposure_name: str,
+        *,
+        exposure_table_fname: Path | str | None = None,
+        exposure_table: dict[int, float | int] | None = None,
+        columns: list[str] | str | None = None,
+        index_name: str | None = None,
+        default: float | int = 100,
+        unit: str = "m**2",
+        read_kwargs: dict[str, Any] | None = None,
+        **select,
+    ) -> None:
+        """Create linked values to the categorized gridded exposure data.
+
+        This is specific to on of the variables present the exposure data.
+        A coordinates and (a) variable(s) are created that link to the values in the
+        exposure data variable in terms of values and name.
+
+        Parameters
+        ----------
+        exposure_name : str
+            The name of the variable in the gridded exposure data to setup the
+            values for.
+        exposure_table_fname : Path | str | None, optional
+            Table containing the values of the categories corresponding with the values
+            in the exposure data. Multiple columns are accepted and then added to the
+            resulting dataset. If not provided, the default value will be used for all
+            categories. By default None.
+        exposure_table : dict[int, float  |  int] | None, optional
+            As an alternative to `exposure_table_fname`, a direct mapping (dictionary)
+            of the categories to their values can be provided. The keys will be the
+            categories and their values.. the values. By default None.
+        columns : list[str] | str, optional
+            List of columns to select from the provided table. If not provided,
+            all columns from the provided table are used. By Default None.
+        index_name : str, optional
+            The name of the index column in the `exposure_table_fname` or
+            `exposure_table` data. If not provided, `exposure_name` is used as the
+            name of the index column. By default None.
+        default : float | int, optional
+            The default value when the table is not provided or has missing values
+            compared to the categorized exposure data, by default 100.
+        unit : str, optional
+            The unit (per) of the values, if not the standard (e.g. m**2) the values
+            are translated to the standard unit of that category
+            (e.g. m**2 for length squared). By default "m**2".
+        read_kwargs : dict[str, Any] | None, optional
+            Optional keyword arguments for reading the `exposure_table_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
+        **select : dict
+            Keyword arguments used to select data from the exposure category values
+            table.
+        """
+        self.model._assert_model_type(GRID)
+        logger.info("Creating category values for tabled based exposure grid")
+        # Assert the variable is present
+        self._assert_entry(exposure_name, spatial=True)
+
+        # Get the exposure table from the data catalog, or from input
+        if exposure_table_fname is not None:
+            exposure_table = exposure_table or self.model.data_catalog.get_dataframe(
+                exposure_table_fname,
+                **(read_kwargs or {}),
             )
 
-        # Set the dataset
-        self.set(ds)
+        # Process the input
+        if exposure_table is not None:
+            exposure_table = workflows.process_table(
+                table=exposure_table,
+                column_name=VALUE,
+                index_name=index_name or exposure_name,
+                **select,
+            )
+
+        # Call the workflow function
+        exposure_grid_table = workflows.exposure_grid_category_values(
+            exposure_data=self.data[exposure_name],
+            table=exposure_table,
+            unit=unit,
+            columns=columns,
+            index_name=index_name or exposure_name,
+            default=default,
+        )
+
+        # Set the data
+        self.set(exposure_grid_table)
+
+    @hydromt_step
+    def create_from_geom(
+        self,
+        exposure_fname: Path | str,
+        column: str,
+        curve: str,
+        *,
+        name: str | None = None,
+        mult: float | int = 1,
+        add: float | int = 0,
+        method: str = "add",
+        read_kwargs: dict[str, Any] | None = None,
+        **select,
+    ) -> None:
+        """Create exposure grid data from geometry data.
+
+        Parameters
+        ----------
+        exposure_fname : Path | str
+            Path to or entry in the data catalog of the exposure geometry dataset.
+        column : str
+            The column from which the value will be burned in.
+        name : str | None, optional
+            The name of the variable that the data will have in the dataset.
+            If not provided the name is inferred from the stem of `expousre_fname`.
+            By default None.
+        mult : float | int, optional
+            The multiplication factor put on top of the burned in values, by default 1.
+        add : float | int, optional
+            The value added on top of the burned in value, by default 0.
+        method : str, optional
+            The method of which to merge values when rasterizing values into the same
+            cell, choose between 'add' and 'replace'. By default 'add'.
+        read_kwargs : dict[str, Any] | None, optional
+            Optional keyword arguments for reading the `exposure_fname` data.
+            These arguments are passed to the HydroMT
+            :py:meth:`~hydromt.DataCatalog.get_geodataframe` method. By default None.
+        **select : dict
+            Keyword arguments used to select data from the exposure geometry data.
+            E.g. for 'occupancy_type' one can select 'residential'.
+        """
+        self.model._assert_model_type(GRID)
+        # Check for the vulnerability data
+        if self.model.vulnerability.data.identifiers.empty:
+            raise RuntimeError(
+                "'vulnerability.create' step is required \
+before setting up exposure grid"
+            )
+        # Check for the model region
+        if self.model.region is None:
+            raise MissingRegionError(
+                "Region is required for setting up exposure grid",
+            )
+        if not check_spatial(self.data):
+            raise RuntimeError(
+                "An existing grid definition is needed for this method \
+either use `create_grid` to create purely the grid definition or other create methods"
+            )
+
+        logger.info("Creating exposure grid data from exposure geometry data")
+        # Get the data from the catalog
+        exposure_data = self.data_catalog.get_geodataframe(
+            exposure_fname, geom=self.model.region, **(read_kwargs or {})
+        )
+        # Select values based on a query
+        exposure_data = workflows.process_table(
+            table=exposure_data,
+            transpose=False,
+            **select,
+        )
+
+        # Call the workflows function
+        exposure_grid = workflows.exposure_grid_from_geometries(
+            exposure_data=exposure_data,
+            column=column,
+            curve=curve,
+            vulnerability=self.model.vulnerability.data.identifiers,
+            ds_like=self.like,
+            mult=mult,
+            add=add,
+            method=method,
+        )
+
+        # Set the data
+        self.set(exposure_grid, name=(name or Path(exposure_fname).stem))

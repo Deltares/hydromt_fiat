@@ -129,7 +129,7 @@ column will be removed"
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
-        if not self._assert_model_type(GEOM, error=False):
+        if not self.model._assert_model_type(GEOM, error=False):
             return
         # Assert the mode
         self.root._assert_read_mode()
@@ -254,8 +254,7 @@ column will be removed"
             If not provided, 'output_name' is used with the 'sp_aggr' suffix.
             By default None.
         """
-        if not self._assert_model_type(GEOM, error=False):
-            return
+        self.model._assert_model_type(GEOM)
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 
@@ -272,7 +271,7 @@ using the '{method}' aggregation method"
             output_data=self.combined_data[output_name],
         )
         # Aggregation
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas.to_crs(output_data.crs),
             method=method,
@@ -312,8 +311,7 @@ using the '{method}' aggregation method"
             If not provided, 'output_name' is used with the 'sq_aggr' suffix.
             By default None.
         """
-        if not self._assert_model_type(GEOM, error=False):
-            return
+        self.model._assert_model_type(GEOM)
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 
@@ -335,7 +333,7 @@ using the '{method}' aggregation method"
         )
 
         # Call the aggregation function
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas,
             method=method,

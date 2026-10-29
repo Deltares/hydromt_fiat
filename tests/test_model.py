@@ -17,11 +17,16 @@ from hydromt_fiat.components import (
     VulnerabilityComponent,
 )
 from hydromt_fiat.components.vulnerability import VulnerabilityData
-from hydromt_fiat.settings import DEFAULT_GEOM_SETTINGS, GeomSettings
+from hydromt_fiat.settings import (
+    DEFAULT_GEOM_SETTINGS,
+    DEFAULT_GRID_SETTINGS,
+    GeomSettings,
+)
 from hydromt_fiat.utils import (
     CONFIG,
     FLOOD_LEVEL,
     GEOM,
+    GRID,
     REGION,
     SETTINGS,
 )
@@ -38,7 +43,44 @@ def test_model_empty(tmp_path: Path):
     assert len(model.components) == 8
 
 
-def test_model_basic_read_write(tmp_path: Path):
+def test_model__assert_model_type(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GEOM
+
+    # Assert it's fine to call
+    flag = model._assert_model_type(GEOM)
+
+    # Assert the flag
+    assert flag
+
+
+def test_model__assert_model_type_false(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GRID
+
+    # Assert it's fine to call
+    flag = model._assert_model_type(GEOM, error=False)
+
+    # Assert the flag
+    assert not flag
+
+
+def test_model__assert_model_type_errors(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GRID
+
+    # Assert it errors
+    with pytest.raises(
+        TypeError,
+        match="Model is in the wrong type",
+    ):
+        _ = model._assert_model_type(GEOM)
+
+
+def test_model_basic_geom_read_write(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")
 
@@ -57,6 +99,27 @@ def test_model_basic_read_write(tmp_path: Path):
 
     # Due to flood level
     assert model.config.data != DEFAULT_GEOM_SETTINGS
+
+
+def test_model_basic_grid_read_write(tmp_path: Path):
+    # Setup the model
+    model = FIATModel(tmp_path, mode="w")
+
+    # Call the necessary setup methods
+    model.set_config(method=FLOOD_LEVEL)
+    model.set_type(GRID)
+    # Write the model
+    model.write()
+    model = None
+    assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
+
+    # Model in read mode
+    model = FIATModel(tmp_path, mode="r")
+    model.read()
+    model.read_output()
+
+    # Due to flood level
+    assert model.config.data != DEFAULT_GRID_SETTINGS
 
 
 def test_model_clear(  # Dont like this too much, as it is a bit of an integration test
@@ -87,7 +150,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     assert len(model.exposure_grid.data.data_vars) == 0
     assert len(model.hazard.data.data_vars) == 1
     assert len(model.output_geoms.data) == 1
-    assert len(model.output_grid.data.data_vars) == 4
+    assert len(model.output_grid.data.data_vars) == 7
     assert len(model.vulnerability.data.curves) == 1001
 
     # Clear the model

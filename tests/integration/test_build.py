@@ -9,7 +9,7 @@ from hydromt_fiat.utils import (
     EXPOSURE,
     FLOOD_LEVEL,
     FN,
-    FN_CURVE,
+    FN__CURVE,
     GEOM,
     GRID,
     HAZARD,
@@ -148,7 +148,7 @@ def test_build_model_grid(
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
-    assert model.exposure_grid.data["commercial_content"].attrs[FN_CURVE] == "cm1"
+    assert model.exposure_grid.data["commercial_content"].attrs[FN__CURVE] == "cm1"
 
     # Write the model
     model.write()
