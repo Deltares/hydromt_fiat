@@ -16,7 +16,6 @@ from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
-    COMBINED,
     EXPOSURE,
     EXPOSURE__GRID__TYPE,
     GRID,
@@ -147,7 +146,6 @@ class ExposureGridComponent(GridComponent):
             or not all(item in EXPOSURE__GRID__TYPE for item in types)
         ):
             raise ValueError(f"Invalid grid type in data: {types}")
-        grid_type = list(types)[0] if len(types) == 1 else COMBINED
 
         # Sort out the filename
         # Hierarchy: 1) signature, 2) default
@@ -169,7 +167,6 @@ class ExposureGridComponent(GridComponent):
         self.model.config.data.exposure = ExposureGrid(
             file=write_path,
             settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
-            type=grid_type,
         )
 
     ## Setup methods

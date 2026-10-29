@@ -49,7 +49,6 @@ def hazard_setup(
     hazard_dataarrays = []
     for idx, (da_name, da) in enumerate(hazard_data.items()):
         da.name = da_name
-        # da = _process_dataarray(da=da, da_name=da_name)
 
         # Check for unit
         conversion = standard_unit(unit)
