@@ -11,8 +11,6 @@ from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
 from pyproj.crs import CRS
 
-from hydromt_fiat.utils import GEOM
-
 __all__ = ["GeomsComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
@@ -50,15 +48,6 @@ class GeomsComponent(SpatialModelComponent):
                 f"Choose from already present geometries: {keys} \
 i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as input"
             )
-
-    def _assert_model_type(self, error: bool = True):
-        flag = self.model.type == GEOM
-        if error and not flag:
-            raise TypeError(
-                f"Model is in the wrong type '{self.model.type}', \
-the method requires '{GEOM}'"
-            )
-        return flag
 
     def _initialize(
         self,

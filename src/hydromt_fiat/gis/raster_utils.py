@@ -12,11 +12,11 @@ def cell_size(
     transform = ds.raster.transform
     if ds.raster.crs.is_geographic:
         crs = utm_crs(ds.raster.bounds)
-        transform = calculate_default_transform(
-            src_crs=ds.raster.crs,
-            dst_crs=crs,
-            width=ds.raster.width,
-            height=ds.raster.height,
+        transform, _, _ = calculate_default_transform(
+            ds.raster.crs,
+            crs,
+            ds.raster.width,
+            ds.raster.height,
             *ds.raster.bounds,
         )
     return abs(transform[0] * transform[4])

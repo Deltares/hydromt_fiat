@@ -43,6 +43,43 @@ def test_model_empty(tmp_path: Path):
     assert len(model.components) == 8
 
 
+def test_model__assert_model_type(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GEOM
+
+    # Assert it's fine to call
+    flag = model._assert_model_type(GEOM)
+
+    # Assert the flag
+    assert flag
+
+
+def test_model__assert_model_type_false(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GRID
+
+    # Assert it's fine to call
+    flag = model._assert_model_type(GEOM, error=False)
+
+    # Assert the flag
+    assert not flag
+
+
+def test_model__assert_model_type_errors(tmp_path: Path):
+    # Setup an empty fiat model
+    model = FIATModel(tmp_path)
+    model._type = GRID
+
+    # Assert it errors
+    with pytest.raises(
+        TypeError,
+        match="Model is in the wrong type",
+    ):
+        _ = model._assert_model_type(GEOM)
+
+
 def test_model_basic_geom_read_write(tmp_path: Path):
     # Setup the model
     model = FIATModel(tmp_path, mode="w")

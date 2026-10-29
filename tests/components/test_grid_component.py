@@ -69,46 +69,6 @@ def test_grid_component__assert_entry_errors(
         component._assert_entry(name="baz", spatial=True)
 
 
-def test_grid_component__assert_model_type(
-    mock_model: MagicMock,
-):
-    # Set up the component
-    component = GridComponent(model=mock_model("grid"))
-
-    # Assert it's fine to call
-    flag = component._assert_model_type()
-
-    # Assert the flag
-    assert flag
-
-
-def test_grid_component__assert_model_type_false(
-    mock_model: MagicMock,
-):
-    # Set up the component
-    component = GridComponent(model=mock_model("geom"))
-
-    # Assert it's fine to call
-    flag = component._assert_model_type(error=False)
-
-    # Assert the flag
-    assert not flag
-
-
-def test_grid_component__assert_model_type_errors(
-    mock_model: MagicMock,
-):
-    # Set up the component
-    component = GridComponent(model=mock_model("geom"))
-
-    # Assert it errors
-    with pytest.raises(
-        TypeError,
-        match="Model is in the wrong type",
-    ):
-        _ = component._assert_model_type()
-
-
 def test_grid_component_properties(
     mock_model: MagicMock,
     hazard: xr.Dataset,

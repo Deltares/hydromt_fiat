@@ -16,7 +16,6 @@ from pyproj.crs import CRS
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
-from hydromt_fiat.utils import GRID
 
 __all__ = ["GridComponent"]
 
@@ -50,15 +49,6 @@ class GridComponent(SpatialModelComponent):
         ]
         if name not in keys:
             raise RuntimeError(f"Choose from already present data variables: {keys}")
-
-    def _assert_model_type(self, error: bool = True):
-        flag = self.model.type == GRID
-        if error and not flag:
-            raise TypeError(
-                f"Model is in the wrong type '{self.model.type}', \
-the method requires '{GRID}'"
-            )
-        return flag
 
     def _get_attributes(self, attr: str, spatial: bool = False) -> list[Any]:
         """Return attribute from spatial variables."""

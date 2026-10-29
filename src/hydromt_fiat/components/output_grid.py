@@ -11,7 +11,7 @@ from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.utils import POST
+from hydromt_fiat.utils import GRID, POST
 
 __all__ = ["OutputGridComponent"]
 
@@ -48,7 +48,7 @@ class OutputGridComponent(GridComponent):
 
     def _set(
         self,
-        data: xr.DataArray,
+        data: xr.DataArray | xr.Dataset,
         name: str,
     ):
         """Set post processed data.
@@ -62,6 +62,10 @@ class OutputGridComponent(GridComponent):
         """
         self._initialize(skip_read=True)
         assert self._processed_data is not None
+        if name in self._processed_data and id(self._processed_data.get(name)) != id(
+            data
+        ):
+            logger.warning(f"Replacing post processed grid data: {name}")
         self._processed_data[name] = data
 
     ## Properties
@@ -74,6 +78,7 @@ class OutputGridComponent(GridComponent):
         return self._processed_data
 
     ## I/O Methods
+    @hydromt_step
     def read(
         self,
         filename: Path | str | None = None,
@@ -89,7 +94,7 @@ class OutputGridComponent(GridComponent):
             Additional keyword arguments that are passed to the
             `xr.open_dataset` function.
         """
-        if not self._assert_model_type(error=False):
+        if not self.model._assert_model_type(GRID, error=False):
             return
         # Assert the mode
         self.root._assert_read_mode()
@@ -128,14 +133,15 @@ class OutputGridComponent(GridComponent):
         )
 
     @hydromt_step
-    def aggregate(
+    def spatial_aggregate(
         self,
         output_name: str,
         res: float | int,
-        method: str = "mean",
+        method: str = "average",
+        align: bool = False,
         name: str | None = None,
     ) -> None:
-        """_summary_.
+        """Aggregate gridded output data to a coarser resolution.
 
         Parameters
         ----------
@@ -145,10 +151,15 @@ class OutputGridComponent(GridComponent):
             The resolution of the aggregated data. The resolution is required to be
             bigger than the resolution of the provided data.
         method : str, optional
-            The aggregation method, by default "mean".
+            The aggregation method, by default "average".
+        align : bool, optional
+            Whether to align the target transform to the resolution. By default False.
+        name : str, optional
+            The name of the data entry in the post processed data dictionary.
+            If not provided, `output_name` is used with '_aggr_<`res`>' as suffix.
+            By default None.
         """
-        if not self._assert_model_type(error=False):
-            return
+        self.model._assert_model_type(GRID)
         # Assert the model entry
         self._assert_entry(name=output_name, spatial=True)
 
@@ -157,6 +168,7 @@ class OutputGridComponent(GridComponent):
             output_data=self.data[output_name],
             res=res,
             method=method,
+            align=align,
         )
 
         self._set(aggregated, name=name or output_name + f"_aggr_{res}")

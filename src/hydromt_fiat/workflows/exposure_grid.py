@@ -165,13 +165,17 @@ def exposure_grid_categorized_setup(
 
     # Get all integer based columns
     curves = (
-        vulnerability.loc[vulnerability[CURVE].str.fullmatch(r"-?\d+"), CURVE]
+        vulnerability.loc[
+            vulnerability[CURVE].astype(str).str.fullmatch(r"-?\d+"), CURVE
+        ]
         .astype(int)
         .values
     )
 
     # Get the unique numbers
     unique = dar.unique(exposure_data.data).compute()
+    unique.sort()
+    unique = unique[1:]
 
     # Inform the user that certain types are not available, both ways
     disc = np.setdiff1d(unique, curves).tolist()

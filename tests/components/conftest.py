@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+from types import MethodType
 from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
@@ -51,6 +52,7 @@ def mock_model_factory(
         model.data_catalog = mocker.create_autospec(DataCatalog)
         model.crs = CRS.from_epsg(4326)
         model.type = model_type
+        model._assert_model_type = MethodType(FIATModel._assert_model_type, model)
         return model
 
     return _factory

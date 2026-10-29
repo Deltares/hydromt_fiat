@@ -4,11 +4,9 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    field_validator,
 )
 
 from hydromt_fiat.settings.file import InputFileModel
-from hydromt_fiat.utils import EXPOSURE__GRID__TYPE
 
 __all__ = ["ExposureGeometry", "ExposureGrid"]
 
@@ -64,11 +62,6 @@ class ExposureGridSettings(BaseModel):
 class ExposureGrid(InputFileModel):
     """Exposure grid settings for the FIAT model."""
 
-    type: str = Field(
-        default="default",
-        description="The type of the gridded exposure data.",
-    )
-
     resalg: str = Field(
         default="nearest",
         description="Resampling method when reprojecting.",
@@ -78,15 +71,3 @@ class ExposureGrid(InputFileModel):
         default=None,
         description="Settings for reading the exposure grid data.",
     )
-
-    # Validator(s)
-    @field_validator("type", mode="after")
-    @classmethod
-    def validate_type(cls, value: str):
-        """Validate the exposure grid type."""
-        if value not in EXPOSURE__GRID__TYPE:
-            raise ValueError(
-                f"Exposure grid type invalid: {value}, \
-chose from {EXPOSURE__GRID__TYPE}",
-            )
-        return value

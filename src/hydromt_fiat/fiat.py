@@ -122,6 +122,16 @@ class FIATModel(Model):
         if type is not None:
             self.set_type(type)
 
+    ## Private methods
+    def _assert_model_type(self, type: str, error: bool = True):
+        flag = self.type == type
+        if error and not flag:
+            raise TypeError(
+                f"Model is in the wrong type '{self.type}', \
+the method requires '{type}'"
+            )
+        return flag
+
     ## Properties
     @property
     def config(self) -> ConfigComponent:

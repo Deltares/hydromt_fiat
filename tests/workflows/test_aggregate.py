@@ -1,8 +1,11 @@
 import geopandas as gpd
 import numpy as np
+import pytest
+import xarray as xr
 
 from hydromt_fiat.workflows.aggregate import (
     aggregate_geom_spatially,
+    aggregate_grid,
     prep_data_for_aggregation,
 )
 
@@ -121,3 +124,37 @@ def test_aggregate_geom_spatially_areal_mean_per(
         desired=84.1,
         decimal=1,
     )
+
+
+def test_aggregate_grid(
+    hazard: xr.Dataset,
+):
+    # Call the function
+    out = aggregate_grid(
+        output_data=hazard["flood_event"],
+        res=500,
+        method="average",
+    )
+
+    # Assert the output
+    assert out.raster.shape == (7, 6)
+    np.testing.assert_almost_equal(
+        np.nanmean(out.raster.mask_nodata()),
+        1.05,
+        decimal=2,
+    )
+
+
+def test_aggregate_grid_errors(
+    hazard: xr.Dataset,
+):
+    # Call the function with a resolution too large
+    with pytest.raises(
+        ValueError,
+        match="Cannot aggregate to a smaller resolution",
+    ):
+        _ = aggregate_grid(
+            output_data=hazard["flood_event"],
+            res=50,
+            method="average",
+        )

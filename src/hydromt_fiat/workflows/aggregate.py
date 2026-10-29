@@ -127,6 +127,7 @@ def aggregate_grid(
     output_data: xr.DataArray,
     res: float | int,
     method: str,
+    align: bool = False,
 ) -> xr.DataArray:
     """Aggregate gridded model output to a coarser resolution.
 
@@ -138,6 +139,8 @@ def aggregate_grid(
         The resolution to aggregate to.
     method : str
         The aggregation method.
+    align : bool, optional
+        Whether to align the target transform to the resolution. By default False.
 
     Returns
     -------
@@ -151,18 +154,13 @@ def aggregate_grid(
 {res} vs {abs(output_data.raster.res[0])} (data)"
         )
 
-    # Orientation of the y dimension
-    fact = 1
-    if output_data.raster.res[1] < 0:
-        fact = -1
-
     # Reproject the data and align
-    reproj = output_data.raster.reproject(
-        dst_res=(res, res * fact),
+    aggregated = output_data.raster.reproject(
+        dst_res=(res, res),
         dst_nodata=output_data.raster.nodata,
         method=method,
-        align=True,
+        align=align,
     )
 
     # Return the data
-    return reproj
+    return aggregated

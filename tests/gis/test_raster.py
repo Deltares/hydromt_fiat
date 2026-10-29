@@ -1,10 +1,15 @@
 import logging
 
+import geopandas as gpd
 import numpy as np
 import pytest
 import xarray as xr
 
-from hydromt_fiat.gis.raster import expand_raster_to_bounds, merge_rasters
+from hydromt_fiat.gis.raster import (
+    expand_raster_to_bounds,
+    merge_rasters,
+    rasterize,
+)
 
 
 def test_expand_raster_to_bounds(
@@ -81,3 +86,50 @@ def test_merge_rasters(
 
     # Assert the warning message and output
     assert isinstance(ds, xr.Dataset)
+
+
+def test_rasterize(
+    exposure_vector_clipped: gpd.GeoDataFrame,
+    hazard_clipped: xr.Dataset,
+):
+    # Call the function
+    out = rasterize(
+        geom=exposure_vector_clipped,
+        column="max_damage_structure",
+        ds_like=hazard_clipped,
+    )
+
+    # Assert the output
+    assert out.raster.shape == hazard_clipped.raster.shape
+    assert np.isnan(out.raster.nodata)
+    np.testing.assert_almost_equal(np.nansum(out), 3.3000688e07, decimal=0)
+
+    # Replace
+    out2 = rasterize(
+        geom=exposure_vector_clipped,
+        column="max_damage_structure",
+        ds_like=hazard_clipped,
+        method="replace",
+    )
+
+    # Assert the output
+    assert out2.raster.shape == hazard_clipped.raster.shape
+    assert np.isnan(out2.raster.nodata)
+    np.testing.assert_almost_equal(
+        np.nansum(out2),
+        2.7837082e07,  # Lower ofcourse
+        decimal=0,
+    )
+    assert np.nansum(out2) < np.nansum(out)
+
+
+def test_rasterize_errors(exposure_vector_clipped: gpd.GeoDataFrame):
+    # Call the function with a nonsense column
+    with pytest.raises(
+        ValueError, match="'foo' column not found in exposure geometry data"
+    ):
+        _ = rasterize(
+            geom=exposure_vector_clipped,
+            column="foo",
+            ds_like=None,
+        )

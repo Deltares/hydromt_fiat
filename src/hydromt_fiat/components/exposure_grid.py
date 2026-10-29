@@ -19,6 +19,7 @@ from hydromt_fiat.utils import (
     COMBINED,
     EXPOSURE,
     EXPOSURE__GRID__TYPE,
+    GRID,
     TYPE,
     VALUE,
 )
@@ -81,7 +82,7 @@ class ExposureGridComponent(GridComponent):
             from xarray.
         """
         # Check the state
-        if not self._assert_model_type(error=False):
+        if not self.model._assert_model_type(GRID, error=False):
             return
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
@@ -129,7 +130,7 @@ class ExposureGridComponent(GridComponent):
             xarray.
         """
         # Check the state
-        if not self._assert_model_type(error=False):
+        if not self.model._assert_model_type(GRID, error=False):
             return
         self.root._assert_write_mode()
 
@@ -204,7 +205,7 @@ class ExposureGridComponent(GridComponent):
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GRID)
         logger.info("Creating gridded exposure")
         # Check for the vulnerability
         if self.model.vulnerability.data.identifiers.empty:
@@ -287,7 +288,7 @@ before setting up exposure grid"
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_rasterdataset` method. By default None.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GRID)
         logger.info("Creating gridded value-table based exposure")
         # Check for the vulnerability data
         if self.model.vulnerability.data.identifiers.empty:
@@ -374,7 +375,7 @@ before setting up exposure grid"
             Keyword arguments used to select data from the exposure category values
             table.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GRID)
         logger.info("Creating category values for tabled based exposure grid")
         # Assert the variable is present
         self._assert_entry(exposure_name, spatial=True)
@@ -449,6 +450,7 @@ before setting up exposure grid"
             Keyword arguments used to select data from the exposure geometry data.
             E.g. for 'occupancy_type' one can select 'residential'.
         """
+        self.model._assert_model_type(GRID)
         # Check for the vulnerability data
         if self.model.vulnerability.data.identifiers.empty:
             raise RuntimeError(

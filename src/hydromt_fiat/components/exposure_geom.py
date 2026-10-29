@@ -24,6 +24,7 @@ from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     COST__TYPE,
     EXPOSURE,
+    GEOM,
     OBJECT__TYPE,
     VALUE,
 )
@@ -85,7 +86,7 @@ class ExposureGeomsComponent(GeomsComponent):
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
-        if not self._assert_model_type(error=False):
+        if not self.model._assert_model_type(GEOM, error=False):
             logger.info("Model type not set to 'geom', skipping reading")
             return
         self.root._assert_read_mode()
@@ -135,7 +136,7 @@ class ExposureGeomsComponent(GeomsComponent):
             Additional keyword arguments that are passed to the
             `geopandas.to_file` function.
         """
-        if not self._assert_model_type(error=False):
+        if not self.model._assert_model_type(GEOM, error=False):
             logger.info("Model type not set to 'geom', skipping writing")
             return
         self.root._assert_write_mode()
@@ -246,7 +247,7 @@ class ExposureGeomsComponent(GeomsComponent):
             These arguments are passed to the HydroMT
             :py:meth:`~hydromt.DataCatalog.get_dataframe` method. By default None.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GEOM)
         logger.info("Setting up exposure geometries")
         # Check for region
         if self.model.region is None and not redo:
@@ -319,7 +320,7 @@ use 'set_region' before this method"
             a list of strings. By default 'damage'.
         """
         # Check for data
-        self._assert_model_type()
+        self.model._assert_model_type(GEOM)
         self._assert_entry(exposure_name)
         exposure_data = self.data[exposure_name]
 
@@ -387,7 +388,7 @@ use 'set_region' before this method"
             E.g. a column is present named 'country' and the wanted values are in the
             row with 'UK', provided country='UK' as keyword argument.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GEOM)
         logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
@@ -458,7 +459,7 @@ Either provide a filename or a dictionary/ DataFrame."
         per_unit : bool, optional
             Whether 'value' is per unit area or length, by default True.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GEOM)
         logger.info(f"Setting up maximum value from direct values for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
@@ -499,7 +500,7 @@ Either provide a filename or a dictionary/ DataFrame."
             all columns, a list of values corresponding to the number of columns or
             a 2d array.
         """
-        self._assert_model_type()
+        self.model._assert_model_type(GEOM)
         logger.info(f"Updating exposure data with {columns} columns")
         # Some checks on the input
         self._assert_entry(exposure_name)
