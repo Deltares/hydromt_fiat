@@ -45,6 +45,7 @@ dependencies = [
     "pint",
     "pydantic",
     "pyproj",
+    "rasterio",
     "requests",
     "shapely",
     "tomlkit",

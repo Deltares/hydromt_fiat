@@ -10,7 +10,8 @@ import tomlkit
 import xarray as xr
 from hydromt.writers import write_nc
 
-from hydromt_fiat.gis.raster_utils import force_ns
+from hydromt_fiat.gis.raster_utils import cell_size, force_ns
+from hydromt_fiat.utils import AREA__SQM
 
 __all__ = [
     "write_config",
@@ -93,6 +94,7 @@ def write_geoms(
 def write_grid(
     data: xr.Dataset,
     write_path: Path | str,
+    compress: bool = False,
     gdal_compliant: bool = True,
     overwrite: bool = True,
     **kwargs,
@@ -107,6 +109,8 @@ def write_grid(
         The data to write.
     write_path : Path | str
         The path to write to.
+    compress : bool, optional
+        Whether or not to compress the data, by default False.
     gdal_compliant : bool, optional
         Whether or not to write the data in a gdal compliant manner, i.e. in such a
         way that the data can be understood by GDAL. By default True.
@@ -118,9 +122,11 @@ def write_grid(
     """
     _write_dir(write_path)
     logger.info(f"Writing grid file to {Path(write_path).as_posix()}")
+    data.attrs.update({AREA__SQM: cell_size(data)})
     write_nc(
         force_ns(data),
         file_path=write_path,
+        compress=compress,
         gdal_compliant=gdal_compliant,
         rename_dims=False,
         force_overwrite=overwrite,
