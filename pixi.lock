@@ -6701,7 +6701,7 @@ packages:
   - sbom4python ; extra == 'dev'
   - nbsphinx ; extra == 'docs'
   - pydata-sphinx-theme ; extra == 'docs'
-  - sphinx>=8.2.0 ; extra == 'docs'
+  - sphinx>=9.1.0 ; extra == 'docs'
   - sphinx-design ; extra == 'docs'
   - cartopy ; extra == 'examples'
   - jupyterlab ; extra == 'examples'
