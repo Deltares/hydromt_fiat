@@ -83,6 +83,10 @@ def max_value(
     exposure_cost_link : pd.DataFrame, optional
         A linking table to connect the exposure data to the exposure cost data.
         By default None.
+    per_unit : str, optional
+        Whether or not the value provided in the cost table are per unit length or per
+        unit area. Therefore, if True, the values are multiplied by either the length
+        or area of the features. By default True.
     **select : dict, optional
         Keyword arguments to select data from the cost table.
         The key corresponds to the column and the value to value in that column.

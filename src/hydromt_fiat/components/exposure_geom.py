@@ -23,6 +23,7 @@ from hydromt_fiat.settings.exposure import (
 from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     COST__TYPE,
+    DEFAULT,
     EXPOSURE,
     GEOM,
     OBJECT__TYPE,
@@ -298,6 +299,7 @@ use 'set_region' before this method"
         exposure_name: str,
         *,
         impact_type: str | list[str] = "damage",
+        vulnerability_name: str | None = None,
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
 
@@ -318,6 +320,11 @@ use 'set_region' before this method"
             The type of impact to link to the exposure data, which should be present
             in the vulnerability identifiers table. Can either be a single string or
             a list of strings. By default 'damage'.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
+            By default None.
         """
         # Check for data
         self.model._assert_model_type(GEOM)
@@ -325,15 +332,14 @@ use 'set_region' before this method"
         exposure_data = self.data[exposure_name]
 
         # Check for vulnerability
-        vulnerability = self.model.vulnerability.data
-        if any(item.empty for item in vulnerability):
-            # TODO Replace with custom error class
-            raise RuntimeError("Run `vulnerability.setup` before this method")
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
 
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
-            vulnerability=vulnerability.identifiers,
+            vulnerability=vulnerability,
             impact_type=impact_type,
         )
 
@@ -345,9 +351,11 @@ use 'set_region' before this method"
         self,
         exposure_name: str,
         impact_type: str,
+        *,
         exposure_cost_table_fname: Path | str | None = None,
         exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
         exposure_cost_link_fname: Path | str | None = None,
+        vulnerability_name: str | None = None,
         per_unit: bool = True,
         read_table_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -371,10 +379,22 @@ use 'set_region' before this method"
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
+        exposure_cost_table : dict[str, Any] | pd.DataFrame, optional
+            The same type of data provided via `exposure_cost_table_fname`, but
+            directly set via a dictionary or a Pandas DataFrame. By default None.
         exposure_cost_link_fname : Path | str, optional
             A linking table to like the present object type with the identifiers
             defined in the cost table. If None, it is assumed the present object type
             matches the identifiers in the cost table. By default None.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
+            By default None.
+        per_unit : str, optional
+            Whether or not the value provided in the cost table are per unit length or
+            per unit area. Therefore, if True, the values are multiplied by either
+            the length or area of the features. By default True.
         read_table_kwargs : dict, optional
             Optional keyword arguments for reading the `exposure_cost_table_fname` data.
             These arguments are passed to the HydroMT
@@ -392,6 +412,12 @@ use 'set_region' before this method"
         logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
+
+        # First get the vulnerability data
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
+
         # Get the exposure costs table from the data catalog
         if exposure_cost_table_fname is not None:
             exposure_cost_table = (
@@ -412,6 +438,7 @@ Either provide a filename or a dictionary/ DataFrame."
             index_name=COST__TYPE,
             **select,
         )
+
         # Get the exposure cost link is not None
         exposure_cost_link = None
         if exposure_cost_link_fname is not None:
@@ -425,7 +452,7 @@ Either provide a filename or a dictionary/ DataFrame."
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             impact_type=impact_type,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=vulnerability,
             exposure_cost_link=exposure_cost_link,
             per_unit=per_unit,
         )

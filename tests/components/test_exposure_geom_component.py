@@ -358,27 +358,6 @@ def test_exposure_geom_component_create_link_multi(
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
 
-def test_exposure_geom_component_create_link_errors(
-    model_with_region: FIATModel,
-    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
-):
-    # Setup the component
-    model_with_region._type = "geom"
-    component = ExposureGeomsComponent(model=model_with_region)
-
-    # Set data like a dummy
-    component._data = {"foo": exposure_vector_clipped_for_link}
-
-    # No vulnerability data
-    with pytest.raises(
-        RuntimeError,
-        match="Run `vulnerability.setup` before this method",
-    ):
-        component.create_link(
-            exposure_name="foo",
-        )
-
-
 def test_exposure_geom_component_create_max(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,

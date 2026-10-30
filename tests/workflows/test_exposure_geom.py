@@ -178,7 +178,7 @@ def test_exposure_geoms_setup_errors(
 
 def test_exposure_geoms_link_vulnerability(
     exposure_vector_data_link: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Assert amount of columns in the exposure data
     assert len(exposure_vector_data_link.columns) == 11
@@ -189,7 +189,7 @@ def test_exposure_geoms_link_vulnerability(
     # Call the workflow function
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link,
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         impact_type=["damage"],
     )
 
@@ -201,12 +201,12 @@ def test_exposure_geoms_link_vulnerability(
     # A simple that the curves set in the exposure data (linking) are present
     # in the vulnerability identifiers
     for value in exposure_vector[f"{FN}_{DAMAGE}_structure"].unique():
-        assert value in vulnerability_identifiers[CURVE].values
+        assert value in vulnerability_identifiers_df[CURVE].values
 
 
 def test_exposure_geoms_link_vulnerability_subtype(
     exposure_vector_data_link: gpd.GeoDataFrame,
-    vulnerability_identifiers_alt: pd.DataFrame,
+    vulnerability_identifiers_alt_df: pd.DataFrame,
 ):
     # Assert amount of columns in the exposure data
     assert len(exposure_vector_data_link.columns) == 11
@@ -217,7 +217,7 @@ def test_exposure_geoms_link_vulnerability_subtype(
     # Calling the workflow function wihtout subtyping
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link,
-        vulnerability=vulnerability_identifiers_alt,
+        vulnerability=vulnerability_identifiers_alt_df,
         impact_type=["damage"],
     )
 
@@ -230,12 +230,12 @@ def test_exposure_geoms_link_vulnerability_subtype(
 def test_exposure_geoms_link_vulnerability_warnings(
     caplog: pytest.LogCaptureFixture,
     exposure_vector_data_link: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Fill the nodata in the linking with an unknown (more irony) value
     exposure_vector = exposure_geoms_link_vulnerability(
         exposure_data=exposure_vector_data_link.replace("unknown", "known"),
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         impact_type=["damage"],
     )
 
@@ -246,7 +246,7 @@ def test_exposure_geoms_link_vulnerability_warnings(
 
 def test_exposure_geoms_link_vulnerability_errors(
     exposure_vector_data_link: gpd.GeoDataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Select nonsense impact types
     with pytest.raises(
@@ -258,7 +258,7 @@ impact types ['foo', 'bar']"
     ):
         exposure_geoms_link_vulnerability(
             exposure_data=exposure_vector_data_link,
-            vulnerability=vulnerability_identifiers,
+            vulnerability=vulnerability_identifiers_df,
             impact_type=["foo", "bar"],
         )
 

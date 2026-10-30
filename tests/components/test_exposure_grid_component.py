@@ -225,14 +225,6 @@ def test_exposure_grid_component_create_errors(
     model._type = "grid"
     component = ExposureGridComponent(model=model)
 
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create(
-            exposure_fnames="industrial_content",
-            exposure_link_fname="",  # Can be nonsense, error is raised earlier
-        )
-
     # Fake component
     fake_component = mocker.Mock()
     fake_component.data.identifiers.empty = False
@@ -271,13 +263,6 @@ def test_exposure_grid_component_create_categorized_errors(
     # Setup the component
     model._type = "grid"
     component = ExposureGridComponent(model=model)
-
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create_categorized(
-            exposure_fname="",
-        )
 
     # Fake component
     fake_component = mocker.Mock()
@@ -391,15 +376,6 @@ def test_exposure_grid_component_create_from_geom_errors(
     # Setup the component
     model._type = "grid"
     component = ExposureGridComponent(model=model)
-
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create_from_geom(
-            exposure_fname="",
-            column="",
-            curve="",
-        )
 
     # Fake component
     fake_component = mocker.Mock()

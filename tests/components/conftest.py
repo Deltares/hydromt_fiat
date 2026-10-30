@@ -25,14 +25,8 @@ def model_exposure_setup(
     def _factory(model_type: str) -> FIATModel:
         model = model_with_region
         model._type = model_type
-        model.vulnerability.set(
-            vulnerability_curves,
-            name="curves",
-        )
-        model.vulnerability.set(
-            vulnerability_identifiers,
-            name="identifiers",
-        )
+        model.vulnerability.set(vulnerability_curves)
+        model.vulnerability.set_id(vulnerability_identifiers)
         return model
 
     return _factory
@@ -97,9 +91,9 @@ def vulnerability_curves_only_path(
     tmp_path: Path,
     model_data_path: Path,
 ) -> Path:
-    p = Path(tmp_path, "curves.csv")
+    p = Path(tmp_path, "curves.nc")
     shutil.copy2(
-        src=Path(model_data_path, "vulnerability", "curves.csv"),
+        src=Path(model_data_path, "curves.nc"),
         dst=p,
     )
     assert p.is_file()

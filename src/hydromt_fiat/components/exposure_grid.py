@@ -16,6 +16,7 @@ from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
 from hydromt_fiat.utils import (
+    DEFAULT,
     EXPOSURE,
     EXPOSURE__GRID__TYPE,
     GRID,
@@ -176,6 +177,7 @@ class ExposureGridComponent(GridComponent):
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
         *,
+        vulnerability_name: str | None = None,
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -189,6 +191,11 @@ class ExposureGridComponent(GridComponent):
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
+            By default None.
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -205,11 +212,9 @@ class ExposureGridComponent(GridComponent):
         self.model._assert_model_type(GRID)
         logger.info("Creating gridded exposure")
         # Check for the vulnerability
-        if self.model.vulnerability.data.identifiers.empty:
-            raise RuntimeError(
-                "'vulnerability.create' step is required \
-before setting up exposure grid"
-            )
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
 
@@ -244,7 +249,7 @@ before setting up exposure grid"
         # Execute the workflow function
         exposure_grid = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=vulnerability,
             grid_like=self.like,
             exposure_link=exposure_link,
         )
@@ -258,6 +263,7 @@ before setting up exposure grid"
         exposure_fname: Path | str,
         *,
         name: str | None = None,
+        vulnerability_name: str | None = None,
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
@@ -276,6 +282,11 @@ before setting up exposure grid"
             The name of the variable that the data will have in the dataset.
             If not provided the name is inferred from the stem of `expousre_fname`.
             By default None.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
+            By default None.
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -288,11 +299,9 @@ before setting up exposure grid"
         self.model._assert_model_type(GRID)
         logger.info("Creating gridded value-table based exposure")
         # Check for the vulnerability data
-        if self.model.vulnerability.data.identifiers.empty:
-            raise RuntimeError(
-                "'vulnerability.create' step is required \
-before setting up exposure grid"
-            )
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
 
@@ -308,7 +317,7 @@ before setting up exposure grid"
         # Execute the workflow function
         exposure_grid = workflows.exposure_grid_categorized_setup(
             exposure_data=exposure_data,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=vulnerability,
             name=(name or Path(exposure_fname).stem),
             grid_like=self.like,
         )
@@ -414,6 +423,7 @@ before setting up exposure grid"
         curve: str,
         *,
         name: str | None = None,
+        vulnerability_name: str | None = None,
         mult: float | int = 1,
         add: float | int = 0,
         method: str = "add",
@@ -428,9 +438,17 @@ before setting up exposure grid"
             Path to or entry in the data catalog of the exposure geometry dataset.
         column : str
             The column from which the value will be burned in.
+        curve : str
+            The name of the identifier of the curve that is applicable to the
+            newly rasterized data.
         name : str | None, optional
             The name of the variable that the data will have in the dataset.
             If not provided the name is inferred from the stem of `expousre_fname`.
+            By default None.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
             By default None.
         mult : float | int, optional
             The multiplication factor put on top of the burned in values, by default 1.
@@ -449,11 +467,9 @@ before setting up exposure grid"
         """
         self.model._assert_model_type(GRID)
         # Check for the vulnerability data
-        if self.model.vulnerability.data.identifiers.empty:
-            raise RuntimeError(
-                "'vulnerability.create' step is required \
-before setting up exposure grid"
-            )
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
         # Check for the model region
         if self.model.region is None:
             raise MissingRegionError(
@@ -482,7 +498,7 @@ either use `create_grid` to create purely the grid definition or other create me
             exposure_data=exposure_data,
             column=column,
             curve=curve,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=vulnerability,
             ds_like=self.like,
             mult=mult,
             add=add,
