@@ -2,9 +2,9 @@
 
 import logging
 from pathlib import Path
-from typing import cast
 
 import geopandas as gpd
+import pandas as pd
 from hydromt.gis.vector import _filter_gdf
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
@@ -12,12 +12,13 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.geom import GeomsComponent
 from hydromt_fiat.components.utils import (
-    ensure_path_listing,
-    pathing_config,
-    pathing_expand,
+    expand_path_wildcards,
 )
 from hydromt_fiat.gis import create_square_vector_grid
-from hydromt_fiat.utils import EXPOSURE_GEOM_FILE, GEOMETRY, OUTPUT_GEOM_NAME, POST
+from hydromt_fiat.readers import read_geoms
+from hydromt_fiat.settings.utils import get_config_list_files
+from hydromt_fiat.utils import GEOM, GEOMETRY, POST
+from hydromt_fiat.writers import write_csv, write_geoms
 
 __all__ = ["OutputGeomsComponent"]
 
@@ -64,7 +65,7 @@ method with '{name}' as input"
 
     def _set(
         self,
-        data: gpd.GeoDataFrame,
+        data: gpd.GeoDataFrame | pd.DataFrame,
         name: str,
     ):
         """Set post processed data in the corresponding dictionary.
@@ -128,54 +129,47 @@ column will be removed"
             Additional keyword arguments that are passed to the
             `geopandas.read_file` function.
         """
+        if not self.model._assert_model_type(GEOM, error=False):
+            return
+        # Assert the mode
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
 
         # Sort out the pathing
         # Hierarchy: 1) signature 2) settings
         # Sort the signature first
-        files = pathing_expand(self.model.config.dir, filename)
+        files = expand_path_wildcards(self.model.config.dir, filename)
 
         # Look at the in and outputs of the config file
-        infiles = (
-            ensure_path_listing(
-                self.model.config.get(EXPOSURE_GEOM_FILE),
-            )
-            or []
-        )
+        infiles = get_config_list_files(self.model.config.data.exposure) or []
         infiles = [
             Path(self.model.config.output_dir, item.name).with_suffix(".gpkg")
             for item in infiles
         ]
         # Get the directly specified output files
-        outfiles = ensure_path_listing(
-            self.model.config.get(
-                OUTPUT_GEOM_NAME,
-                abs_path=True,
-                root=self.model.config.output_dir,
-            )
-        )
+        outfiles = get_config_list_files(self.model.config.data.output)
         # Supplement the defined output with input (names are the same in that case)
         if outfiles is None:
             outfiles = infiles
         outfiles += infiles[len(outfiles) :]
 
         # Set the files
-        files = files or pathing_config(outfiles)
+        files = files or outfiles
         if files is None:
             return
 
         # Read the output data
-        logger.info("Reading model geometry outputs")
-        for read_path, name in zip(*files):
+        logger.info("Reading model output geometry data")
+        for read_path in files:
             # If file doesn't exist, skip it
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading the '{name}' output file at {read_path.as_posix()}")
+            logger.info(f"Reading '{read_path.stem}' output geometry")
             # Read the data and set it
-            data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
-            self.set(data=data, name=name)
+            data = read_geoms(read_path=read_path, **kwargs)
+            self.set(data=data, name=read_path.stem)
 
+    @hydromt_step
     def write(
         self,
         **kwargs,
@@ -211,18 +205,17 @@ column will be removed"
 
             # If there is not geometry, it's a dataframe, write it to csv
             if GEOMETRY not in gdf.columns:
-                logger.info(
-                    f"Writing the '{name}' post processed tabular data to \
-{write_path.with_suffix('.csv').as_posix()}",
+                logger.info(f"Writing '{name}' post processed tabular data")
+                write_csv(
+                    data=gdf,
+                    write_path=write_path.with_suffix(".csv"),
+                    index=False,
                 )
-                gdf.to_csv(write_path.with_suffix(".csv"), index=False)
                 continue
+
             # Write the entire thing to vector file
-            logger.info(
-                f"Writing the '{name}' post processed geometry data to \
-{write_path.as_posix()}",
-            )
-            gdf.to_file(write_path, **kwargs)
+            logger.info(f"Writing '{name}' post processed geometry data")
+            write_geoms(data=gdf, write_path=write_path, **kwargs)
 
     ## Post processing methods
     @hydromt_step
@@ -261,6 +254,7 @@ column will be removed"
             If not provided, 'output_name' is used with the 'sp_aggr' suffix.
             By default None.
         """
+        self.model._assert_model_type(GEOM)
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 
@@ -277,7 +271,7 @@ using the '{method}' aggregation method"
             output_data=self.combined_data[output_name],
         )
         # Aggregation
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas.to_crs(output_data.crs),
             method=method,
@@ -317,6 +311,7 @@ using the '{method}' aggregation method"
             If not provided, 'output_name' is used with the 'sq_aggr' suffix.
             By default None.
         """
+        self.model._assert_model_type(GEOM)
         # Check the output_name's existence
         self._assert_output_entry(output_name)
 
@@ -338,7 +333,7 @@ using the '{method}' aggregation method"
         )
 
         # Call the aggregation function
-        aggregated_data = workflows.aggregate_spatially(
+        aggregated_data = workflows.aggregate_geom_spatially(
             output_data=output_data,
             aggregation_areas=aggregation_areas,
             method=method,
