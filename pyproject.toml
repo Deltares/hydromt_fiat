@@ -87,11 +87,11 @@ classifiers = [
 [project.optional-dependencies] # Optional
 dev = [
     "build",
-    "python-magic",
-    "sbom4python",
     "mypy",
     "pre-commit",
+    "python-magic",
     "ruff",
+    "sbom4python",
 ]
 docs = [
     "nbsphinx",
