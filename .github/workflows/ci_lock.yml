@@ -24,7 +24,7 @@ jobs:
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11
         with:
-          pixi-version: "0.83.0"
+          pixi-version: "v0.83.0"
           run-install: false
 
       - name: Update lockfile
