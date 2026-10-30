@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=83.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -37,13 +37,15 @@ requires-python = ">=3.12"
 dependencies = [
     "affine",
     "geopandas",
-    "hydromt>=1.4.0",
+    "hydromt>=1.4.1",
     "minio",
     "numpy",
     "osmnx",
     "pandas",
     "pint",
+    "pydantic",
     "pyproj",
+    "rasterio",
     "requests",
     "shapely",
     "tomlkit",
@@ -93,18 +95,18 @@ dev = [
 docs = [
     "nbsphinx",
 	"pydata-sphinx-theme",
-    "sphinx>=8.2.0",
+    "sphinx>=9.1.0",
     "sphinx_design",
 ]
 examples = [
     "cartopy",
     "jupyterlab",
-    "nbconvert==7.13.1",
+    "nbconvert==7.17.1",
     "notebook",
     "pandoc",
 ]
 test = [
-    "pytest>=2.7.3",
+    "pytest>=9.1.1",
     "pytest-cov",
     "pytest-mock",
     "responses",
@@ -307,7 +309,7 @@ pandoc = "*"
 gdal = ">=3.9.1"
 
 [tool.pixi.feature.test.pypi-dependencies]
-delft_fiat = { git = "https://github.com/Deltares/Delft-FIAT.git", branch="v1" }
+delft_fiat = { git = "https://github.com/Deltares/Delft-FIAT.git" }
 
 
 [tool.pixi.feature.wheel.dependencies]

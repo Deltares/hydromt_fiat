@@ -6,364 +6,364 @@
     "creators": [
       "Tool: sbom4python-0.12.6"
     ],
-    "created": "2026-06-22T10:41:52Z",
+    "created": "2026-07-06T10:56:22Z",
     "licenseListVersion": "3.28.0"
   },
   "name": "Python-hydromt_fiat",
   "dataLicense": "CC0-1.0",
-  "documentNamespace": "http://spdx.org/spdxdocs/Python-hydromt_fiat-65b6375c-f598-4081-9b6c-5f247457b28c",
+  "documentNamespace": "http://spdx.org/spdxdocs/Python-hydromt_fiat-5d6c7896-e6a2-46c7-a230-130a34c3324c",
   "files": [
     {
-      "SPDXID": "SPDXRef-File-1-Lerc-5967721b5189b41a3b226e8479ff352f.dll",
-      "fileName": "./Lerc-5967721b5189b41a3b226e8479ff352f.dll",
+      "SPDXID": "SPDXRef-File-1-Lerc-c10f5743f8921c17b85576614838c379.dll",
+      "fileName": "./Lerc-c10f5743f8921c17b85576614838c379.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "514e4a0b0b4053025069ff719f6077b1ea75f844"
+          "checksumValue": "b852e0029fca8905a560b1388131c6348b955cb0"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "6cef8cef064280151af9dc65a0fc37685ea3789f6c949b12f4c1116d8314d3ff"
+          "checksumValue": "7d8b17a260ff29f98d141814d64974d3cb51fa46b8adfff8392688dde601e3e8"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "5eb7019af7492722abd8f1fbedafab1c1fbc0c1222e39c557279a2026f44a6ebb68aed3ebf96de1e27414f376e02565b5b74697f2b7e2f98f98555927eb30c13"
+          "checksumValue": "ddbfa0cc253514146e56717711e49961641f43c928a99d950b039936071b717f97266084744f889911e46f1b005219e0a0a8c48a0659b0bccdbd8ad900e6b284"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\Lerc-5967721b5189b41a3b226e8479ff352f.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\Lerc-c10f5743f8921c17b85576614838c379.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-2-gdal-8a2204e692549e77b1635a2695862dde.dll",
-      "fileName": "./gdal-8a2204e692549e77b1635a2695862dde.dll",
+      "SPDXID": "SPDXRef-File-2-gdal-9fa6a5301668010b1474299a888c26da.dll",
+      "fileName": "./gdal-9fa6a5301668010b1474299a888c26da.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "675109976b9f992a797dedda2a47ff06881a235d"
+          "checksumValue": "7c29223712ee67f4cf54d3cfda821c0310d4a6ee"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "03e130bed9a31752c6d900f56a9573697019ef38cb22e590ca96714b493a0ed2"
+          "checksumValue": "31f4fb2d984216f597c2ea17a5ae811d5ce65c218128440575015a115a86c5c0"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "b018bb628f95fe6226712d922d3f5190dd881a758ff211797a032a30473f7169381bdcf5e147584660f31e3127bbe99b88e6a2efb5e553e56a5bc0fb8df243b9"
+          "checksumValue": "52be5c5c9a99121f802f5289181643aadc93e147c112fd336d0c3aacf7ca098796862c448158b7c4cde1b4714e09f0429d418666f1e24a146f35cfb71a806298"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\gdal-8a2204e692549e77b1635a2695862dde.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\gdal-9fa6a5301668010b1474299a888c26da.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-3-geos-175f2b7698e9509370f0180e0a34676d.dll",
-      "fileName": "./geos-175f2b7698e9509370f0180e0a34676d.dll",
+      "SPDXID": "SPDXRef-File-3-geos-bda2e4a35fc87c3cb436d3add2953ffb.dll",
+      "fileName": "./geos-bda2e4a35fc87c3cb436d3add2953ffb.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "70cc17d5c7718a5ee96d23eb2635c2d39986b07e"
+          "checksumValue": "237b25a1bfadbe05df5e3bf86a1743f9d62b5a2b"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "79b8b47da6b10362c0a2f3a1cade76ea08f0cd27fd110e6b8d2b247828cd6ab5"
+          "checksumValue": "4b7aaa9d8800a5500916dd2d3ed7bd3b9831ead7cb4448698ba2dbdca3897e2e"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "47df6785174ea87e3e5d86912b46549c9b162fa105d78c315e82f25eb2c73d65d9d1f08f75fac4ab790386d6481e989c1a02654fbec430a89db47fec526cb6ec"
+          "checksumValue": "ffa868afc5c6d619864dd0f3652d5220b2ae194bf6528b950ba43654609fb72e47ed4119e1b0b6ab550869460b8c9512abfb29778c62c072f2cea9e04ea71ce7"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geos-175f2b7698e9509370f0180e0a34676d.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geos-bda2e4a35fc87c3cb436d3add2953ffb.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-4-geos-c-6be5fa556af85159ee5bb17cd4fd7aac.dll",
-      "fileName": "./geos_c-6be5fa556af85159ee5bb17cd4fd7aac.dll",
+      "SPDXID": "SPDXRef-File-4-geos-c-05968ceb6a9aade9961ca529050ada59.dll",
+      "fileName": "./geos_c-05968ceb6a9aade9961ca529050ada59.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "79f5cf7257cc43ef55516e545c84ac112d007181"
+          "checksumValue": "48910c4481d3b7fd350ebc03276fe33bf958d2ae"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "1cb21eef471f09d91310ed47cbe622909bce1f76158957bb552a708b49cae4e7"
+          "checksumValue": "5f77e8a969aef5fc8ffc70eb8bc243bc55b07fa69835937cd2f7fc9ad2202b56"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "e0b308b1a6bf65d895607a57a01a8791510e6531c43c737fe12611391c983353d80b384341d346b9e7c8152f7a00cb5fee140a502899fb22c051d822b973ba35"
+          "checksumValue": "1574439d433388e1e41d9b8f1a4724dd32536bf17ffc738c5465789655700c68a9ebd6e33e1cfc500deceab369ff226917412cd60823103be3830b68246d78c9"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geos_c-6be5fa556af85159ee5bb17cd4fd7aac.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geos_c-05968ceb6a9aade9961ca529050ada59.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-5-geotiff-e1dd7339cb7a0cfee71f73cd7ac18995.dll",
-      "fileName": "./geotiff-e1dd7339cb7a0cfee71f73cd7ac18995.dll",
+      "SPDXID": "SPDXRef-File-5-geotiff-0f08c58b982b142224f2707f8e49d843.dll",
+      "fileName": "./geotiff-0f08c58b982b142224f2707f8e49d843.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "49ca2ba155244d7fbf3733f96719a101375f98d0"
+          "checksumValue": "367c7a8feb130ae79d019313e4c530f01eedfd30"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "c18b6fa99976f144568d47b55484d2327f980b88105040ec1ac1180af468ea90"
+          "checksumValue": "3efb92302c8cd7d2d7251df8676c20455c4a2655878106e1b75a11788030d20c"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "1711c17b7d0f415ce3b42adbc81bacfa528785fa0b2d98c4e8d9952bf2ec0aed71ff488d50bdc03c27c6262238bdc5258f9ec3ef781ecff20f2c57be935f1dab"
+          "checksumValue": "ef02470a53997aadf944b740d4e922d05763a3567f6b0ac2394aebd1deacf7f9726f9e41a86eb51709d1457fffbcb8239989bf0c4faac0994dff3605af15cfc0"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geotiff-e1dd7339cb7a0cfee71f73cd7ac18995.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\geotiff-0f08c58b982b142224f2707f8e49d843.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-6-iconv-2-5d1f5f977481e6b9ad37b9e0b0bf88c3.dll",
-      "fileName": "./iconv-2-5d1f5f977481e6b9ad37b9e0b0bf88c3.dll",
+      "SPDXID": "SPDXRef-File-6-iconv-2-ec6407dc8b081563527a51db783233cc.dll",
+      "fileName": "./iconv-2-ec6407dc8b081563527a51db783233cc.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "976d6d9468edf86ed76a99bd9d286bd404bdc855"
+          "checksumValue": "6cb8896c98d626a15a4de723b58e325649289294"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "5d1f5f977481e6b9ad37b9e0b0bf88c3d6c7d0e9107ccb72c2dc32ae974a1ff6"
+          "checksumValue": "ec6407dc8b081563527a51db783233cc484ad8c8dd043bdf5b102bfa21f9381c"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "1e57de51e809e15eadbf3fafa18051c8f895985af1c6db5ecd9636d7e82b6f7a359fcd3dcfc5307daff98be4fa32892bdb3d9230b78f9b618af22c1f2ed862ff"
+          "checksumValue": "624de7d51c4bd57fa024f13008585b6cfcb6929276bbbe98991ab91a49d8800e8edd6065f28238239e175b922e0db818c65404602b9bf53d45b623973745be1d"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\iconv-2-5d1f5f977481e6b9ad37b9e0b0bf88c3.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\iconv-2-ec6407dc8b081563527a51db783233cc.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-7-jpeg62-8711927b5b22d179640c6a60fd4223b6.dll",
-      "fileName": "./jpeg62-8711927b5b22d179640c6a60fd4223b6.dll",
+      "SPDXID": "SPDXRef-File-7-jpeg62-c79c71e9654a1a62b02167aa47efcfc1.dll",
+      "fileName": "./jpeg62-c79c71e9654a1a62b02167aa47efcfc1.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "314c116d1a8b14189aeb569bfb94be5f99b47286"
+          "checksumValue": "cd371cdaa4cc82cac2187dbe9de82dfe47bd4f93"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "8711927b5b22d179640c6a60fd4223b6647401d13e45f369b0477bf6d894a299"
+          "checksumValue": "c79c71e9654a1a62b02167aa47efcfc10692ce22a6ed53d4ae9923053f4d4b9e"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "bdb69bd1f9dd415bc88addc184cfca2f3238ae8adce98e9a53b4770b782dff12d2ea260ad41513c1319f7fa4f2b22f81a600a161fc652c792512f32c6484ae60"
+          "checksumValue": "0f300581ff4cd8f423a8678e9ac3b7e3d6ef929d1878dcb698d997e45f2bb5c06d3b14b1f9e370937bb3f5e0e8d53b400f8fef110d740a00b703ddc0ce77243f"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\jpeg62-8711927b5b22d179640c6a60fd4223b6.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\jpeg62-c79c71e9654a1a62b02167aa47efcfc1.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-8-json-c-a502abaec80061b0b047fa0b9a7075a6.dll",
-      "fileName": "./json-c-a502abaec80061b0b047fa0b9a7075a6.dll",
+      "SPDXID": "SPDXRef-File-8-json-c-23e40dddc89c5be9375747232d8f35fb.dll",
+      "fileName": "./json-c-23e40dddc89c5be9375747232d8f35fb.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "f703007f83d60b0be2f24d26a2e704102dfb2a50"
+          "checksumValue": "3774eb2cbe343d42c1e0290133b506b71185cdec"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "a502abaec80061b0b047fa0b9a7075a6d490bedde677be9ee00770d26a49f39e"
+          "checksumValue": "23e40dddc89c5be9375747232d8f35fb47ca9ad8429c221f2d6e0748a26008af"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "1f8b0ab92590819160d760d4d9ad645ddc35c6bfe5152fc6f5576850cda29ce67313310de0986f6ee999efe837ccda313fec41bbb2a4c26d05c19c106a9b9a22"
+          "checksumValue": "950fa07dffa40baaa9bd52f41b209e13b180ba41e50cfc12eae0b3882ac03b4859577071ebaf8f6f9fddfcee2025a8c8dd7b560aad3c9d0c9aacf086721cdc7f"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\json-c-a502abaec80061b0b047fa0b9a7075a6.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\json-c-23e40dddc89c5be9375747232d8f35fb.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-9-libcrypto-3-x64-f7c10d9f39fbc0b16dfcc253857aae36.dll",
-      "fileName": "./libcrypto-3-x64-f7c10d9f39fbc0b16dfcc253857aae36.dll",
+      "SPDXID": "SPDXRef-File-9-libcrypto-3-x64-7b8fb6ee347e3e4ee5e92cf5f7691e7d.dll",
+      "fileName": "./libcrypto-3-x64-7b8fb6ee347e3e4ee5e92cf5f7691e7d.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "da96c6eeaf058160b2a5049d6d90105431ef5858"
+          "checksumValue": "5e1198bf96d7ef8666dda065118fb04932733ac3"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "f7c10d9f39fbc0b16dfcc253857aae36e25482e873becedc7dbfdcbc850f7029"
+          "checksumValue": "7b8fb6ee347e3e4ee5e92cf5f7691e7d49aa5a956af24bff9bae13605ec033c3"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "df6ce3ae46791b92db7eda1c48b9f747af09ba4cb17332165b89a984bcd7969687be1e612f3de08119b17f94092e053f981626aff5b4270ba2ddc292f99755dc"
+          "checksumValue": "544c715dd5cb43a30ef830e9e414b438bf1066bff7b4a7aa6379a58399ab828befbfe067eda374f5819398eb7563a1e7baaa0e23c2bd2fad06970a328fef14c7"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libcrypto-3-x64-f7c10d9f39fbc0b16dfcc253857aae36.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libcrypto-3-x64-7b8fb6ee347e3e4ee5e92cf5f7691e7d.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-10-libcurl-a8120100cc1c442072cd8cd3c7c93bda.dll",
-      "fileName": "./libcurl-a8120100cc1c442072cd8cd3c7c93bda.dll",
+      "SPDXID": "SPDXRef-File-10-libcurl-c3697df4ff70334a5320d2218a143c97.dll",
+      "fileName": "./libcurl-c3697df4ff70334a5320d2218a143c97.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "6ad795d4f9e25f455b901e0bddfa53cbec6b1af3"
+          "checksumValue": "ac565d7f696c6e8ce9a72f00b94f0832328b605a"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "7d4591ca86761ce44b0955ac2c9217458a68cc7c771f03905230eb3bc5baf02f"
+          "checksumValue": "8895e0889267202231f4c716c8e806d071012dc8901500cf7f23241fd349866f"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "e53be608576ee30267225d011c261dae7052ed81a39518be5ae0e41b6fe16a0d470314eed4b0207cb74bf859d2b33096de6a0824d938ce8593a79631e884aa28"
+          "checksumValue": "b046481acee9841a62831a3291144b06a70cac03c367d4aca526a7410d9f6ab715d93a5e95f20cd31595407af8ca878ebb3410d73222d64dd3de1c2bf703a807"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libcurl-a8120100cc1c442072cd8cd3c7c93bda.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libcurl-c3697df4ff70334a5320d2218a143c97.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-11-libexpat-348b0f32a146eef97ac5bbe9fd02c895.dll",
-      "fileName": "./libexpat-348b0f32a146eef97ac5bbe9fd02c895.dll",
+      "SPDXID": "SPDXRef-File-11-libexpat-6d13c47b98550978af0962920611301e.dll",
+      "fileName": "./libexpat-6d13c47b98550978af0962920611301e.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "80f4ba58325777484c263dc7f2d7e68b067d127a"
+          "checksumValue": "46e3b4003377165b3592d84e682c85f4fe6f8d2c"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "348b0f32a146eef97ac5bbe9fd02c89504e99bd915412339f10a3318cb0f7cec"
+          "checksumValue": "6d13c47b98550978af0962920611301ef2c69e331e953911e0edaa4ae57cd481"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "4d23864798f699fb3f255693eb36714a9eaac2c4c74d8da08518bffeacfb6095d8b2def4d396aa7c11da0836202901771ace3cfc93243e3df69949de8ccf667e"
+          "checksumValue": "4231d114f264bb2ccabaa01a92f51ea7b6afb1c840e9ddcdbd0e24a787d184138ef565ee0012c137bc1432f10a90532a24aeb9949146895ba3a61ef563f762c2"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libexpat-348b0f32a146eef97ac5bbe9fd02c895.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libexpat-6d13c47b98550978af0962920611301e.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-12-liblzma-3e02244262ff433c94c4ff8ff0b3be78.dll",
-      "fileName": "./liblzma-3e02244262ff433c94c4ff8ff0b3be78.dll",
+      "SPDXID": "SPDXRef-File-12-liblzma-72d8c4b09cb84a63a20b48cc6de0e301.dll",
+      "fileName": "./liblzma-72d8c4b09cb84a63a20b48cc6de0e301.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "6719f92111ee38c2bec0b746bb6727249db6ebdc"
+          "checksumValue": "266f21567dc0223a63ed26dac8aad8eb6ede42e1"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "3e02244262ff433c94c4ff8ff0b3be7870ea3aba23cc99c66ce2630f5aa10f10"
+          "checksumValue": "72d8c4b09cb84a63a20b48cc6de0e301faa799b94ee6e5444a5c88af5ab89b9d"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "9b6191ec7b84081f47ab9ff3222ec22aead68ad61c3c57baa74711817a395435352fc51bfa5349dddbc2036cdb0d1045a848b88c4856055d59cafac63dbb0ebb"
+          "checksumValue": "12cb8767231f19131668e69ac7e9cf27a1c3035d63429ddd161daab72286bbd4d562460260f82a1e1456777a3ee19ba577444ae706000b76b882816ca86f5a29"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\liblzma-3e02244262ff433c94c4ff8ff0b3be78.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\liblzma-72d8c4b09cb84a63a20b48cc6de0e301.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-13-libpng16-ce2e5d1abb1280a70616a07043761951.dll",
-      "fileName": "./libpng16-ce2e5d1abb1280a70616a07043761951.dll",
+      "SPDXID": "SPDXRef-File-13-libpng16-51f4f376c28be4f3fee815c154d2d249.dll",
+      "fileName": "./libpng16-51f4f376c28be4f3fee815c154d2d249.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "6a8b8caa1fcfe54891dbd8242ef8adeb5012b97a"
+          "checksumValue": "df3f488d21c94358f1a5f3c1362cbc80974499ee"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "62b69cc4b9901eaf1d6cb7b526ad7b202ae238e795db4a5f36be91c318516024"
+          "checksumValue": "42d06b1f263176b2473d5c75334ca19b593d64a50df7180038a5e83ae7a542d9"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "29b774a1527a3be305a8cea13bf76dad64aac22161d345a73f5b9aae0991a5d96d91515f537b1240e27af2b25488b3cea6ad740f70bb56809e932e2f7edc07e6"
+          "checksumValue": "41b33e4012238273bcac2e9767f0e5910d06842030acf7b09a02cd4214a3c06a9f35d41685ef7a63ebd166b6776408d19d2afaa2ce01052d2e2c3e60f15380b0"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libpng16-ce2e5d1abb1280a70616a07043761951.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libpng16-51f4f376c28be4f3fee815c154d2d249.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-14-libssl-3-x64-a8e1a24e51b982b8b0aa713097e72006.dll",
-      "fileName": "./libssl-3-x64-a8e1a24e51b982b8b0aa713097e72006.dll",
+      "SPDXID": "SPDXRef-File-14-libssl-3-x64-ce0f27858f99fd8e7c41e6e39bd2f7b6.dll",
+      "fileName": "./libssl-3-x64-ce0f27858f99fd8e7c41e6e39bd2f7b6.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "0c434af452294969ba7030cf8fc8381e1a3d3cfd"
+          "checksumValue": "d835d6f71e91d483a8c9b644e7c8615cdabea590"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "df184af97c02e696002b37562ebf9c4c6eb37f8a47cc279f87b11e021f4e97d2"
+          "checksumValue": "48175b4c5ff7145cdf1fb973baf77a8823e228496c7c2bf5b0cff8f277795002"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "f7ce263f6c94f5cd36216c0a7c78ad84dc99c3af247395df08ff5b5ef9a0132e32f63cfaad762c5113af4746b2e68e23c5f16f0bad1770a2e6ab540aa6d5ab4d"
+          "checksumValue": "be04aefc30a128a0c0fad9a772e1b9a617fd43e56e90dc34533f0cdbe053aef7386ea5c81441df67a6650b8484cebdf589070cc479d9193e94fc5a863f491e7c"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libssl-3-x64-a8e1a24e51b982b8b0aa713097e72006.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libssl-3-x64-ce0f27858f99fd8e7c41e6e39bd2f7b6.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-15-libxml2-9b236bf942dec39cc64682b380dfc3e5.dll",
-      "fileName": "./libxml2-9b236bf942dec39cc64682b380dfc3e5.dll",
+      "SPDXID": "SPDXRef-File-15-libxml2-3983679bc2aba685351f42b9f58ab67c.dll",
+      "fileName": "./libxml2-3983679bc2aba685351f42b9f58ab67c.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "610e3bbd38b6105b6b6c5708de3aa0430c8dd3fd"
+          "checksumValue": "066e36666012dde2ec487f0650387e5692ae3ef0"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "bb98df6d1c34581ac20338490d3ee2758cfa234ce93ce6eab3dfd7c23d824866"
+          "checksumValue": "8afa56472601f0f5dd08fb5706f8527c43b2f110c5e8cdb61c8a72b28f8c3393"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "49c4cbb44a1f4b73917a1913c84a09ee03f6b17d37499067f6b279b788b4762910e519fb5efbeeae25a3ed54640599130480b25a2ba1f1e5a70aa643f1a9933b"
+          "checksumValue": "d4ffa8f9a9efc90f16fd2e08ba53db9556a85fabf112b3372608ceaf8769f86119ff6853f6db574094d0efebf8ec1e5e21f8a7dcbaf8b59bbc8ba278239a089b"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libxml2-9b236bf942dec39cc64682b380dfc3e5.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\libxml2-3983679bc2aba685351f42b9f58ab67c.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-16-minizip-c2307cfde0ca8af31d29873c41c59b1a.dll",
-      "fileName": "./minizip-c2307cfde0ca8af31d29873c41c59b1a.dll",
+      "SPDXID": "SPDXRef-File-16-minizip-09a8b95a475f7786cff4765c06464595.dll",
+      "fileName": "./minizip-09a8b95a475f7786cff4765c06464595.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "91da8d156b7a4f4b880e85f7921d6318dc8d2ea1"
+          "checksumValue": "34b4c8a22820163dada086f09d8d59b016730975"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "11d105930159aec63db22438f46e50d9e285923f4b8585a94780eb1855d40625"
+          "checksumValue": "c708669711c9eef8a84bea4290fa397f637233057c446a3e3d207f76e7f69e5c"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "6f0164a90e256182cafee6350ad294e2984a2f17e8bdcc761062988c775686f4fafb198332bfbd43bd32b69f7bdc288bfc0a77f3c776af39c3548639190dc7e3"
+          "checksumValue": "f10c7b353b8fae0f7c126a6b667092185b8da06bd9efa2afe45b33a55ae74b48b9e9ea6a4026969eb3943ae36eb250ff07b3b15dc353de458a8a4ca70f268d65"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\minizip-c2307cfde0ca8af31d29873c41c59b1a.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\minizip-09a8b95a475f7786cff4765c06464595.dll"
     },
     {
       "SPDXID": "SPDXRef-File-17-msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll",
@@ -388,136 +388,136 @@
       "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pandas.libs\\msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-18-proj-9-7250f1351d1e8efcc7b5402db16bdc75.dll",
-      "fileName": "./proj_9-7250f1351d1e8efcc7b5402db16bdc75.dll",
+      "SPDXID": "SPDXRef-File-18-proj-9-6329b13d4c90abfce1c9dc07fa75284e.dll",
+      "fileName": "./proj_9-6329b13d4c90abfce1c9dc07fa75284e.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "1dd2d5abb8ada9b49943cb0400cee668f94d763a"
+          "checksumValue": "01d148e1286fb7ab840abb19c843c97bf767f85b"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "ae5691de6c6046800f5c5f81a2ba0652b5a593d351d113e8fe2bae9b09941258"
+          "checksumValue": "6a50c2ce73650b2e7c6489061ced1630f61a4471bf0b80a21101c988cd1fe970"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "40bf6be7f482174f0ed3fdcd6b2c85d11da0b11923048e09e0d0181e1cc2c4dfecef3462540f90e6a8bb223cb72613633cf07d24407822f217e36755a776aab6"
+          "checksumValue": "4db08ca1947a4d525e4193b5031ffad72343c58ec2727647807319b5da047d79e1505eaec640d87c724e699e6d3eee8713c877136351c39bab61424bfc0a6017"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\proj_9-7250f1351d1e8efcc7b5402db16bdc75.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\proj_9-6329b13d4c90abfce1c9dc07fa75284e.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-19-qhull-r-f82109cb99ce9f6554e2c3d1f047e89c.dll",
-      "fileName": "./qhull_r-f82109cb99ce9f6554e2c3d1f047e89c.dll",
+      "SPDXID": "SPDXRef-File-19-qhull-r-a82503bf44e8253baabe69c074cb5ce3.dll",
+      "fileName": "./qhull_r-a82503bf44e8253baabe69c074cb5ce3.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "53d0163c39a632aed51c557ef6e927e0d12c0e21"
+          "checksumValue": "930aa5489eaa698d24b58bd07806b64cdfa5ff9c"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "f82109cb99ce9f6554e2c3d1f047e89c2ffe588c947dc777cac0f41d9dec22d0"
+          "checksumValue": "a82503bf44e8253baabe69c074cb5ce314fd8f67dd1524a527466e78c2cefaff"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "68743faaf69545a79f8750458df372a858023a960a0d2815bdbee3b7dd309acc5fc1dac31bd0c599ae5ffb211df3fff4dd1ec37ce5664d9acf1a1ca56d379126"
+          "checksumValue": "0ae92ef1d767cda146342c4bf1dfb1c0513fa42d6e8b3f3cf31a58972035338486de98fa3c80a127915eafd22ec1c3c55ad64f6da06e6dde2ee6940424275667"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\qhull_r-f82109cb99ce9f6554e2c3d1f047e89c.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\qhull_r-a82503bf44e8253baabe69c074cb5ce3.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-20-spatialite-56df6e592091ce6ae4d75e6b29b05cf6.dll",
-      "fileName": "./spatialite-56df6e592091ce6ae4d75e6b29b05cf6.dll",
+      "SPDXID": "SPDXRef-File-20-spatialite-d8c2d6ee9614ee788aabd66cd9557079.dll",
+      "fileName": "./spatialite-d8c2d6ee9614ee788aabd66cd9557079.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "735b60929015b985531f4d5b8ec35914aa37d23b"
+          "checksumValue": "679818a7b6023a9e305bfd266524baa3328b29ea"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "eee4dfa0944035917ce723da0c90fd307bf3ce430065e5aa39caf949956ab4dc"
+          "checksumValue": "583a641cd4a169bcf29153ff9c354bb97abd89a68451258ca5d70b619423ea8f"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "0d178bda2f2fc580cca3b54d8acbd580016fcd4b140e9441e9482f48a98a9df35998342d75b63546b95f20fbd8f0108c26a32a24078ff41b477778962a02ed3a"
+          "checksumValue": "cc0f19022f24dc8918e0142bc4d84aa1a7c9104590f0b090dcaa44239c660c493de6da8ab6f3d32ed735a01113e7fbaf45f2e475d1d0f987864d86d6f59e36de"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\spatialite-56df6e592091ce6ae4d75e6b29b05cf6.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\spatialite-d8c2d6ee9614ee788aabd66cd9557079.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-21-sqlite3-630a19aac7bad91bd37dc96a006aa5c8.dll",
-      "fileName": "./sqlite3-630a19aac7bad91bd37dc96a006aa5c8.dll",
+      "SPDXID": "SPDXRef-File-21-sqlite3-a62ef28d840863c87680b78bee9c5ae7.dll",
+      "fileName": "./sqlite3-a62ef28d840863c87680b78bee9c5ae7.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "8f7c1d26582463142c78b3b7267321754dd2d4b2"
+          "checksumValue": "e27efc627b2fd4865d4f3543fd00b680d2755273"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "630a19aac7bad91bd37dc96a006aa5c8bf0aa9fa4d9497678c7550e5282aed76"
+          "checksumValue": "a62ef28d840863c87680b78bee9c5ae755925ed9f50b958209059d412dbf5ce6"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "95a9c46885c244ed3a4d02fcc6adec1fe7f9bad304f000c5a57301c5c48a9f04b88a62816ec7eff7b449d57a0fcf5430e4d7aa49d5aa8af08893b55591b81d36"
+          "checksumValue": "1d86485ec56d1c5acd07f85f3cc2850c4a58036e462a99972713458cf8ede2aac409db70325ca3b28241bb9d7154e92ea0c1c01b0ca335d35fc661757ac3c372"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\sqlite3-630a19aac7bad91bd37dc96a006aa5c8.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\sqlite3-a62ef28d840863c87680b78bee9c5ae7.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-22-tiff-7d767f65460907a5d2fa5e47fce28277.dll",
-      "fileName": "./tiff-7d767f65460907a5d2fa5e47fce28277.dll",
+      "SPDXID": "SPDXRef-File-22-tiff-bb811e0d8708ee7a0f2bdfdea67ef0bc.dll",
+      "fileName": "./tiff-bb811e0d8708ee7a0f2bdfdea67ef0bc.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "bb59beefb81744e2874251c84db8ae67c466335d"
+          "checksumValue": "aac62064854327a766f62722d8b2ff3d21892cf5"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "5f21bd615ae41da0eb7981d4d4e4c1c2d51aab802ab9876127b506b3952145f5"
+          "checksumValue": "d65e9118b9b48ab6bbb54a30f72f39b2acbfe197dc3f9136f126565155323634"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "715796363e3abe30430885885ec3e59f12aebcb5abc59d30d2ed0bd2d7c895ad92ea27d54ded38a6893f6afe904c02ff4a6e6226aaf94d17397da0b80c0ad7fa"
+          "checksumValue": "93c41c267142ac5eef6372adfb0d3811228718bfee6e627f8617510685348bd895b2312dae3180b4551f4f570cb9df4f6191b4b5520712667fb1c7ea074e09f3"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\tiff-7d767f65460907a5d2fa5e47fce28277.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\tiff-bb811e0d8708ee7a0f2bdfdea67ef0bc.dll"
     },
     {
-      "SPDXID": "SPDXRef-File-23-zlib1-4a4bd107f55564b96590aed75e0057ea.dll",
-      "fileName": "./zlib1-4a4bd107f55564b96590aed75e0057ea.dll",
+      "SPDXID": "SPDXRef-File-23-z-be29236fe53451bd4768a6900713c673.dll",
+      "fileName": "./z-be29236fe53451bd4768a6900713c673.dll",
       "fileTypes": [
         "BINARY"
       ],
       "checksums": [
         {
           "algorithm": "SHA1",
-          "checksumValue": "99959a1c26f4f00a905d4f64f49429d8f2e3acf3"
+          "checksumValue": "761b90e986a5043a6a2079e81323c9b419f4203a"
         },
         {
           "algorithm": "SHA256",
-          "checksumValue": "4a4bd107f55564b96590aed75e0057ea0b0f2e76bed3aed7bc54b18c35806e21"
+          "checksumValue": "be29236fe53451bd4768a6900713c673c11297ed39bc02b826bca5c80394f87f"
         },
         {
           "algorithm": "SHA512",
-          "checksumValue": "6f16e3f28d2bce925226fed23988d29c42b417197faeff59420cd9323a78ffa6dd8f7cba805336988e008362f1aaad71db2232994da6887ee58bb5057283eec5"
+          "checksumValue": "64496dba2c514466f0755fe261ad1682130ae33b269c919d964dea0e8185668f3b70d4ea7ce81625b249bbf83ad8e937dff9fc894508a1d1f484def692376bd2"
         }
       ],
-      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\zlib1-4a4bd107f55564b96590aed75e0057ea.dll"
+      "comment": "File location: C:\\dev\\py_dev\\hydromt_fiat\\.pixi\\envs\\default\\Lib\\site-packages\\pyogrio.libs\\z-be29236fe53451bd4768a6900713c673.dll"
     },
     {
       "SPDXID": "SPDXRef-File-24-jpeg62-6af98f759afc6cea2ea01a24bea0bc98.dll",
@@ -2644,10 +2644,10 @@
     {
       "SPDXID": "SPDXRef-3-geopandas",
       "name": "geopandas",
-      "versionInfo": "1.1.3",
+      "versionInfo": "1.1.4",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Person: Kelsey Jordahl (kjordahl@alum.mit.edu)",
-      "downloadLocation": "https://pypi.org/project/geopandas/1.1.3/#files",
+      "downloadLocation": "https://pypi.org/project/geopandas/1.1.4/#files",
       "filesAnalyzed": false,
       "homepage": "https://geopandas.org",
       "licenseConcluded": "BSD-3-Clause",
@@ -2664,12 +2664,12 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/geopandas@1.1.3"
+          "referenceLocator": "pkg:pypi/geopandas@1.1.4"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceType": "cpe23Type",
-          "referenceLocator": "cpe:2.3:a:kelsey_jordahl:geopandas:1.1.3:*:*:*:*:*:*:*"
+          "referenceLocator": "cpe:2.3:a:kelsey_jordahl:geopandas:1.1.4:*:*:*:*:*:*:*"
         }
       ]
     },
@@ -2728,24 +2728,18 @@
     {
       "SPDXID": "SPDXRef-5-pyogrio",
       "name": "pyogrio",
-      "versionInfo": "0.12.1",
+      "versionInfo": "0.13.0",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Organization: pyogrio contributors Brendan C. (bcward@astutespruce.com)",
-      "downloadLocation": "https://pypi.org/project/pyogrio/0.12.1/#files",
+      "downloadLocation": "https://pypi.org/project/pyogrio/0.13.0/#files",
       "filesAnalyzed": false,
       "homepage": "https://pyogrio.readthedocs.io/",
-      "checksums": [
-        {
-          "algorithm": "SHA256",
-          "checksumValue": "5c4735235ca0d8dcdb4ecd69bd73e66762d161bce913b10d4458a18137cc7062"
-        }
-      ],
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "NOASSERTION",
       "licenseComments": "pyogrio declares MIT License\n\nCopyright (c) 2020-2024 Brendan C. Ward and pyogrio contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n which is not currently a valid SPDX License identifier or expression.",
       "copyrightText": "NOASSERTION",
       "summary": "Vectorized spatial vector file format I/O using GDAL/OGR",
-      "releaseDate": "2025-11-28T19:02:54Z",
+      "releaseDate": "2023-01-19T23:44:28Z",
       "externalRefs": [
         {
           "referenceCategory": "OTHER",
@@ -2755,12 +2749,12 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/pyogrio@0.12.1"
+          "referenceLocator": "pkg:pypi/pyogrio@0.13.0"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceType": "cpe23Type",
-          "referenceLocator": "cpe:2.3:a:pyogrio_contributors_brendan_c.:pyogrio:0.12.1:*:*:*:*:*:*:*"
+          "referenceLocator": "cpe:2.3:a:pyogrio_contributors_brendan_c.:pyogrio:0.13.0:*:*:*:*:*:*:*"
         }
       ]
     },
@@ -3174,22 +3168,22 @@
     {
       "SPDXID": "SPDXRef-16-click",
       "name": "click",
-      "versionInfo": "8.4.1",
+      "versionInfo": "8.4.2",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "NOASSERTION",
-      "downloadLocation": "https://pypi.org/project/click/8.4.1/#files",
+      "downloadLocation": "https://pypi.org/project/click/8.4.2/#files",
       "filesAnalyzed": false,
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "482be17c6991b8c19c5429a1e995d9b0efdbb63172824c41f99965dc0ade8ec2"
+          "checksumValue": "e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76"
         }
       ],
       "licenseConcluded": "BSD-3-Clause",
       "licenseDeclared": "BSD-3-Clause",
       "copyrightText": "NOASSERTION",
       "summary": "Composable command line interface toolkit",
-      "releaseDate": "2026-05-22T04:08:35Z",
+      "releaseDate": "2026-06-24T17:45:13Z",
       "externalRefs": [
         {
           "referenceCategory": "OTHER",
@@ -3219,7 +3213,7 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/click@8.4.1"
+          "referenceLocator": "pkg:pypi/click@8.4.2"
         }
       ]
     },
@@ -4204,23 +4198,23 @@
     {
       "SPDXID": "SPDXRef-41-typing-extensions",
       "name": "typing-extensions",
-      "versionInfo": "4.15.0",
+      "versionInfo": "4.16.0",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Organization: Guido van Jukka ukasz Michael (levkivskyi@gmail.com)",
-      "downloadLocation": "https://pypi.org/project/typing-extensions/4.15.0/#files",
+      "downloadLocation": "https://pypi.org/project/typing-extensions/4.16.0/#files",
       "filesAnalyzed": false,
       "homepage": "https://github.com/python/typing_extensions",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
+          "checksumValue": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
         }
       ],
       "licenseConcluded": "PSF-2.0",
       "licenseDeclared": "PSF-2.0",
       "copyrightText": "NOASSERTION",
       "summary": "Backported and Experimental Type Hints for Python 3.9+",
-      "releaseDate": "2025-08-25T13:49:24Z",
+      "releaseDate": "2026-07-02T08:40:04Z",
       "externalRefs": [
         {
           "referenceCategory": "OTHER",
@@ -4250,12 +4244,12 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/typing-extensions@4.15.0"
+          "referenceLocator": "pkg:pypi/typing-extensions@4.16.0"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceType": "cpe23Type",
-          "referenceLocator": "cpe:2.3:a:guido_van_jukka_ukasz_michael:typing-extensions:4.15.0:*:*:*:*:*:*:*"
+          "referenceLocator": "cpe:2.3:a:guido_van_jukka_ukasz_michael:typing-extensions:4.16.0:*:*:*:*:*:*:*"
         }
       ]
     },
@@ -4443,16 +4437,16 @@
     {
       "SPDXID": "SPDXRef-46-pyflwdir",
       "name": "pyflwdir",
-      "versionInfo": "0.5.11",
+      "versionInfo": "0.5.12",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Person: Dirk Eilander (dirk.eilander@deltares.nl)",
-      "downloadLocation": "https://pypi.org/project/pyflwdir/0.5.11/#files",
+      "downloadLocation": "https://pypi.org/project/pyflwdir/0.5.12/#files",
       "filesAnalyzed": false,
       "homepage": "https://github.com/Deltares/pyflwdir",
       "checksums": [
         {
           "algorithm": "SHA256",
-          "checksumValue": "3813f208c78c0b9851c3a7cd032a62e3139275ac7f46a80e36bb9dc3cc47ebcf"
+          "checksumValue": "0e1b292fb6671b32d502f0c1425b5205b4bce73aee9c0f49c8b664accd615438"
         }
       ],
       "licenseConcluded": "MIT",
@@ -4460,7 +4454,7 @@
       "licenseComments": "pyflwdir declares MIT License which is not currently a valid SPDX License identifier or expression.",
       "copyrightText": "NOASSERTION",
       "summary": "Fast methods to work with hydro- and topography data in pure Python.",
-      "releaseDate": "2026-04-21T10:00:07Z",
+      "releaseDate": "2026-07-01T08:53:31Z",
       "externalRefs": [
         {
           "referenceCategory": "OTHER",
@@ -4470,12 +4464,12 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/pyflwdir@0.5.11"
+          "referenceLocator": "pkg:pypi/pyflwdir@0.5.12"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceType": "cpe23Type",
-          "referenceLocator": "cpe:2.3:a:dirk_eilander:pyflwdir:0.5.11:*:*:*:*:*:*:*"
+          "referenceLocator": "cpe:2.3:a:dirk_eilander:pyflwdir:0.5.12:*:*:*:*:*:*:*"
         }
       ]
     },
@@ -4531,10 +4525,10 @@
     {
       "SPDXID": "SPDXRef-48-pystac",
       "name": "pystac",
-      "versionInfo": "1.14.3",
+      "versionInfo": "1.15.1",
       "primaryPackagePurpose": "LIBRARY",
       "supplier": "Organization: Rob Emanuele Jon Duckworth (duckontheweb@gmail.com)",
-      "downloadLocation": "https://pypi.org/project/pystac/1.14.3/#files",
+      "downloadLocation": "https://pypi.org/project/pystac/1.15.1/#files",
       "filesAnalyzed": false,
       "licenseConcluded": "Apache-2.0",
       "licenseDeclared": "Apache-2.0",
@@ -4570,17 +4564,1170 @@
         {
           "referenceCategory": "PACKAGE-MANAGER",
           "referenceType": "purl",
-          "referenceLocator": "pkg:pypi/pystac@1.14.3"
+          "referenceLocator": "pkg:pypi/pystac@1.15.1"
         },
         {
           "referenceCategory": "SECURITY",
           "referenceType": "cpe23Type",
-          "referenceLocator": "cpe:2.3:a:rob_emanuele_jon_duckworth:pystac:1.14.3:*:*:*:*:*:*:*"
+          "referenceLocator": "cpe:2.3:a:rob_emanuele_jon_duckworth:pystac:1.15.1:*:*:*:*:*:*:*"
         }
       ]
     },
     {
-      "SPDXID": "SPDXRef-49-rasterio",
+      "SPDXID": "SPDXRef-49-pystac-core",
+      "name": "pystac-core",
+      "versionInfo": "1.15.1",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "Organization: Rob Emanuele Jon Duckworth (duckontheweb@gmail.com)",
+      "downloadLocation": "https://pypi.org/project/pystac-core/1.15.1/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Core functionality for PySTAC without extensions. Most users will want to use pystac, not this package",
+      "releaseDate": "2026-06-19T14:59:45Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-core@1.15.1"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:rob_emanuele_jon_duckworth:pystac-core:1.15.1:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-50-pystac-ext-classification",
+      "name": "pystac-ext-classification",
+      "versionInfo": "2.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-classification/2.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "fe8c94fd83b2402cb314f608e835d45d70397614928d6cbb29b12d4728586abd"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Classification extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:40Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-classification@2.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-51-pystac-ext-datacube",
+      "name": "pystac-ext-datacube",
+      "versionInfo": "2.2.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-datacube/2.2.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "823538db9751b6e7312a06ec9b6a74f98561830664f45ed43908bea73f624f16"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Datacube extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:42Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-datacube@2.2.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-52-pystac-ext-eo",
+      "name": "pystac-ext-eo",
+      "versionInfo": "1.1.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-eo/1.1.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "ca367465d37bc65d9a4c0cd54c4a04a45deb9904d55ae2c1f37d11734cc38ca0"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Electro-Optical extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:46Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-eo@1.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-53-pystac-ext-file",
+      "name": "pystac-ext-file",
+      "versionInfo": "2.1.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-file/2.1.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "90b91c82155f763143de2daf1aec37dd0e7f98da7f39f6636a4ede590be9f322"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "File extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:52Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-file@2.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-54-pystac-ext-grid",
+      "name": "pystac-ext-grid",
+      "versionInfo": "1.1.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-grid/1.1.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Grid extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:52Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-grid@1.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-55-pystac-ext-item-assets",
+      "name": "pystac-ext-item-assets",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-item-assets/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4dd61fcaeb861f1bd0c77299d9e3332865bfded44e061206fc0bb9fd8ce8d156"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Item Assets extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:54Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-item-assets@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-56-pystac-ext-label",
+      "name": "pystac-ext-label",
+      "versionInfo": "1.0.1",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-label/1.0.1/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "9b089b290ce953916cd087a86d108262cf74ca39d0f00e27af6eeaf1ab2be167"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Label extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:50Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-label@1.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-57-pystac-ext-mgrs",
+      "name": "pystac-ext-mgrs",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-mgrs/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "4efe67b4dac4fb7c3057985a056e59275371c535d84c82d0a55f110f9144f9f0"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "MGRS extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:53Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-mgrs@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-58-pystac-ext-mlm",
+      "name": "pystac-ext-mlm",
+      "versionInfo": "1.4.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-mlm/1.4.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Machine Learning Model extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:53Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-mlm@1.4.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-59-pystac-ext-pointcloud",
+      "name": "pystac-ext-pointcloud",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-pointcloud/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3bc688b3da93dc0dbf91b357026eb7648ec3e49a3008003859648b80dfb55732"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Point Cloud extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:58Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-pointcloud@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-60-pystac-ext-projection",
+      "name": "pystac-ext-projection",
+      "versionInfo": "2.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-projection/2.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "892e9852a1a81cf1be1b79e3ad52e9b11f780143d3a75d67cde3e4fd31ec83e4"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Projection extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:00Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-projection@2.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-61-pystac-ext-raster",
+      "name": "pystac-ext-raster",
+      "versionInfo": "1.1.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-raster/1.1.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "07c312ae956d70ccdb1da7af67fc92793c2546ca8e26ca384013ebf5c674b410"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Raster extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:04Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-raster@1.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-62-pystac-ext-render",
+      "name": "pystac-ext-render",
+      "versionInfo": "2.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-render/2.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "69c3a8307d9528b8ae5baadde76dae9e546c19c1f4210a57daf235f8e9d9e427"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Render extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:59Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-render@2.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-63-pystac-ext-sar",
+      "name": "pystac-ext-sar",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-sar/1.0.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "SAR extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:59Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-sar@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-64-pystac-ext-sat",
+      "name": "pystac-ext-sat",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-sat/1.0.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Satellite extension for PySTAC",
+      "releaseDate": "2026-06-25T15:49:59Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-sat@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-65-pystac-ext-scientific",
+      "name": "pystac-ext-scientific",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-scientific/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "1f78efcd34a4b4344c70d80ddcde70785815e738455e3c1d35b5e843ca671207"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Scientific extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:05Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-scientific@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-66-pystac-ext-storage",
+      "name": "pystac-ext-storage",
+      "versionInfo": "2.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-storage/2.0.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Storage extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:05Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-storage@2.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-67-pystac-ext-table",
+      "name": "pystac-ext-table",
+      "versionInfo": "1.2.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-table/1.2.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "461e8475eaee81190c36db818150e0b24d14d46b021f063a928ff6a0ee77a971"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Table extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:08Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-table@1.2.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-68-pystac-ext-timestamps",
+      "name": "pystac-ext-timestamps",
+      "versionInfo": "1.1.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-timestamps/1.1.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Timestamps extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:08Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-timestamps@1.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-69-pystac-ext-version",
+      "name": "pystac-ext-version",
+      "versionInfo": "1.2.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-version/1.2.0/#files",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Version extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:08Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-version@1.2.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-70-pystac-ext-view",
+      "name": "pystac-ext-view",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-view/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "3000615569d1826093a6b231778e7ddb1afb106dd516e8029a0083bfcd166d7d"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "View extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:10Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-view@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-71-pystac-ext-xarray-assets",
+      "name": "pystac-ext-xarray-assets",
+      "versionInfo": "1.0.0",
+      "primaryPackagePurpose": "LIBRARY",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pystac-ext-xarray-assets/1.0.0/#files",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "a31e90e7e9bc5ae191e7449df28c39857c818e8c1cf2c09a2eceaa7c6e13241c"
+        }
+      ],
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "summary": "Xarray Assets extension for PySTAC",
+      "releaseDate": "2026-06-25T15:50:17Z",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "documentation",
+          "referenceLocator": "https://pystac.readthedocs.io"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "vcs",
+          "referenceLocator": "https://github.com/stac-utils/pystac"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "issue-tracker",
+          "referenceLocator": "https://github.com/stac-utils/pystac/issues"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "log",
+          "referenceLocator": "https://github.com/stac-utils/pystac/blob/main/CHANGELOG.md"
+        },
+        {
+          "referenceCategory": "OTHER",
+          "referenceType": "other",
+          "referenceLocator": "https://github.com/radiantearth/stac-spec/discussions/categories/stac-software"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pystac-ext-xarray-assets@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-72-rasterio",
       "name": "rasterio",
       "versionInfo": "1.5.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -4622,7 +5769,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-50-attrs",
+      "SPDXID": "SPDXRef-73-attrs",
       "name": "attrs",
       "versionInfo": "26.1.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -4679,7 +5826,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-51-cligj",
+      "SPDXID": "SPDXRef-74-cligj",
       "name": "cligj",
       "versionInfo": "0.7.2",
       "primaryPackagePurpose": "LIBRARY",
@@ -4713,7 +5860,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-52-pyparsing",
+      "SPDXID": "SPDXRef-75-pyparsing",
       "name": "pyparsing",
       "versionInfo": "3.3.2",
       "primaryPackagePurpose": "LIBRARY",
@@ -4756,7 +5903,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-53-rioxarray",
+      "SPDXID": "SPDXRef-76-rioxarray",
       "name": "rioxarray",
       "versionInfo": "0.22.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -4800,7 +5947,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-54-xarray",
+      "SPDXID": "SPDXRef-77-xarray",
       "name": "xarray",
       "versionInfo": "2026.4.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -4853,7 +6000,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-55-tenacity",
+      "SPDXID": "SPDXRef-78-tenacity",
       "name": "tenacity",
       "versionInfo": "9.1.4",
       "primaryPackagePurpose": "LIBRARY",
@@ -4887,7 +6034,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-56-tomli",
+      "SPDXID": "SPDXRef-79-tomli",
       "name": "tomli",
       "versionInfo": "2.4.1",
       "primaryPackagePurpose": "LIBRARY",
@@ -4925,7 +6072,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-57-tomli-w",
+      "SPDXID": "SPDXRef-80-tomli-w",
       "name": "tomli-w",
       "versionInfo": "1.2.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -4964,7 +6111,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-58-universal-pathlib",
+      "SPDXID": "SPDXRef-81-universal-pathlib",
       "name": "universal-pathlib",
       "versionInfo": "0.3.10",
       "primaryPackagePurpose": "LIBRARY",
@@ -5002,7 +6149,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-59-pathlib-abc",
+      "SPDXID": "SPDXRef-82-pathlib-abc",
       "name": "pathlib-abc",
       "versionInfo": "0.5.2",
       "primaryPackagePurpose": "LIBRARY",
@@ -5041,7 +6188,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-60-xmltodict",
+      "SPDXID": "SPDXRef-83-xmltodict",
       "name": "xmltodict",
       "versionInfo": "1.0.4",
       "primaryPackagePurpose": "LIBRARY",
@@ -5074,7 +6221,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-61-xugrid",
+      "SPDXID": "SPDXRef-84-xugrid",
       "name": "xugrid",
       "versionInfo": "0.15.3",
       "primaryPackagePurpose": "LIBRARY",
@@ -5106,7 +6253,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-62-zarr",
+      "SPDXID": "SPDXRef-85-zarr",
       "name": "zarr",
       "versionInfo": "3.2.1",
       "primaryPackagePurpose": "LIBRARY",
@@ -5159,7 +6306,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-63-donfig",
+      "SPDXID": "SPDXRef-86-donfig",
       "name": "donfig",
       "versionInfo": "0.8.1.post1",
       "primaryPackagePurpose": "LIBRARY",
@@ -5187,7 +6334,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-64-google-crc32c",
+      "SPDXID": "SPDXRef-87-google-crc32c",
       "name": "google-crc32c",
       "versionInfo": "1.8.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5220,7 +6367,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-65-numcodecs",
+      "SPDXID": "SPDXRef-88-numcodecs",
       "name": "numcodecs",
       "versionInfo": "0.16.5",
       "primaryPackagePurpose": "LIBRARY",
@@ -5263,7 +6410,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-66-minio",
+      "SPDXID": "SPDXRef-89-minio",
       "name": "minio",
       "versionInfo": "7.2.20",
       "primaryPackagePurpose": "LIBRARY",
@@ -5296,7 +6443,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-67-argon2-cffi",
+      "SPDXID": "SPDXRef-90-argon2-cffi",
       "name": "argon2-cffi",
       "versionInfo": "25.1.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5353,7 +6500,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-68-argon2-cffi-bindings",
+      "SPDXID": "SPDXRef-91-argon2-cffi-bindings",
       "name": "argon2-cffi-bindings",
       "versionInfo": "25.1.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5405,7 +6552,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-69-cffi",
+      "SPDXID": "SPDXRef-92-cffi",
       "name": "cffi",
       "versionInfo": "2.0.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5467,7 +6614,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-70-pycparser",
+      "SPDXID": "SPDXRef-93-pycparser",
       "name": "pycparser",
       "versionInfo": "3.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5500,7 +6647,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-71-pycryptodome",
+      "SPDXID": "SPDXRef-94-pycryptodome",
       "name": "pycryptodome",
       "versionInfo": "3.23.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5544,7 +6691,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-72-osmnx",
+      "SPDXID": "SPDXRef-95-osmnx",
       "name": "osmnx",
       "versionInfo": "2.1.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5591,7 +6738,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-73-networkx",
+      "SPDXID": "SPDXRef-96-networkx",
       "name": "networkx",
       "versionInfo": "3.6.1",
       "primaryPackagePurpose": "LIBRARY",
@@ -5639,7 +6786,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-74-pint",
+      "SPDXID": "SPDXRef-97-pint",
       "name": "pint",
       "versionInfo": "0.25.3",
       "primaryPackagePurpose": "LIBRARY",
@@ -5672,7 +6819,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-75-flexcache",
+      "SPDXID": "SPDXRef-98-flexcache",
       "name": "flexcache",
       "versionInfo": "0.3",
       "primaryPackagePurpose": "LIBRARY",
@@ -5706,7 +6853,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-76-flexparser",
+      "SPDXID": "SPDXRef-99-flexparser",
       "name": "flexparser",
       "versionInfo": "0.4",
       "primaryPackagePurpose": "LIBRARY",
@@ -5739,7 +6886,7 @@
       ]
     },
     {
-      "SPDXID": "SPDXRef-77-tomlkit",
+      "SPDXID": "SPDXRef-100-tomlkit",
       "name": "tomlkit",
       "versionInfo": "0.15.0",
       "primaryPackagePurpose": "LIBRARY",
@@ -5789,82 +6936,82 @@
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-1-Lerc-5967721b5189b41a3b226e8479ff352f.dll",
+      "relatedSpdxElement": "SPDXRef-File-1-Lerc-c10f5743f8921c17b85576614838c379.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-2-gdal-8a2204e692549e77b1635a2695862dde.dll",
+      "relatedSpdxElement": "SPDXRef-File-2-gdal-9fa6a5301668010b1474299a888c26da.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-3-geos-175f2b7698e9509370f0180e0a34676d.dll",
+      "relatedSpdxElement": "SPDXRef-File-3-geos-bda2e4a35fc87c3cb436d3add2953ffb.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-4-geos-c-6be5fa556af85159ee5bb17cd4fd7aac.dll",
+      "relatedSpdxElement": "SPDXRef-File-4-geos-c-05968ceb6a9aade9961ca529050ada59.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-5-geotiff-e1dd7339cb7a0cfee71f73cd7ac18995.dll",
+      "relatedSpdxElement": "SPDXRef-File-5-geotiff-0f08c58b982b142224f2707f8e49d843.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-6-iconv-2-5d1f5f977481e6b9ad37b9e0b0bf88c3.dll",
+      "relatedSpdxElement": "SPDXRef-File-6-iconv-2-ec6407dc8b081563527a51db783233cc.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-7-jpeg62-8711927b5b22d179640c6a60fd4223b6.dll",
+      "relatedSpdxElement": "SPDXRef-File-7-jpeg62-c79c71e9654a1a62b02167aa47efcfc1.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-8-json-c-a502abaec80061b0b047fa0b9a7075a6.dll",
+      "relatedSpdxElement": "SPDXRef-File-8-json-c-23e40dddc89c5be9375747232d8f35fb.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-9-libcrypto-3-x64-f7c10d9f39fbc0b16dfcc253857aae36.dll",
+      "relatedSpdxElement": "SPDXRef-File-9-libcrypto-3-x64-7b8fb6ee347e3e4ee5e92cf5f7691e7d.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-10-libcurl-a8120100cc1c442072cd8cd3c7c93bda.dll",
+      "relatedSpdxElement": "SPDXRef-File-10-libcurl-c3697df4ff70334a5320d2218a143c97.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-11-libexpat-348b0f32a146eef97ac5bbe9fd02c895.dll",
+      "relatedSpdxElement": "SPDXRef-File-11-libexpat-6d13c47b98550978af0962920611301e.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-12-liblzma-3e02244262ff433c94c4ff8ff0b3be78.dll",
+      "relatedSpdxElement": "SPDXRef-File-12-liblzma-72d8c4b09cb84a63a20b48cc6de0e301.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-13-libpng16-ce2e5d1abb1280a70616a07043761951.dll",
+      "relatedSpdxElement": "SPDXRef-File-13-libpng16-51f4f376c28be4f3fee815c154d2d249.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-14-libssl-3-x64-a8e1a24e51b982b8b0aa713097e72006.dll",
+      "relatedSpdxElement": "SPDXRef-File-14-libssl-3-x64-ce0f27858f99fd8e7c41e6e39bd2f7b6.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-15-libxml2-9b236bf942dec39cc64682b380dfc3e5.dll",
+      "relatedSpdxElement": "SPDXRef-File-15-libxml2-3983679bc2aba685351f42b9f58ab67c.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-16-minizip-c2307cfde0ca8af31d29873c41c59b1a.dll",
+      "relatedSpdxElement": "SPDXRef-File-16-minizip-09a8b95a475f7786cff4765c06464595.dll",
       "relationshipType": "CONTAINS"
     },
     {
@@ -5874,32 +7021,32 @@
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-18-proj-9-7250f1351d1e8efcc7b5402db16bdc75.dll",
+      "relatedSpdxElement": "SPDXRef-File-18-proj-9-6329b13d4c90abfce1c9dc07fa75284e.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-19-qhull-r-f82109cb99ce9f6554e2c3d1f047e89c.dll",
+      "relatedSpdxElement": "SPDXRef-File-19-qhull-r-a82503bf44e8253baabe69c074cb5ce3.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-20-spatialite-56df6e592091ce6ae4d75e6b29b05cf6.dll",
+      "relatedSpdxElement": "SPDXRef-File-20-spatialite-d8c2d6ee9614ee788aabd66cd9557079.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-21-sqlite3-630a19aac7bad91bd37dc96a006aa5c8.dll",
+      "relatedSpdxElement": "SPDXRef-File-21-sqlite3-a62ef28d840863c87680b78bee9c5ae7.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-22-tiff-7d767f65460907a5d2fa5e47fce28277.dll",
+      "relatedSpdxElement": "SPDXRef-File-22-tiff-bb811e0d8708ee7a0f2bdfdea67ef0bc.dll",
       "relationshipType": "CONTAINS"
     },
     {
       "spdxElementId": "SPDXRef-5-pyogrio",
-      "relatedSpdxElement": "SPDXRef-File-23-zlib1-4a4bd107f55564b96590aed75e0057ea.dll",
+      "relatedSpdxElement": "SPDXRef-File-23-z-be29236fe53451bd4768a6900713c673.dll",
       "relationshipType": "CONTAINS"
     },
     {
@@ -6564,237 +7711,462 @@
     },
     {
       "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-49-pystac-core",
       "relatedSpdxElement": "SPDXRef-9-python-dateutil",
       "relationshipType": "DEPENDS_ON"
     },
     {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-50-pystac-ext-classification",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-50-pystac-ext-classification",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-51-pystac-ext-datacube",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-51-pystac-ext-datacube",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-52-pystac-ext-eo",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-52-pystac-ext-eo",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-53-pystac-ext-file",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-53-pystac-ext-file",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-54-pystac-ext-grid",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-54-pystac-ext-grid",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-55-pystac-ext-item-assets",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-55-pystac-ext-item-assets",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-56-pystac-ext-label",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-56-pystac-ext-label",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-57-pystac-ext-mgrs",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-57-pystac-ext-mgrs",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-58-pystac-ext-mlm",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-58-pystac-ext-mlm",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-59-pystac-ext-pointcloud",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-59-pystac-ext-pointcloud",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-60-pystac-ext-projection",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-60-pystac-ext-projection",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-61-pystac-ext-raster",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-61-pystac-ext-raster",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-62-pystac-ext-render",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-62-pystac-ext-render",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-63-pystac-ext-sar",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-63-pystac-ext-sar",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-64-pystac-ext-sat",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-64-pystac-ext-sat",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-65-pystac-ext-scientific",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-65-pystac-ext-scientific",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-66-pystac-ext-storage",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-66-pystac-ext-storage",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-67-pystac-ext-table",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-67-pystac-ext-table",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-68-pystac-ext-timestamps",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-68-pystac-ext-timestamps",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-69-pystac-ext-version",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-69-pystac-ext-version",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-70-pystac-ext-view",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-70-pystac-ext-view",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-48-pystac",
+      "relatedSpdxElement": "SPDXRef-71-pystac-ext-xarray-assets",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
+      "spdxElementId": "SPDXRef-71-pystac-ext-xarray-assets",
+      "relatedSpdxElement": "SPDXRef-49-pystac-core",
+      "relationshipType": "DEPENDS_ON"
+    },
+    {
       "spdxElementId": "SPDXRef-14-hydromt",
       "relatedSpdxElement": "SPDXRef-24-pyyaml",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-49-rasterio",
+      "relatedSpdxElement": "SPDXRef-72-rasterio",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-80-Lerc-7cdbc54dfa89d962ee8bd80bc004a914.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-81-freexl-1-42fcc8e8097aaea5819be7cc151f1604.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-82-gdal-360e5d11b6a02621294737b98153f3c0.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-83-geos-88ee7acd56d16cd0b8bc3b65cfbf1fe7.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-84-geos-c-8f6dddb1707598fe32c85d1a31571b6d.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-85-geotiff-3f3eb5f2008bdf8669990f0a50b4f250.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-86-gif-047ab6eab54a3d9cec30d8258eb65ee3.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-87-hdf5-410e5a1d52c7f8e53a092375c2b0d9a0.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-88-hdf5-hl-02110dfb897123c7a83ca65944e6eb8c.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-89-iconv-2-f6a9f9697c1d3624dff736d793670975.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-90-jpeg62-5e852952c54eb4fa3ce9869ab22cda34.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-91-json-c-1f637ee91c49e5d2d22eec26b950b75e.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-92-libcrypto-3-x64-24efc0e281185bea19397e4126bab770.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-93-libcurl-0689d2121758a5e30a8762339ebc3cc9.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-94-libexpat-3230d82405a76c244938d73d8cdc9cbc.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-95-liblzma-b4ca3e2f60afbc292e9519d9fa5a02d0.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-96-libpng16-f054c0d9835511bc57b774698fad2783.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-97-libpq-733b299424e10c94165f27199c19b128.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-98-libsharpyuv-2ad10baafcb64f643aec1a3e483fe7d1.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-99-libssl-3-x64-d3e8a793ae15a5d3862f2995bbb056f2.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-100-libwebp-2383c6ec1c7dc241cbfb6e9e5442b459.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-101-libxml2-cd5c08e5e53cc3e3c9e2a5a71c31c513.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-102-minizip-e3a8dd628991843b1fae8dde28ff4222.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-103-msvcp140-2a7008da6f9aae43c7a434835dcaf31e.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-104-netcdf-479d4e63c16800a04764f87bf93c034c.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-105-openjp2-9bbda36af72b7118177b8a7889be7e41.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-106-pcre2-8-84af85d3b6ffdd48db5201eb2ca0988c.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-107-proj-9-1e8ff6fdaef06b192a61d4568e6d1013.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-108-qhull-r-17cc67bd3b00ba5df17d7612ae041d76.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-109-spatialite-e379e7518ce70153a626abc3882fdb0b.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-110-sqlite3-4dc2715c27dc17b6f0b8f3e9c29fbe44.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-111-szip-75194b7211b9e60aa45eacbb2793e4a1.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-112-tiff-48fd8518ac7eda8c24f372d147e54850.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-113-tinyxml2-4237dcff32b89d11572b01fa6a30778d.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-114-zlib1-ec9e22149d83f8cc3797c1ce79270bf7.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-File-115-zstd-d821511e98f820b90f34131f19b1e391.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-2-affine",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
-      "relatedSpdxElement": "SPDXRef-50-attrs",
+      "spdxElementId": "SPDXRef-72-rasterio",
+      "relatedSpdxElement": "SPDXRef-73-attrs",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-6-certifi",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-16-click",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
-      "relatedSpdxElement": "SPDXRef-51-cligj",
+      "spdxElementId": "SPDXRef-72-rasterio",
+      "relatedSpdxElement": "SPDXRef-74-cligj",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-51-cligj",
+      "spdxElementId": "SPDXRef-74-cligj",
       "relatedSpdxElement": "SPDXRef-16-click",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-72-rasterio",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-49-rasterio",
-      "relatedSpdxElement": "SPDXRef-52-pyparsing",
+      "spdxElementId": "SPDXRef-72-rasterio",
+      "relatedSpdxElement": "SPDXRef-75-pyparsing",
       "relationshipType": "DEPENDS_ON"
     },
     {
@@ -6804,46 +8176,46 @@
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-53-rioxarray",
+      "relatedSpdxElement": "SPDXRef-76-rioxarray",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-53-rioxarray",
+      "spdxElementId": "SPDXRef-76-rioxarray",
       "relatedSpdxElement": "SPDXRef-7-packaging",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-53-rioxarray",
-      "relatedSpdxElement": "SPDXRef-49-rasterio",
+      "spdxElementId": "SPDXRef-76-rioxarray",
+      "relatedSpdxElement": "SPDXRef-72-rasterio",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-53-rioxarray",
-      "relatedSpdxElement": "SPDXRef-54-xarray",
+      "spdxElementId": "SPDXRef-76-rioxarray",
+      "relatedSpdxElement": "SPDXRef-77-xarray",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-54-xarray",
+      "spdxElementId": "SPDXRef-77-xarray",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-54-xarray",
+      "spdxElementId": "SPDXRef-77-xarray",
       "relatedSpdxElement": "SPDXRef-7-packaging",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-54-xarray",
+      "spdxElementId": "SPDXRef-77-xarray",
       "relatedSpdxElement": "SPDXRef-8-pandas",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-53-rioxarray",
+      "spdxElementId": "SPDXRef-76-rioxarray",
       "relatedSpdxElement": "SPDXRef-12-pyproj",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-53-rioxarray",
+      "spdxElementId": "SPDXRef-76-rioxarray",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
@@ -6859,216 +8231,216 @@
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-55-tenacity",
+      "relatedSpdxElement": "SPDXRef-78-tenacity",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-56-tomli",
+      "relatedSpdxElement": "SPDXRef-79-tomli",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-57-tomli-w",
+      "relatedSpdxElement": "SPDXRef-80-tomli-w",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-58-universal-pathlib",
+      "relatedSpdxElement": "SPDXRef-81-universal-pathlib",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-54-xarray",
+      "relatedSpdxElement": "SPDXRef-77-xarray",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-60-xmltodict",
+      "relatedSpdxElement": "SPDXRef-83-xmltodict",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-61-xugrid",
+      "relatedSpdxElement": "SPDXRef-84-xugrid",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-61-xugrid",
+      "spdxElementId": "SPDXRef-84-xugrid",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-61-xugrid",
+      "spdxElementId": "SPDXRef-84-xugrid",
       "relatedSpdxElement": "SPDXRef-8-pandas",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-61-xugrid",
+      "spdxElementId": "SPDXRef-84-xugrid",
       "relatedSpdxElement": "SPDXRef-32-pooch",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-61-xugrid",
+      "spdxElementId": "SPDXRef-84-xugrid",
       "relatedSpdxElement": "SPDXRef-47-scipy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-61-xugrid",
-      "relatedSpdxElement": "SPDXRef-54-xarray",
+      "spdxElementId": "SPDXRef-84-xugrid",
+      "relatedSpdxElement": "SPDXRef-77-xarray",
       "relationshipType": "DEPENDS_ON"
     },
     {
       "spdxElementId": "SPDXRef-14-hydromt",
-      "relatedSpdxElement": "SPDXRef-62-zarr",
+      "relatedSpdxElement": "SPDXRef-85-zarr",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
-      "relatedSpdxElement": "SPDXRef-63-donfig",
+      "spdxElementId": "SPDXRef-85-zarr",
+      "relatedSpdxElement": "SPDXRef-86-donfig",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-63-donfig",
+      "spdxElementId": "SPDXRef-86-donfig",
       "relatedSpdxElement": "SPDXRef-24-pyyaml",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
-      "relatedSpdxElement": "SPDXRef-64-google-crc32c",
+      "spdxElementId": "SPDXRef-85-zarr",
+      "relatedSpdxElement": "SPDXRef-87-google-crc32c",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-64-google-crc32c",
+      "spdxElementId": "SPDXRef-87-google-crc32c",
       "relatedSpdxElement": "SPDXRef-File-116-crc32c.dll",
       "relationshipType": "CONTAINS"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
-      "relatedSpdxElement": "SPDXRef-65-numcodecs",
+      "spdxElementId": "SPDXRef-85-zarr",
+      "relatedSpdxElement": "SPDXRef-88-numcodecs",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-65-numcodecs",
+      "spdxElementId": "SPDXRef-88-numcodecs",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-65-numcodecs",
+      "spdxElementId": "SPDXRef-88-numcodecs",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
+      "spdxElementId": "SPDXRef-85-zarr",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
+      "spdxElementId": "SPDXRef-85-zarr",
       "relatedSpdxElement": "SPDXRef-7-packaging",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-62-zarr",
+      "spdxElementId": "SPDXRef-85-zarr",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-66-minio",
-      "relatedSpdxElement": "SPDXRef-67-argon2-cffi",
+      "spdxElementId": "SPDXRef-89-minio",
+      "relatedSpdxElement": "SPDXRef-90-argon2-cffi",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-67-argon2-cffi",
-      "relatedSpdxElement": "SPDXRef-68-argon2-cffi-bindings",
+      "spdxElementId": "SPDXRef-90-argon2-cffi",
+      "relatedSpdxElement": "SPDXRef-91-argon2-cffi-bindings",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-68-argon2-cffi-bindings",
-      "relatedSpdxElement": "SPDXRef-69-cffi",
+      "spdxElementId": "SPDXRef-91-argon2-cffi-bindings",
+      "relatedSpdxElement": "SPDXRef-92-cffi",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-69-cffi",
-      "relatedSpdxElement": "SPDXRef-70-pycparser",
+      "spdxElementId": "SPDXRef-92-cffi",
+      "relatedSpdxElement": "SPDXRef-93-pycparser",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-66-minio",
+      "spdxElementId": "SPDXRef-89-minio",
       "relatedSpdxElement": "SPDXRef-6-certifi",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-66-minio",
-      "relatedSpdxElement": "SPDXRef-71-pycryptodome",
+      "spdxElementId": "SPDXRef-89-minio",
+      "relatedSpdxElement": "SPDXRef-94-pycryptodome",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-66-minio",
+      "spdxElementId": "SPDXRef-89-minio",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-66-minio",
+      "spdxElementId": "SPDXRef-89-minio",
       "relatedSpdxElement": "SPDXRef-37-urllib3",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
+      "spdxElementId": "SPDXRef-95-osmnx",
       "relatedSpdxElement": "SPDXRef-3-geopandas",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
-      "relatedSpdxElement": "SPDXRef-73-networkx",
+      "spdxElementId": "SPDXRef-95-osmnx",
+      "relatedSpdxElement": "SPDXRef-96-networkx",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
+      "spdxElementId": "SPDXRef-95-osmnx",
       "relatedSpdxElement": "SPDXRef-4-numpy",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
+      "spdxElementId": "SPDXRef-95-osmnx",
       "relatedSpdxElement": "SPDXRef-8-pandas",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
+      "spdxElementId": "SPDXRef-95-osmnx",
       "relatedSpdxElement": "SPDXRef-34-requests",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-72-osmnx",
+      "spdxElementId": "SPDXRef-95-osmnx",
       "relatedSpdxElement": "SPDXRef-13-shapely",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-74-pint",
-      "relatedSpdxElement": "SPDXRef-75-flexcache",
+      "spdxElementId": "SPDXRef-97-pint",
+      "relatedSpdxElement": "SPDXRef-98-flexcache",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-75-flexcache",
+      "spdxElementId": "SPDXRef-98-flexcache",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-74-pint",
-      "relatedSpdxElement": "SPDXRef-76-flexparser",
+      "spdxElementId": "SPDXRef-97-pint",
+      "relatedSpdxElement": "SPDXRef-99-flexparser",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-76-flexparser",
+      "spdxElementId": "SPDXRef-99-flexparser",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-74-pint",
+      "spdxElementId": "SPDXRef-97-pint",
       "relatedSpdxElement": "SPDXRef-33-platformdirs",
       "relationshipType": "DEPENDS_ON"
     },
     {
-      "spdxElementId": "SPDXRef-74-pint",
+      "spdxElementId": "SPDXRef-97-pint",
       "relatedSpdxElement": "SPDXRef-41-typing-extensions",
       "relationshipType": "DEPENDS_ON"
     }

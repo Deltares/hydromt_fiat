@@ -10,7 +10,8 @@ from hydromt_fiat.writers import write_config, write_csv, write_geoms, write_gri
 
 
 def test_write_config(tmp_path: Path, config_dummy: dict[str, Any]):
-    config_dummy["baz"]["file1"] = "tmp.txt"
+    config_dummy["hazard"]["file"] = "foo.nc"
+    config_dummy["vulnerability"]["file"] = "foo.csv"
     p = Path(tmp_path, "settings.toml")
     # Call the functions
     write_config(data=config_dummy, write_path=p)
@@ -20,7 +21,7 @@ def test_write_config(tmp_path: Path, config_dummy: dict[str, Any]):
     # Read back in and assert
     with open(p, "r") as reader:
         data = tomllib.loads(reader.read())
-    assert "foo" in data
+    assert "hazard" in data
     assert data == config_dummy
 
 

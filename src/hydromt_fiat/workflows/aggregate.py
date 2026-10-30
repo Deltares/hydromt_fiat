@@ -4,12 +4,14 @@ import logging
 import uuid
 
 import geopandas as gpd
+import xarray as xr
 from hydromt.gis import utm_crs
 
 from hydromt_fiat.utils import AREA__SQM, GEOMETRY
 
 __all__ = [
-    "aggregate_spatially",
+    "aggregate_geom_spatially",
+    "aggregate_grid",
     "prep_data_for_aggregation",
 ]
 
@@ -50,7 +52,7 @@ def prep_data_for_aggregation(
     return partial_data
 
 
-def aggregate_spatially(
+def aggregate_geom_spatially(
     output_data: gpd.GeoDataFrame,
     aggregation_areas: gpd.GeoDataFrame,
     method: str,
@@ -119,3 +121,46 @@ def aggregate_spatially(
 
     # Return the aggregation dataset
     return aggregation_areas
+
+
+def aggregate_grid(
+    output_data: xr.DataArray,
+    res: float | int,
+    method: str,
+    align: bool = False,
+) -> xr.DataArray:
+    """Aggregate gridded model output to a coarser resolution.
+
+    Parameters
+    ----------
+    output_data : xr.DataArray
+        The output data.
+    res : float | int
+        The resolution to aggregate to.
+    method : str
+        The aggregation method.
+    align : bool, optional
+        Whether to align the target transform to the resolution. By default False.
+
+    Returns
+    -------
+    xr.DataArray
+        The aggregated data.
+    """
+    # Quick check on the resolution
+    if res < abs(output_data.raster.res[0]):
+        raise ValueError(
+            f"Cannot aggregate to a smaller resolution: \
+{res} vs {abs(output_data.raster.res[0])} (data)"
+        )
+
+    # Reproject the data and align
+    aggregated = output_data.raster.reproject(
+        dst_res=(res, res),
+        dst_nodata=output_data.raster.nodata,
+        method=method,
+        align=align,
+    )
+
+    # Return the data
+    return aggregated
