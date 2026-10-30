@@ -20,7 +20,7 @@ jobs:
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11
         with:
-          pixi-version: "v0.70.1"
+          pixi-version: "0.83.0"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
@@ -74,7 +74,7 @@ jobs:
       - name: Setup pixi env
         uses: prefix-dev/setup-pixi@5185adfbffb4bd703da3010310260805d89ebb11
         with:
-          pixi-version: "v0.70.1"
+          pixi-version: "0.83.0"
           environments: test-py${{ inputs.python-version }}
           locked: false
           cache: true
