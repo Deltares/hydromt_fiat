@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import geopandas as gpd
@@ -7,6 +8,7 @@ import pytest
 import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full
+from hydromt.readers import open_nc
 
 from hydromt_fiat.utils import (
     COST__TYPE,
@@ -110,7 +112,7 @@ def vulnerability_data(global_data_catalog: DataCatalog) -> pd.DataFrame:
 def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
     vulnerability_data = vulnerability_data.transpose()
     vulnerability_data.columns = vulnerability_data.iloc[0]
-    vulnerability_data.drop(0, inplace=True)
+    vulnerability_data = vulnerability_data.drop(0)
     return vulnerability_data
 
 
@@ -142,33 +144,48 @@ def exposure_vector_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 def exposure_vector_data_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped_for_damamge.drop(
+    exposure_vector_clipped_for_damamge = exposure_vector_clipped_for_damamge.drop(
         [
             "object_id",
             "fn_damage_structure",
             "fn_damage_content",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped_for_damamge
 
 
-@pytest.fixture(scope="session")
-def vulnerability_curves_alt(model_data_path: Path) -> pd.DataFrame:
-    p = Path(model_data_path, "vulnerability", "curves_alt.csv")
+@pytest.fixture
+def vulnerability_curves_alt(model_data_path: Path) -> xr.Dataset:
+    p = Path(model_data_path, "curves_alt.nc")
     assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
-    return df
+    ds = open_nc(p)
+    assert len(ds) != 0
+    return ds
 
 
 @pytest.fixture(scope="session")
-def vulnerability_identifiers_alt(model_data_path: Path) -> pd.DataFrame:
-    p = Path(model_data_path, "vulnerability", "curves_alt_id.csv")
+def vulnerability_identifiers_alt(model_data_path: Path) -> xr.Dataset:
+    p = Path(model_data_path, "curves_alt_id.nc")
     assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
+    ds = open_nc(p)
+    assert len(ds) != 0
+    return ds
+
+
+@pytest.fixture(scope="session")
+def vulnerability_identifiers_alt_df(
+    vulnerability_identifiers_alt: xr.Dataset,
+) -> pd.DataFrame:
+    ds = vulnerability_identifiers_alt
+    # Translate to pandas dataframe and reset the multiindex
+    df = ds["curve_default"].to_dataframe().reset_index()
+
+    # Substitute the column names by generic ones
+    pattern = re.compile("(.*)_default")
+    default_col_names = [pattern.findall(item)[0] for item in df.columns]
+    df = df.rename(dict(zip(df.columns, default_col_names)), axis=1)
+    df = df.dropna(subset=CURVE, how="any")
     return df
 
 

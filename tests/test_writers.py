@@ -25,10 +25,10 @@ def test_write_config(tmp_path: Path, config_dummy: dict[str, Any]):
     assert data == config_dummy
 
 
-def test_write_csv(tmp_path: Path, vulnerability_curves: pd.DataFrame):
+def test_write_csv(tmp_path: Path):
     p = Path(tmp_path, "foo.csv")
     # Call the functions
-    write_csv(data=vulnerability_curves, write_path=p)
+    write_csv(data=pd.DataFrame(data=[1, 2, 3, 4]), write_path=p)
 
     # Assert the file
     assert p.is_file()

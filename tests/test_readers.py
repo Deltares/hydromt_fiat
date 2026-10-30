@@ -16,13 +16,17 @@ def test_read_config(model_data_clipped_path: Path):
     assert o.get("exposure") is not None
 
 
-def test_read_csv(model_data_clipped_path: Path):
+def test_read_csv(tmp_path: Path):
+    with open(Path(tmp_path, "foo.csv"), "w") as _w:
+        _w.write("depth,rs1\n")
+        _w.write("0,0\n")
+        _w.write("1,1\n")
     # Call the function
-    o = read_csv(Path(model_data_clipped_path, "vulnerability", "curves.csv"))
+    o = read_csv(Path(tmp_path, "foo.csv"))
 
     # Assert output
     assert isinstance(o, pd.DataFrame)
-    assert "rs1" in o.columns
+    assert "rs1" in o.columns.tolist()
 
 
 def test_read_geoms(model_data_clipped_path: Path):

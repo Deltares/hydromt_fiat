@@ -84,35 +84,28 @@ def test_spatial_dimensions_erros():
 def test_max_value(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
     assert f"{MAX}_{DAMAGE}_structure" not in exposure_vector_clipped_for_damamge
-
-    # Alterations should be inplace, i.e. id before == id after
-    id_before = id(exposure_vector_clipped_for_damamge)
 
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
     )
-    id_after = id(exposure_vector)
-
-    # Assert that is was inplace
-    assert id_before == id_after
 
     # Assert the content
-    assert f"{MAX}_{DAMAGE}_structure" in exposure_vector_clipped_for_damamge
+    assert f"{MAX}_{DAMAGE}_structure" in exposure_vector
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
 
 
 def test_max_value_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
     exposure_cost_link: pd.DataFrame,
 ):
     # Call the function
@@ -120,13 +113,13 @@ def test_max_value_link(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         exposure_cost_link=exposure_cost_link,
     )
 
     # Assert the content
     assert len(exposure_vector) == 12
-    assert f"{MAX}_{DAMAGE}_structure" in exposure_vector_clipped_for_damamge
+    assert f"{MAX}_{DAMAGE}_structure" in exposure_vector
     assert int(exposure_vector[f"{MAX}_{DAMAGE}_structure"].mean()) == 663194
 
 
@@ -134,18 +127,18 @@ def test_max_value_link_partial(
     caplog: pytest.LogCaptureFixture,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
     exposure_cost_link: pd.DataFrame,
 ):
     caplog.set_level(logging.WARNING)
     # Remove a row from the linking table
-    exposure_cost_link.drop(2, inplace=True)  # 2 is industrial
+    exposure_cost_link = exposure_cost_link.drop(2)  # 2 is industrial
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge,
         exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         exposure_cost_link=exposure_cost_link,
     )
 
@@ -160,14 +153,14 @@ def test_max_value_link_partial(
 def test_max_value_geo_crs(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_clipped_for_damamge.to_crs(4326),
         exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
     )
 
     # Assert the content
@@ -177,35 +170,28 @@ def test_max_value_geo_crs(
 def test_max_value_no_subtype(
     exposure_vector_data_alt: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers_alt: pd.DataFrame,
+    vulnerability_identifiers_alt_df: pd.DataFrame,
 ):
     # Assert that maximum damage is not already in the dataset
     assert f"{MAX}_{DAMAGE}" not in exposure_vector_data_alt
-
-    # Alterations should be inplace, i.e. id before == id after
-    id_before = id(exposure_vector_data_alt)
 
     # Call the function
     exposure_vector = max_value(
         exposure_data=exposure_vector_data_alt,
         exposure_cost_table=exposure_cost_table_processed,
         impact_type=DAMAGE,
-        vulnerability=vulnerability_identifiers_alt,
+        vulnerability=vulnerability_identifiers_alt_df,
     )
-    id_after = id(exposure_vector)
-
-    # Assert that is was inplace
-    assert id_before == id_after
 
     # Assert the content
-    assert f"{MAX}_{DAMAGE}" in exposure_vector_data_alt
+    assert f"{MAX}_{DAMAGE}" in exposure_vector
     assert int(exposure_vector[f"{MAX}_{DAMAGE}"].mean()) == 1363905
 
 
 def test_max_value_errors(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
     exposure_cost_table_processed: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Select kwargs leave no data
     with pytest.raises(
@@ -219,7 +205,7 @@ these impact types ['affected']"
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table_processed,
             impact_type="affected",
-            vulnerability=vulnerability_identifiers,
+            vulnerability=vulnerability_identifiers_df,
         )
 
     df = pd.DataFrame()
@@ -232,7 +218,7 @@ these impact types ['affected']"
             exposure_data=exposure_vector_clipped_for_damamge,
             exposure_cost_table=exposure_cost_table_processed,
             impact_type=DAMAGE,
-            vulnerability=vulnerability_identifiers,
+            vulnerability=vulnerability_identifiers_df,
             exposure_cost_link=df,
         )
 

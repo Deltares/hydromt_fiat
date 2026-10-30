@@ -16,7 +16,6 @@ from hydromt_fiat.utils import (
     MAX,
     REGION,
     SETTINGS,
-    VULNERABILITY,
 )
 
 
@@ -80,8 +79,8 @@ def test_build_model_geom(
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
     assert model.config.data.type == GEOM
-    assert len(model.vulnerability.data.curves) == 1001
-    assert "rs1" in model.vulnerability.data.curves.columns
+    assert len(model.vulnerability.data.curves.default) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_default
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
@@ -95,7 +94,7 @@ def test_build_model_geom(
     # Assert the written output (paths)
     assert Path(tmp_path, f"{REGION}.geojson").is_file()
     assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
 
@@ -142,8 +141,8 @@ def test_build_model_grid(
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
     assert model.config.data.type == GRID
-    assert len(model.vulnerability.data.curves) == 1001
-    assert "rs1" in model.vulnerability.data.curves.columns
+    assert len(model.vulnerability.data.curves.default) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_default
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert len(model.exposure_grid.data.data_vars) == 2
@@ -156,6 +155,6 @@ def test_build_model_grid(
     # Assert the written output (paths)
     assert Path(tmp_path, f"{REGION}.geojson").is_file()
     assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
