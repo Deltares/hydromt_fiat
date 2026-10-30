@@ -7,7 +7,7 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
 
 try:
-    import fiat
+    import fiat  # noqa: F401
 
     HAS_FIAT = True
 
@@ -19,6 +19,7 @@ if HAS_FIAT:
     from fiat.settings import load_settings
 else:
     __version__ = "NOT INSTALLED"
+
 
 @pytest.mark.skipif(
     not HAS_FIAT or Version(__version__) < Version("1.0.0.dev0"),
@@ -53,10 +54,7 @@ def test_system_geom_model(
     )
 
     # Add an hazard layer
-    model.hazard.create(
-        "flood_event",
-        hazard_type="water_level"
-    )
+    model.hazard.create("flood_event", hazard_type="water_level")
 
     # Setup the exposure geometry data
     model.exposure_geoms.create(
