@@ -195,8 +195,8 @@ def vulnerability_identifiers_df(
     # Substitute the column names by generic ones
     pattern = re.compile("(.*)_default")
     default_col_names = [pattern.findall(item)[0] for item in df.columns]
-    df.rename(dict(zip(df.columns, default_col_names)), axis=1, inplace=True)
-    df.dropna(subset=CURVE, how="any", inplace=True)
+    df = df.rename(dict(zip(df.columns, default_col_names)), axis=1)
+    df = df.dropna(subset=CURVE, how="any")
     return df
 
 
@@ -223,7 +223,7 @@ def exposure_vector_clipped(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 def exposure_vector_clipped_for_damamge(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped.drop(
+    exposure_vector_clipped = exposure_vector_clipped.drop(
         [
             "cost_type",
             "max_damage_structure",
@@ -231,7 +231,6 @@ def exposure_vector_clipped_for_damamge(
             "elevation",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped
 
@@ -240,13 +239,12 @@ def exposure_vector_clipped_for_damamge(
 def exposure_vector_clipped_for_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped_for_damamge.drop(
+    exposure_vector_clipped_for_damamge = exposure_vector_clipped_for_damamge.drop(
         [
             "fn_damage_structure",
             "fn_damage_content",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped_for_damamge
 

@@ -275,7 +275,7 @@ def test_exposure_geom_component_create_redo(
     # Comfirm that the the linking column is there
     assert OBJECT__TYPE in component._data["foo"].columns
     # Drop the column
-    component._data["foo"].drop(OBJECT__TYPE, axis=1, inplace=True)
+    component._data["foo"] = component._data["foo"].drop(OBJECT__TYPE, axis=1)
     assert OBJECT__TYPE not in component._data["foo"].columns
 
     # Run the method
@@ -329,7 +329,7 @@ def test_exposure_geom_component_create_link(
     )
 
     # Assert the output
-    assert "Replacing geometry data: foo" in caplog.text
+    assert "Replacing geometry data: foo" not in caplog.text
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
@@ -353,7 +353,7 @@ def test_exposure_geom_component_create_link_multi(
     )
 
     # Assert the output
-    assert "Replacing geometry data: foo" in caplog.text
+    assert "Replacing geometry data: foo" not in caplog.text
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 

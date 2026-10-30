@@ -344,7 +344,7 @@ use 'set_region' before this method"
         )
 
         # Set the data in the component
-        self.set(exposure_vector, name=exposure_name)
+        self.set(exposure_vector, name=exposure_name, replace=False)
 
     @hydromt_step
     def create_max_value(
@@ -458,7 +458,7 @@ Either provide a filename or a dictionary/ DataFrame."
         )
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
-        self.set(exposure_vector, exposure_name)
+        self.set(exposure_vector, exposure_name, replace=False)
 
     def create_max_value_direct(
         self,
@@ -501,7 +501,7 @@ Either provide a filename or a dictionary/ DataFrame."
 
         # Set the data back,
         # Again... its a bit symbolic as the dataframe is mutable...
-        self.set(exposure_vector, exposure_name)
+        self.set(exposure_vector, exposure_name, replace=False)
 
     @hydromt_step
     def update_column(
@@ -538,4 +538,4 @@ Either provide a filename or a dictionary/ DataFrame."
         )
 
         # Symbolically set back the data
-        self.set(exposure_vector, name=exposure_name)
+        self.set(exposure_vector, name=exposure_name, replace=False)

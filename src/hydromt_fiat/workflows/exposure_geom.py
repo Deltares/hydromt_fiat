@@ -145,7 +145,7 @@ defaulting to exposure data object type"
     missing_data = exposure_data[exposure_data["_merge"] != "both"]
     # Remaining exposure data
     exposure_data = exposure_data[exposure_data["_merge"] == "both"]
-    exposure_data.drop(columns="_merge", inplace=True)
+    exposure_data = exposure_data.drop(columns="_merge")
     # Remaining size
     data_m_size = len(exposure_data)
 
@@ -209,10 +209,9 @@ def exposure_geoms_link_vulnerability(
     header_list = headers.unique().tolist()
     for header in header_list:
         link = vulnerability[headers == header][[OBJECT__TYPE, CURVE]]
-        link.rename(
+        link = link.rename(
             {OBJECT__TYPE: OBJECT__TYPE, CURVE: f"{FN}_{header}"},
             axis=1,
-            inplace=True,
         )
         # And merge the data
         exposure_data = exposure_data.merge(
@@ -222,10 +221,9 @@ def exposure_geoms_link_vulnerability(
         )
 
     # Remove the features that don't have any linking to the vulnerability
-    exposure_data.dropna(
+    exposure_data = exposure_data.dropna(
         subset=[f"{FN}_{item}" for item in header_list],
         how="all",
-        inplace=True,
     )
 
     # Check the length after vulerability merging
@@ -238,7 +236,7 @@ vulnerability data, these were removed"
 
     # Reset the index as default for object_id
     if OBJECT__ID not in exposure_data.columns:
-        exposure_data.reset_index(names=OBJECT__ID, inplace=True)
+        exposure_data = exposure_data.reset_index(names=OBJECT__ID)
 
     return exposure_data
 

@@ -249,7 +249,7 @@ def test_geom_component_set(
     assert "ds1" in component.data
 
     # Overwrite with the same dataset, should produce no warning
-    component.set(data=build_region, name="ds1")
+    component.set(data=build_region, name="ds1", replace=False)
     assert "Replacing geometry data: ds1" not in caplog.text
 
     # Overwrite, but with a copy, should produce a warning

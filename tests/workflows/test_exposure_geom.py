@@ -31,10 +31,9 @@ def test___guess_object_type_columns_general(
     buildings_data: gpd.GeoDataFrame,
 ):
     # Drop string columns
-    buildings_data.drop(
+    buildings_data = buildings_data.drop(
         buildings_data.columns[(buildings_data.dtypes == "str").values],
         axis=1,
-        inplace=True,
     )
     # Call the function:
     col = _guess_object_type_columns(
@@ -162,7 +161,7 @@ def test_exposure_geoms_setup_errors(
 
     # The exposure type column is not found in the link table
     # Pop the correct column
-    buildings_link_table.drop("gebruiksdoel", axis=1, inplace=True)
+    buildings_link_table = buildings_link_table.drop("gebruiksdoel", axis=1)
 
     # Call the methods to produce the error
     with pytest.raises(

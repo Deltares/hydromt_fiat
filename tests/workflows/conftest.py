@@ -112,7 +112,7 @@ def vulnerability_data(global_data_catalog: DataCatalog) -> pd.DataFrame:
 def vulnerability_data_row_oriented(vulnerability_data) -> pd.DataFrame:
     vulnerability_data = vulnerability_data.transpose()
     vulnerability_data.columns = vulnerability_data.iloc[0]
-    vulnerability_data.drop(0, inplace=True)
+    vulnerability_data = vulnerability_data.drop(0)
     return vulnerability_data
 
 
@@ -144,14 +144,13 @@ def exposure_vector_data_alt(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 def exposure_vector_data_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped_for_damamge.drop(
+    exposure_vector_clipped_for_damamge = exposure_vector_clipped_for_damamge.drop(
         [
             "object_id",
             "fn_damage_structure",
             "fn_damage_content",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped_for_damamge
 
@@ -185,8 +184,8 @@ def vulnerability_identifiers_alt_df(
     # Substitute the column names by generic ones
     pattern = re.compile("(.*)_default")
     default_col_names = [pattern.findall(item)[0] for item in df.columns]
-    df.rename(dict(zip(df.columns, default_col_names)), axis=1, inplace=True)
-    df.dropna(subset=CURVE, how="any", inplace=True)
+    df = df.rename(dict(zip(df.columns, default_col_names)), axis=1)
+    df = df.dropna(subset=CURVE, how="any")
     return df
 
 

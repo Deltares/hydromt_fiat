@@ -89,7 +89,7 @@ method with '{name}' as input"
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            data.drop("fid", axis=1, inplace=True)
+            data = data.drop("fid", axis=1)
 
         # Set the data
         self._processed_data[name] = data
