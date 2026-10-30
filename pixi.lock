@@ -6723,7 +6723,7 @@ packages:
   requires_dist:
   - affine
   - geopandas
-  - hydromt>=1.4.0
+  - hydromt>=1.4.1
   - minio
   - numpy
   - osmnx
