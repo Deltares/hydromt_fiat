@@ -39,9 +39,14 @@ class GeomsComponent(SpatialModelComponent):
         if name not in self.data or not isinstance(
             self.data[name], (gpd.GeoDataFrame, gpd.GeoSeries)
         ):
+            keys = [
+                item
+                for item in self.data.keys()
+                if isinstance(self.data[item], (gpd.GeoDataFrame, gpd.GeoSeries))
+            ]
             raise RuntimeError(
-                f"Chose from already present geometries: {list(self.data.keys())} \
-i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input"
+                f"Choose from already present geometries: {keys} \
+i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as input"
             )
 
     def _initialize(
