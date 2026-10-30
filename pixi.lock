@@ -209,6 +209,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/c2/aa4c889ffbd5d95b9cbcb78163399feb51eae3968f387f87f26efef2bf59/pystac_ext_mgrs-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/d7/2344419cb255399ff2253cdb81cb38827867f854f66e98a780478fc13c19/lib4package-0.3.3-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/67/f8/bb0a9d5f46819c821dc1f004aa2cc29b1d91453297dbf5ff20470f00f193/nbconvert-7.17.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/23/8146aad7d88f4fcb3a6218f41a60f6c2d4e3a72de72da1825dc7c8f7877c/semantic_version-2.10.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/43/8bd850ee71a191bf072e31302c73a66be413fecdd98fdcd111ecbcce13ca/tomlkit-0.15.0-py3-none-any.whl
@@ -292,7 +293,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bb/e9/783c234f711661603c21c5c83c6cbb41efcb2cd0ca791cf27316498088b2/pystac_ext_pointcloud-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/be/80/aa90a9fea4893b6ffb584ce5c61f3497fb76febe5648f9bc257b15a29ded/nbconvert-7.13.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c1/ea/53f2148663b321f21b5a606bd5f191517cf40b7072c0497d3c92c4a13b1e/executing-2.2.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/42/4c8646762ee83602e3fb3fbe774c2fac12f317deb0b5dbeeedd2d3ba4b77/sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/53/d81269aaafccea0d33396c03035de997b743f11e648e6e27a0df99c72980/yarl-1.24.2-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -542,6 +542,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/66/d7/2344419cb255399ff2253cdb81cb38827867f854f66e98a780478fc13c19/lib4package-0.3.3-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/67/1b/09460a13719530a19bce27bd3bc8449e83569dd2ba7faf51c9c3c30c0b61/mypy-2.1.0-cp314-cp314-win_amd64.whl
+      - pypi: https://files.pythonhosted.org/packages/67/f8/bb0a9d5f46819c821dc1f004aa2cc29b1d91453297dbf5ff20470f00f193/nbconvert-7.17.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/23/8146aad7d88f4fcb3a6218f41a60f6c2d4e3a72de72da1825dc7c8f7877c/semantic_version-2.10.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/43/8bd850ee71a191bf072e31302c73a66be413fecdd98fdcd111ecbcce13ca/tomlkit-0.15.0-py3-none-any.whl
@@ -622,7 +623,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/bb/92/882c2d30831744296ce713f0feb4c1cd30f346ef747b530b5318715cc367/cffi-2.0.0-cp314-cp314-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/bb/e9/783c234f711661603c21c5c83c6cbb41efcb2cd0ca791cf27316498088b2/pystac_ext_pointcloud-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/24/12818598c362d7f300f18e74db45963dbcb85150324092410c8b49405e42/pyproject_hooks-1.2.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/be/80/aa90a9fea4893b6ffb584ce5c61f3497fb76febe5648f9bc257b15a29ded/nbconvert-7.13.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c1/ea/53f2148663b321f21b5a606bd5f191517cf40b7072c0497d3c92c4a13b1e/executing-2.2.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/42/4c8646762ee83602e3fb3fbe774c2fac12f317deb0b5dbeeedd2d3ba4b77/sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c3/d4/98078064ccc76b45cb0f6c002452011e93c4bd26f6850344f0951cc1fe89/fonttools-4.63.0-cp314-cp314-win_amd64.whl
@@ -819,6 +819,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/62/c2/aa4c889ffbd5d95b9cbcb78163399feb51eae3968f387f87f26efef2bf59/pystac_ext_mgrs-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/67/f8/bb0a9d5f46819c821dc1f004aa2cc29b1d91453297dbf5ff20470f00f193/nbconvert-7.17.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/43/8bd850ee71a191bf072e31302c73a66be413fecdd98fdcd111ecbcce13ca/tomlkit-0.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/9e/2064975477fdc887e47ad42157e214526dcad8f317a948dee17e1659a62f/terminado-0.18.1-py3-none-any.whl
@@ -892,7 +893,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ba/08/52f06ff2f04d376f9cd2c211aefcf2b37f1978e43289341f362fc99f6a0e/cftime-1.6.5-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/bb/e9/783c234f711661603c21c5c83c6cbb41efcb2cd0ca791cf27316498088b2/pystac_ext_pointcloud-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/22/05555a9752357e24caa1cd92324d1a7fdde6386aab162fcc451f8f8eedc2/bottleneck-1.6.0-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/be/80/aa90a9fea4893b6ffb584ce5c61f3497fb76febe5648f9bc257b15a29ded/nbconvert-7.13.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bf/87/c298cee62df1de4ad7fec32abda73526cff347fd143a6ed4ac369246668a/greenlet-3.5.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/ea/53f2148663b321f21b5a606bd5f191517cf40b7072c0497d3c92c4a13b1e/executing-2.2.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/42/4c8646762ee83602e3fb3fbe774c2fac12f317deb0b5dbeeedd2d3ba4b77/sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl
@@ -1079,6 +1079,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/62/c2/aa4c889ffbd5d95b9cbcb78163399feb51eae3968f387f87f26efef2bf59/pystac_ext_mgrs-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/67/f8/bb0a9d5f46819c821dc1f004aa2cc29b1d91453297dbf5ff20470f00f193/nbconvert-7.17.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/1e/71dfd96bcc1c775420cb8befe7a9d35f2e5b1309798f009dca17b7708c1e/tomli-2.4.1-cp313-cp313-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/6a/43/8bd850ee71a191bf072e31302c73a66be413fecdd98fdcd111ecbcce13ca/tomlkit-0.15.0-py3-none-any.whl
@@ -1155,7 +1156,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/bb/e9/783c234f711661603c21c5c83c6cbb41efcb2cd0ca791cf27316498088b2/pystac_ext_pointcloud-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/bd/3b/218efbc9e645becd80cdf651acda05f85cfe546b7a9c0458c7cbc8fe1f74/psycopg_binary-3.3.4-cp313-cp313-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/be/0f/747974129cf0d800906f81cd25efd098c96509026e454d4b66868779ab04/pyproj-3.7.2-cp313-cp313-win_amd64.whl
-      - pypi: https://files.pythonhosted.org/packages/be/80/aa90a9fea4893b6ffb584ce5c61f3497fb76febe5648f9bc257b15a29ded/nbconvert-7.13.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/be/8a/be60e3bbcf513cc5a50f4a3e88e1dcecebb79c1ad607a7222877becaa101/kiwisolver-1.5.0-cp313-cp313-win_amd64.whl
       - pypi: https://files.pythonhosted.org/packages/c1/ea/53f2148663b321f21b5a606bd5f191517cf40b7072c0497d3c92c4a13b1e/executing-2.2.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c2/42/4c8646762ee83602e3fb3fbe774c2fac12f317deb0b5dbeeedd2d3ba4b77/sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl
@@ -6701,11 +6701,11 @@ packages:
   - sbom4python ; extra == 'dev'
   - nbsphinx ; extra == 'docs'
   - pydata-sphinx-theme ; extra == 'docs'
-  - sphinx>=8.2.0 ; extra == 'docs'
+  - sphinx>=9.1.0 ; extra == 'docs'
   - sphinx-design ; extra == 'docs'
   - cartopy ; extra == 'examples'
   - jupyterlab ; extra == 'examples'
-  - nbconvert==7.13.1 ; extra == 'examples'
+  - nbconvert==7.17.1 ; extra == 'examples'
   - notebook ; extra == 'examples'
   - pandoc ; extra == 'examples'
   - pytest>=9.1.1 ; extra == 'test'
@@ -9926,6 +9926,57 @@ packages:
   - pip ; extra == 'install-types'
   - orjson ; extra == 'faster-cache'
   requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/67/f8/bb0a9d5f46819c821dc1f004aa2cc29b1d91453297dbf5ff20470f00f193/nbconvert-7.17.1-py3-none-any.whl
+  name: nbconvert
+  version: 7.17.1
+  sha256: aa85c087b435e7bf1ffd03319f658e285f2b89eccab33bc1ba7025495ab3e7c8
+  requires_dist:
+  - beautifulsoup4
+  - bleach[css]!=5.0.0
+  - defusedxml
+  - importlib-metadata>=3.6 ; python_full_version < '3.10'
+  - jinja2>=3.0
+  - jupyter-core>=4.7
+  - jupyterlab-pygments
+  - markupsafe>=2.0
+  - mistune>=2.0.3,<4
+  - nbclient>=0.5.0
+  - nbformat>=5.7
+  - packaging
+  - pandocfilters>=1.4.1
+  - pygments>=2.4.1
+  - traitlets>=5.1
+  - flaky ; extra == 'all'
+  - intersphinx-registry ; extra == 'all'
+  - ipykernel ; extra == 'all'
+  - ipython ; extra == 'all'
+  - ipywidgets>=7.5 ; extra == 'all'
+  - myst-parser ; extra == 'all'
+  - nbsphinx>=0.2.12 ; extra == 'all'
+  - playwright ; extra == 'all'
+  - pydata-sphinx-theme ; extra == 'all'
+  - pyqtwebengine>=5.15 ; extra == 'all'
+  - pytest>=7 ; extra == 'all'
+  - sphinx>=5.0.2 ; extra == 'all'
+  - sphinxcontrib-spelling ; extra == 'all'
+  - tornado>=6.1 ; extra == 'all'
+  - intersphinx-registry ; extra == 'docs'
+  - ipykernel ; extra == 'docs'
+  - ipython ; extra == 'docs'
+  - myst-parser ; extra == 'docs'
+  - nbsphinx>=0.2.12 ; extra == 'docs'
+  - pydata-sphinx-theme ; extra == 'docs'
+  - sphinx>=5.0.2 ; extra == 'docs'
+  - sphinxcontrib-spelling ; extra == 'docs'
+  - pyqtwebengine>=5.15 ; extra == 'qtpdf'
+  - pyqtwebengine>=5.15 ; extra == 'qtpng'
+  - tornado>=6.1 ; extra == 'serve'
+  - flaky ; extra == 'test'
+  - ipykernel ; extra == 'test'
+  - ipywidgets>=7.5 ; extra == 'test'
+  - pytest>=7 ; extra == 'test'
+  - playwright ; extra == 'webpdf'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/68/55/21022f7d3143210ae8d4ff905c45306237b657375cc0b97883f49db3d423/regex-2026.6.28-cp313-cp313-win_amd64.whl
   name: regex
   version: 2026.6.28
@@ -12369,44 +12420,6 @@ packages:
   requires_dist:
   - certifi
   requires_python: '>=3.11'
-- pypi: https://files.pythonhosted.org/packages/be/80/aa90a9fea4893b6ffb584ce5c61f3497fb76febe5648f9bc257b15a29ded/nbconvert-7.13.1-py3-none-any.whl
-  name: nbconvert
-  version: 7.13.1
-  sha256: 3c50eb2d326478cc90b8759cf2ab9dde3d892c6537cd6a5bc0991db8ef734bcc
-  requires_dist:
-  - beautifulsoup4
-  - bleach!=5.0.0
-  - defusedxml
-  - importlib-metadata>=3.6 ; python_full_version < '3.10'
-  - jinja2>=3.0
-  - jupyter-core>=4.7
-  - jupyterlab-pygments
-  - markupsafe>=2.0
-  - mistune>=2.0.3,<4
-  - nbclient>=0.5.0
-  - nbformat>=5.7
-  - packaging
-  - pandocfilters>=1.4.1
-  - pygments>=2.4.1
-  - tinycss2
-  - traitlets>=5.1
-  - nbconvert[docs,qtpdf,serve,test,webpdf] ; extra == 'all'
-  - ipykernel ; extra == 'docs'
-  - ipython ; extra == 'docs'
-  - myst-parser ; extra == 'docs'
-  - nbsphinx>=0.2.12 ; extra == 'docs'
-  - pydata-sphinx-theme ; extra == 'docs'
-  - sphinx==5.0.2 ; extra == 'docs'
-  - sphinxcontrib-spelling ; extra == 'docs'
-  - nbconvert[qtpng] ; extra == 'qtpdf'
-  - pyqtwebengine>=5.15 ; extra == 'qtpng'
-  - tornado>=6.1 ; extra == 'serve'
-  - flaky ; extra == 'test'
-  - ipykernel ; extra == 'test'
-  - ipywidgets>=7.5 ; extra == 'test'
-  - pytest ; extra == 'test'
-  - playwright ; extra == 'webpdf'
-  requires_python: '>=3.8'
 - pypi: https://files.pythonhosted.org/packages/be/8a/be60e3bbcf513cc5a50f4a3e88e1dcecebb79c1ad607a7222877becaa101/kiwisolver-1.5.0-cp313-cp313-win_amd64.whl
   name: kiwisolver
   version: 1.5.0
