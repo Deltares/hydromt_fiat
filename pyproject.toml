@@ -247,6 +247,7 @@ test-system = { cmd = "pytest -m system --verbose" }
 
 ## Dependencies
 [tool.pixi.dependencies]
+flatbuffers = "==24.12.23"
 numba = "*"
 pip = "*"
 uv = "*"
