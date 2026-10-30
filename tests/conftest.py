@@ -8,6 +8,7 @@ import pytest
 import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full_from_transform
+from hydromt.readers import open_nc
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 from urllib3.exceptions import HTTPError
@@ -139,7 +140,7 @@ def exposure_vector(model_data_path: Path) -> gpd.GeoDataFrame:
 def exposure_grid(model_data_path: Path) -> xr.Dataset:
     p = Path(model_data_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -151,12 +152,12 @@ def hazard(model_data_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def vulnerability_curves(model_data_path: Path) -> pd.DataFrame:
     p = Path(model_data_path, "vulnerability", "curves.csv")
     assert p.is_file()
@@ -248,7 +249,7 @@ def exposure_vector_clipped_split_path(
 def exposure_grid_clipped(model_data_clipped_path: Path) -> xr.Dataset:
     p = Path(model_data_clipped_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -260,7 +261,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -312,14 +313,11 @@ def box_geometry() -> gpd.GeoDataFrame:
 @pytest.fixture
 def config_dummy(tmp_path: Path) -> dict:
     data = {
-        "model": {"type": "geom", "threads": 4},
+        "type": "geom",
+        "threads": 4,
         "hazard": {"file": Path(tmp_path, "foo.nc"), "rp": [1, 2, 3]},
         "vulnerability": {"file": Path("foo.csv")},
-        "exposure": {
-            "geom": [
-                {"file": "foo.fgb"},
-            ]
-        },
+        "exposure": [{"file": "foo.fgb"}],
     }
     return data
 

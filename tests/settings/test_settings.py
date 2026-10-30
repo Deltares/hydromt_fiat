@@ -1,21 +1,21 @@
-from hydromt_fiat.settings import DEFAULT_SETTINGS, Exposure, Settings
+from hydromt_fiat.settings import DEFAULT_GEOM_SETTINGS, GeomSettings
 from hydromt_fiat.utils import FLOOD_DEPTH, GEOM
 
 
 def test_settings():
     # Just create an instance
-    s = Settings()
+    s = GeomSettings()
 
     # Assert some default values
-    assert s.model.type == GEOM
-    assert s.model.method == FLOOD_DEPTH
-    assert s.model.threads == 1
-    assert s.model.risk == False
+    assert s.type == GEOM
+    assert s.method == FLOOD_DEPTH
+    assert s.threads == 1
+    assert s.risk == False
 
     # Assert the file
-    assert s.exposure == Exposure()
+    assert s.exposure is None
     assert s.hazard is None
     assert s.vulnerability is None
 
     # Assert it's equal to the default
-    assert s == DEFAULT_SETTINGS
+    assert s == DEFAULT_GEOM_SETTINGS

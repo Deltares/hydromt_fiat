@@ -17,7 +17,7 @@ def test_geom_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Assert the current state
     assert component._data is None
@@ -72,7 +72,7 @@ def test_geom_component_clear(
     exposure_vector: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector}
@@ -135,7 +135,7 @@ def test_geom_component_clip_no_data(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     # Assert the current state
     assert component._data is None
 
@@ -238,7 +238,7 @@ def test_geom_component_set(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert len(component.data) == 0  # No data yet
 
     # Add a geometry dataset
@@ -263,7 +263,7 @@ def test_geom_component_region(
     mock_model: MagicMock,
 ):
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert component.region is None
 
     # Set a second dataset

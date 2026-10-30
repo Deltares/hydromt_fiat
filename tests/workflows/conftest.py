@@ -64,6 +64,12 @@ def exposure_grid_link(build_data_catalog: DataCatalog) -> pd.DataFrame:
 
 
 @pytest.fixture
+def exposure_grid_cat_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("category_values")
+    return df
+
+
+@pytest.fixture
 def hazard_event_data(
     build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
 ) -> xr.DataArray:
