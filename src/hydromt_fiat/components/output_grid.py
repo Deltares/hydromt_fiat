@@ -3,11 +3,15 @@
 import logging
 from pathlib import Path
 
+import xarray as xr
 from hydromt.model import Model
-from hydromt.readers import open_nc
+from hydromt.model.steps import hydromt_step
 
+from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
-from hydromt_fiat.utils import EXPOSURE_GRID_FILE, OUTPUT_GRID_NAME
+from hydromt_fiat.readers import read_grid
+from hydromt_fiat.settings import get_file_from_settings_component
+from hydromt_fiat.utils import GRID, POST
 
 __all__ = ["OutputGridComponent"]
 
@@ -29,12 +33,52 @@ class OutputGridComponent(GridComponent):
         self,
         model: Model,
     ):
+        self._filename: str = f"{POST}/{{name}}.nc"
+        self._processed_data: dict[str, xr.DataArray] | None = None
         super().__init__(
             model=model,
             region_component=None,
         )
 
+    ## Private methods
+    def _initialize(self, skip_read=False):
+        if self._processed_data is None:
+            self._processed_data = {}
+        return super()._initialize(skip_read)
+
+    def _set(
+        self,
+        data: xr.DataArray | xr.Dataset,
+        name: str,
+    ):
+        """Set post processed data.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            The data to add.
+        name : str
+            The name of the data in the data dictionary.
+        """
+        self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        if name in self._processed_data and id(self._processed_data.get(name)) != id(
+            data
+        ):
+            logger.warning(f"Replacing post processed grid data: {name}")
+        self._processed_data[name] = data
+
+    ## Properties
+    @property
+    def processed_data(self) -> dict[str, xr.DataArray]:
+        """Return the post processed data."""
+        if self._processed_data is None:
+            self._initialize(skip_read=True)
+        assert self._processed_data is not None
+        return self._processed_data
+
     ## I/O Methods
+    @hydromt_step
     def read(
         self,
         filename: Path | str | None = None,
@@ -50,6 +94,8 @@ class OutputGridComponent(GridComponent):
             Additional keyword arguments that are passed to the
             `xr.open_dataset` function.
         """
+        if not self.model._assert_model_type(GRID, error=False):
+            return
         # Assert the mode
         self.root._assert_read_mode()
         self._initialize(skip_read=True)
@@ -57,8 +103,8 @@ class OutputGridComponent(GridComponent):
         # Sort out the read path
         # Hierarchy: 1) signature 2) output defined 3) input derived
         config_filename = (
-            self.model.config.get(OUTPUT_GRID_NAME)
-            or self.model.config.get(EXPOSURE_GRID_FILE)
+            get_file_from_settings_component(self.model.config.data.output)
+            or get_file_from_settings_component(self.model.config.data.exposure)
             or ""
         )
         filename = (
@@ -75,12 +121,8 @@ class OutputGridComponent(GridComponent):
             return
 
         # Read the data
-        logger.info(f"Reading the hazard file at {read_path.as_posix()}")
-        # Read with the (old) read function from hydromt-core
-        ds = open_nc(
-            read_path,
-            **kwargs,
-        )
+        logger.info("Reading model output grid data")
+        ds = read_grid(read_path=read_path, **kwargs)
         # Set the data
         self.set(ds)
 
@@ -89,3 +131,44 @@ class OutputGridComponent(GridComponent):
         raise NotImplementedError(
             f"Writing not available for {self.__class__.__name__}",
         )
+
+    @hydromt_step
+    def spatial_aggregate(
+        self,
+        output_name: str,
+        res: float | int,
+        method: str = "average",
+        align: bool = False,
+        name: str | None = None,
+    ) -> None:
+        """Aggregate gridded output data to a coarser resolution.
+
+        Parameters
+        ----------
+        output_name : str
+            The name of the data variables in the FIAT model output data.
+        res : float | int
+            The resolution of the aggregated data. The resolution is required to be
+            bigger than the resolution of the provided data.
+        method : str, optional
+            The aggregation method, by default "average".
+        align : bool, optional
+            Whether to align the target transform to the resolution. By default False.
+        name : str, optional
+            The name of the data entry in the post processed data dictionary.
+            If not provided, `output_name` is used with '_aggr_<`res`>' as suffix.
+            By default None.
+        """
+        self.model._assert_model_type(GRID)
+        # Assert the model entry
+        self._assert_entry(name=output_name, spatial=True)
+
+        # Call the workflow function
+        aggregated = workflows.aggregate_grid(
+            output_data=self.data[output_name],
+            res=res,
+            method=method,
+            align=align,
+        )
+
+        self._set(aggregated, name=name or output_name + f"_aggr_{res}")

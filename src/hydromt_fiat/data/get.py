@@ -19,7 +19,7 @@ __all__ = ["fetch_data"]
 # Settings
 BUCKET = "hydromt-fiat"
 CACHE_DIR = Path("~", ".cache", BUCKET).expanduser()
-ENDPOINT = "s3.deltares.nl"
+ENDPOINT = "s3.deltares.nl"  # "10.255.255.1:900" non routable for testing
 HASH_ALGORITM = "md5"
 HASHKEY = "hash"
 LIB_DATA_DIR = Path(__file__).parent

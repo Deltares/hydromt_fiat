@@ -5,12 +5,59 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hydromt_fiat.utils import CURVE__ID, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
+from hydromt_fiat.utils import CURVE, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
 from hydromt_fiat.workflows import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
     exposure_geoms_setup,
 )
+from hydromt_fiat.workflows.exposure_geom import _guess_object_type_columns
+
+
+def test___guess_object_type_columns(
+    buildings_data: gpd.GeoDataFrame,
+):
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col == "rdf_seealso"
+
+
+def test___guess_object_type_columns_general(
+    buildings_data: gpd.GeoDataFrame,
+):
+    # Drop string columns
+    buildings_data.drop(
+        buildings_data.columns[(buildings_data.dtypes == "str").values],
+        axis=1,
+        inplace=True,
+    )
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col == "fid"
+
+
+def test___guess_object_type_columns_none(
+    buildings_data: gpd.GeoDataFrame,
+):
+    buildings_data = buildings_data[["geometry"]]
+    # Call the function:
+    col = _guess_object_type_columns(
+        columns=buildings_data.columns,
+        dtypes=buildings_data.dtypes,
+    )
+
+    # Assert the output
+    assert col is None
 
 
 def test_exposure_geoms_setup(
@@ -26,8 +73,25 @@ def test_exposure_geoms_setup(
 
     # Assert the output
     assert len(exposure_vector) == 9
+    assert len(exposure_vector.columns) == 12
     assert OBJECT__TYPE in exposure_vector.columns
     assert "industrial" in exposure_vector.object_type.values
+
+
+def test_exposure_geoms_setup_strip(
+    buildings_data: gpd.GeoDataFrame,
+    buildings_link_table: pd.DataFrame,
+):
+    # Simply call the function
+    exposure_vector = exposure_geoms_setup(
+        exposure_data=buildings_data,
+        exposure_object_type_column="gebruiksdoel",
+        exposure_link=buildings_link_table,
+        strip=True,
+    )
+
+    # Assert the output
+    assert len(exposure_vector.columns) == 3
 
 
 def test_exposure_geoms_setup_fill_nodata(
@@ -46,8 +110,8 @@ def test_exposure_geoms_setup_fill_nodata(
     assert "3 features could not be internally linked" in caplog.text
     # The warning should also name the unmapped column and include a
     # breakdown line with a count (form: "<value>: <count>").
-    assert "Unmapped values in 'gebruiksdoel'" in caplog.text
-    assert ": 3" in caplog.text
+    assert "The unmapped types were:" in caplog.text
+    assert "nan [3]" in caplog.text
     assert len(exposure_vector) == 9
 
     # Fill the nodata in the linking with a known (irony) value
@@ -137,7 +201,7 @@ def test_exposure_geoms_link_vulnerability(
     # A simple that the curves set in the exposure data (linking) are present
     # in the vulnerability identifiers
     for value in exposure_vector[f"{FN}_{DAMAGE}_structure"].unique():
-        assert value in vulnerability_identifiers[CURVE__ID].values
+        assert value in vulnerability_identifiers[CURVE].values
 
 
 def test_exposure_geoms_link_vulnerability_subtype(
