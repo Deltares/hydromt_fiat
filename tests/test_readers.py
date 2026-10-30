@@ -9,7 +9,7 @@ from hydromt_fiat.readers import read_config, read_csv, read_geoms, read_grid
 
 def test_read_config(model_data_clipped_path: Path):
     # Call the function
-    o = read_config(Path(model_data_clipped_path, "settings.toml"))
+    o = read_config(Path(model_data_clipped_path, "settings_geom.toml"))
 
     # Assert output
     assert isinstance(o, dict)

@@ -8,7 +8,13 @@ import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full
 
-from hydromt_fiat.utils import CURVE, IMPACT__TYPE, OBJECT__TYPE
+from hydromt_fiat.utils import (
+    COST__TYPE,
+    CURVE,
+    IMPACT__TYPE,
+    OBJECT__TYPE,
+    create_query,
+)
 
 
 ## Data from the data catalog
@@ -32,6 +38,14 @@ def exposure_cost_table(global_data_catalog: DataCatalog) -> pd.DataFrame:
     return df
 
 
+@pytest.fixture(scope="session")
+def exposure_cost_table_processed(exposure_cost_table: pd.DataFrame) -> pd.DataFrame:
+    query = create_query(**{"country": "World"})
+    exposure_cost_table = exposure_cost_table.query(query)
+    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
+    return exposure_cost_table
+
+
 @pytest.fixture
 def exposure_grid_data_ind(
     build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
@@ -46,6 +60,12 @@ def exposure_grid_data_ind(
 @pytest.fixture
 def exposure_grid_link(build_data_catalog: DataCatalog) -> pd.DataFrame:
     df = build_data_catalog.get_dataframe("exposure_grid_link")
+    return df
+
+
+@pytest.fixture
+def exposure_grid_cat_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("category_values")
     return df
 
 
