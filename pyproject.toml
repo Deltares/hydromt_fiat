@@ -90,6 +90,8 @@ dev = [
     "python-magic",
     "sbom4python",
     "mypy",
+    "pre-commit",
+    "ruff",
 ]
 docs = [
     "nbsphinx",
@@ -109,10 +111,6 @@ test = [
     "pytest-cov",
     "pytest-mock",
     "responses",
-]
-lint = [
-    "pre-commit",
-    "ruff",
 ]
 
 [project.entry-points."hydromt.models"]
@@ -225,7 +223,6 @@ sbom = { cmd = "sbom4python --module hydromt_fiat --output-file hydromt-fiat-sbo
 mypy = { cmd = "mypy . --install-types --non-interactive" }
 
 # Linting
-[tool.pixi.feature.lint.tasks]
 install-pre-commit = { cmd = "pre-commit install" }
 install = { depends-on = ["install-pre-commit"] }
 lint = { cmd = "pre-commit run --all" }
@@ -291,4 +288,3 @@ test-py314 = { features = ["py314", "test"] }
 test-py313 = { features = ["py313", "test"] }
 test-py312 = { features = ["py312", "test"] }
 wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
-lint = { features = ["py313", "lint"], no-default-feature=true }
