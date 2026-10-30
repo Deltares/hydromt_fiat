@@ -21,7 +21,7 @@ def test_hazard_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
-    component = HazardComponent(model=mock_model)
+    component = HazardComponent(model=mock_model("geom"))
 
     # Assert some very basic stuff
     assert component._filename == f"{HAZARD}.nc"
@@ -33,11 +33,13 @@ def test_hazard_component_read(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
-    component = HazardComponent(model=mock_model_config)
+    component = HazardComponent(model=model)
     # Assert current state
     assert component._data is None
 
@@ -54,11 +56,13 @@ def test_hazard_component_read_sig(
     mock_model_config: MagicMock,
     model_data_clipped_path: Path,
 ):
-    type(mock_model_config).root = PropertyMock(
+    # Setup the model
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
     # Setup the component
-    component = HazardComponent(model=mock_model_config)
+    component = HazardComponent(model=model)
 
     # Read data with the 'read' method
     component.read(f"{HAZARD}.nc")
@@ -71,14 +75,16 @@ def test_hazard_component_read_nothing(
     mocker: MockerFixture,
     mock_model_config: MagicMock,
 ):
+    # Setup the model
+    model = mock_model_config("geom")
     mocker.patch.object(
-        type(mock_model_config.root),
+        type(model.root),
         "mode",
         new_callable=PropertyMock,
         return_value=ModelMode("r"),
     )
     # Setup the component
-    component = HazardComponent(model=mock_model_config)
+    component = HazardComponent(model=model)
     # Assert current state
     assert len(component.data) == 0
 
@@ -94,7 +100,7 @@ def test_hazard_component_write(
     hazard_clipped: xr.Dataset,
 ):
     # Setup the component
-    component = HazardComponent(model=mock_model_config)
+    component = HazardComponent(model=mock_model_config("geom"))
     # Set data like a dummy
     component._data = hazard_clipped
 
@@ -114,7 +120,7 @@ def test_hazard_component_write_sig(
     hazard_clipped: xr.Dataset,
 ):
     # Setup the component
-    component = HazardComponent(model=mock_model_config)
+    component = HazardComponent(model=mock_model_config("geom"))
     # Set data like a dummy
     component._data = hazard_clipped
     component._data["flood_event2"] = hazard_clipped["flood_event"]
@@ -159,21 +165,22 @@ def test_hazard_component_create_multi(
 
 
 def test_hazard_component_create_risk(
-    model_with_region: FIATModel,
+    model: FIATModel,
 ):
     # Setup the compoentn
-    component = HazardComponent(model=model_with_region)
+    component = HazardComponent(model=model)
 
     # Test hazard with return period
     component.create(
         hazard_fnames=["flood_event_highres"],
         risk=True,
         return_periods=[50000],
+        region=False,
     )
 
     assert isinstance(component.data, xr.Dataset)
     assert component.data.flood_event_highres.attrs[RP] == 50000
-    assert model_with_region.config.data.model.risk
+    assert model.config.data.risk
 
 
 def test_hazard_component_create_errors(model: FIATModel):

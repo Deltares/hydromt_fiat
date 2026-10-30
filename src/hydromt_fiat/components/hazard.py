@@ -10,7 +10,6 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
@@ -103,6 +102,7 @@ class HazardComponent(GridComponent):
     def write(
         self,
         filename: Path | str | None = None,
+        compress: bool = True,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -113,6 +113,8 @@ class HazardComponent(GridComponent):
         filename : Path | str, optional
             Filename relative to model root. If None, the value is taken from
             the `_filename` attribute, by default None.
+        compress : bool, optional
+            Whether or not to compress the data, by default True.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -138,6 +140,7 @@ class HazardComponent(GridComponent):
         write_grid(
             data=self.data,
             write_path=write_path,
+            compress=compress,
             gdal_compliant=gdal_compliant,
             overwrite=self.root.mode.is_override_mode(),
             **kwargs,
@@ -224,28 +227,22 @@ class HazardComponent(GridComponent):
             )
             hazard_data[Path(entry).stem] = da
 
-        # Check if there is already data set to this grid component.
-        grid_like = self.data if self.data.sizes != {} else None
-
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_setup(
-            grid_like=grid_like,
+        hazard_grid = workflows.hazard_setup(
             hazard_data=hazard_data,
             hazard_type=hazard_type,
+            grid_like=self.like,
             return_periods=return_periods,
             risk=risk,
             unit=unit,
         )
 
-        # Expand if necessary
-        if self.model.region is not None and ds.raster.crs is not None and expand:
-            ds = expand_raster_to_bounds(
-                ds=ds,
-                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
-            )
-
         # Set the data to the hazard grid component
-        self.set(ds)
+        self.set(hazard_grid, expand=expand)
 
         # Set the config entries
-        self.model.config.data.model.risk = risk
+        self.model.config.data.risk = risk
+
+        # Set the region if not present and defined by the hazard setup
+        if not region and self.model.region is None:
+            self.model.set_region(self._region_data)

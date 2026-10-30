@@ -4,12 +4,11 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    field_validator,
 )
 
 from hydromt_fiat.settings.file import InputFileModel
 
-__all__ = ["Exposure", "ExposureGeometry", "ExposureGrid"]
+__all__ = ["ExposureGeometry", "ExposureGrid"]
 
 
 class ExposureGeometrySettings(BaseModel):
@@ -72,30 +71,3 @@ class ExposureGrid(InputFileModel):
         default=None,
         description="Settings for reading the exposure grid data.",
     )
-
-
-class Exposure(BaseModel):
-    """Exposure settings for the FIAT model."""
-
-    geom: list[ExposureGeometry] | None = Field(
-        default=None,
-        description="Exposure geometry settings for the FIAT model.",
-    )
-
-    grid: ExposureGrid | None = Field(
-        default=None,
-        description="Exposure grid settings for the FIAT model.",
-    )
-
-    @field_validator("geom", mode="before")
-    @classmethod
-    def ensure_list(cls, value):
-        """Ensure list typing."""
-        if not isinstance(value, list):
-            value = [value]
-        return value
-
-    @property
-    def is_empty(self) -> bool:
-        """Return whether this entry is empty."""
-        return all(value is None for value in self.__dict__.values())

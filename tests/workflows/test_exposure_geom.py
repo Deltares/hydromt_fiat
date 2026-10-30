@@ -73,8 +73,25 @@ def test_exposure_geoms_setup(
 
     # Assert the output
     assert len(exposure_vector) == 9
+    assert len(exposure_vector.columns) == 12
     assert OBJECT__TYPE in exposure_vector.columns
     assert "industrial" in exposure_vector.object_type.values
+
+
+def test_exposure_geoms_setup_strip(
+    buildings_data: gpd.GeoDataFrame,
+    buildings_link_table: pd.DataFrame,
+):
+    # Simply call the function
+    exposure_vector = exposure_geoms_setup(
+        exposure_data=buildings_data,
+        exposure_object_type_column="gebruiksdoel",
+        exposure_link=buildings_link_table,
+        strip=True,
+    )
+
+    # Assert the output
+    assert len(exposure_vector.columns) == 3
 
 
 def test_exposure_geoms_setup_fill_nodata(
@@ -93,8 +110,8 @@ def test_exposure_geoms_setup_fill_nodata(
     assert "3 features could not be internally linked" in caplog.text
     # The warning should also name the unmapped column and include a
     # breakdown line with a count (form: "<value>: <count>").
-    assert "Unmapped values in 'gebruiksdoel'" in caplog.text
-    assert ": 3" in caplog.text
+    assert "The unmapped types were:" in caplog.text
+    assert "nan [3]" in caplog.text
     assert len(exposure_vector) == 9
 
     # Fill the nodata in the linking with a known (irony) value
