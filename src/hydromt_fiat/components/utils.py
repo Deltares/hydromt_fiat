@@ -1,95 +1,13 @@
 """Component utilities."""
 
-import re
-from os.path import relpath
 from pathlib import Path
-from typing import Any
 
 from hydromt._utils.naming_convention import _expand_uri_placeholders
 
-MOUNT_PATTERN = re.compile(r"(^\/(\w+)\/|^(\w+):\/).*$")
 
-
-## Config/ pathing related
-def _mount(
-    value: str,
-) -> str | None:
-    """Get the mount of a path."""
-    m = MOUNT_PATTERN.match(value)
-    if m is None:
-        return None
-    return m.group(1)
-
-
-def _relpath(
-    value: Any,
-    root: Path,
-) -> str | Any:
-    """Generate a relative path."""
-    if not isinstance(value, Path):
-        return value
-    value = Path(value)
-    if _mount(value.as_posix()) == _mount(root.as_posix()):
-        value = Path(relpath(value, root))
-    return value.as_posix()
-
-
-def make_config_paths_relative(
-    data: dict[str, Any],
-    root: Path,
-) -> dict[str, Any]:
-    """Make the configurations path relative to the root.
-
-    This only concerns itself with paths that are absolute and on
-    the same mount.
-
-    Parameters
-    ----------
-    data : dict
-        The configurations in a dictionary format.
-    root : Path
-        The root to which the paths are made relative.
-        Most of the time, this will be the parent directory of the
-        configurations file.
-    """
-    for key, val in data.items():
-        if isinstance(val, list) and all([isinstance(item, dict) for item in val]):
-            for item in val:
-                make_config_paths_relative(item, root)
-        if isinstance(val, dict):
-            data.update({key: make_config_paths_relative(val, root)})
-        else:
-            data.update({key: _relpath(val, root)})
-    return data
-
-
-def get_item(
-    parts: list[str],
-    current: dict[str, Any],
-    root: Path | str,
-    fallback: Any | None = None,
-    abs_path: bool = False,
-) -> Any | None:
-    """Get item from a dictionary."""
-    num_parts = len(parts)
-    for i, part in enumerate(parts):
-        if isinstance(current, list):
-            return [
-                get_item(parts[i:], item, root, fallback, abs_path) for item in current
-            ]
-        if i < num_parts - 1:
-            current = current.get(part, {})
-        else:
-            value = current.get(part, fallback)
-            if abs_path and isinstance(value, (Path, str)):
-                value = Path(root, value)
-            return value
-    return None
-
-
-def pathing_expand(
+def expand_path_wildcards(
     root: Path, filename: Path | str | None = None
-) -> tuple[list[Path], list[str]] | None:
+) -> list[Path] | None:
     """Sort the pathing on reading based on a wildcard."""
     # If the filename is None, do nothing
     if filename is None:
@@ -99,32 +17,4 @@ def pathing_expand(
     path_glob, _, _ = _expand_uri_placeholders(filename)
     p = list(Path(root).glob(path_glob))
     # Get the unique names
-    n = [item.stem for item in p]
-    return p, n
-
-
-def ensure_path_listing(
-    p: list[Path] | list[Path | str] | Path | str | None,
-) -> list[Path] | None:
-    """Ensure the output is either list of Path or None."""
-    if p is None:
-        return None
-    # Handling legacy configs
-    if not isinstance(p, list):
-        p = [p]
-    # If no files return None
-    if all([item is None for item in p]):
-        return None
-    return [Path(item) for item in p if item is not None]
-
-
-def pathing_config(
-    p: list[Path] | list[Path | str] | Path | str | None,
-) -> tuple[list[Path], list[str]] | None:
-    """Sort pathing based on config entries (i.e. a list)."""
-    ep = ensure_path_listing(p)
-    if ep is None:
-        return None
-    # Remove entries with no files and get the names of the remaining ones
-    n = [item.stem for item in ep]
-    return ep, n
+    return p

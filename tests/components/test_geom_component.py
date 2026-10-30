@@ -17,7 +17,7 @@ def test_geom_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Assert the current state
     assert component._data is None
@@ -50,8 +50,8 @@ def test_geom_component__assert_entry_errors(
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'baz' as input"
         ),
     ):
         component._assert_entry(name="baz")
@@ -60,8 +60,8 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'bar' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'bar' as input"
         ),
     ):
         component._assert_entry(name="bar")
@@ -72,7 +72,7 @@ def test_geom_component_clear(
     exposure_vector: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector}
@@ -135,7 +135,7 @@ def test_geom_component_clip_no_data(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     # Assert the current state
     assert component._data is None
 
@@ -238,7 +238,7 @@ def test_geom_component_set(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert len(component.data) == 0  # No data yet
 
     # Add a geometry dataset
@@ -263,7 +263,7 @@ def test_geom_component_region(
     mock_model: MagicMock,
 ):
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert component.region is None
 
     # Set a second dataset

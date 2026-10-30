@@ -9,7 +9,9 @@ from hydromt.model import Model
 from hydromt.model.components.spatial import SpatialModelComponent
 from pyproj.crs import CRS
 
+from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.utils import REGION
+from hydromt_fiat.writers import write_geoms
 
 __all__ = ["RegionComponent"]
 
@@ -101,8 +103,8 @@ class RegionComponent(SpatialModelComponent):
             return
 
         # Read the data
-        logger.info(f"Reading the model region file at {read_path.as_posix()}")
-        data = cast(gpd.GeoDataFrame, gpd.read_file(read_path, **kwargs))
+        logger.info("Reading model region")
+        data = read_geoms(read_path=read_path, **kwargs)
         self.set(data=data)
 
     def write(
@@ -144,7 +146,7 @@ class RegionComponent(SpatialModelComponent):
             logger.warning("Region is empty. Skipping...")
             return
 
-        logger.info(f"Writing the model region file to {write_path.as_posix()}")
+        logger.info("Writing model region")
         # Create dir if not there
         if not write_path.parent.is_dir():
             write_path.parent.mkdir(parents=True, exist_ok=True)
@@ -156,7 +158,7 @@ class RegionComponent(SpatialModelComponent):
         ):
             data.to_crs(epsg=4326, inplace=True)
         # Write
-        data.to_file(write_path, **kwargs)
+        write_geoms(data=data, write_path=write_path, **kwargs)
 
     ## Mutating methods
     def clear(self) -> None:
