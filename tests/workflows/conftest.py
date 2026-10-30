@@ -8,6 +8,14 @@ import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full
 
+from hydromt_fiat.utils import (
+    COST__TYPE,
+    CURVE,
+    IMPACT__TYPE,
+    OBJECT__TYPE,
+    create_query,
+)
+
 
 ## Data from the data catalog
 @pytest.fixture
@@ -30,6 +38,14 @@ def exposure_cost_table(global_data_catalog: DataCatalog) -> pd.DataFrame:
     return df
 
 
+@pytest.fixture(scope="session")
+def exposure_cost_table_processed(exposure_cost_table: pd.DataFrame) -> pd.DataFrame:
+    query = create_query(**{"country": "World"})
+    exposure_cost_table = exposure_cost_table.query(query)
+    exposure_cost_table = exposure_cost_table.T.reset_index(names=COST__TYPE)
+    return exposure_cost_table
+
+
 @pytest.fixture
 def exposure_grid_data_ind(
     build_data_catalog: DataCatalog, build_region_small: gpd.GeoDataFrame
@@ -44,6 +60,12 @@ def exposure_grid_data_ind(
 @pytest.fixture
 def exposure_grid_link(build_data_catalog: DataCatalog) -> pd.DataFrame:
     df = build_data_catalog.get_dataframe("exposure_grid_link")
+    return df
+
+
+@pytest.fixture
+def exposure_grid_cat_table(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    df = build_data_catalog.get_dataframe("category_values")
     return df
 
 
@@ -65,6 +87,16 @@ def hazard_event_data_highres(
         geom=build_region_small,
     )
     return ds
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curve1(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve1")
+
+
+@pytest.fixture(scope="session")
+def vulnerability_curve2(build_data_catalog: DataCatalog) -> pd.DataFrame:
+    return build_data_catalog.get_dataframe("curve2")
 
 
 @pytest.fixture
@@ -159,3 +191,15 @@ def rotated_grid() -> xr.DataArray:
     # Build using 'full' from core
     da = full(coords={"yc": yc, "xc": xc}, nodata=-1, crs=4326)
     return da
+
+
+@pytest.fixture
+def vulnerability_identifiers_dummy() -> pd.DataFrame:
+    df = pd.DataFrame(
+        {
+            OBJECT__TYPE: ["foo"],
+            IMPACT__TYPE: ["damage"],
+            CURVE: ["c1"],
+        }
+    )
+    return df

@@ -8,6 +8,7 @@ import pytest
 import xarray as xr
 from hydromt import DataCatalog
 from hydromt.gis import full_from_transform
+from hydromt.readers import open_nc
 from requests.exceptions import ConnectionError, RequestException
 from shapely.geometry import box
 from urllib3.exceptions import HTTPError
@@ -139,7 +140,7 @@ def exposure_vector(model_data_path: Path) -> gpd.GeoDataFrame:
 def exposure_grid(model_data_path: Path) -> xr.Dataset:
     p = Path(model_data_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -151,12 +152,12 @@ def hazard(model_data_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def vulnerability_curves(model_data_path: Path) -> pd.DataFrame:
     p = Path(model_data_path, "vulnerability", "curves.csv")
     assert p.is_file()
@@ -226,10 +227,29 @@ def exposure_vector_clipped_for_link(
 
 
 @pytest.fixture
+def exposure_vector_clipped_split_path(
+    tmp_path: Path,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+) -> Path:
+    p = Path(tmp_path, "foo.fgb")
+    # Seperate the geometry data
+    geom = exposure_vector_clipped.loc[:, ["object_id", "geometry"]]
+    geom.to_file(p)
+    assert p.is_file()
+    # Separate the tabular data
+    cols = exposure_vector_clipped.columns.values.tolist()
+    cols.remove("geometry")
+    data = exposure_vector_clipped.loc[:, cols]
+    data.to_csv(p.with_suffix(".csv"), index=False)
+    assert p.with_suffix(".csv").is_file()
+    return p
+
+
+@pytest.fixture
 def exposure_grid_clipped(model_data_clipped_path: Path) -> xr.Dataset:
     p = Path(model_data_clipped_path, "exposure", "spatial.nc")
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -241,7 +261,7 @@ def hazard_clipped(model_data_clipped_path: Path) -> xr.Dataset:
         "hazard.nc",
     )
     assert p.is_file()
-    ds = xr.open_dataset(p)
+    ds = open_nc(p, mask_and_scale=False)
     assert len(ds.data_vars) != 0
     return ds
 
@@ -276,7 +296,7 @@ def model_with_region(
     model: FIATModel,
     build_region_small: Path,
 ) -> FIATModel:
-    model.setup_region(build_region_small)
+    model.set_region(build_region_small)
     return model
 
 
@@ -288,6 +308,33 @@ def box_geometry() -> gpd.GeoDataFrame:
         crs=4326,
     )
     return geom
+
+
+@pytest.fixture
+def config_dummy(tmp_path: Path) -> dict:
+    data = {
+        "type": "geom",
+        "threads": 4,
+        "hazard": {"file": Path(tmp_path, "foo.nc"), "rp": [1, 2, 3]},
+        "vulnerability": {"file": Path("foo.csv")},
+        "exposure": [{"file": "foo.fgb"}],
+    }
+    return data
+
+
+@pytest.fixture
+def exposure_cost_dict() -> dict[str, float]:
+    data = {
+        "residential_structure": 294.910236432,
+        "residential_content": 147.455118216,
+        "commercial_structure": 319.45019868,
+        "commercial_content": 319.45019868,
+        "industrial_structure": 217.356427584,
+        "industrial_content": 326.034641376,
+        "unknown_structure": 277.238954232,
+        "unknown_content": 249.51505880880003,
+    }
+    return data
 
 
 @pytest.fixture
