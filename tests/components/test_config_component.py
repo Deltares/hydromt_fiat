@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
@@ -9,31 +10,30 @@ from hydromt.readers import read_toml
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.components import ConfigComponent
+from hydromt_fiat.settings import BaseSettings, GeomSettings
 from hydromt_fiat.utils import (
-    EXPOSURE,
     GEOM,
-    MODEL,
+    OUTPUT,
     SETTINGS,
-    TYPE,
 )
 
 
 def test_config_component_empty(mock_model: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model("geom"))
 
     # Assert that the internal data is None
     assert component._data is None
 
     # When asking for data property, it should return a dict
-    assert isinstance(component.data, dict)
-    assert isinstance(component._data, dict)  # Same for internal
-    assert len(component.data) == 0
+    assert isinstance(component.data, BaseSettings)
+    assert isinstance(component._data, BaseSettings)  # Same for internal
+    assert component.data.hazard is None
 
 
 def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model("geom"))
 
     # Assert it's properties
     assert component.dir == tmp_path
@@ -51,127 +51,32 @@ def test_config_component_clear(
     config_dummy: dict,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model("geom"))
 
     # Set data like a dummy
-    component._data = config_dummy
+    component.data.output_dir = Path("foo")
     # Assert the current state
-    assert len(component.data) == 4
+    assert component.data.output_dir == Path("foo")
 
     # Call the clear method
     component.clear()
     # Assert the state after
-    assert len(component.data) == 0
-
-
-def test_config_component_get(
-    mock_model: MagicMock,
-    config_dummy: dict,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model)
-
-    # Set data like a dummy
-    component._data = config_dummy
-
-    # Get an entry
-    res = component.get("foo")
-    # Assert the entry
-    assert res == "bar"
-
-    # Get an entry deeper
-    res = component.get("spooky.ghost")
-    # Assert the entry
-    assert res == [1, 2, 3]
-
-    # Get an entry that doesnt exists, return fallback
-    res = component.get("No", fallback=2)
-    # Assert the entry
-    assert res == 2
-
-
-def test_config_component_get_path(
-    tmp_path: Path,
-    mock_model: MagicMock,
-    config_dummy: dict,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model)
-
-    # Set data like a dummy
-    component._data = config_dummy
-
-    # Get and entry as an absolute path
-    res = component.get("baz.file2", abs_path=True)
-    # Assert the output
-    assert res == Path(tmp_path, "tmp/tmp.txt")
-
-
-def test_config_component_set(
-    mock_model: MagicMock,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model)
-
-    # Set data
-    component.set("foo", value="bar")
-    # Assert state
-    assert component.data["foo"] == "bar"
-
-    # Set data with an extra level (part)
-    component.set("baz.boo", value=2)
-    # Assert state
-    assert component.data["baz"]["boo"] == 2
-
-
-def test_config_component_set_dict(
-    mock_model: MagicMock,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model)
-
-    # Set data
-    component.set("foo.bar", value="baz")
-    # Assert state
-    assert component.data["foo"]["bar"] == "baz"
-
-    # Set data via a dictionary
-    component.set("foo", value={"boo": 2})
-    # Assert state
-    assert component.data["foo"]["boo"] == 2
-    assert len(component.data["foo"]) == 2
-
-
-def test_config_component_set_none(
-    mock_model: MagicMock,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model)
-
-    # Set data
-    component.set("foo", value=None)
-    # Assert state
-    assert "foo" not in component.data
-
-    # Set data via a dictionary
-    component.set("foo", value={"bar": 2, "boo": None})
-    # Assert state
-    assert "bar" in component.data["foo"]
-    assert "boo" not in component.data["foo"]
-    assert len(component.data["foo"]) == 1
+    assert component.data.output_dir == Path(OUTPUT)
 
 
 def test_config_component_read(
     mock_model: MagicMock,
     model_data_clipped_path: Path,
 ):
+    # Setup the model
+    model = mock_model("geom")
     # Set it to read mode
-    type(mock_model).root = PropertyMock(
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
 
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(model)
 
     # Assert its data currently none
     assert component._data is None
@@ -180,26 +85,27 @@ def test_config_component_read(
     component.read()
 
     # Assert the read data
-    assert isinstance(component.data, dict)
-    assert len(component.data) == 4
-    assert component.data[MODEL][TYPE] == GEOM
-    assert component.data[EXPOSURE]
+    assert isinstance(component.data, GeomSettings)
+    assert component.data.type == GEOM
+    assert component.data.exposure is None
 
 
 def test_config_component_read_none(
     mocker: MockerFixture,
     mock_model: MagicMock,
 ):
+    # Setup the model
+    model = mock_model("geom")
     # Set it to read mode
     mocker.patch.object(
-        type(mock_model.root),
+        type(model.root),
         "mode",
         new_callable=PropertyMock,
         return_value=ModelMode("r"),
     )
 
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(model)
 
     # Assert its data currently none
     assert component._data is None
@@ -208,8 +114,8 @@ def test_config_component_read_none(
     component.read()
 
     # Assert the read data
-    assert isinstance(component.data, dict)
-    assert len(component.data) == 0
+    assert isinstance(component.data, BaseSettings)
+    assert component.data.hazard is None
 
 
 def test_config_component_write(
@@ -218,10 +124,10 @@ def test_config_component_write(
     config_dummy: dict,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model("geom"))
 
     # Set data like a dummy
-    component._data = config_dummy
+    component._data = GeomSettings.model_validate(config_dummy)
 
     # Write the data
     component.write()
@@ -231,7 +137,7 @@ def test_config_component_write(
 
     # Assert at least the path that was absolute in the config dict
     data = read_toml(Path(tmp_path, component._filename))
-    assert data["baz"]["file1"] == "tmp.txt"
+    assert data["hazard"]["file"] == "foo.nc"
 
 
 def test_config_component_write_sig(
@@ -239,9 +145,7 @@ def test_config_component_write_sig(
     mock_model: MagicMock,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
-    # Set data like a dummy
-    component._data = {"foo": "bar"}
+    component = ConfigComponent(mock_model("geom"))
 
     # Write to an alternative path
     component.write(filename="settings/tmp.toml")
@@ -258,12 +162,44 @@ def test_config_component_write_warnings(
 ):
     caplog.set_level(logging.WARNING)
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model("geom"))
 
     # Write the data
     component.write()
 
     # Assert the logging message
-    assert "No data in config component, writing empty file.." in caplog.text
+    assert "No alterations were made to the default settings" in caplog.text
     # Assert file has still been written
     assert Path(tmp_path, component._filename).is_file()
+
+
+def test_config_component_write_errors(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = ConfigComponent(mock_model(None))
+
+    # Write the data with no model specific settings
+    with pytest.raises(
+        TypeError,
+        match="No model type defined, will not write settings",
+    ):
+        component.write()
+
+
+def test_config_component_update(
+    tmp_path: Path,
+    mock_model: MagicMock,
+    config_dummy: dict[str, Any],
+):
+    # Setup the component
+    component = ConfigComponent(mock_model("geom"))
+    # Assert current state
+    assert component.data.threads == 1
+    assert component.data.hazard is None
+
+    # Call update method
+    component.update(**config_dummy)
+    # Assert the state after
+    assert component.data.threads == 4
+    assert component.data.hazard.file == Path(tmp_path, "foo.nc")

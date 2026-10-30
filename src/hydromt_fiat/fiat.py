@@ -20,18 +20,18 @@ from hydromt_fiat.components import (
     RegionComponent,
     VulnerabilityComponent,
 )
+from hydromt_fiat.components.config import SETTINGS_DICT
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.utils import (
     CONFIG,
     EXPOSURE,
-    GEOM,
+    GEOMS,
     GRID,
     HAZARD,
-    MODEL_CALC,
-    MODEL_TYPE,
     OUTPUT,
     REGION,
     SETTINGS,
+    TYPE,
     VULNERABILITY,
 )
 
@@ -52,6 +52,8 @@ class FIATModel(Model):
         Model root, by default None.
     config_fname : Path | str, optional
         Name of the configurations file, by default 'settings.toml'.
+    type : str, optional
+        Set the type of the FIAT model, either 'geom' or 'grid'. By default None.
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w".
     data_libs : list[Path | str] | Path | str, optional
@@ -69,6 +71,7 @@ class FIATModel(Model):
         self,
         root: Path | str | None = None,
         config_fname: Path | str = f"{SETTINGS}.toml",
+        type: str | None = None,
         *,
         mode: str = "r",
         data_libs: list[Path | str] | Path | str | None = None,
@@ -82,6 +85,8 @@ class FIATModel(Model):
             data_libs=data_libs,
             **catalog_keys,
         )
+        ## It's own attributes
+        self._type: str | None = None
 
         ## Setup components
         self.add_component(
@@ -89,7 +94,7 @@ class FIATModel(Model):
             ConfigComponent(model=self, filename=config_fname),
         )
         self.add_component(
-            f"{EXPOSURE}_{GEOM}",
+            f"{EXPOSURE}_{GEOMS}",
             ExposureGeomsComponent(model=self, region_component=REGION),
         )
         self.add_component(
@@ -101,7 +106,7 @@ class FIATModel(Model):
             HazardComponent(model=self, region_component=REGION),
         )
         self.add_component(
-            f"{OUTPUT}_{GEOM}",
+            f"{OUTPUT}_{GEOMS}",
             OutputGeomsComponent(model=self),
         )
         self.add_component(
@@ -113,40 +118,59 @@ class FIATModel(Model):
             VulnerabilityComponent(model=self),
         )
 
+        # Finish initialization
+        if type is not None:
+            self.set_type(type)
+
+    ## Private methods
+    def _assert_model_type(self, type: str, error: bool = True):
+        flag = self.type == type
+        if error and not flag:
+            raise TypeError(
+                f"Model is in the wrong type '{self.type}', \
+the method requires '{type}'"
+            )
+        return flag
+
     ## Properties
     @property
     def config(self) -> ConfigComponent:
-        """Return the config component."""
+        """Access the config component."""
         return self.components[CONFIG]
 
     @property
     def exposure_geoms(self) -> ExposureGeomsComponent:
-        """Return the exposure geoms component."""
-        return self.components[f"{EXPOSURE}_{GEOM}"]
+        """Access the exposure geoms component."""
+        return self.components[f"{EXPOSURE}_{GEOMS}"]
 
     @property
     def exposure_grid(self) -> ExposureGridComponent:
-        """Return the exposure grid component."""
+        """Access the exposure grid component."""
         return self.components[f"{EXPOSURE}_{GRID}"]
 
     @property
     def hazard(self) -> HazardComponent:
-        """Return the hazard component."""
+        """Access the hazard component."""
         return self.components[HAZARD]
 
     @property
     def output_geoms(self) -> OutputGeomsComponent:
-        """Return the output geoms component."""
-        return self.components[f"{OUTPUT}_{GEOM}"]
+        """Access the output geoms component."""
+        return self.components[f"{OUTPUT}_{GEOMS}"]
 
     @property
     def output_grid(self) -> OutputGridComponent:
-        """Return the output grid component."""
+        """Access the output grid component."""
         return self.components[f"{OUTPUT}_{GRID}"]
 
     @property
+    def type(self) -> str | None:
+        """Return the model type."""
+        return self._type
+
+    @property
     def vulnerability(self) -> VulnerabilityComponent:
-        """Return the vulnerability component."""
+        """Access the vulnerability component."""
         return self.components[VULNERABILITY]
 
     ## I/O
@@ -168,13 +192,13 @@ class FIATModel(Model):
             component.read()
 
     @hydromt_step
-    def write(self) -> None:
+    def write(self, **write_kwargs) -> None:
         """Write the FIAT model."""
         names = [item.name_in_model for item in self.components.values() if item._build]
         names.remove(CONFIG)
         for name in names:
-            self.components[name].write()
-        self.config.write()
+            self.components[name].write(**(write_kwargs.get(name) or {}))
+        self.config.write(**(write_kwargs.get(CONFIG) or {}))
 
     ## Mutating methods
     @hydromt_step
@@ -203,7 +227,7 @@ class FIATModel(Model):
             file or a geopandas GeoDataFrame.
         """
         # First update the region to the new region, thereby replace
-        self.setup_region(region, replace=True)
+        self.set_region(region, replace=True)
         logger.info(
             f"Clipping FIAT model with geometry with bbox {self.region.total_bounds}"
         )
@@ -212,6 +236,33 @@ class FIATModel(Model):
             if not isinstance(component, SpatialModelComponent) or name == REGION:
                 continue
             component.clip(self.region, inplace=True)
+
+    @hydromt_step
+    def move(
+        self,
+        root: Path,
+        write: bool = False,
+    ):
+        """Move the model to a new directory.
+
+        Could be seen as a model copy,
+        when calling :py:meth:`~FIATModel.write` directly afterwards or setting
+        write to True.
+
+        Warning
+        -------
+        Does not directly write the data to the new director when write is set to False.
+
+        Parameters
+        ----------
+        root : Path
+            The path to the new model directory.
+        write : bool, optional
+            If True, also writes the model to the new directory. By Default False.
+        """
+        self.root.set(path=root, mode="w+")
+        if write:
+            self.write()
 
     @hydromt_step
     def reproject(
@@ -241,40 +292,26 @@ class FIATModel(Model):
                 continue
             component.reproject(crs, inplace=True)
 
-    ## Setup methods
+    ## Set methods
     @hydromt_step
-    def setup_config(
+    def set_config(
         self,
-        *,
-        model_type: Literal["geom", "grid"],
-        calculation_method: Literal["flood.depth", "flood.level"],
         **settings,
     ) -> None:
         """Set config file entries.
 
         Parameters
         ----------
-        model_type : {'geom', 'grid'}
-            The type of the model, either 'geom' for a geometry-based model or 'grid'
-            for a grid-based model.
-        calculation_method : {'flood.level', 'flood.depth'}
-            The method to be used for the risk calculation, either 'flood.level' or
-            'flood.depth'.
         settings : dict
             Settings for the configuration provided as keyword arguments
             (KEY=VALUE).
         """
         logger.info("Setting config entries from user input")
-        if model_type not in [GEOM, GRID]:
-            raise ValueError(f"Model_type must be either '{GEOM}' or '{GRID}'")
-        self.config.set(MODEL_TYPE, model_type)
-        self.config.set(MODEL_CALC, calculation_method)
         # Set the other defined settings
-        for key, value in settings.items():
-            self.config.set(key, value)
+        self.config.update(**settings)
 
     @hydromt_step
-    def setup_region(
+    def set_region(
         self,
         region: Path | str | gpd.GeoDataFrame,
         replace: bool = False,
@@ -305,3 +342,31 @@ class FIATModel(Model):
             )
         # Set the region in the region component
         self.components[REGION].set(geom, replace=replace)
+
+    @hydromt_step
+    def set_type(
+        self,
+        type: Literal["geom", "grid"],
+    ) -> None:
+        """Set the type of the FIAT model.
+
+        This can be either 'geom' for the geometry model or 'grid' for the raster
+        based model.
+
+        Parameters
+        ----------
+        type : Literal[&quot;geom&quot;, &quot;grid&quot;]
+            The type of model.
+        """
+        logger.info(f"Settings model type to: '{type}'")
+        # Set the type
+        self._type = type
+        # Get the model settings minus type and exposure
+        settings_dict = self.config.data.to_dict()
+        settings_dict.pop(TYPE, None)
+        settings_dict.pop(EXPOSURE, None)
+        # Create and set new config settings pydantic basemodel
+        self.config._data = SETTINGS_DICT[self.type].model_validate(
+            settings_dict,
+            context=self.config.context,
+        )
