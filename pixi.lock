@@ -6722,6 +6722,7 @@ packages:
   name: hydromt-fiat
   requires_dist:
   - affine
+  - certifi>=2026.10.19
   - geopandas
   - hydromt>=1.4.1
   - minio
