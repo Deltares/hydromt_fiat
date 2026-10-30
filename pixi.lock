@@ -6708,7 +6708,7 @@ packages:
   - nbconvert==7.17.1 ; extra == 'examples'
   - notebook ; extra == 'examples'
   - pandoc ; extra == 'examples'
-  - pytest>=2.7.3 ; extra == 'test'
+  - pytest>=9.1.1 ; extra == 'test'
   - pytest-cov ; extra == 'test'
   - pytest-mock ; extra == 'test'
   - responses ; extra == 'test'
