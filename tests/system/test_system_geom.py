@@ -7,18 +7,22 @@ from hydromt_fiat import FIATModel
 from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
 
 try:
-    from fiat import Configurations, GeomModel, __version__
+    import fiat
 
     HAS_FIAT = True
 
 except ImportError:
-    __version__ = "0.0.0"
     HAS_FIAT = False
 
+if HAS_FIAT:
+    from fiat import GeomModel, __version__
+    from fiat.settings import load_settings
+else:
+    __version__ = "NOT INSTALLED"
 
 @pytest.mark.skipif(
     not HAS_FIAT or Version(__version__) < Version("1.0.0.dev0"),
-    reason="At least Delft-FIAT version 1.0.0 is required.",
+    reason=f"At least Delft-FIAT version 1.0.0 is required (got {__version__}).",
 )
 @pytest.mark.system
 def test_system_geom_model(
@@ -31,12 +35,13 @@ def test_system_geom_model(
     # Setup the model
     model = FIATModel(
         root=tmp_path,
-        mode="w+",
+        type=GEOM,
         data_libs=[build_data_catalog_path, global_data_catalog_path],
+        mode="w+",
     )
 
     # Add model type and region
-    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
+    model.set_config(method=FLOOD_LEVEL)
     model.set_region(build_region_small)
 
     # Setup the vulnerability
@@ -50,6 +55,7 @@ def test_system_geom_model(
     # Add an hazard layer
     model.hazard.create(
         "flood_event",
+        hazard_type="water_level"
     )
 
     # Setup the exposure geometry data
@@ -58,7 +64,11 @@ def test_system_geom_model(
         exposure_object_type_column="gebruiksdoel",
         exposure_link_fname="buildings_link",
     )
-    model.exposure_geoms.create_max_damage(
+    model.exposure_geoms.create_link(
+        exposure_name="buildings",
+        impact_type="damage",
+    )
+    model.exposure_geoms.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
@@ -67,8 +77,8 @@ def test_system_geom_model(
     # Needed for flood calculations
     model.exposure_geoms.update_column(
         exposure_name="buildings",
-        columns=["ref", "method"],
-        values=[0, "centroid"],
+        columns=["reference", "elevation", "method"],
+        values=[0, 0, "centroid"],
     )
 
     # Write the model
@@ -76,7 +86,7 @@ def test_system_geom_model(
 
     ## FIAT
     # Read the config file
-    cfg = Configurations.from_file(Path(model.root.path, model.config._filename))
+    cfg = load_settings(Path(model.root.path, model.config._filename))
 
     # Read the data in the fiat model
     fmodel = GeomModel(cfg)
