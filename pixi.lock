@@ -6688,6 +6688,7 @@ packages:
   - pint
   - pydantic
   - pyproj
+  - rasterio
   - requests
   - shapely
   - tomlkit
