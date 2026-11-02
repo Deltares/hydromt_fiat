@@ -107,7 +107,7 @@ examples = [
     "pandoc",
 ]
 test = [
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     "pytest-cov",
     "pytest-mock",
     "responses",
