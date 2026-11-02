@@ -1,8 +1,9 @@
 import pandas as pd
 import pytest
+import xarray as xr
 
 from hydromt_fiat.utils import COST__TYPE, VALUE
-from hydromt_fiat.workflows import process_table
+from hydromt_fiat.workflows import ensure_dataset, process_table
 
 
 def test_process_table(
@@ -51,3 +52,69 @@ def test_process_table_errors(
             index_name=COST__TYPE,
             country="Foo",
         )
+
+
+def test_ensure_dataset(
+    vulnerability_curves: xr.Dataset,
+):
+    # Call the function with a dataset
+    ds = ensure_dataset(vulnerability_curves)
+
+    # Assert the output, nothing should have changed
+    assert ds is vulnerability_curves
+
+
+def test_ensure_dataset_data_array(
+    vulnerability_curves: xr.Dataset,
+):
+    # Setup a data array with a name
+    da = vulnerability_curves["default"].copy()
+
+    # Call the function
+    ds = ensure_dataset(da)
+
+    # Assert the output
+    assert isinstance(ds, xr.Dataset)
+    assert list(ds.data_vars) == ["default"]
+
+    # Call the function with a name, which takes precedence
+    ds = ensure_dataset(da, name="foo")
+
+    # Assert the output
+    assert list(ds.data_vars) == ["foo"]
+
+
+def test_ensure_dataset_data_array_no_name(
+    vulnerability_curves: xr.Dataset,
+):
+    # Setup a data array without a name
+    da = vulnerability_curves["default"].copy()
+    da.name = None
+
+    # Call the function with a name
+    ds = ensure_dataset(da, name="foo")
+
+    # Assert the output
+    assert list(ds.data_vars) == ["foo"]
+
+
+def test_ensure_dataset_errors(
+    vulnerability_curves: xr.Dataset,
+):
+    # Setup a data array without a name
+    da = vulnerability_curves["default"].copy()
+    da.name = None
+
+    # No name available at all
+    with pytest.raises(
+        ValueError,
+        match="DataArray can't be set without a name",
+    ):
+        _ = ensure_dataset(da)
+
+    # Wrong type
+    with pytest.raises(
+        TypeError,
+        match="Wrong input data type: 'DataFrame'",
+    ):
+        _ = ensure_dataset(pd.DataFrame())

@@ -306,11 +306,8 @@ python-magic = "*"
 [tool.pixi.feature.examples.dependencies]
 pandoc = "*"
 
-[tool.pixi.feature.test.dependencies]
-gdal = ">=3.9.1"
-
-[tool.pixi.feature.test.pypi-dependencies]
-delft_fiat = "*"
+# [tool.pixi.feature.test.pypi-dependencies]
+# delft_fiat = ">=1.0.0rc1"
 
 [tool.pixi.feature.wheel.dependencies]
 pip = "*"

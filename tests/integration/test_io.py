@@ -12,7 +12,6 @@ from hydromt_fiat.utils import (
     HAZARD,
     REGION,
     SETTINGS,
-    VULNERABILITY,
 )
 
 
@@ -33,8 +32,8 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     assert "buildings" in model.exposure_geoms.data
     assert len(model.hazard.data.data_vars) == 1
     assert "flood_event" in model.hazard.data
-    assert not model.vulnerability.data.curves.empty
-    assert not model.vulnerability.data.identifiers.empty
+    assert len(model.vulnerability.data.curves) != 0
+    assert len(model.vulnerability.data.identifiers) != 0
 
     # Set the root to a new location and in write mode
     model.root.set(path=tmp_path, mode="w")
@@ -47,5 +46,5 @@ def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     assert Path(tmp_path, f"{REGION}.geojson").is_file()
     assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}_id.csv").is_file()
+    assert Path(tmp_path, f"{CURVES}.nc").is_file()
+    assert Path(tmp_path, f"{CURVES}_id.nc").is_file()

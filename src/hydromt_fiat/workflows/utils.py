@@ -2,6 +2,7 @@
 
 import geopandas as gpd
 import pandas as pd
+import xarray as xr
 
 from hydromt_fiat.utils import INDEX, VALUE, create_query
 
@@ -60,3 +61,19 @@ def process_table(
             table = table.T.reset_index(names=index_name)
 
     return table
+
+
+def ensure_dataset(
+    data: xr.DataArray | xr.Dataset,
+    name: str | None = None,
+) -> xr.Dataset:
+    """Ensure the data is of dataset typing."""
+    # First check the input and typing
+    if isinstance(data, xr.DataArray):
+        if data.name is None and name is None:
+            raise ValueError("DataArray can't be set without a name")
+        data.name = name or data.name
+        data = data.to_dataset()
+    if not isinstance(data, xr.Dataset):
+        raise TypeError(f"Wrong input data type: '{data.__class__.__name__}'")
+    return data

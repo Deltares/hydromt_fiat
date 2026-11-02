@@ -151,7 +151,7 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     assert len(model.hazard.data.data_vars) == 1
     assert len(model.output_geoms.data) == 1
     assert len(model.output_grid.data.data_vars) == 7
-    assert len(model.vulnerability.data.curves) == 1001
+    assert len(model.vulnerability.data.curves) == 1
 
     # Clear the model
     model.clear()
