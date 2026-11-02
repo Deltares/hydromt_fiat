@@ -27,7 +27,7 @@ jobs:
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Download cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: .cache
           key: test-data
@@ -81,7 +81,7 @@ jobs:
           cache-write: false
 
       - name: Download cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: .cache
           key: test-data
