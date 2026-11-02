@@ -278,7 +278,7 @@ only resolution set"
                 continue
             data.append(self.data[var].raster.reproject(dst_crs=crs))
         # Merge the data back together
-        data = xr.merge(data)
+        data = xr.merge(data, compat="no_conflicts")
         data.attrs = attrs
         # If inplace, just set the data and return nothing
         if inplace:
