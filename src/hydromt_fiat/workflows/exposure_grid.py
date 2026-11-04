@@ -262,8 +262,8 @@ def exposure_grid_category_values(
         return ds
 
     # Otherwise move through the table
-    table.drop_duplicates(subset=index_name, inplace=True)
-    table.set_index(index_name, inplace=True)
+    table = table.drop_duplicates(subset=index_name)
+    table = table.set_index(index_name)
     table = table[table.index < table_size]
     # Set a warning for those values falling that do not have a value associated with it
     disc = np.setdiff1d(cat, table.index).tolist()

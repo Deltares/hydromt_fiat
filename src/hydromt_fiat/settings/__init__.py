@@ -16,16 +16,15 @@ from hydromt_fiat.readers import read_config
 from hydromt_fiat.utils import EXPOSURE, FLOOD_DEPTH, HAZARD, OUTPUT
 
 from .exposure import ExposureGeometry, ExposureGrid
-from .file import DEFAULT_CONTEXT, FileContext, OutputFileModel
+from .file import DEFAULT_CONTEXT, FileContext, InputFileModel, OutputFileModel
 from .hazard import Hazard
 from .utils import _relpath
-from .vulnerability import Vulnerability
 
 __all__ = ["GeomSettings", "GridSettings"]
 
 
 def get_file_from_settings_component(
-    component: ExposureGeometry | ExposureGrid | Hazard | Vulnerability,
+    component: InputFileModel,
 ) -> Path | None:
     """Return file path if component exists."""
     if component is not None:
@@ -101,7 +100,7 @@ Can be either 'flood.depth' or 'flood.level'.",
     )
 
     # Input files
-    vulnerability: Vulnerability | None = Field(
+    vulnerability: InputFileModel | None = Field(
         default=None,
         description="Vulnerability settings for the model.",
     )

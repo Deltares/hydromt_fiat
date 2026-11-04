@@ -217,6 +217,40 @@ def test_exposure_grid_component_create_multi(
     assert component.data.industrial_structure.attrs.get(FN__CURVE) == "in1"
 
 
+def test_exposure_grid_component_create_name(
+    model_with_region: FIATModel,
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
+):
+    # Setup the model with only a vulnerability dataset with a custom name
+    model_with_region._type = "grid"
+    model_with_region.vulnerability.set(
+        vulnerability_curves.rename(
+            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
+        )
+    )
+    model_with_region.vulnerability.set_id(
+        vulnerability_identifiers.rename(
+            {
+                k: k.replace("default", "custom")
+                for k in vulnerability_identifiers.variables
+            }
+        )
+    )
+    # Setup the component
+    component = ExposureGridComponent(model=model_with_region)
+
+    # Call the method
+    component.create(
+        exposure_fnames="industrial_content",
+        vulnerability_name="custom",
+    )
+
+    # Assert the output
+    assert "industrial_content" in component.data.data_vars
+    assert component.data.industrial_content.attrs.get(FN__CURVE) == "in2"
+
+
 def test_exposure_grid_component_create_errors(
     mocker: MockerFixture,
     model: FIATModel,
@@ -224,14 +258,6 @@ def test_exposure_grid_component_create_errors(
     # Setup the component
     model._type = "grid"
     component = ExposureGridComponent(model=model)
-
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create(
-            exposure_fnames="industrial_content",
-            exposure_link_fname="",  # Can be nonsense, error is raised earlier
-        )
 
     # Fake component
     fake_component = mocker.Mock()
@@ -245,6 +271,23 @@ def test_exposure_grid_component_create_errors(
         component.create(
             exposure_fnames="industrial_content",
             exposure_link_fname="",
+        )
+
+
+def test_exposure_grid_component_create_name_errors(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component, the model only contains the default vulnerability dataset
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+
+    # Assert the vulnerability dataset absent error
+    with pytest.raises(
+        ValueError,
+        match="'custom' does not have any identifiers",
+    ):
+        component.create(
+            exposure_fnames="industrial_content",
+            vulnerability_name="custom",
         )
 
 
@@ -265,19 +308,47 @@ def test_exposure_grid_component_create_categorized(
     assert component.data.raster.shape == (473, 468)
 
 
+def test_exposure_grid_component_create_categorized_name(
+    model_with_region: FIATModel,
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
+):
+    # Setup the model with only a vulnerability dataset with a custom name
+    model_with_region._type = "grid"
+    model_with_region.vulnerability.set(
+        vulnerability_curves.rename(
+            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
+        )
+    )
+    model_with_region.vulnerability.set_id(
+        vulnerability_identifiers.rename(
+            {
+                k: k.replace("default", "custom")
+                for k in vulnerability_identifiers.variables
+            }
+        )
+    )
+    # Setup the component
+    component = ExposureGridComponent(model=model_with_region)
+
+    # Call the method
+    component.create_categorized(
+        exposure_fname="categories",
+        name="buildings",
+        vulnerability_name="custom",
+    )
+
+    # Assert the output
+    assert "buildings" in component.data.data_vars
+    assert component.data.raster.shape == (473, 468)
+
+
 def test_exposure_grid_component_create_categorized_errors(
     mocker: MockerFixture, model: FIATModel
 ):
     # Setup the component
     model._type = "grid"
     component = ExposureGridComponent(model=model)
-
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create_categorized(
-            exposure_fname="",
-        )
 
     # Fake component
     fake_component = mocker.Mock()
@@ -290,6 +361,23 @@ def test_exposure_grid_component_create_categorized_errors(
     ):
         component.create_categorized(
             exposure_fname="",
+        )
+
+
+def test_exposure_grid_component_create_categorized_name_errors(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component, the model only contains the default vulnerability dataset
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+
+    # Assert the vulnerability dataset absent error
+    with pytest.raises(
+        ValueError,
+        match="'custom' does not have any identifiers",
+    ):
+        component.create_categorized(
+            exposure_fname="categories",
+            vulnerability_name="custom",
         )
 
 
@@ -384,6 +472,45 @@ def test_exposure_grid_component_create_from_geom(
     assert "commercial_structure" in component.data.data_vars
 
 
+def test_exposure_grid_component_create_from_geom_name(
+    model_with_region: FIATModel,
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
+    exposure_vector: gpd.GeoDataFrame,
+):
+    # Setup the model with only a vulnerability dataset with a custom name
+    model_with_region._type = "grid"
+    model_with_region.vulnerability.set(
+        vulnerability_curves.rename(
+            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
+        )
+    )
+    model_with_region.vulnerability.set_id(
+        vulnerability_identifiers.rename(
+            {
+                k: k.replace("default", "custom")
+                for k in vulnerability_identifiers.variables
+            }
+        )
+    )
+    # Setup the component
+    component = ExposureGridComponent(model=model_with_region)
+
+    # Call the method
+    component.create_grid(res=10)
+    component.create_from_geom(
+        exposure_fname=exposure_vector,
+        column="max_damage_structure",
+        curve="commercial_structure",
+        name="commercial_structure",
+        vulnerability_name="custom",
+        **{"object_type": "commercial"},
+    )
+
+    # Assert the outout
+    assert "commercial_structure" in component.data.data_vars
+
+
 def test_exposure_grid_component_create_from_geom_errors(
     mocker: MockerFixture,
     model: FIATModel,
@@ -391,15 +518,6 @@ def test_exposure_grid_component_create_from_geom_errors(
     # Setup the component
     model._type = "grid"
     component = ExposureGridComponent(model=model)
-
-    # Assert the vulnerability absent error
-    err_msg = "'vulnerability.create' step is required before setting up exposure grid"
-    with pytest.raises(RuntimeError, match=err_msg):
-        component.create_from_geom(
-            exposure_fname="",
-            column="",
-            curve="",
-        )
 
     # Fake component
     fake_component = mocker.Mock()
@@ -425,4 +543,23 @@ def test_exposure_grid_component_create_from_geom_errors(
             exposure_fname="",
             column="",
             curve="",
+        )
+
+
+def test_exposure_grid_component_create_from_geom_name_errors(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component, the model only contains the default vulnerability dataset
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+
+    # Assert the vulnerability dataset absent error
+    with pytest.raises(
+        ValueError,
+        match="'custom' does not have any identifiers",
+    ):
+        component.create_from_geom(
+            exposure_fname="",
+            column="",
+            curve="",
+            vulnerability_name="custom",
         )

@@ -194,6 +194,7 @@ i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as inpu
         self,
         data: gpd.GeoDataFrame,
         name: str,
+        replace: bool = True,
     ) -> None:
         """Set data in the geoms component.
 
@@ -203,10 +204,12 @@ i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as inpu
             New geometry data to add.
         name : str
             Geometry name.
+        replace : bool, optional
+            Whether the data is meant to replace or not. By default True.
         """
         self._initialize()
         assert self._data is not None
-        if name in self._data and id(self._data.get(name)) != id(data):
+        if name in self._data and replace:
             logger.warning(f"Replacing geometry data: {name}")
 
         if "fid" in data.columns:
@@ -214,7 +217,7 @@ i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as inpu
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            data.drop("fid", axis=1, inplace=True)
+            data = data.drop("fid", axis=1)
 
         # Set the data
         self._data[name] = data

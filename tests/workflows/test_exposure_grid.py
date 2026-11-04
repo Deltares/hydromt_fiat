@@ -229,6 +229,32 @@ def test_exposure_grid_category_values_no_table(
     )
 
 
+def test_exposure_grid_category_values_warnings(
+    caplog: pytest.LogCaptureFixture,
+    exposure_grid: xr.Dataset,
+    exposure_grid_cat_table: pd.DataFrame,
+):
+    caplog.set_level(logging.WARNING)
+    # Call the function with a table that misses category 3
+    out = exposure_grid_category_values(
+        exposure_data=exposure_grid["buildings"],
+        table=exposure_grid_cat_table[exposure_grid_cat_table[VALUE] != 3],
+        index_name=VALUE,
+        columns="structure",
+        default=50,
+    )
+
+    # Assert the logging
+    assert (
+        "The following categories have no corresponding value: [3], "
+        "these will be set to the default value of 50"
+    ) in caplog.text
+    # Assert the output, the missing category is set to the default value
+    np.testing.assert_array_equal(
+        out["buildings_structure"].values, [0, 294, 319, 50, 277]
+    )
+
+
 def test_exposure_grid_category_values_errors(
     exposure_grid: xr.Dataset,
     exposure_grid_cat_table: pd.DataFrame,

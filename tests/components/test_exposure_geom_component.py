@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
 import pytest
+import xarray as xr
 from hydromt.model import ModelRoot
 
 from hydromt_fiat import FIATModel
@@ -275,7 +276,7 @@ def test_exposure_geom_component_create_redo(
     # Comfirm that the the linking column is there
     assert OBJECT__TYPE in component._data["foo"].columns
     # Drop the column
-    component._data["foo"].drop(OBJECT__TYPE, axis=1, inplace=True)
+    component._data["foo"] = component._data["foo"].drop(OBJECT__TYPE, axis=1)
     assert OBJECT__TYPE not in component._data["foo"].columns
 
     # Run the method
@@ -329,7 +330,7 @@ def test_exposure_geom_component_create_link(
     )
 
     # Assert the output
-    assert "Replacing geometry data: foo" in caplog.text
+    assert "Replacing geometry data: foo" not in caplog.text
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
@@ -353,29 +354,67 @@ def test_exposure_geom_component_create_link_multi(
     )
 
     # Assert the output
-    assert "Replacing geometry data: foo" in caplog.text
+    assert "Replacing geometry data: foo" not in caplog.text
     assert len(component.data["foo"]) == 12
     assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
 
 
-def test_exposure_geom_component_create_link_errors(
+def test_exposure_geom_component_create_link_name(
     model_with_region: FIATModel,
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
-    # Setup the component
+    # Setup the model with only a vulnerability dataset with a custom name
     model_with_region._type = "geom"
+    model_with_region.vulnerability.set(
+        vulnerability_curves.rename(
+            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
+        )
+    )
+    model_with_region.vulnerability.set_id(
+        vulnerability_identifiers.rename(
+            {
+                k: k.replace("default", "custom")
+                for k in vulnerability_identifiers.variables
+            }
+        )
+    )
+    # Setup the component
     component = ExposureGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector_clipped_for_link}
 
-    # No vulnerability data
+    # Call the method
+    component.create_link(
+        exposure_name="foo",
+        vulnerability_name="custom",
+    )
+
+    # Assert the output
+    assert len(component.data["foo"]) == 12
+    assert f"{FN}_{DAMAGE}_content" in component.data["foo"]
+
+
+def test_exposure_geom_component_create_link_name_errors(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_link: gpd.GeoDataFrame,
+):
+    # Setup the component, the model only contains the default vulnerability dataset
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
+
+    # Set data like a dummy
+    component._data = {"foo": exposure_vector_clipped_for_link}
+
+    # Assert the vulnerability dataset absent error
     with pytest.raises(
-        RuntimeError,
-        match="Run `vulnerability.setup` before this method",
+        ValueError,
+        match="'custom' does not have any identifiers",
     ):
         component.create_link(
             exposure_name="foo",
+            vulnerability_name="custom",
         )
 
 
@@ -460,6 +499,46 @@ def test_exposure_geom_component_create_max_link(
     assert "max_damage_structure" in component.data["buildings"].columns
 
 
+def test_exposure_geom_component_create_max_name(
+    model_with_region: FIATModel,
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+):
+    # Setup the model with only a vulnerability dataset with a custom name
+    model_with_region._type = "geom"
+    model_with_region.vulnerability.set(
+        vulnerability_curves.rename(
+            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
+        )
+    )
+    model_with_region.vulnerability.set_id(
+        vulnerability_identifiers.rename(
+            {
+                k: k.replace("default", "custom")
+                for k in vulnerability_identifiers.variables
+            }
+        )
+    )
+    # Setup the component
+    component = ExposureGeomsComponent(model=model_with_region)
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Call the setup method
+    component.create_max_value(
+        exposure_name="buildings",
+        impact_type="damage",
+        exposure_cost_table_fname="jrc_damage",
+        vulnerability_name="custom",
+        country="World",
+    )
+
+    # Assert that the data is there
+    assert "max_damage_structure" in component.data["buildings"].columns
+    assert "max_damage_content" in component.data["buildings"].columns
+
+
 def test_exposure_geom_component_create_max_errors(
     model_exposure_setup: FIATModel,
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
@@ -477,6 +556,27 @@ def test_exposure_geom_component_create_max_errors(
         component.create_max_value(
             exposure_name="buildings",
             impact_type="damage",
+        )
+
+
+def test_exposure_geom_component_create_max_name_errors(
+    model_exposure_setup: FIATModel,
+    exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
+):
+    # Setup the component, the model only contains the default vulnerability dataset
+    component = ExposureGeomsComponent(model=model_exposure_setup("geom"))
+    # Added the exposure to the data to expand upon
+    component.set(exposure_vector_clipped_for_damamge, name="buildings")
+
+    # Assert the vulnerability dataset absent error
+    with pytest.raises(
+        ValueError,
+        match="'custom' does not have any identifiers",
+    ):
+        component.create_max_value(
+            exposure_name="buildings",
+            impact_type="damage",
+            vulnerability_name="custom",
         )
 
 

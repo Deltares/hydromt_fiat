@@ -9,11 +9,11 @@ from hydromt_fiat.workflows.impact import filter_impact
 
 
 def test_filter_impact(
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Call the function
     v = filter_impact(
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         impact_type="damage",
     )
 
@@ -24,12 +24,12 @@ def test_filter_impact(
 
 def test_filter_impact_list(
     caplog: pytest.LogCaptureFixture,
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     caplog.set_level(logging.WARNING)
     # Call the function
     v = filter_impact(
-        vulnerability=vulnerability_identifiers,
+        vulnerability=vulnerability_identifiers_df,
         impact_type=["damage", "affected"],
     )
 
@@ -40,7 +40,7 @@ def test_filter_impact_list(
 
 
 def test_filter_impact_errors(
-    vulnerability_identifiers: pd.DataFrame,
+    vulnerability_identifiers_df: pd.DataFrame,
 ):
     # Ask for a nonsense impact type
     with pytest.raises(
@@ -51,6 +51,6 @@ impact types ['foo']",
         ),
     ):
         filter_impact(
-            vulnerability=vulnerability_identifiers,
+            vulnerability=vulnerability_identifiers_df,
             impact_type="foo",
         )

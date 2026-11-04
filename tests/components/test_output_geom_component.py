@@ -215,7 +215,7 @@ def test_output_geom_component_write_df(
     # Setup the component
     component = OutputGeomsComponent(model=mock_model_config("geom"))
     # Drop the geometry column
-    exposure_vector_clipped.drop(["geometry"], axis=1, inplace=True)
+    exposure_vector_clipped = exposure_vector_clipped.drop(["geometry"], axis=1)
     # Set data like a dummy
     component._processed_data = {
         "aggr1": exposure_vector_clipped,

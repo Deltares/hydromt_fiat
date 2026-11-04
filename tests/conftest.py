@@ -1,4 +1,5 @@
 import math
+import re
 from functools import wraps
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from urllib3.exceptions import HTTPError
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
-from hydromt_fiat.utils import SQUARE__ID
+from hydromt_fiat.utils import CURVE, SQUARE__ID
 
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
@@ -158,20 +159,44 @@ def hazard(model_data_path: Path) -> xr.Dataset:
 
 
 @pytest.fixture
-def vulnerability_curves(model_data_path: Path) -> pd.DataFrame:
-    p = Path(model_data_path, "vulnerability", "curves.csv")
+def vulnerability_curves(model_data_path: Path) -> xr.Dataset:
+    p = Path(model_data_path, "curves.nc")
     assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
-    return df
+    ds = open_nc(p)
+    assert len(ds) != 0
+    return ds
+
+
+@pytest.fixture
+def vulnerability_curves_df(vulnerability_curves: xr.Dataset) -> pd.DataFrame:
+    df = vulnerability_curves.default.to_pandas()
+    df.index.name = "depth"
+    df.columns.name = None
+    return df.reset_index()
 
 
 @pytest.fixture(scope="session")
-def vulnerability_identifiers(model_data_path: Path) -> pd.DataFrame:
-    p = Path(model_data_path, "vulnerability", "curves_id.csv")
+def vulnerability_identifiers(model_data_path: Path) -> xr.Dataset:
+    p = Path(model_data_path, "curves_id.nc")
     assert p.is_file()
-    df = pd.read_csv(p)
-    assert len(df) != 0
+    ds = open_nc(p)
+    assert len(ds) != 0
+    return ds
+
+
+@pytest.fixture(scope="session")
+def vulnerability_identifiers_df(
+    vulnerability_identifiers: xr.Dataset,
+) -> pd.DataFrame:
+    ds = vulnerability_identifiers
+    # Translate to pandas dataframe and reset the multiindex
+    df = ds["curve_default"].to_dataframe().reset_index()
+
+    # Substitute the column names by generic ones
+    pattern = re.compile("(.*)_default")
+    default_col_names = [pattern.findall(item)[0] for item in df.columns]
+    df = df.rename(dict(zip(df.columns, default_col_names)), axis=1)
+    df = df.dropna(subset=CURVE, how="any")
     return df
 
 
@@ -198,7 +223,7 @@ def exposure_vector_clipped(model_data_clipped_path: Path) -> gpd.GeoDataFrame:
 def exposure_vector_clipped_for_damamge(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped.drop(
+    exposure_vector_clipped = exposure_vector_clipped.drop(
         [
             "cost_type",
             "max_damage_structure",
@@ -206,7 +231,6 @@ def exposure_vector_clipped_for_damamge(
             "elevation",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped
 
@@ -215,13 +239,12 @@ def exposure_vector_clipped_for_damamge(
 def exposure_vector_clipped_for_link(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ) -> gpd.GeoDataFrame:
-    exposure_vector_clipped_for_damamge.drop(
+    exposure_vector_clipped_for_damamge = exposure_vector_clipped_for_damamge.drop(
         [
             "fn_damage_structure",
             "fn_damage_content",
         ],
         axis=1,
-        inplace=True,
     )
     return exposure_vector_clipped_for_damamge
 
