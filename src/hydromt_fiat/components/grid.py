@@ -16,6 +16,8 @@ from pyproj.crs import CRS
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
+from hydromt_fiat.settings.variables import Variable
+from hydromt_fiat.utils import NAME
 
 __all__ = ["GridComponent"]
 
@@ -26,6 +28,7 @@ class GridComponent(SpatialModelComponent):
     """Base class for FIAT grid based components."""
 
     _build = True
+    _variable = Variable
 
     def __init__(
         self,
@@ -34,6 +37,7 @@ class GridComponent(SpatialModelComponent):
         region_component: str | None = None,
     ):
         self._data: xr.Dataset | None = None
+        self._data_attrs: dict[str, Variable] | None = None
         super().__init__(
             model=model,
             region_component=region_component,
@@ -63,6 +67,7 @@ class GridComponent(SpatialModelComponent):
         """Initialize the internal dataset."""
         if self._data is None:
             self._data = xr.Dataset()
+            self._data_attrs = {}
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
 
@@ -104,6 +109,14 @@ class GridComponent(SpatialModelComponent):
             self._initialize()
         assert self._data is not None
         return self._data
+
+    @property
+    def data_attrs(self) -> dict[str, Variable]:
+        """Return the data variables/ settings."""
+        if self._data_attrs is None:
+            self._initialize()
+        assert self._data_attrs is not None
+        return self._data_attrs
 
     @property
     def like(self) -> xr.Dataset | None:
@@ -338,3 +351,36 @@ only resolution set"
                 logger.warning(f"Replacing grid map: '{dvar}'")
             self._data[dvar] = data[dvar]
         self._data.attrs.update(data.attrs)
+
+    @hydromt_step
+    def set_attrs(
+        self,
+        name: str,
+        attrs: dict[str, Any],
+        update: bool = False,
+    ) -> None:
+        """Set the variable settings for a dataset entry.
+
+        Parameters
+        ----------
+        name : str
+            Name of the dataset entry.
+        content : dict
+            The content of the variable settings, i.e. the settings themselves.
+        update : bool, optional
+            Whether to update the data or not. If update is set to False, the
+            attributes entry is completely replaced. By default False.
+        """
+        self._initialize()
+        assert self._data_attrs is not None
+
+        # Add name to the content
+        attrs[NAME] = name
+
+        # Set the data
+        if not update:
+            self.data_attrs[name] = self._variable.model_validate(attrs)
+            return
+        if name not in self.data_attrs:
+            raise ValueError(f"{name} not present in data attibutes, cannot update")
+        self.data_attrs[name].update(**attrs)

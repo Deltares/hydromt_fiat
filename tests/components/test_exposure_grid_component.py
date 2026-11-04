@@ -389,6 +389,7 @@ def test_exposure_grid_component_create_categorized_values(
     component = ExposureGridComponent(model=model_exposure_setup("grid"))
     # Set data like a dummy
     component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
 
     # Call the method
     component.create_categorized_values(

@@ -1,6 +1,7 @@
 """Exposure workflows."""
 
 import logging
+from typing import Any
 
 import dask.array as dar
 import geopandas as gpd
@@ -9,6 +10,8 @@ import pandas as pd
 import xarray as xr
 
 from hydromt_fiat.gis.raster import merge_rasters, rasterize
+from hydromt_fiat.gis.raster_utils import check_spatial
+from hydromt_fiat.settings.exposure import ExposureGrid
 from hydromt_fiat.utils import (
     CATEGORIES,
     CATEGORIZED,
@@ -21,6 +24,7 @@ from hydromt_fiat.utils import (
     OBJECT__TYPE,
     TYPE,
     VALUE,
+    VALUES,
     standard_unit,
 )
 
@@ -29,9 +33,56 @@ __all__ = [
     "exposure_grid_category_values",
     "exposure_grid_default_setup",
     "exposure_grid_from_geometries",
+    "infer_exposure_grid_attrs",
 ]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
+
+
+def infer_exposure_grid_attrs(
+    data: xr.Dataset,
+    settings: ExposureGrid | None = None,
+) -> dict[str, Any]:
+    """Infer exposure grid data (settings) attributes.
+
+    Parameters
+    ----------
+    data : xr.Dataset
+        The exposure grid data.
+    settings : ExposureGrid | None, optional
+        The attributes currently present in the settings file, by default None.
+
+    Returns
+    -------
+    dict[str, Any]
+        The attributes.
+    """
+    attrs = {}
+    # First really set a default inferred guess
+    for var in data.data_vars:
+        type = DEFAULT
+        if not check_spatial(data[var]):
+            type = VALUES
+        elif f"{var}_cat" in data.dims:
+            type = CATEGORIZED
+        fn_curve = None
+        if type == DEFAULT:
+            fn_curve = DEFAULT
+        vulnerability = None
+        if type != CATEGORIZED:
+            vulnerability = DEFAULT
+        # Update the attributes
+        attrs[var] = dict(type=type, fn_curve=fn_curve, vulnerability=vulnerability)
+
+    # If nothing to be done, return
+    if settings is None:
+        return attrs
+    for var in settings.variables:
+        # There is not data to support it, continue
+        if var.name not in data.data_vars and var.value is None:
+            continue
+        attrs[var.name] = var.model_dump(exclude_none=True)
+    return attrs
 
 
 def exposure_grid_default_setup(
@@ -39,7 +90,7 @@ def exposure_grid_default_setup(
     vulnerability: pd.DataFrame,
     grid_like: xr.Dataset | None = None,
     exposure_link: pd.DataFrame | None = None,
-) -> xr.Dataset:
+) -> tuple[xr.Dataset, dict[str, Any]]:
     """Process and transform exposure grid data.
 
     Parameters
@@ -59,10 +110,11 @@ def exposure_grid_default_setup(
 
     Returns
     -------
-    xr.Dataset
-        Transformed and unified exposure grid.
+    tuple[xr.Dataset, dict[str, Any]]
+        Transformed and unified exposure grid and it's data attributes.
     """
     exposure_dataarrays = []
+    ds_attrs = {}
 
     # Log the fact that there is not linking table
     if exposure_link is None:
@@ -114,12 +166,10 @@ defaulting to the name of the exposure layer"
         fn_curve = link[CURVE].values[0]
 
         # Process the arrays, .e.g make gdal compliant
-        da.attrs.update(
-            {
-                FN__CURVE: fn_curve,
-                TYPE: DEFAULT,
-            },
-        )
+        attrs = {FN__CURVE: fn_curve, TYPE: DEFAULT}
+        ds_attrs[da_name] = attrs
+        da.name = da_name
+        da.attrs.update(attrs)  # Legacy
         # Mask the data to -9999, seems like a good default value
         da = da.raster.mask_nodata(-9999)
         exposure_dataarrays.append(da)
@@ -127,7 +177,9 @@ defaulting to the name of the exposure layer"
     if len(exposure_dataarrays) == 0:
         return xr.Dataset()
 
-    return merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
+    # Merge the data and return
+    ds = merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
+    return ds, ds_attrs
 
 
 def exposure_grid_categorized_setup(

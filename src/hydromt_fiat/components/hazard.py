@@ -13,7 +13,7 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.settings.hazard import Hazard, HazardSettings
+from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
 from hydromt_fiat.utils import (
     HAZARD,
 )
@@ -43,6 +43,8 @@ class HazardComponent(GridComponent):
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
     """
+
+    _variable = HazardVariable
 
     def __init__(
         self,
@@ -97,6 +99,14 @@ class HazardComponent(GridComponent):
         ds = read_grid(read_path=read_path, **kwargs)
         # Set the dataset
         self.set(ds)
+        # Infer the attributes
+        data_attrs = workflows.infer_hazard_attrs(
+            ds,
+            settings=self.model.config.data.hazard,
+        )
+        # Set the attrs
+        for name, attrs in data_attrs.items():
+            self.set_attrs(name, attrs)
 
     @hydromt_step
     def write(
@@ -135,6 +145,12 @@ class HazardComponent(GridComponent):
         filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
+        # Update the config
+        self.model.config.data.hazard = Hazard(
+            file=write_path,
+            settings=HazardSettings(crs=crs_representation(self.data.raster.crs)),
+            variables=list(self.data_attrs.values()),
+        )
         # Write it in a gdal compliant manner by default
         logger.info("Writing hazard data")
         write_grid(
@@ -144,12 +160,6 @@ class HazardComponent(GridComponent):
             gdal_compliant=gdal_compliant,
             overwrite=self.root.mode.is_override_mode(),
             **kwargs,
-        )
-
-        # Update the config
-        self.model.config.data.hazard = Hazard(
-            file=write_path,
-            settings=HazardSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     # Setup methods
@@ -228,7 +238,7 @@ class HazardComponent(GridComponent):
             hazard_data[Path(entry).stem] = da
 
         # Parse hazard files to an xarray dataset
-        hazard_grid = workflows.hazard_setup(
+        hazard_grid, hazard_attrs = workflows.hazard_setup(
             hazard_data=hazard_data,
             hazard_type=hazard_type,
             grid_like=self.like,
@@ -239,6 +249,8 @@ class HazardComponent(GridComponent):
 
         # Set the data to the hazard grid component
         self.set(hazard_grid, expand=expand)
+        for name, attrs in hazard_attrs.items():
+            self.set_attrs(name, attrs)
 
         # Set the config entries
         self.model.config.data.risk = risk

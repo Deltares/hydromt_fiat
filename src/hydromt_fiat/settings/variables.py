@@ -20,3 +20,11 @@ class Variable(BaseModel):
         default=...,
         description="Name of the variable in the dataset.",
     )
+
+    def update(self, **settings):
+        """Update the settings with new ones."""
+        updated = self.model_validate(
+            {**self.to_dict(), **settings},
+            context=self.context,
+        )
+        self.__dict__.update(updated)

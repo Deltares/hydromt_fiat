@@ -14,14 +14,20 @@ from hydromt_fiat.gis.raster_utils import check_spatial
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.settings.exposure import ExposureGrid, ExposureGridSettings
+from hydromt_fiat.settings.exposure import (
+    ExposureGrid,
+    ExposureGridSettings,
+    ExposureGridVariable,
+)
 from hydromt_fiat.utils import (
+    CATEGORIZED,
     DEFAULT,
     EXPOSURE,
     EXPOSURE__GRID__TYPE,
     GRID,
     TYPE,
     VALUE,
+    VALUES,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -49,6 +55,8 @@ class ExposureGridComponent(GridComponent):
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
     """
+
+    _variable = ExposureGridVariable
 
     def __init__(
         self,
@@ -104,6 +112,14 @@ class ExposureGridComponent(GridComponent):
         ds = read_grid(read_path=read_path, **kwargs)
         # Set the dataset
         self.set(ds)
+        # Infer the attributes
+        data_attrs = workflows.infer_exposure_grid_attrs(
+            ds,
+            settings=self.model.config.data.exposure,
+        )
+        # Set the attrs
+        for name, attrs in data_attrs.items():
+            self.set_attrs(name, attrs)
 
     @hydromt_step
     def write(
@@ -153,6 +169,12 @@ class ExposureGridComponent(GridComponent):
         filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
+        # Update the config
+        self.model.config.data.exposure = ExposureGrid(
+            file=write_path,
+            settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
+            variables=list(self.data_attrs.values()),
+        )
         # Write it in a gdal compliant manner by default
         logger.info("Writing exposure grid data")
         write_grid(
@@ -162,12 +184,6 @@ class ExposureGridComponent(GridComponent):
             gdal_compliant=gdal_compliant,
             overwrite=self.root.mode.is_override_mode(),
             **kwargs,
-        )
-
-        # Update the config
-        self.model.config.data.exposure = ExposureGrid(
-            file=write_path,
-            settings=ExposureGridSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     ## Setup methods
@@ -247,7 +263,7 @@ class ExposureGridComponent(GridComponent):
             exposure_data[name] = da
 
         # Execute the workflow function
-        exposure_grid = workflows.exposure_grid_default_setup(
+        exposure_grid, exposure_attrs = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
             vulnerability=vulnerability,
             grid_like=self.like,
@@ -256,6 +272,8 @@ class ExposureGridComponent(GridComponent):
 
         # Set the dataset
         self.set(exposure_grid, expand=expand)
+        for name, attrs in exposure_attrs.items():
+            self.set_attrs(name, attrs)
 
     @hydromt_step
     def create_categorized(
@@ -314,16 +332,18 @@ class ExposureGridComponent(GridComponent):
             **kwargs,
         )
 
-        # Execute the workflow function
+        # Execute the workflow function\
+        name = name or Path(exposure_fname).stem
         exposure_grid = workflows.exposure_grid_categorized_setup(
             exposure_data=exposure_data,
             vulnerability=vulnerability,
-            name=(name or Path(exposure_fname).stem),
+            name=name,
             grid_like=self.like,
         )
 
         # Set the data
         self.set(exposure_grid, expand=expand)
+        self.set_attrs(name, dict(type=CATEGORIZED))
 
     @hydromt_step
     def create_categorized_values(
@@ -334,6 +354,7 @@ class ExposureGridComponent(GridComponent):
         exposure_table: dict[int, float | int] | None = None,
         columns: list[str] | str | None = None,
         index_name: str | None = None,
+        vulnerability_name: list[str] | str | None = None,
         default: float | int = 100,
         unit: str = "m**2",
         read_kwargs: dict[str, Any] | None = None,
@@ -414,6 +435,11 @@ class ExposureGridComponent(GridComponent):
 
         # Set the data
         self.set(exposure_grid_table)
+        for name in exposure_grid_table.data_vars:
+            self.set_attrs(
+                name,
+                dict(type=VALUES, vulnerability=vulnerability_name or DEFAULT),
+            )
 
     @hydromt_step
     def create_from_geom(
