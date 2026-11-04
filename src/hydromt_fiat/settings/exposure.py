@@ -7,9 +7,9 @@ from pydantic import (
 )
 
 from hydromt_fiat.settings.file import InputFileModel
-from hydromt_fiat.settings.variables import ExposureGridVariable
+from hydromt_fiat.settings.variables import Variable
 
-__all__ = ["ExposureGeometry", "ExposureGrid"]
+__all__ = ["ExposureGeometry", "ExposureGrid", "ExposureGridVariable"]
 
 
 class ExposureGeometrySettings(BaseModel):
@@ -63,6 +63,36 @@ class ExposureGridSettings(BaseModel):
     crs: str | None = Field(
         default=None,
         description="Spatial reference system of the file.",
+    )
+
+
+class ExposureGridVariable(Variable):
+    """Settings for a variable (layer) of the exposure grid dataset."""
+
+    fn_curve: str | int | None = Field(
+        default=None,
+        description="The curve id looked up in the linked vulnerability dataset(s).",
+    )
+
+    type: str = Field(
+        default=...,
+        description="The exposure type: 'default' or 'categorized' for a layer, \
+'values' for a category-value variable.",
+    )
+
+    value: float | None = Field(
+        default=None,
+        description="Constant value of a uniform layer that is not in the file.",
+    )
+
+    values: list[str] | None = Field(
+        default=None,
+        description="The category-value variables of a categorized layer.",
+    )
+
+    vulnerability: str | list[str] | None = Field(
+        default=None,
+        description="The vulnerability dataset(s) linked to this variable.",
     )
 
 

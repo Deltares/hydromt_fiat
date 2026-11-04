@@ -1,15 +1,14 @@
 from pathlib import Path
 
 from hydromt_fiat.settings import BaseSettings, GeomSettings, GridSettings
-from hydromt_fiat.settings.exposure import ExposureGeometry, ExposureGrid
-from hydromt_fiat.settings.file import FileContext, InputFileModel, OutputFileModel
-from hydromt_fiat.settings.hazard import Hazard
-from hydromt_fiat.settings.variables import (
+from hydromt_fiat.settings.exposure import (
+    ExposureGeometry,
+    ExposureGrid,
     ExposureGridVariable,
-    HazardVariable,
-    VulnerabilityVariable,
 )
-from hydromt_fiat.settings.vulnerability import Vulnerability
+from hydromt_fiat.settings.file import FileContext, InputFileModel, OutputFileModel
+from hydromt_fiat.settings.hazard import Hazard, HazardVariable
+from hydromt_fiat.settings.vulnerability import Vulnerability, VulnerabilityVariable
 
 
 def test_serialize_input_file():

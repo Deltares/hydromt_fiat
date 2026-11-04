@@ -4,10 +4,13 @@ import pytest
 from pydantic import ValidationError
 
 from hydromt_fiat.settings import GeomSettings, GridSettings
-from hydromt_fiat.settings.exposure import ExposureGeometry, ExposureGrid
+from hydromt_fiat.settings.exposure import (
+    ExposureGeometry,
+    ExposureGrid,
+    ExposureGridVariable,
+)
 from hydromt_fiat.settings.file import FileContext, InputFileModel, OutputFileModel
-from hydromt_fiat.settings.hazard import Hazard
-from hydromt_fiat.settings.variables import ExposureGridVariable, HazardVariable
+from hydromt_fiat.settings.hazard import Hazard, HazardVariable
 from hydromt_fiat.settings.vulnerability import Vulnerability
 
 
