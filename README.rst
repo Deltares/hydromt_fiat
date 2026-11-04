@@ -35,6 +35,7 @@ HydroMT-FIAT relies on these excellent libraries:
 - pydantic
 - pyproj
 - requests
+- scipy
 - shapely
 - tomlkit
 - xarray

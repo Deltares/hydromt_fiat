@@ -7,6 +7,7 @@ from pydantic import (
 )
 
 from hydromt_fiat.settings.file import InputFileModel
+from hydromt_fiat.settings.variables import HazardVariable
 
 __all__ = ["Hazard"]
 
@@ -38,4 +39,10 @@ class Hazard(InputFileModel):
     settings: HazardSettings | None = Field(
         default=None,
         description="Settings for reading the hazard data.",
+    )
+
+    variables: list[HazardVariable] = Field(
+        default=...,
+        min_length=1,
+        description="Settings per hazard variable (band).",
     )

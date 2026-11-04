@@ -4572,6 +4572,7 @@ packages:
   - pyproj
   - rasterio
   - requests
+  - scipy>=1.14
   - shapely
   - tomlkit
   - xarray

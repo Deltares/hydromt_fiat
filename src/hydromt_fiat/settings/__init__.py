@@ -6,19 +6,21 @@ from typing import Annotated, Any, Literal
 from pydantic import (
     BaseModel,
     Field,
+    SerializationInfo,
     TypeAdapter,
-    ValidationInfo,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from hydromt_fiat.readers import read_config
-from hydromt_fiat.utils import EXPOSURE, FLOOD_DEPTH, HAZARD, OUTPUT
+from hydromt_fiat.utils import EXPOSURE, HAZARD, OUTPUT
 
 from .exposure import ExposureGeometry, ExposureGrid
 from .file import DEFAULT_CONTEXT, FileContext, InputFileModel, OutputFileModel
 from .hazard import Hazard
 from .utils import _relpath
+from .vulnerability import Vulnerability
 
 __all__ = ["GeomSettings", "GridSettings"]
 
@@ -48,7 +50,7 @@ class ModelGrid(BaseModel):
         description="Which file to take as the base in terms of transform and extend.",
     )
 
-    chunk: list[int, int] | None = Field(
+    chunk: list[int] | None = Field(
         default=None, description="The chunking size (number of rows and columns)."
     )
 
@@ -56,7 +58,7 @@ class ModelGrid(BaseModel):
 class ModelProjection(BaseModel):
     """Settings for the model-wide crs."""
 
-    crs: str = Field(
+    crs: str | None = Field(
         default=None, description="The model-wide coordinate reference system."
     )
 
@@ -71,12 +73,6 @@ class BaseSettings(BaseModel):
 
     # Model wide settings
     loglevel: str = Field(default="INFO", description="The logging level of FIAT.")
-
-    method: str = Field(
-        default=FLOOD_DEPTH,
-        description="Method to use for the model. \
-Can be either 'flood.depth' or 'flood.level'.",
-    )
 
     output_dir: Path = Field(
         default=Path("output"),
@@ -100,7 +96,7 @@ Can be either 'flood.depth' or 'flood.level'.",
     )
 
     # Input files
-    vulnerability: InputFileModel | None = Field(
+    vulnerability: Vulnerability | None = Field(
         default=None,
         description="Vulnerability settings for the model.",
     )
@@ -110,9 +106,22 @@ Can be either 'flood.depth' or 'flood.level'.",
         description="Hazard settings for the model.",
     )
 
+    # Validator(s)
+    @model_validator(mode="after")
+    def validate_hazard_rp(self):
+        """Validate that all hazard variables have a return period for risk."""
+        if self.risk and self.hazard is not None:
+            missing = [item.name for item in self.hazard.variables if item.rp is None]
+            if missing:
+                raise ValueError(
+                    f"Return period (rp) required for hazard variable(s) {missing} \
+in a risk calculation"
+                )
+        return self
+
     # Serializer(s)
     @field_serializer("output_dir")
-    def serialize_path(self, value: Path, info: ValidationInfo) -> str:
+    def serialize_path(self, value: Path, info: SerializationInfo) -> str:
         """Translate output directory to string."""
         context: FileContext = info.context or DEFAULT_CONTEXT
         return _relpath(value=value, root=context.config_dir)
@@ -220,10 +229,11 @@ def load_settings(filename: Path | str) -> GeomSettings | GridSettings:
     This is a standalone function similar to the `from_toml` methods of the
     BaseSettings class.
     """
+    filename = Path(filename)
     settings_dict = read_config(filename)
 
     # Let the adapter sort out which settings class it should be
-    settings: BaseSettings = TypeAdapter(Settings).validate_python(
+    settings: GeomSettings | GridSettings = TypeAdapter(Settings).validate_python(
         settings_dict,
         context=FileContext(config_dir=filename.parent),
     )

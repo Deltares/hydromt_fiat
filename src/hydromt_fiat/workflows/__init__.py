@@ -23,6 +23,8 @@ from .vulnerability import (
     generate_vulnerability_identifiers,
     merge_vulnerability_curves,
     process_vulnerability_link,
+    vulnerability_check_method,
+    vulnerability_nd_from_1d,
     vulnerability_setup,
     vulnerability_setup_from_v0,
 )
@@ -46,6 +48,8 @@ __all__ = [
     "prep_data_for_aggregation",
     "process_table",
     "process_vulnerability_link",
+    "vulnerability_check_method",
+    "vulnerability_nd_from_1d",
     "vulnerability_setup",
     "vulnerability_setup_from_v0",
 ]

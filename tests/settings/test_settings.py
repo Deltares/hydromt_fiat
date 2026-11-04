@@ -1,5 +1,5 @@
 from hydromt_fiat.settings import DEFAULT_GEOM_SETTINGS, GeomSettings
-from hydromt_fiat.utils import FLOOD_DEPTH, GEOM
+from hydromt_fiat.utils import GEOM
 
 
 def test_settings():
@@ -8,7 +8,6 @@ def test_settings():
 
     # Assert some default values
     assert s.type == GEOM
-    assert s.method == FLOOD_DEPTH
     assert s.threads == 1
     assert s.risk == False
 

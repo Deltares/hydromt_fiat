@@ -114,11 +114,10 @@ def read_grid(
     xr.Dataset
         The gridded data in a north south orientation.
     """
-    # Ensure typing
     read_path = Path(read_path)
     logger.info(f"Reading grid file at {read_path.as_posix()}")
     _ = kwargs.pop("mask_and_scale", None)
-    # Match the extension and read accordingly
+    # Read according to the extension
     ext = read_path.suffix
     match ext:
         case ".nc":
@@ -138,7 +137,7 @@ def read_grid(
                 read_path,
                 **kwargs,
             )
-        case _:  # Cant write other formats
+        case _:
             raise ValueError(f"Cannot read file with extension: '{ext}'")
     # Force north south orientation
     ds = force_ns(ds)

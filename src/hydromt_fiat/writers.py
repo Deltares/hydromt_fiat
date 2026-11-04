@@ -22,6 +22,7 @@ __all__ = [
     "write_csv",
     "write_geoms",
     "write_grid",
+    "write_nc",
 ]
 
 TIFF_KWARGS = dict(
@@ -52,8 +53,8 @@ def _write_dir(
 def _write_zarr(
     ds: xr.Dataset | xr.DataArray,
     write_path: Path | str,
-    chunks: dict,
-    compressor: BaseCodec | None = None,
+    chunks: dict[str, int],
+    compressor: BaseCodec[Any, Any] | None = None,
 ) -> None:
     """Export dataset to a zarr archive.
 
@@ -64,7 +65,7 @@ def _write_zarr(
     write_path : Path | str
         The file path for the outgoing zarr archive.
     chunks : dict
-        A dictionary described the chunksize per dimension.
+        A dictionary describing the chunk size per dimension.
     compressor : BaseCodec, optional
         The compressor used to compress the zarr archive. By default None.
     """
@@ -165,7 +166,9 @@ def write_nc(
         The path to write to.
     overwrite : bool, optional
         Whether or not to overwrite a possibly existing file, by default True.
-    Additional keyword arguments to be passed to the `to_netcdf` method from xarray.
+    **kwargs : dict
+        Additional keyword arguments to be passed to the `to_netcdf` method from
+        xarray.
     """
     _write_dir(write_path)
     logger.info(f"Writing netcdf file to {Path(write_path).as_posix()}")
@@ -207,13 +210,12 @@ def write_grid(
         Additional keyword arguments to be passed to the write functions corresponding
         to the extension/ driver.
     """
-    # Ensure typing
     _write_dir(write_path)
     write_path = Path(write_path)
     logger.info(f"Writing grid file to {write_path.as_posix()}")
     # Set the cell area size
     data.attrs.update({AREA__SQM: cell_size(data)})
-    # Match the extension and read accordingly
+    # Write according to the extension
     ext = write_path.suffix
     match ext:
         case ".nc":
@@ -246,5 +248,5 @@ def write_grid(
                 write_path,
                 **write_kwargs,
             )
-        case _:  # Cant write other formats
+        case _:
             raise ValueError(f"Cannot write file with '{ext}' extension")

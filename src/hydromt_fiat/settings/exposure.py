@@ -7,6 +7,7 @@ from pydantic import (
 )
 
 from hydromt_fiat.settings.file import InputFileModel
+from hydromt_fiat.settings.variables import ExposureGridVariable
 
 __all__ = ["ExposureGeometry", "ExposureGrid"]
 
@@ -41,6 +42,12 @@ based on the exposure geometry.",
         description="Settings for reading the exposure geometry data.",
     )
 
+    vulnerability: str = Field(
+        default=...,
+        description="The vulnerability dataset (variable) to use from the \
+vulnerability netcdf dataset.",
+    )
+
     zonal_method: str = Field(
         default="mean",
         description="The zonal statistics method. Only really applicable \
@@ -70,4 +77,10 @@ class ExposureGrid(InputFileModel):
     settings: ExposureGridSettings | None = Field(
         default=None,
         description="Settings for reading the exposure grid data.",
+    )
+
+    variables: list[ExposureGridVariable] = Field(
+        default=...,
+        min_length=1,
+        description="Settings per exposure variable (layer).",
     )
