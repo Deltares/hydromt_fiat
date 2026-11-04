@@ -53,7 +53,7 @@ jobs:
           fi
 
       - name: Upload cache
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: .cache
           key: test-data
