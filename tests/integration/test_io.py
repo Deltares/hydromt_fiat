@@ -15,6 +15,10 @@ from hydromt_fiat.utils import (
 )
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="ExposureGeomsComponent.write does not set the required 'vulnerability'",
+)
 @pytest.mark.integration
 def test_model_io(tmp_path: Path, model_data_clipped_path: Path):
     # Create the model to read

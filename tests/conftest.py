@@ -1,5 +1,6 @@
 import math
 import re
+import shutil
 from functools import wraps
 from pathlib import Path
 
@@ -16,7 +17,9 @@ from urllib3.exceptions import HTTPError
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.data import fetch_data
+from hydromt_fiat.readers import read_config, read_grid
 from hydromt_fiat.utils import CURVE, SQUARE__ID
+from hydromt_fiat.writers import write_config
 
 CACHE_DIR = Path(Path(__file__).parents[1], ".cache")
 
@@ -40,6 +43,59 @@ def check_connection(error: bool = True):
         return inner
 
     return outer
+
+
+def update_model_settings(path: Path) -> Path:
+    # Add the variables settings to the (older) settings files of the downloaded data
+    hazard = read_grid(Path(path, "hazard.nc"))
+    exposure = read_grid(Path(path, "exposure", "spatial.nc"))
+    curves = read_grid(Path(path, "curves.nc"))
+    hazard_vars = [
+        {"name": str(var), "type": "water_depth"} for var in hazard.data_vars
+    ]
+    vulnerability_vars = [
+        {
+            "name": str(var),
+            "method": "flood.depth",
+            "types": {str(dim): "water_depth" for dim in curves[var].dims[:1]},
+        }
+        for var in curves.data_vars
+    ]
+    exposure_vars = []
+    for var in exposure.data_vars:
+        attrs = exposure[var].attrs
+        # Layers in the grid are either default, categorized or values
+        if attrs.get("type") == "default":
+            entry = {"fn_curve": attrs["fn_curve"], "vulnerability": "default"}
+        elif attrs.get("type") == "categorized":
+            entry = {"values": [f"{var}_structure", f"{var}_content"]}
+        else:
+            entry = {"vulnerability": "default"}
+        exposure_vars.append({"name": str(var), "type": attrs.get("type", "values")})
+        exposure_vars[-1].update(entry)
+
+    # Update the settings files
+    for fname in ["settings_geom.toml", "settings_grid.toml"]:
+        config = read_config(Path(path, fname))
+        config.pop("method", None)
+        config["vulnerability"]["variables"] = vulnerability_vars
+        config["hazard"]["variables"] = hazard_vars
+        if isinstance(config["exposure"], list):
+            for item in config["exposure"]:
+                item["vulnerability"] = "default"
+        else:
+            config["exposure"]["variables"] = exposure_vars
+        write_config(config, Path(path, fname))
+    return path
+
+
+def copy_model_data(name: str, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    # Copy the data, so the downloaded (cached) data is left untouched
+    p = fetch_data(name, cache_dir=CACHE_DIR)
+    assert len(list(p.iterdir())) != 0
+    dst = Path(tmp_path_factory.mktemp(name), name)
+    shutil.copytree(p, dst)
+    return update_model_settings(dst)
 
 
 ## Build data
@@ -121,11 +177,9 @@ def global_data_catalog(global_data_catalog_path: Path) -> DataCatalog:
 ## Model data
 @pytest.fixture(scope="session")
 @check_connection()
-def model_data_path() -> Path:
+def model_data_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model", cache_dir=CACHE_DIR)
-    assert len(list(p.iterdir())) != 0
-    return p
+    return copy_model_data("fiat-model", tmp_path_factory)
 
 
 @pytest.fixture
@@ -203,11 +257,9 @@ def vulnerability_identifiers_df(
 ## Model data (clipped)
 @pytest.fixture(scope="session")
 @check_connection()
-def model_data_clipped_path() -> Path:
+def model_data_clipped_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
     # Fetch the data
-    p = fetch_data("fiat-model-c", cache_dir=CACHE_DIR)
-    assert len(list(p.iterdir())) != 0
-    return p
+    return copy_model_data("fiat-model-c", tmp_path_factory)
 
 
 @pytest.fixture
@@ -353,7 +405,7 @@ def config_dummy(tmp_path: Path) -> dict:
                 }
             ],
         },
-        "exposure": [{"file": "foo.fgb", "vulnerability": "default"}],
+        "exposure": [{"file": "foo.fgb", "variables": {"vulnerability": "default"}}],
     }
     return data
 

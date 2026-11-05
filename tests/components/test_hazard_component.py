@@ -11,9 +11,11 @@ from pytest_mock import MockerFixture
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import HazardComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings.hazard import HazardVariable
 from hydromt_fiat.utils import (
     HAZARD,
     RP,
+    WATER__DEPTH,
 )
 
 
@@ -50,6 +52,30 @@ def test_hazard_component_read(
     # Assert the state
     assert component._data is not None
     assert len(component.data.data_vars) == 1
+    # Assert the attributes, which are inferred as there are no settings present
+    assert component.data_attrs["flood_event"].type == WATER__DEPTH
+
+
+def test_hazard_component_read_settings(
+    mock_model_config: MagicMock,
+    model_data_clipped_path: Path,
+):
+    # Setup the model with the settings file
+    model = mock_model_config("geom")
+    type(model).root = PropertyMock(
+        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
+    )
+    model.config.read("settings_geom.toml")
+    # Set a different type in the settings
+    model.config.data.hazard.variables[0].type = "duration"
+    # Setup the component
+    component = HazardComponent(model=model)
+
+    # Read the data by calling 'data' property
+    component.data
+
+    # Assert the attributes, which are taken from the settings
+    assert component.data_attrs["flood_event"].type == "duration"
 
 
 def test_hazard_component_read_sig(
@@ -103,6 +129,8 @@ def test_hazard_component_write(
     component = HazardComponent(model=mock_model_config("geom"))
     # Set data like a dummy
     component._data = hazard_clipped
+    component._data_attrs = {}
+    component.set_attrs("flood_event", dict(type=WATER__DEPTH))
 
     # Write the data
     component.write()
@@ -112,6 +140,10 @@ def test_hazard_component_write(
 
     # Assert the config file
     assert component.model.config.data.hazard.file == Path(tmp_path, f"{HAZARD}.nc")
+    variables = component.model.config.data.hazard.variables
+    assert len(variables) == 1
+    assert variables[0].name == "flood_event"
+    assert variables[0].type == WATER__DEPTH
 
 
 def test_hazard_component_write_sig(
@@ -124,6 +156,9 @@ def test_hazard_component_write_sig(
     # Set data like a dummy
     component._data = hazard_clipped
     component._data["flood_event2"] = hazard_clipped["flood_event"]
+    component._data_attrs = {}
+    component.set_attrs("flood_event", dict(type=WATER__DEPTH))
+    component.set_attrs("flood_event2", dict(type=WATER__DEPTH))
 
     # Write the data using the argument of the read method
     component.write("other/baz.nc")
@@ -133,6 +168,7 @@ def test_hazard_component_write_sig(
 
     # Assert the config file
     assert component.model.config.data.hazard.file == Path(tmp_path, "other", "baz.nc")
+    assert len(component.model.config.data.hazard.variables) == 2
 
 
 def test_hazard_component_create(
@@ -148,6 +184,10 @@ def test_hazard_component_create(
     assert "Processing water_depth hazard data" in caplog.text
     assert "flood_event" in component.data.data_vars
     assert component.data.raster.shape == (7, 6)
+    # Assert the attributes
+    assert isinstance(component.data_attrs["flood_event"], HazardVariable)
+    assert component.data_attrs["flood_event"].type == WATER__DEPTH
+    assert component.data_attrs["flood_event"].rp is None
 
 
 def test_hazard_component_create_multi(
@@ -162,6 +202,7 @@ def test_hazard_component_create_multi(
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars
     assert "flood_event_highres" in component.data.data_vars
+    assert set(component.data_attrs) == {"flood_event", "flood_event_highres"}
 
 
 def test_hazard_component_create_risk(
@@ -181,6 +222,8 @@ def test_hazard_component_create_risk(
     assert isinstance(component.data, xr.Dataset)
     assert component.data.flood_event_highres.attrs[RP] == 50000
     assert model.config.data.risk
+    # Assert the attributes
+    assert component.data_attrs["flood_event_highres"].rp == 50000
 
 
 def test_hazard_component_create_errors(model: FIATModel):

@@ -6,6 +6,7 @@ from pydantic import (
     Field,
 )
 
+from hydromt_fiat.settings.base import BaseModelF
 from hydromt_fiat.settings.file import InputFileModel
 from hydromt_fiat.settings.variables import Variable
 
@@ -23,8 +24,8 @@ class ExposureGeometrySettings(BaseModel):
     )
 
 
-class ExposureGeometry(InputFileModel):
-    """Exposure geometry settings for the FIAT model."""
+class ExposureGeometryVariable(BaseModelF):
+    """Exposure geometry file variables."""
 
     area_method: str = Field(
         default="centroid",
@@ -37,11 +38,6 @@ based on the exposure geometry.",
         description="The impact types to be run for this exposure data.",
     )
 
-    settings: ExposureGeometrySettings | None = Field(
-        default=None,
-        description="Settings for reading the exposure geometry data.",
-    )
-
     vulnerability: str = Field(
         default=...,
         description="The vulnerability dataset (variable) to use from the \
@@ -52,6 +48,20 @@ vulnerability netcdf dataset.",
         default="mean",
         description="The zonal statistics method. Only really applicable \
 if `area_method` is set to 'area'.",
+    )
+
+
+class ExposureGeometry(InputFileModel):
+    """Exposure geometry settings for the FIAT model."""
+
+    settings: ExposureGeometrySettings | None = Field(
+        default=None,
+        description="Settings for reading the exposure geometry data.",
+    )
+
+    variables: ExposureGeometryVariable = Field(
+        default=...,
+        description="Settings per exposure file.",
     )
 
 

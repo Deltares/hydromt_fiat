@@ -6,11 +6,13 @@ import geopandas as gpd
 import numpy as np
 import pytest
 import xarray as xr
+from pydantic import ValidationError
 from pyproj.crs import CRS
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings.variables import Variable
 
 # Overwrite the abstractmethods to be able to initialize it
 GridComponent.__abstractmethods__ = set()
@@ -23,6 +25,7 @@ def test_grid_component_empty(mock_model: MagicMock):
     # Assert the state
     assert component._data is None
     assert isinstance(component.data, xr.Dataset)  # Initialized
+    assert component.data_attrs == {}
 
     # Assert the properties
     assert component._region_data is None
@@ -112,6 +115,7 @@ def test_grid_component_clear(
     component.clear()
     # Assert the state after
     assert len(component.data.data_vars) == 0
+    assert component.data_attrs == {}
 
 
 def test_grid_component_clip(
@@ -382,3 +386,45 @@ def test_grid_component_set_errors(
         match="Wrong input data type: 'int'",
     ):
         component.set(2)
+
+
+def test_grid_component_set_attrs(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Assert nothing in the component
+    assert len(component.data_attrs) == 0
+
+    # Set the attributes of a data variable
+    component.set_attrs("foo", {})
+
+    # Assert the state, the name is added to the attributes
+    assert isinstance(component.data_attrs["foo"], Variable)
+    assert component.data_attrs["foo"].name == "foo"
+
+    # Set the attributes once more, this replaces the entry
+    previous = component.data_attrs["foo"]
+    component.set_attrs("foo", {})
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["foo"] is not previous
+
+
+def test_grid_component_set_attrs_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Update attributes that are not present
+    with pytest.raises(
+        ValueError,
+        match="foo not present in data attibutes, cannot update",
+    ):
+        component.set_attrs("foo", {}, update=True)
+
+    # Unknown settings are not allowed
+    with pytest.raises(ValidationError):
+        component.set_attrs("foo", {"bar": 1})

@@ -9,6 +9,7 @@ from .exposure_geom import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
     exposure_geoms_setup,
+    infer_exposure_geom_attrs,
 )
 from .exposure_grid import (
     exposure_grid_categorized_setup,
@@ -43,6 +44,7 @@ __all__ = [
     "exposure_grid_from_geometries",
     "generate_vulnerability_identifiers",
     "hazard_setup",
+    "infer_exposure_geom_attrs",
     "infer_exposure_grid_attrs",
     "infer_hazard_attrs",
     "infer_vulnerability_attrs",

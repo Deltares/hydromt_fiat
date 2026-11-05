@@ -175,7 +175,7 @@ defaulting to the name of the exposure layer"
         exposure_dataarrays.append(da)
 
     if len(exposure_dataarrays) == 0:
-        return xr.Dataset()
+        return xr.Dataset(), {}
 
     # Merge the data and return
     ds = merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
@@ -402,7 +402,7 @@ def exposure_grid_from_geometries(
     da = (da * mult) + add
 
     # Call the method to setup the data
-    ds = exposure_grid_default_setup(
+    ds, ds_attrs = exposure_grid_default_setup(
         exposure_data={VALUE: da},
         vulnerability=vulnerability,
         exposure_link=pd.DataFrame({EXPOSURE__TYPE: [VALUE], OBJECT__TYPE: [curve]}),
@@ -413,4 +413,4 @@ def exposure_grid_from_geometries(
         raise RuntimeError(f"Could not resolve vulnerability curve: {curve}")
 
     # Return the array
-    return ds[VALUE]
+    return ds[VALUE], ds_attrs[VALUE]

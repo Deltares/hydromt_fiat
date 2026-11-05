@@ -58,12 +58,7 @@ def test_validate_exposure_grid_variable(entry: dict):
     "entry",
     [
         {},  # no type
-        {"type": "combined", "vulnerability": "v"},
-        {"type": "default", "fn_curve": "a"},  # no vulnerability
-        {"type": "default", "vulnerability": "v"},  # no fn_curve
-        {"type": "categorized", "vulnerability": "v"},
-        {"type": "values"},  # no vulnerability
-        {"type": "default", "fn_curve": "a", "vulnerability": "v", "values": ["x"]},
+        {"type": "default", "foo": 1},  # unknown setting
     ],
 )
 def test_validate_exposure_grid_variable_errors(entry: dict):

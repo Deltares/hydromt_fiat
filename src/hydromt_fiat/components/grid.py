@@ -65,9 +65,10 @@ class GridComponent(SpatialModelComponent):
 
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""
+        if self._data_attrs is None:
+            self._data_attrs = {}
         if self._data is None:
             self._data = xr.Dataset()
-            self._data_attrs = {}
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
 

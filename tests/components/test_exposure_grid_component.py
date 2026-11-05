@@ -13,14 +13,19 @@ from pytest_mock import MockerFixture
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGridComponent
 from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings.exposure import ExposureGridVariable
 from hydromt_fiat.utils import (
+    CATEGORIZED,
+    DEFAULT,
     EXPOSURE,
     FN__CURVE,
     GRID,
     INDEX,
     VALUE,
+    VALUES,
     VULNERABILITY,
 )
+from hydromt_fiat.workflows import infer_exposure_grid_attrs
 
 
 def test_exposure_grid_component_empty(
@@ -54,6 +59,12 @@ def test_exposure_grid_component_read(
     # No config so it wont read anything
     assert len(component.data.data_vars) == 7
     assert "industrial_content" in component.data.data_vars
+    # Assert the attributes, which are taken from the settings
+    assert set(component.data_attrs) == set(component.data.data_vars)
+    assert component.data_attrs["industrial_content"].type == DEFAULT
+    assert component.data_attrs["industrial_content"].fn_curve == "in2"
+    assert component.data_attrs["buildings"].type == CATEGORIZED
+    assert component.data_attrs["buildings_structure"].type == VALUES
 
 
 def test_exposure_grid_component_read_sig(
@@ -74,6 +85,9 @@ def test_exposure_grid_component_read_sig(
     # No config so it wont read anything
     assert len(component.data.data_vars) == 7
     assert "industrial_content" in component.data.data_vars
+    # Assert the attributes, which are inferred as there are no settings present
+    assert set(component.data_attrs) == set(component.data.data_vars)
+    assert component.data_attrs["industrial_content"].type == DEFAULT
 
 
 def test_exposure_grid_component_read_nothing(
@@ -109,6 +123,9 @@ def test_exposure_grid_component_write(
 
     # Set data like a dummy
     component._data = exposure_grid_clipped
+    component._data_attrs = {}
+    for name, attrs in infer_exposure_grid_attrs(exposure_grid_clipped).items():
+        component.set_attrs(name, attrs)
 
     # Write the data
     component.write()
@@ -121,6 +138,9 @@ def test_exposure_grid_component_write(
         EXPOSURE,
         "spatial.nc",
     )
+    variables = component.model.config.data.exposure.variables
+    assert len(variables) == len(exposure_grid_clipped.data_vars)
+    assert all(isinstance(item, ExposureGridVariable) for item in variables)
 
 
 def test_exposure_grid_component_write_none(
@@ -148,6 +168,9 @@ def test_exposure_grid_component_write_sig(
 
     # Set data like a dummy
     component._data = exposure_grid_clipped
+    component._data_attrs = {}
+    for name, attrs in infer_exposure_grid_attrs(exposure_grid_clipped).items():
+        component.set_attrs(name, attrs)
 
     # Write the data
     component.write("baz.nc")
@@ -193,6 +216,13 @@ def test_exposure_grid_component_create(
     assert "industrial_content" in component.data.data_vars
     assert component.data.industrial_content.attrs.get(FN__CURVE) == "in2"
     assert component.data.raster.shape == (11, 11)
+    # Assert the attributes
+    assert isinstance(
+        component.data_attrs["industrial_content"],
+        ExposureGridVariable,
+    )
+    assert component.data_attrs["industrial_content"].type == DEFAULT
+    assert component.data_attrs["industrial_content"].fn_curve == "in2"
 
     # Assert entries in the config
     assert component.model.config.data.type == GRID
@@ -215,6 +245,7 @@ def test_exposure_grid_component_create_multi(
     assert "industrial_content" in component.data.data_vars
     assert "industrial_structure" in component.data.data_vars
     assert component.data.industrial_structure.attrs.get(FN__CURVE) == "in1"
+    assert component.data_attrs["industrial_structure"].fn_curve == "in1"
 
 
 def test_exposure_grid_component_create_name(
@@ -306,6 +337,8 @@ def test_exposure_grid_component_create_categorized(
     # Assert the output
     assert "buildings" in component.data.data_vars
     assert component.data.raster.shape == (473, 468)
+    # Assert the attributes
+    assert component.data_attrs["buildings"].type == CATEGORIZED
 
 
 def test_exposure_grid_component_create_categorized_name(
@@ -402,6 +435,32 @@ def test_exposure_grid_component_create_categorized_values(
     assert "buildings_cat" in component.data.dims
     assert "buildings_structure" in component.data.data_vars
     assert "buildings_cat" in component.data["buildings_structure"].dims
+    # Assert the attributes
+    assert component.data_attrs["buildings_structure"].type == VALUES
+    assert component.data_attrs["buildings_structure"].vulnerability == DEFAULT
+
+
+def test_exposure_grid_component_create_categorized_values_vulnerability_name(
+    model_exposure_setup: FIATModel,
+    exposure_grid: xr.Dataset,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
+
+    # Call the method with a vulnerability name
+    component.create_categorized_values(
+        exposure_name="buildings",
+        exposure_table_fname="category_values",
+        index_name=VALUE,
+        vulnerability_name="default",
+    )
+
+    # Assert the attributes
+    assert component.data_attrs["buildings_structure"].vulnerability == "default"
+    assert component.data_attrs["buildings_content"].vulnerability == "default"
 
 
 def test_exposure_grid_component_create_categorized_values_table(
@@ -412,6 +471,7 @@ def test_exposure_grid_component_create_categorized_values_table(
     component = ExposureGridComponent(model=model_exposure_setup("grid"))
     # Set data like a dummy
     component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
 
     # Call the method
     component.create_categorized_values(
@@ -434,6 +494,7 @@ def test_exposure_grid_component_create_categorized_values_no_table(
     component = ExposureGridComponent(model=model_exposure_setup("grid"))
     # Set data like a dummy
     component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
 
     # Call the method
     component.create_categorized_values(

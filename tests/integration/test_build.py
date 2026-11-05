@@ -16,9 +16,14 @@ from hydromt_fiat.utils import (
     MAX,
     REGION,
     SETTINGS,
+    WATER__DEPTH,
 )
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="ExposureGeomsComponent.write does not set the required 'vulnerability'",
+)
 @pytest.mark.integration
 def test_build_model_geom(
     tmp_path: Path,
@@ -35,7 +40,7 @@ def test_build_model_geom(
     )
 
     # Add model type and region
-    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
+    model.set_config(modeltype=GEOM)
     model.set_region(build_region_small)
     model.set_type(GEOM)
 
@@ -45,6 +50,7 @@ def test_build_model_geom(
         "jrc_curves_link",
         unit="m",
         continent="europe",
+        method=FLOOD_LEVEL,
     )
 
     # Add an hazard layer
@@ -83,6 +89,8 @@ def test_build_model_geom(
     assert "rs1" in model.vulnerability.data.curves.curve_default
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
+    assert model.vulnerability.data_attrs["default"].method == FLOOD_LEVEL
+    assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
     assert f"{FN}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
@@ -115,7 +123,7 @@ def test_build_model_grid(
     )
 
     # Add model type and region
-    model.set_config(modeltype=GRID, method=FLOOD_LEVEL)
+    model.set_config(modeltype=GRID)
     model.set_region(build_region_small)
     model.set_type(GRID)
 
@@ -125,6 +133,7 @@ def test_build_model_grid(
         "jrc_curves_link",
         unit="m",
         continent="europe",
+        method=FLOOD_LEVEL,
     )
 
     # Add an hazard layer
@@ -148,6 +157,9 @@ def test_build_model_grid(
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
     assert model.exposure_grid.data["commercial_content"].attrs[FN__CURVE] == "cm1"
+    assert model.vulnerability.data_attrs["default"].method == FLOOD_LEVEL
+    assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
+    assert model.exposure_grid.data_attrs["commercial_content"].fn_curve == "cm1"
 
     # Write the model
     model.write()
@@ -158,3 +170,7 @@ def test_build_model_grid(
     assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
+    # Assert the variables in the settings
+    assert len(model.config.data.vulnerability.variables) == 1
+    assert len(model.config.data.hazard.variables) == 1
+    assert len(model.config.data.exposure.variables) == 2

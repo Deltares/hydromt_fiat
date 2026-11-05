@@ -19,6 +19,7 @@ from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.settings.exposure import (
     ExposureGeometry,
     ExposureGeometrySettings,
+    ExposureGeometryVariable,
 )
 from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
@@ -51,6 +52,8 @@ class ExposureGeomsComponent(GeomsComponent):
         region. If None, the region will be set to the union of all geometries in
         the data dictionary. By default None.
     """
+
+    _variable = ExposureGeometryVariable
 
     def __init__(
         self,
@@ -106,11 +109,20 @@ class ExposureGeomsComponent(GeomsComponent):
         for read_path in files:
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading '{read_path.stem}' exposure geometry")
+            name = read_path.stem
+            logger.info(f"Reading '{name}' exposure geometry")
             # Read the data
             data = read_geoms(read_path=read_path, **kwargs)
             # Set the data
-            self.set(data=data, name=read_path.stem)
+            self.set(data=data, name=name)
+            # Infer attibutes and set those
+            self.set_attrs(
+                name,
+                workflows.infer_exposure_geom_attrs(
+                    name,
+                    self.model.config.data.exposure,
+                ),
+            )
 
     @hydromt_step
     def write(
@@ -163,11 +175,8 @@ class ExposureGeomsComponent(GeomsComponent):
                 continue
 
             # Create the outgoing file path
-            write_path = Path(
-                self.root.path,
-                filename.format(name=name),
-            )
-            entry = ExposureGeometry(file=write_path)
+            write_path = Path(self.root.path, filename.format(name=name))
+            entry = ExposureGeometry(file=write_path, variables=self.data_attrs[name])
             # Due to header overloading, this is not solved properly in
             # the config component
             if gdf.crs is not None:
@@ -292,6 +301,7 @@ use 'set_region' before this method"
         )
         # Set the data directly
         self.set(exposure_vector, name=name)
+        self.set_attrs(name, dict(vulnerability=DEFAULT))
 
     @hydromt_step
     def create_link(
@@ -345,6 +355,11 @@ use 'set_region' before this method"
 
         # Set the data in the component
         self.set(exposure_vector, name=exposure_name, replace=False)
+        self.set_attrs(
+            exposure_name,
+            dict(impact_type=impact_type, vulnerability=vulnerability_name),
+            update=True,
+        )
 
     @hydromt_step
     def create_max_value(

@@ -228,9 +228,9 @@ class ExposureGridComponent(GridComponent):
         self.model._assert_model_type(GRID)
         logger.info("Creating gridded exposure")
         # Check for the vulnerability
-        vulnerability = self.model.vulnerability.get_identifiers(
-            vulnerability_name or DEFAULT
-        )
+        vulnerability_name = vulnerability_name or DEFAULT
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
+        # Region check
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
 
@@ -273,7 +273,7 @@ class ExposureGridComponent(GridComponent):
         # Set the dataset
         self.set(exposure_grid, expand=expand)
         for name, attrs in exposure_attrs.items():
-            self.set_attrs(name, attrs)
+            self.set_attrs(name, dict(**attrs, vulnerability=vulnerability_name))
 
     @hydromt_step
     def create_categorized(
@@ -387,6 +387,11 @@ class ExposureGridComponent(GridComponent):
             The name of the index column in the `exposure_table_fname` or
             `exposure_table` data. If not provided, `exposure_name` is used as the
             name of the index column. By default None.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables. If not provided, the name is assumed to be 'default'.
+            By default None.
         default : float | int, optional
             The default value when the table is not provided or has missing values
             compared to the categorized exposure data, by default 100.
@@ -406,6 +411,10 @@ class ExposureGridComponent(GridComponent):
         logger.info("Creating category values for tabled based exposure grid")
         # Assert the variable is present
         self._assert_entry(exposure_name, spatial=True)
+
+        # Basically a simple check on the vulnerability data
+        vulnerability_name = vulnerability_name or DEFAULT
+        self.model.vulnerability._assert_entry(vulnerability_name)
 
         # Get the exposure table from the data catalog, or from input
         if exposure_table_fname is not None:
@@ -436,10 +445,7 @@ class ExposureGridComponent(GridComponent):
         # Set the data
         self.set(exposure_grid_table)
         for name in exposure_grid_table.data_vars:
-            self.set_attrs(
-                name,
-                dict(type=VALUES, vulnerability=vulnerability_name or DEFAULT),
-            )
+            self.set_attrs(name, dict(type=VALUES, vulnerability=vulnerability_name))
 
     @hydromt_step
     def create_from_geom(
@@ -493,9 +499,8 @@ class ExposureGridComponent(GridComponent):
         """
         self.model._assert_model_type(GRID)
         # Check for the vulnerability data
-        vulnerability = self.model.vulnerability.get_identifiers(
-            vulnerability_name or DEFAULT
-        )
+        vulnerability_name = vulnerability_name or DEFAULT
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
         # Check for the model region
         if self.model.region is None:
             raise MissingRegionError(
@@ -520,7 +525,7 @@ either use `create_grid` to create purely the grid definition or other create me
         )
 
         # Call the workflows function
-        exposure_grid = workflows.exposure_grid_from_geometries(
+        exposure_grid, exposure_attrs = workflows.exposure_grid_from_geometries(
             exposure_data=exposure_data,
             column=column,
             curve=curve,
@@ -532,4 +537,6 @@ either use `create_grid` to create purely the grid definition or other create me
         )
 
         # Set the data
-        self.set(exposure_grid, name=(name or Path(exposure_fname).stem))
+        name = name or Path(exposure_fname).stem
+        self.set(exposure_grid, name=name)
+        self.set_attrs(name, dict(**exposure_attrs, vulnerability=vulnerability_name))
