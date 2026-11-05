@@ -4,11 +4,13 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    field_validator,
 )
 
 from hydromt_fiat.settings.base import BaseModelF
 from hydromt_fiat.settings.file import InputFileModel
 from hydromt_fiat.settings.variables import Variable
+from hydromt_fiat.utils import IMPACT__TYPE
 
 __all__ = ["ExposureGeometry", "ExposureGrid", "ExposureGridVariable"]
 
@@ -49,6 +51,15 @@ vulnerability netcdf dataset.",
         description="The zonal statistics method. Only really applicable \
 if `area_method` is set to 'area'.",
     )
+
+    # Validator(s)
+    @field_validator(IMPACT__TYPE, mode="before")
+    @classmethod
+    def ensure_impact_type_list(cls, value: str | list[str]):
+        """Ensure impact type list typing."""
+        if not isinstance(value, list):
+            value = [value]
+        return value
 
 
 class ExposureGeometry(InputFileModel):
