@@ -123,6 +123,12 @@ def test_combine_1d_to_nd_errors(
     with pytest.raises(ValueError, match="strictly increasing"):
         combine_1d_to_nd([interp_axes[0][::-1], interp_axes[1]], interp_values)
 
+    with pytest.raises(ValueError, match="shape"):
+        combine_1d_to_nd(interp_axes, [interp_values[0][0], interp_values[1]])
+
+    with pytest.raises(ValueError, match="shape"):
+        combine_1d_to_nd(interp_axes, [interp_values[0][:, :-1], interp_values[1]])
+
     with pytest.raises(ValueError, match="Unknown rule"):
         combine_1d_to_nd(interp_axes, interp_values, rule="nope")
 

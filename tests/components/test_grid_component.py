@@ -412,6 +412,30 @@ def test_grid_component_set_attrs(
     assert component.data_attrs["foo"] is not previous
 
 
+def test_grid_component_set_attrs_update(
+    mock_model: MagicMock,
+):
+    # Set up the component with an existing entry
+    component = GridComponent(model=mock_model("grid"))
+    component.set_attrs("foo", {})
+    previous = component.data_attrs["foo"]
+
+    # Update the entry
+    component.set_attrs("foo", {}, update=True)
+
+    # Assert the state, the entry is updated in place
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["foo"] is previous
+    assert component.data_attrs["foo"].name == "foo"
+
+    # Update an entry that is not there yet
+    component.set_attrs("bar", {}, update=True)
+
+    # Assert the state, the entry is added
+    assert len(component.data_attrs) == 2
+    assert component.data_attrs["bar"].name == "bar"
+
+
 def test_grid_component_set_attrs_errors(
     mock_model: MagicMock,
 ):

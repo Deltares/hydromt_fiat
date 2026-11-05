@@ -115,6 +115,18 @@ def test_write_grid_zarr(
         )
 
 
+def test_write_grid_zarr_dataarray(tmp_path: Path, hazard_clipped: xr.Dataset):
+    p = Path(tmp_path, "foo.zarr")
+    da = hazard_clipped["flood_event"]
+    # Call the functions with a data array
+    write_grid(data=da, write_path=p, chunks={"x": 2, "y": 2})
+
+    # Assert the archive, it is stored as a dataset
+    assert p.is_dir()
+    with xr.open_zarr(p, mask_and_scale=False) as ds:
+        assert "flood_event" in ds.data_vars
+
+
 @pytest.mark.xfail(
     strict=True,
     reason="write_grid calls 'to_raster' on the RasterDataset accessor",

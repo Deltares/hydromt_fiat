@@ -5,9 +5,12 @@ from unittest.mock import MagicMock
 import geopandas as gpd
 import numpy as np
 import pytest
+from pydantic import ValidationError
 from pyproj.crs import CRS
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.components.geom import GeomsComponent
+from hydromt_fiat.settings.variables import Variable
 
 # Overwrite the abstractmethods to be able to initialize it
 GeomsComponent.__abstractmethods__ = set()
@@ -23,6 +26,17 @@ def test_geom_component_empty(
     assert component._data is None
     assert isinstance(component.data, dict)  # After initializing
     assert len(component.data) == 0
+
+
+def test_geom_component_data_attrs(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model("geom"))
+
+    # Assert the current state
+    assert component._data_attrs is None
+    assert component.data_attrs == {}  # After initializing
 
 
 def test_geom_component__assert_entry(
@@ -286,3 +300,49 @@ def test_geom_component_region(
         [4.355, 51.966, 4.408, 52.045],
         decimal=3,
     )
+
+
+def test_geom_component_set_attrs(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+):
+    # Setup the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
+    component = GeomsComponent(model=mock_model("geom"))
+    assert len(component.data_attrs) == 0  # No attributes yet
+
+    # Set the attributes of a dataset
+    component.set_attrs("ds1", {})
+
+    # Assert the state, the name is added to the attributes
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"].name == "ds1"
+
+    # Set the attributes once more, this replaces the entry
+    previous = component.data_attrs["ds1"]
+    component.set_attrs("ds1", {})
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"] is not previous
+
+    # Update the entry, this keeps the same entry
+    previous = component.data_attrs["ds1"]
+    component.set_attrs("ds1", {}, update=True)
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"] is previous
+
+
+def test_geom_component_set_attrs_errors(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+):
+    # Setup the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
+    component = GeomsComponent(model=mock_model("geom"))
+
+    # Unknown settings are not allowed
+    with pytest.raises(ValidationError):
+        component.set_attrs("ds1", {"bar": 1})
