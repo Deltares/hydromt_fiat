@@ -27,8 +27,10 @@ from hydromt_fiat.utils import (
     DEFAULT,
     EXPOSURE,
     GEOM,
+    IMPACT__TYPE,
     OBJECT__TYPE,
     VALUE,
+    VULNERABILITY,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -301,7 +303,7 @@ use 'set_region' before this method"
         )
         # Set the data directly
         self.set(exposure_vector, name=name)
-        self.set_attrs(name, dict(vulnerability=DEFAULT))
+        self.set_attrs(name, {VULNERABILITY: DEFAULT})
 
     @hydromt_step
     def create_link(
@@ -309,7 +311,7 @@ use 'set_region' before this method"
         exposure_name: str,
         *,
         impact_type: str | list[str] = "damage",
-        vulnerability_name: str | None = None,
+        vulnerability_name: str = "default",
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
 
@@ -333,8 +335,7 @@ use 'set_region' before this method"
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default 'default'.
         """
         # Check for data
         self.model._assert_model_type(GEOM)
@@ -342,9 +343,7 @@ use 'set_region' before this method"
         exposure_data = self.data[exposure_name]
 
         # Check for vulnerability
-        vulnerability = self.model.vulnerability.get_identifiers(
-            vulnerability_name or DEFAULT
-        )
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
 
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
@@ -357,7 +356,7 @@ use 'set_region' before this method"
         self.set(exposure_vector, name=exposure_name, replace=False)
         self.set_attrs(
             exposure_name,
-            dict(impact_type=impact_type, vulnerability=vulnerability_name),
+            {IMPACT__TYPE: impact_type, VULNERABILITY: vulnerability_name},
             update=True,
         )
 
@@ -370,7 +369,7 @@ use 'set_region' before this method"
         exposure_cost_table_fname: Path | str | None = None,
         exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
         exposure_cost_link_fname: Path | str | None = None,
-        vulnerability_name: str | None = None,
+        vulnerability_name: str = "default",
         per_unit: bool = True,
         read_table_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -404,8 +403,7 @@ use 'set_region' before this method"
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default "default".
         per_unit : str, optional
             Whether or not the value provided in the cost table are per unit length or
             per unit area. Therefore, if True, the values are multiplied by either

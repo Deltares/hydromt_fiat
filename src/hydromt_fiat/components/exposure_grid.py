@@ -21,13 +21,13 @@ from hydromt_fiat.settings.exposure import (
 )
 from hydromt_fiat.utils import (
     CATEGORIZED,
-    DEFAULT,
     EXPOSURE,
     EXPOSURE__GRID__TYPE,
     GRID,
     TYPE,
     VALUE,
     VALUES,
+    VULNERABILITY,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -193,7 +193,7 @@ class ExposureGridComponent(GridComponent):
         exposure_fnames: Path | str | list[Path | str],
         exposure_link_fname: Path | str | None = None,
         *,
-        vulnerability_name: str | None = None,
+        vulnerability_name: str = "default",
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -210,8 +210,7 @@ class ExposureGridComponent(GridComponent):
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default "default".
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -227,9 +226,10 @@ class ExposureGridComponent(GridComponent):
         """
         self.model._assert_model_type(GRID)
         logger.info("Creating gridded exposure")
+
         # Check for the vulnerability
-        vulnerability_name = vulnerability_name or DEFAULT
         vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
+
         # Region check
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
@@ -273,7 +273,7 @@ class ExposureGridComponent(GridComponent):
         # Set the dataset
         self.set(exposure_grid, expand=expand)
         for name, attrs in exposure_attrs.items():
-            self.set_attrs(name, dict(**attrs, vulnerability=vulnerability_name))
+            self.set_attrs(name, {**attrs, VULNERABILITY: vulnerability_name})
 
     @hydromt_step
     def create_categorized(
@@ -281,7 +281,7 @@ class ExposureGridComponent(GridComponent):
         exposure_fname: Path | str,
         *,
         name: str | None = None,
-        vulnerability_name: str | None = None,
+        vulnerability_name: str = "default",
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
@@ -303,8 +303,7 @@ class ExposureGridComponent(GridComponent):
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default "default".
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -317,9 +316,7 @@ class ExposureGridComponent(GridComponent):
         self.model._assert_model_type(GRID)
         logger.info("Creating gridded value-table based exposure")
         # Check for the vulnerability data
-        vulnerability = self.model.vulnerability.get_identifiers(
-            vulnerability_name or DEFAULT
-        )
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
         if self.model.region is None:
             raise MissingRegionError("Region is required for setting up exposure grid")
 
@@ -343,7 +340,7 @@ class ExposureGridComponent(GridComponent):
 
         # Set the data
         self.set(exposure_grid, expand=expand)
-        self.set_attrs(name, dict(type=CATEGORIZED))
+        self.set_attrs(name, {TYPE: CATEGORIZED})
 
     @hydromt_step
     def create_categorized_values(
@@ -354,7 +351,7 @@ class ExposureGridComponent(GridComponent):
         exposure_table: dict[int, float | int] | None = None,
         columns: list[str] | str | None = None,
         index_name: str | None = None,
-        vulnerability_name: list[str] | str | None = None,
+        vulnerability_name: list[str] | str = "default",
         default: float | int = 100,
         unit: str = "m**2",
         read_kwargs: dict[str, Any] | None = None,
@@ -390,8 +387,7 @@ class ExposureGridComponent(GridComponent):
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default "default".
         default : float | int, optional
             The default value when the table is not provided or has missing values
             compared to the categorized exposure data, by default 100.
@@ -413,7 +409,6 @@ class ExposureGridComponent(GridComponent):
         self._assert_entry(exposure_name, spatial=True)
 
         # Basically a simple check on the vulnerability data
-        vulnerability_name = vulnerability_name or DEFAULT
         self.model.vulnerability._assert_entry(vulnerability_name)
 
         # Get the exposure table from the data catalog, or from input
@@ -445,7 +440,7 @@ class ExposureGridComponent(GridComponent):
         # Set the data
         self.set(exposure_grid_table)
         for name in exposure_grid_table.data_vars:
-            self.set_attrs(name, dict(type=VALUES, vulnerability=vulnerability_name))
+            self.set_attrs(name, {TYPE: VALUES, VULNERABILITY: vulnerability_name})
 
     @hydromt_step
     def create_from_geom(
@@ -455,7 +450,7 @@ class ExposureGridComponent(GridComponent):
         curve: str,
         *,
         name: str | None = None,
-        vulnerability_name: str | None = None,
+        vulnerability_name: str = "default",
         mult: float | int = 1,
         add: float | int = 0,
         method: str = "add",
@@ -475,13 +470,12 @@ class ExposureGridComponent(GridComponent):
             newly rasterized data.
         name : str | None, optional
             The name of the variable that the data will have in the dataset.
-            If not provided the name is inferred from the stem of `expousre_fname`.
+            If not provided the name is inferred from the stem of `exposure_fname`.
             By default None.
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. If not provided, the name is assumed to be 'default'.
-            By default None.
+            data variables. By default "default".
         mult : float | int, optional
             The multiplication factor put on top of the burned in values, by default 1.
         add : float | int, optional
@@ -498,9 +492,10 @@ class ExposureGridComponent(GridComponent):
             E.g. for 'occupancy_type' one can select 'residential'.
         """
         self.model._assert_model_type(GRID)
+
         # Check for the vulnerability data
-        vulnerability_name = vulnerability_name or DEFAULT
         vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
+
         # Check for the model region
         if self.model.region is None:
             raise MissingRegionError(
@@ -539,4 +534,4 @@ either use `create_grid` to create purely the grid definition or other create me
         # Set the data
         name = name or Path(exposure_fname).stem
         self.set(exposure_grid, name=name)
-        self.set_attrs(name, dict(**exposure_attrs, vulnerability=vulnerability_name))
+        self.set_attrs(name, {**exposure_attrs, VULNERABILITY: vulnerability_name})
