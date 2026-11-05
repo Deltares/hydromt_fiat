@@ -418,13 +418,6 @@ def test_grid_component_set_attrs_errors(
     # Set up the component
     component = GridComponent(model=mock_model("grid"))
 
-    # Update attributes that are not present
-    with pytest.raises(
-        ValueError,
-        match="foo not present in data attibutes, cannot update",
-    ):
-        component.set_attrs("foo", {}, update=True)
-
     # Unknown settings are not allowed
     with pytest.raises(ValidationError):
         component.set_attrs("foo", {"bar": 1})

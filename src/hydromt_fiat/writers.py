@@ -244,7 +244,7 @@ def write_grid(
             write_kwargs = copy.deepcopy(TIFF_KWARGS)
             if compress:
                 write_kwargs.update(TIFF_COMPRESSION)
-            force_ns(data).raster.to_raster(
+            force_ns(data).raster.to_mfraster(
                 write_path,
                 **write_kwargs,
             )

@@ -379,9 +379,7 @@ only resolution set"
         attrs[NAME] = name
 
         # Set the data
-        if not update:
+        if not update or name not in self.data_attrs:
             self.data_attrs[name] = self._variable.model_validate(attrs)
             return
-        if name not in self.data_attrs:
-            raise ValueError(f"{name} not present in data attibutes, cannot update")
         self.data_attrs[name].update(**attrs)

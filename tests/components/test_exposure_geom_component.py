@@ -10,7 +10,7 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.settings.exposure import ExposureGeometry
+from hydromt_fiat.settings.exposure import ExposureGeometry, ExposureGeometryVariable
 from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
@@ -70,7 +70,7 @@ def test_exposure_geom_component_read_none(
     component = ExposureGeomsComponent(model=model)
     # Set the config to point to nonsense path
     component.model.config.data.exposure[0] = ExposureGeometry(
-        file="foo.fgb", vulnerability="default"
+        file="foo.fgb", variables={"vulnerability": "default"}
     )
 
     # Assert it's empty
@@ -152,10 +152,6 @@ def test_exposure_geom_component_read_csv(
     assert "elevation" in component.data["foo"].columns
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="write does not set the required 'vulnerability' of the config entry",
-)
 def test_exposure_geom_component_write(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -169,6 +165,10 @@ def test_exposure_geom_component_write(
     component._data = {
         "buildings": exposure_vector_clipped,
         "buildings2": exposure_vector_clipped,
+    }
+    component._data_attrs = {
+        "buildings": ExposureGeometryVariable(vulnerability="default"),
+        "buildings2": ExposureGeometryVariable(vulnerability="default"),
     }
 
     # Write the data
@@ -200,10 +200,6 @@ def test_exposure_geom_component_write_skip(
     assert "Model type not set to 'geom', skipping writing" in caplog.text
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="write does not set the required 'vulnerability' of the config entry",
-)
 def test_exposure_geom_component_write_sig(
     tmp_path: Path,
     mock_model_config: MagicMock,
@@ -214,6 +210,9 @@ def test_exposure_geom_component_write_sig(
     # Set data like a dummy
     component._data = {
         "buildings": exposure_vector_clipped,
+    }
+    component._data_attrs = {
+        "buildings": ExposureGeometryVariable(vulnerability="default"),
     }
 
     # Write the data

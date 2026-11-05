@@ -75,8 +75,8 @@ def test_get_config_list_files():
     # Call the function
     paths = get_config_list_files(
         [
-            ExposureGeometry(file="tmp.txt", vulnerability="a"),
-            ExposureGeometry(file="foo.txt", vulnerability="a"),
+            ExposureGeometry(file="tmp.txt", variables={"vulnerability": "a"}),
+            ExposureGeometry(file="foo.txt", variables={"vulnerability": "a"}),
         ]
     )
     # Assert the output

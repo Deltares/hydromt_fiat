@@ -95,7 +95,10 @@ def test_serialize_settings():
     assert "exposure" not in s.model_dump(exclude_none=True)
 
     # But settings a single geometry, should leave it in there
-    s.exposure = ExposureGeometry(file="foo.txt", vulnerability="default")
+    s.exposure = ExposureGeometry(
+        file="foo.txt",
+        variables={"vulnerability": "default"},
+    )
 
     # When dumping the exposure should be present
     assert "exposure" in s.model_dump(exclude_none=True)

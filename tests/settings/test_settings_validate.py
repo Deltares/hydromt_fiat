@@ -16,12 +16,16 @@ from hydromt_fiat.settings.vulnerability import Vulnerability
 
 def test_validate_exposure():
     # Setup the settings
-    bs = GeomSettings(exposure=ExposureGeometry(file="foo.txt", vulnerability="a"))
+    bs = GeomSettings(
+        exposure=ExposureGeometry(file="foo.txt", variables={"vulnerability": "a"}),
+    )
     # Assert it's a list
     assert isinstance(bs.exposure, list)
 
     # Setup the settings
-    bs = GeomSettings(exposure=[ExposureGeometry(file="foo.txt", vulnerability="a")])
+    bs = GeomSettings(
+        exposure=[ExposureGeometry(file="foo.txt", variables={"vulnerability": "a"})],
+    )
     # Assert it's a list
     assert isinstance(bs.exposure, list)
 
@@ -32,9 +36,9 @@ def test_validate_exposure_geometry():
         ExposureGeometry(file="f.fgb")
 
     # Setup the exposure with a vulnerability
-    exposure = ExposureGeometry(file="f.fgb", vulnerability="default")
+    exposure = ExposureGeometry(file="f.fgb", variables={"vulnerability": "default"})
     # Assert the vulnerability
-    assert exposure.vulnerability == "default"
+    assert exposure.variables.vulnerability == "default"
 
 
 @pytest.mark.parametrize(

@@ -64,7 +64,9 @@ def infer_exposure_geom_attrs(
     """
     attrs = dict(vulnerability=DEFAULT)
     # Get the corresponding settings entry
-    entry = [item.variable for item in settings if item.file.stem == name]
+    if settings is None:
+        return attrs
+    entry = [item.variables for item in settings if item.file.stem == name]
     # If nothing to be done, return
     if not entry:
         return attrs
