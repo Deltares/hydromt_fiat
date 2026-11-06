@@ -108,8 +108,10 @@ def test_grid_component_clear(
 
     # Set data like a dummy
     component._data = hazard
+    component.set_attrs("flood_event", {})
     # Assert the current state
     assert len(component.data.data_vars) == 1
+    assert len(component.data_attrs) == 1
 
     # Call the clear method
     component.clear()
@@ -445,3 +447,60 @@ def test_grid_component_set_attrs_errors(
     # Unknown settings are not allowed
     with pytest.raises(ValidationError):
         component.set_attrs("foo", {"bar": 1})
+
+
+def test_grid_component_update_uniform(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+    original = component.data["buildings_structure"].values.copy()
+
+    # Call the method
+    component.update_uniform("buildings_structure", mult=2, add=10)
+
+    # Assert the output
+    np.testing.assert_array_equal(
+        component.data["buildings_structure"].values,
+        (original * 2) + 10,
+    )
+
+
+def test_grid_component_update_uniform_default(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+    original = component.data["buildings_structure"].values.copy()
+
+    # Call the method without any arguments
+    component.update_uniform("buildings_structure")
+
+    # Assert the values are left as is
+    np.testing.assert_array_equal(
+        component.data["buildings_structure"].values,
+        original,
+    )
+
+
+def test_grid_component_update_uniform_errors(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match="Choose from already present data variables",
+    ):
+        component.update_uniform("foo", mult=2)

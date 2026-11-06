@@ -16,6 +16,9 @@ from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
 from hydromt_fiat.utils import (
     HAZARD,
+    RP,
+    TYPE,
+    VALUE,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -258,3 +261,75 @@ class HazardComponent(GridComponent):
         # Set the region if not present and defined by the hazard setup
         if not region and self.model.region is None:
             self.model.set_region(self._region_data)
+
+    @hydromt_step
+    def create_fixed(
+        self,
+        hazard_name: str,
+        name,
+        value: float | int,
+        *,
+        hazard_type: str = "water_depth",
+        return_period: float | int | None = None,
+    ) -> None:
+        """Create a fixed value hazard layer.
+
+        This layer will be based on where there are finite values in another layer.
+
+        Parameters
+        ----------
+        hazard_name : str
+            The name of the hazard layer containing the finite values.
+        name : _type_
+            The name of the hazard layer to be created.
+        value : float | int
+            The fixed value to be set in the new layer.
+        hazard_type : str, optional
+            The type of hazard, by default "water_depth".
+        return_period : float | int | None, optional
+            The return period of the data, needed when the model is set run risk
+            calculations. By default None.
+        """
+        # Assert the existence
+        self._assert_entry(hazard_name, spatial=True)
+
+        # Mask the data
+        hazard_data = workflows.grid_fixed_from_finite(
+            self.data[hazard_name],
+            value=value,
+        )
+
+        # Set the data
+        self.set(hazard_data, name=name)
+        self.set_attrs(name, attrs={RP: return_period, TYPE: hazard_type})
+
+    @hydromt_step
+    def create_settings_only(
+        self,
+        name: str,
+        value: float | int,
+        *,
+        hazard_type: str = "water_depth",
+        return_period: float | int | None = None,
+    ) -> None:
+        """Create a hazard layer in settings only.
+
+        This only exists in the settings, there must be no layer in the dataset.
+
+        Parameters
+        ----------
+        name : str
+            The name of the hazard layer.
+        value : float | int
+            The constant value of the layer.
+        hazard_type : str, optional
+            The type of hazard, by default "water_depth".
+        return_period : float | int | None, optional
+            The return period of the data, needed when the model is set run risk
+            calculations. By default None.
+        """
+        # Directly set in the attributes.
+        self.set_attrs(
+            name=name,
+            attrs={RP: return_period, TYPE: hazard_type, VALUE: value},
+        )

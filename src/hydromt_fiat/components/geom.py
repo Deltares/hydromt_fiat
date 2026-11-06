@@ -119,6 +119,7 @@ i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as inpu
     def clear(self) -> None:
         """Clear the geometry data."""
         self._data = None
+        self._data_attrs = None
         self._initialize(skip_read=True)
 
     @hydromt_step

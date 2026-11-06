@@ -158,6 +158,7 @@ class GridComponent(SpatialModelComponent):
     def clear(self) -> None:
         """Clear the gridded data."""
         self._data = None
+        self._data_attrs = None
         self._initialize(skip_read=True)
 
     @hydromt_step
@@ -383,3 +384,28 @@ only resolution set"
             self.data_attrs[name] = self._variable.model_validate(attrs)
             return
         self.data_attrs[name].update(**attrs)
+
+    @hydromt_step
+    def update_uniform(
+        self,
+        name: str,
+        *,
+        mult: float | int = 1,
+        add: float | int = 0,
+    ) -> None:
+        """Update the values of a data uniformly.
+
+        Parameters
+        ----------
+        name : str
+            The name of the data variable.
+        mult : float | int, optional
+            The multiplication factor, by default 1.
+        add : float | int, optional
+            The value to add (or substract), by default 0.
+        """
+        # Assert presence of the variable
+        self._assert_entry(name)
+
+        # Update the value
+        self.data[name].values = (self.data[name].values * mult) + add

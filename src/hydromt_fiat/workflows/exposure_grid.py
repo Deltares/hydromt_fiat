@@ -250,6 +250,7 @@ def exposure_grid_category_values(
     exposure_data: xr.DataArray,
     table: pd.DataFrame | None = None,
     columns: list[str] | str | None = None,
+    name_prefix: str | None = None,
     index_name: str = INDEX,
     default: float | int = 100,
     unit: str = "m**2",
@@ -266,6 +267,11 @@ def exposure_grid_category_values(
     columns : list[str] | str, optional
         List of columns to select from the provided table. If not provided, all columns
         from the provided table are used. By Default None.
+    name_prefix : str, optional
+        Extra naming for the resulting data variables in order to be able to use
+        datasets with same columns headers. If not provided, the resulting name of the
+        data variable will be the name of the exposure data plus the column name.
+        By default None.
     index_name : str, optional
         The name of the index column in the table data, if the table data is provided.
         By default 'index'.
@@ -300,6 +306,9 @@ def exposure_grid_category_values(
         coords={coord_name: range(table_size)},
     )
     ds[coord_name] = ds[coord_name].astype(exposure_data.dtype)
+    # Set the name
+    if name_prefix is not None:
+        name += f"_{name_prefix}"
 
     # If no table provided set a default variables
     if table is None:
@@ -358,8 +367,6 @@ def exposure_grid_from_geometries(
     vulnerability: pd.DataFrame,
     ds_like: xr.DataArray | xr.Dataset,
     *,
-    mult: float | int = 1,
-    add: float | int = 0,
     method: str = "add",
 ) -> xr.DataArray:
     """Create exposure grid data from geometry data.
@@ -378,10 +385,6 @@ def exposure_grid_from_geometries(
         exposure data.
     ds_like : xr.DataArray | xr.Dataset
         The raster definition.
-    mult : float | int, optional
-        The multiplication factor put on top of the burned in values, by default 1.
-    add : float | int, optional
-        The value added on top of the burned in value, by default 0.
     method : str, optional
         The method of which to merge values when rasterizing values into the same
         cell, choose between 'add' and 'replace'. By default 'add'.
@@ -398,8 +401,6 @@ def exposure_grid_from_geometries(
         method=method,
     )
     da.name = VALUE
-    # Update values
-    da = (da * mult) + add
 
     # Call the method to setup the data
     ds, ds_attrs = exposure_grid_default_setup(

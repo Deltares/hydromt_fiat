@@ -350,6 +350,7 @@ class ExposureGridComponent(GridComponent):
         exposure_table_fname: Path | str | None = None,
         exposure_table: dict[int, float | int] | None = None,
         columns: list[str] | str | None = None,
+        name_prefix: str | None = None,
         index_name: str | None = None,
         vulnerability_name: list[str] | str = "default",
         default: float | int = 100,
@@ -362,6 +363,10 @@ class ExposureGridComponent(GridComponent):
         This is specific to on of the variables present the exposure data.
         A coordinates and (a) variable(s) are created that link to the values in the
         exposure data variable in terms of values and name.
+
+        The name of the added variables will either be '<exposure_name>_<column>' when
+        name_prefix is not provided or '<exposure_name>_<name_prefix>_<column>' when it
+        is provided.
 
         Parameters
         ----------
@@ -380,6 +385,11 @@ class ExposureGridComponent(GridComponent):
         columns : list[str] | str, optional
             List of columns to select from the provided table. If not provided,
             all columns from the provided table are used. By Default None.
+        name_prefix : str, optional
+            Extra naming for the resulting data variables in order to be able to use
+            datasets with same columns headers. If not provided, the resulting name of
+            the data variable will be the name of the exposure data plus the
+            column name. By default None.
         index_name : str, optional
             The name of the index column in the `exposure_table_fname` or
             `exposure_table` data. If not provided, `exposure_name` is used as the
@@ -409,7 +419,10 @@ class ExposureGridComponent(GridComponent):
         self._assert_entry(exposure_name, spatial=True)
 
         # Basically a simple check on the vulnerability data
-        self.model.vulnerability._assert_entry(vulnerability_name)
+        if not isinstance(vulnerability_name, list):
+            vulnerability_name = [vulnerability_name]
+        for item in vulnerability_name:
+            self.model.vulnerability._assert_entry(item)
 
         # Get the exposure table from the data catalog, or from input
         if exposure_table_fname is not None:
@@ -433,6 +446,7 @@ class ExposureGridComponent(GridComponent):
             table=exposure_table,
             unit=unit,
             columns=columns,
+            name_prefix=name_prefix,
             index_name=index_name or exposure_name,
             default=default,
         )
@@ -451,8 +465,6 @@ class ExposureGridComponent(GridComponent):
         *,
         name: str | None = None,
         vulnerability_name: str = "default",
-        mult: float | int = 1,
-        add: float | int = 0,
         method: str = "add",
         read_kwargs: dict[str, Any] | None = None,
         **select,
@@ -476,10 +488,6 @@ class ExposureGridComponent(GridComponent):
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
             data variables. By default "default".
-        mult : float | int, optional
-            The multiplication factor put on top of the burned in values, by default 1.
-        add : float | int, optional
-            The value added on top of the burned in value, by default 0.
         method : str, optional
             The method of which to merge values when rasterizing values into the same
             cell, choose between 'add' and 'replace'. By default 'add'.
@@ -526,8 +534,6 @@ either use `create_grid` to create purely the grid definition or other create me
             curve=curve,
             vulnerability=vulnerability,
             ds_like=self.like,
-            mult=mult,
-            add=add,
             method=method,
         )
 

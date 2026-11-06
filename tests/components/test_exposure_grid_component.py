@@ -437,7 +437,7 @@ def test_exposure_grid_component_create_categorized_values(
     assert "buildings_cat" in component.data["buildings_structure"].dims
     # Assert the attributes
     assert component.data_attrs["buildings_structure"].type == VALUES
-    assert component.data_attrs["buildings_structure"].vulnerability == DEFAULT
+    assert component.data_attrs["buildings_structure"].vulnerability == [DEFAULT]
 
 
 def test_exposure_grid_component_create_categorized_values_vulnerability_name(
@@ -459,8 +459,81 @@ def test_exposure_grid_component_create_categorized_values_vulnerability_name(
     )
 
     # Assert the attributes
-    assert component.data_attrs["buildings_structure"].vulnerability == "default"
-    assert component.data_attrs["buildings_content"].vulnerability == "default"
+    assert component.data_attrs["buildings_structure"].vulnerability == ["default"]
+    assert component.data_attrs["buildings_content"].vulnerability == ["default"]
+
+
+def test_exposure_grid_component_create_categorized_values_vulnerability_list(
+    model_exposure_setup: FIATModel,
+    exposure_grid: xr.Dataset,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
+
+    # Call the method with a list of vulnerability names
+    component.create_categorized_values(
+        exposure_name="buildings",
+        exposure_table_fname="category_values",
+        index_name=VALUE,
+        vulnerability_name=["default"],
+    )
+
+    # Assert the attributes
+    assert component.data_attrs["buildings_structure"].vulnerability == ["default"]
+    assert component.data_attrs["buildings_content"].vulnerability == ["default"]
+
+
+def test_exposure_grid_component_create_categorized_values_vulnerability_errors(
+    model_exposure_setup: FIATModel,
+    exposure_grid: xr.Dataset,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
+
+    # Assert the error when one of the vulnerability datasets is absent
+    with pytest.raises(
+        RuntimeError,
+        match="Choose from already present data variables",
+    ):
+        component.create_categorized_values(
+            exposure_name="buildings",
+            exposure_table_fname="category_values",
+            index_name=VALUE,
+            vulnerability_name=["default", "foo"],
+        )
+
+
+def test_exposure_grid_component_create_categorized_values_name_prefix(
+    model_exposure_setup: FIATModel,
+    exposure_grid: xr.Dataset,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid["buildings"].to_dataset()
+    component._data_attrs = {}
+
+    # Call the method with a name prefix
+    component.create_categorized_values(
+        exposure_name="buildings",
+        exposure_table_fname="category_values",
+        index_name=VALUE,
+        name_prefix="foo",
+    )
+
+    # Assert the output, the prefix is part of the variable names
+    assert "buildings_foo_structure" in component.data.data_vars
+    assert "buildings_foo_content" in component.data.data_vars
+    assert "buildings_structure" not in component.data.data_vars
+    # Assert the attributes
+    assert component.data_attrs["buildings_foo_structure"].type == VALUES
+    assert component.data_attrs["buildings_foo_content"].type == VALUES
 
 
 def test_exposure_grid_component_create_categorized_values_table(

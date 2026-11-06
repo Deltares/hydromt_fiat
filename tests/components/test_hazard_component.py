@@ -250,3 +250,106 @@ def test_hazard_component_create_errors(model: FIATModel):
         match=("Region component is missing for setting up hazard data"),
     ):
         component.create(hazard_fnames=["flood_event"])
+
+
+def test_hazard_component_create_fixed(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Setup the component
+    component = HazardComponent(model=mock_model("geom"))
+    # Set data like a dummy
+    component._data = hazard
+    component._data_attrs = {}
+
+    # Call the method
+    component.create_fixed("flood_event", "flood_fixed", value=1)
+
+    # Assert the output, the fixed layer is added next to the original
+    assert "flood_event" in component.data.data_vars
+    assert "flood_fixed" in component.data.data_vars
+    finite = component.data["flood_event"].values != -9999
+    assert (component.data["flood_fixed"].values[finite] == 1).all()
+    assert (component.data["flood_fixed"].values[~finite] == -9999).all()
+    # Assert the attributes
+    assert isinstance(component.data_attrs["flood_fixed"], HazardVariable)
+    assert component.data_attrs["flood_fixed"].type == WATER__DEPTH
+    assert component.data_attrs["flood_fixed"].rp is None
+
+
+def test_hazard_component_create_fixed_risk(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Setup the component
+    component = HazardComponent(model=mock_model("geom"))
+    # Set data like a dummy
+    component._data = hazard
+    component._data_attrs = {}
+
+    # Call the method with a return period and hazard type
+    component.create_fixed(
+        "flood_event",
+        "flood_fixed",
+        value=1,
+        hazard_type="flooding",
+        return_period=100,
+    )
+
+    # Assert the attributes
+    assert component.data_attrs["flood_fixed"].type == "flooding"
+    assert component.data_attrs["flood_fixed"].rp == 100
+
+
+def test_hazard_component_create_fixed_errors(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Setup the component
+    component = HazardComponent(model=mock_model("geom"))
+    # Set data like a dummy
+    component._data = hazard
+    component._data_attrs = {}
+
+    # Hazard layer not present
+    with pytest.raises(
+        RuntimeError,
+        match="Choose from already present data variables",
+    ):
+        component.create_fixed("foo", "flood_fixed", value=1)
+
+
+def test_hazard_component_create_settings_only(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = HazardComponent(model=mock_model("geom"))
+
+    # Call the method
+    component.create_settings_only("flood_const", value=0.5)
+
+    # Assert the output, there is only an entry in the attributes
+    assert len(component.data.data_vars) == 0
+    assert isinstance(component.data_attrs["flood_const"], HazardVariable)
+    assert component.data_attrs["flood_const"].type == WATER__DEPTH
+    assert component.data_attrs["flood_const"].rp is None
+    assert component.data_attrs["flood_const"].value == 0.5
+
+
+def test_hazard_component_create_settings_only_risk(
+    mock_model: MagicMock,
+):
+    # Setup the component
+    component = HazardComponent(model=mock_model("geom"))
+
+    # Call the method with a return period and hazard type
+    component.create_settings_only(
+        "flood_const",
+        value=0.5,
+        hazard_type="flooding",
+        return_period=100,
+    )
+
+    # Assert the attributes
+    assert component.data_attrs["flood_const"].type == "flooding"
+    assert component.data_attrs["flood_const"].rp == 100

@@ -18,6 +18,7 @@ from .exposure_grid import (
     exposure_grid_from_geometries,
     infer_exposure_grid_attrs,
 )
+from .grid import grid_fixed_from_finite
 from .hazard import hazard_setup, infer_hazard_attrs
 from .utils import ensure_dataset, process_table
 from .value import max_value, max_value_direct
@@ -44,6 +45,7 @@ __all__ = [
     "exposure_grid_from_geometries",
     "generate_vulnerability_identifiers",
     "hazard_setup",
+    "grid_fixed_from_finite",
     "infer_exposure_geom_attrs",
     "infer_exposure_grid_attrs",
     "infer_hazard_attrs",

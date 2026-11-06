@@ -222,6 +222,25 @@ def test_exposure_grid_category_values_select(
     assert "buildings_content" not in out.data_vars
 
 
+def test_exposure_grid_category_values_name_prefix(
+    exposure_grid: xr.Dataset,
+    exposure_grid_cat_table: pd.DataFrame,
+):
+    # Call the function with a name prefix
+    out = exposure_grid_category_values(
+        exposure_data=exposure_grid["buildings"],
+        table=exposure_grid_cat_table,
+        index_name=VALUE,
+        name_prefix="foo",
+    )
+
+    # Assert the output, the prefix is part of the variable names
+    assert "buildings_cat" in out.dims
+    assert "buildings_foo_structure" in out.data_vars
+    assert "buildings_foo_content" in out.data_vars
+    assert "buildings_structure" not in out.data_vars
+
+
 def test_exposure_grid_category_values_no_table(
     exposure_grid: xr.Dataset,
 ):

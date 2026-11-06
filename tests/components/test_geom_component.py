@@ -82,21 +82,26 @@ i.e. a GeoDataFrame or run the appropriate `create` method with 'bar' as input"
 
 
 def test_geom_component_clear(
+    mocker: MockerFixture,
     mock_model: MagicMock,
     exposure_vector: gpd.GeoDataFrame,
 ):
-    # Set up the component
+    # Set up the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
     component = GeomsComponent(model=mock_model("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector}
+    component.set_attrs("foo", {})
     # Assert the current state, i.e. amount of rows
     assert len(component.data) == 1
+    assert len(component.data_attrs) == 1
 
     # Call the clear method
     component.clear()
     # Assert the state after
     assert len(component.data) == 0
+    assert component.data_attrs == {}
 
 
 def test_geom_component_clip(
