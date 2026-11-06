@@ -16,6 +16,8 @@ from pyproj.crs import CRS
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
+from hydromt_fiat.settings.variables import Variable
+from hydromt_fiat.utils import NAME
 
 __all__ = ["GridComponent"]
 
@@ -26,6 +28,7 @@ class GridComponent(SpatialModelComponent):
     """Base class for FIAT grid based components."""
 
     _build = True
+    _variable = Variable
 
     def __init__(
         self,
@@ -34,6 +37,7 @@ class GridComponent(SpatialModelComponent):
         region_component: str | None = None,
     ):
         self._data: xr.Dataset | None = None
+        self._data_attrs: dict[str, Variable] | None = None
         super().__init__(
             model=model,
             region_component=region_component,
@@ -61,6 +65,8 @@ class GridComponent(SpatialModelComponent):
 
     def _initialize(self, skip_read: bool = False) -> None:
         """Initialize the internal dataset."""
+        if self._data_attrs is None:
+            self._data_attrs = {}
         if self._data is None:
             self._data = xr.Dataset()
             if self.root.is_reading_mode() and not skip_read:
@@ -106,6 +112,14 @@ class GridComponent(SpatialModelComponent):
         return self._data
 
     @property
+    def data_attrs(self) -> dict[str, Variable]:
+        """Return the data variables/ settings."""
+        if self._data_attrs is None:
+            self._initialize()
+        assert self._data_attrs is not None
+        return self._data_attrs
+
+    @property
     def like(self) -> xr.Dataset | None:
         """Return the spatial representation of the data."""
         if check_spatial(self.data):
@@ -144,6 +158,7 @@ class GridComponent(SpatialModelComponent):
     def clear(self) -> None:
         """Clear the gridded data."""
         self._data = None
+        self._data_attrs = None
         self._initialize(skip_read=True)
 
     @hydromt_step
@@ -338,3 +353,59 @@ only resolution set"
                 logger.warning(f"Replacing grid map: '{dvar}'")
             self._data[dvar] = data[dvar]
         self._data.attrs.update(data.attrs)
+
+    @hydromt_step
+    def set_attrs(
+        self,
+        name: str,
+        attrs: dict[str, Any],
+        update: bool = False,
+    ) -> None:
+        """Set the variable settings for a dataset entry.
+
+        Parameters
+        ----------
+        name : str
+            Name of the dataset entry.
+        content : dict
+            The content of the variable settings, i.e. the settings themselves.
+        update : bool, optional
+            Whether to update the data or not. If update is set to False, the
+            attributes entry is completely replaced. By default False.
+        """
+        self._initialize()
+        assert self._data_attrs is not None
+
+        # Add name to the content
+        attrs[NAME] = name
+
+        # Set the data
+        if not update or name not in self.data_attrs:
+            self.data_attrs[name] = self._variable.model_validate(attrs)
+            return
+        self.data_attrs[name].update(**attrs)
+
+    @hydromt_step
+    def update_uniform(
+        self,
+        name: str,
+        *,
+        mult: float | int = 1,
+        add: float | int = 0,
+    ) -> None:
+        """Update the values of a data uniformly.
+
+        Parameters
+        ----------
+        name : str
+            The name of the data variable.
+        mult : float | int, optional
+            The multiplication factor, by default 1.
+        add : float | int, optional
+            The value to add (or substract), by default 0.
+        """
+        # Assert presence of the variable
+        self._assert_entry(name)
+
+        # Update the value
+        self.data[name].values = (self.data[name].values * mult) + add

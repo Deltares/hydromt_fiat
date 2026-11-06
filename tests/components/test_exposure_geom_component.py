@@ -10,7 +10,7 @@ from hydromt.model import ModelRoot
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ExposureGeomsComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.settings.exposure import ExposureGeometry
+from hydromt_fiat.settings.exposure import ExposureGeometry, ExposureGeometryVariable
 from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
@@ -69,7 +69,9 @@ def test_exposure_geom_component_read_none(
     # Setup the component
     component = ExposureGeomsComponent(model=model)
     # Set the config to point to nonsense path
-    component.model.config.data.exposure[0] = ExposureGeometry(file="foo.fgb")
+    component.model.config.data.exposure[0] = ExposureGeometry(
+        file="foo.fgb", variables={"vulnerability": "default"}
+    )
 
     # Assert it's empty
     assert component._data is None
@@ -164,6 +166,10 @@ def test_exposure_geom_component_write(
         "buildings": exposure_vector_clipped,
         "buildings2": exposure_vector_clipped,
     }
+    component._data_attrs = {
+        "buildings": ExposureGeometryVariable(vulnerability="default"),
+        "buildings2": ExposureGeometryVariable(vulnerability="default"),
+    }
 
     # Write the data
     component.write()
@@ -204,6 +210,9 @@ def test_exposure_geom_component_write_sig(
     # Set data like a dummy
     component._data = {
         "buildings": exposure_vector_clipped,
+    }
+    component._data_attrs = {
+        "buildings": ExposureGeometryVariable(vulnerability="default"),
     }
 
     # Write the data

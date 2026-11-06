@@ -338,9 +338,22 @@ def config_dummy(tmp_path: Path) -> dict:
     data = {
         "type": "geom",
         "threads": 4,
-        "hazard": {"file": Path(tmp_path, "foo.nc"), "rp": [1, 2, 3]},
-        "vulnerability": {"file": Path("foo.csv")},
-        "exposure": [{"file": "foo.fgb"}],
+        "hazard": {
+            "file": Path(tmp_path, "foo.nc"),
+            "rp": [1, 2, 3],
+            "variables": [{"name": "a", "type": "water_depth", "rp": 1}],
+        },
+        "vulnerability": {
+            "file": Path("foo.csv"),
+            "variables": [
+                {
+                    "name": "default",
+                    "method": "flood.depth",
+                    "types": {"depth_default": "water_depth"},
+                }
+            ],
+        },
+        "exposure": [{"file": "foo.fgb", "variables": {"vulnerability": "default"}}],
     }
     return data
 

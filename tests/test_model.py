@@ -24,7 +24,6 @@ from hydromt_fiat.settings import (
 )
 from hydromt_fiat.utils import (
     CONFIG,
-    FLOOD_LEVEL,
     GEOM,
     GRID,
     REGION,
@@ -85,7 +84,7 @@ def test_model_basic_geom_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.set_config(method=FLOOD_LEVEL)
+    model.set_config(risk=True)
     model.set_type(GEOM)
     # Write the model
     model.write()
@@ -106,7 +105,7 @@ def test_model_basic_grid_read_write(tmp_path: Path):
     model = FIATModel(tmp_path, mode="w")
 
     # Call the necessary setup methods
-    model.set_config(method=FLOOD_LEVEL)
+    model.set_config(risk=True)
     model.set_type(GRID)
     # Write the model
     model.write()
@@ -333,12 +332,12 @@ def test_model_set_config(tmp_path: Path):
 
     # Setup some config variables
     model.set_config(
-        method=FLOOD_LEVEL,
+        risk=True,
         **{"output_dir": "output"},
     )
 
     # Assert the config component
-    assert model.config.data.method == FLOOD_LEVEL
+    assert model.config.data.risk
     assert model.config.data.output_dir == Path("output")
 
 

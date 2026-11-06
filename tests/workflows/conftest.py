@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import Callable
 
 import geopandas as gpd
 import numpy as np
@@ -13,10 +14,12 @@ from hydromt.readers import open_nc
 from hydromt_fiat.utils import (
     COST__TYPE,
     CURVE,
+    DAMAGE,
     IMPACT__TYPE,
     OBJECT__TYPE,
     create_query,
 )
+from hydromt_fiat.workflows.interp import combine_1d_to_nd
 
 
 ## Data from the data catalog
@@ -191,6 +194,54 @@ def vulnerability_identifiers_alt_df(
 
 ## Extra data structure
 @pytest.fixture
+def depth_curves() -> xr.DataArray:
+    # One dimensional (depth) curves with a hazard type on the index
+    da = xr.DataArray(
+        np.array([[0, 0.5, 1], [0, 0.2, 0.8]]).T,
+        dims=("depth_d", "curve_d"),
+        coords={"depth_d": [0.0, 1.0, 2.0], "curve_d": ["a", "b"]},
+        name="d",
+    )
+    da["depth_d"].attrs["type"] = "water_depth"
+    return da
+
+
+@pytest.fixture
+def duration_curves() -> xr.DataArray:
+    # One dimensional (duration) curves with a hazard type on the index
+    da = xr.DataArray(
+        np.array([[0, 1], [0, 0.5]]).T,
+        dims=("duration_t", "curve_t"),
+        coords={"duration_t": [0.0, 10.0], "curve_t": ["a", "b"]},
+        name="t",
+    )
+    da["duration_t"].attrs["type"] = "duration"
+    return da
+
+
+@pytest.fixture
+def interp_axes() -> list[np.ndarray]:
+    return [np.array([0.0, 1.0, 2.0]), np.array([0.0, 10.0])]
+
+
+@pytest.fixture
+def interp_geometric(
+    interp_axes: list[np.ndarray],
+    interp_values: list[np.ndarray],
+) -> Callable[[list[np.ndarray]], np.ndarray]:
+    # The geometric combination of the 1D curves as a function of a grid
+    def _factory(grid: list[np.ndarray]) -> np.ndarray:
+        return combine_1d_to_nd(interp_axes, interp_values, rule="geometric", grid=grid)
+
+    return _factory
+
+
+@pytest.fixture
+def interp_values() -> list[np.ndarray]:
+    return [np.array([[0.0, 0.5, 1.0]]), np.array([[0.0, 1.0]])]
+
+
+@pytest.fixture
 def prepped_aggr_data(exposure_vector_clipped: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # Keep only floating point columns
     data: gpd.GeoDataFrame = exposure_vector_clipped.select_dtypes(
@@ -220,3 +271,14 @@ def vulnerability_identifiers_dummy() -> pd.DataFrame:
         }
     )
     return df
+
+
+@pytest.fixture
+def vulnerability_nd_identifiers() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            OBJECT__TYPE: ["res", "com"],
+            IMPACT__TYPE: [DAMAGE, DAMAGE],
+            CURVE: ["a", "b"],
+        }
+    )

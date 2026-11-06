@@ -1,14 +1,17 @@
 """Exposure geometry workflows."""
 
 import logging
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from hydromt_fiat.settings.exposure import ExposureGeometry
 from hydromt_fiat.utils import (
     CURVE,
+    DEFAULT,
     FN,
     GEOMETRY,
     IMPACT__SUBTYPE,
@@ -22,6 +25,7 @@ __all__ = [
     "exposure_geoms_add_columns",
     "exposure_geoms_setup",
     "exposure_geoms_link_vulnerability",
+    "infer_exposure_geom_attrs",
 ]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
@@ -38,6 +42,37 @@ def _guess_object_type_columns(
     if dtypes[col].name == "geometry":
         return None
     return col
+
+
+def infer_exposure_geom_attrs(
+    name: str,
+    settings: list[ExposureGeometry] | None = None,
+) -> dict[str, Any]:
+    """Infer exposure geometry data (settings) attributes.
+
+    Parameters
+    ----------
+    name : str
+        The exposure geometry name.
+    settings : list[ExposureGeometry] | None, optional
+        The attributes currently present in the settings file, by default None.
+
+    Returns
+    -------
+    dict[str, Any]
+        The attributes.
+    """
+    attrs = dict(vulnerability=DEFAULT)
+    # Get the corresponding settings entry
+    if settings is None:
+        return attrs
+    entry = [item.variables for item in settings if item.file.stem == name]
+    # If nothing to be done, return
+    if not entry:
+        return attrs
+    # Otherwise set from settings
+    attrs = entry[0].model_dump(exclude_none=True)
+    return attrs
 
 
 def exposure_geoms_setup(

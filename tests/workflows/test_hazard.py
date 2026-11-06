@@ -2,14 +2,15 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from hydromt_fiat.utils import EVENT, RISK
-from hydromt_fiat.workflows import hazard_setup
+from hydromt_fiat.settings.hazard import Hazard
+from hydromt_fiat.utils import EVENT, RISK, RP, TYPE, WATER__DEPTH
+from hydromt_fiat.workflows import hazard_setup, infer_hazard_attrs
 
 
 def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
     # test hazard risk
     hazard_data = {"flood_event_highres": hazard_event_data_highres}
-    ds = hazard_setup(
+    ds, attrs = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -22,12 +23,14 @@ def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
     assert ds.analysis == RISK
     assert da.name == "flood_event_highres"
     assert da.rp == 50000
+    # Assert the data attributes
+    assert attrs == {"flood_event_highres": {TYPE: "flooding", RP: 50000}}
 
 
 def test_hazard_setup_event(hazard_event_data: xr.DataArray):
     # Test hazard event
     hazard_data = {"flood_event": hazard_event_data}
-    ds = hazard_setup(
+    ds, attrs = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -39,6 +42,8 @@ def test_hazard_setup_event(hazard_event_data: xr.DataArray):
     assert ds.analysis == EVENT
     assert da.name == "flood_event"
     assert "rp" not in da.attrs.keys()
+    # Assert the data attributes
+    assert attrs == {"flood_event": {TYPE: "flooding"}}
 
 
 def test_hazard_setup_reproj(
@@ -51,7 +56,7 @@ def test_hazard_setup_reproj(
 
     # Setup with a grid_like
     hazard_data = {"event": hazard_event_data_highres}
-    ds = hazard_setup(
+    ds, _ = hazard_setup(
         grid_like=hazard_event_data,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -66,7 +71,7 @@ def test_hazard_setup_reproj(
 def test_hazard_setup_unit_default(hazard_event_data: xr.DataArray):
     # Call the workflow function
     hazard_data = {"event": hazard_event_data}
-    ds = hazard_setup(
+    ds, _ = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -83,7 +88,7 @@ def test_hazard_setup_unit_differ(
 ):
     hazard_data = {"event": hazard_event_data}
     # Suppose it's in a different unit
-    ds = hazard_setup(
+    ds, _ = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
@@ -98,3 +103,31 @@ def test_hazard_setup_unit_differ(
         in caplog.text
     )
     assert np.isclose(avg_level_ft, 0.547029)
+
+
+def test_infer_hazard_attrs(hazard: xr.Dataset):
+    # Call the function
+    attrs = infer_hazard_attrs(hazard)
+
+    # Assert the output, every variable defaults to water depth
+    assert set(attrs) == set(hazard.data_vars)
+    assert attrs["flood_event"] == {TYPE: WATER__DEPTH}
+
+
+def test_infer_hazard_attrs_settings(hazard: xr.Dataset):
+    # Setup the settings with an entry for a variable in the data and one that is not
+    settings = Hazard(
+        file="foo.nc",
+        variables=[
+            dict(name="flood_event", type="duration", rp=10),
+            dict(name="foo", type="duration"),
+        ],
+    )
+
+    # Call the function
+    attrs = infer_hazard_attrs(hazard, settings=settings)
+
+    # Assert the output, the settings take precedence over the inferred
+    assert attrs["flood_event"] == {"name": "flood_event", "type": "duration", "rp": 10}
+    # Nothing is added for what is not in the data
+    assert "foo" not in attrs

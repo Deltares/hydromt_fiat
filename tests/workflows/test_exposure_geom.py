@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from hydromt_fiat.utils import CURVE, DAMAGE, FN, OBJECT__ID, OBJECT__TYPE
+from hydromt_fiat.settings.exposure import ExposureGeometry
+from hydromt_fiat.utils import CURVE, DAMAGE, DEFAULT, FN, OBJECT__ID, OBJECT__TYPE
 from hydromt_fiat.workflows import (
     exposure_geoms_add_columns,
     exposure_geoms_link_vulnerability,
     exposure_geoms_setup,
+    infer_exposure_geom_attrs,
 )
 from hydromt_fiat.workflows.exposure_geom import _guess_object_type_columns
 
@@ -57,6 +59,52 @@ def test___guess_object_type_columns_none(
 
     # Assert the output
     assert col is None
+
+
+def test_infer_exposure_geom_attrs():
+    # Call the function without settings
+    attrs = infer_exposure_geom_attrs("buildings")
+
+    # Assert the output, the vulnerability defaults
+    assert attrs == {"vulnerability": DEFAULT}
+
+
+def test_infer_exposure_geom_attrs_settings():
+    # Setup the settings with an entry for the exposure and one for another
+    settings = [
+        ExposureGeometry(
+            file="exposure/buildings.fgb",
+            variables=dict(vulnerability="foo", area_method="area"),
+        ),
+        ExposureGeometry(
+            file="exposure/roads.fgb",
+            variables=dict(vulnerability="bar"),
+        ),
+    ]
+
+    # Call the function
+    attrs = infer_exposure_geom_attrs("buildings", settings=settings)
+
+    # Assert the output, the settings take precedence over the inferred
+    assert attrs["vulnerability"] == "foo"
+    assert attrs["area_method"] == "area"
+    assert "zonal_method" in attrs
+
+
+def test_infer_exposure_geom_attrs_no_entry():
+    # Setup the settings without an entry for the exposure
+    settings = [
+        ExposureGeometry(
+            file="exposure/roads.fgb",
+            variables=dict(vulnerability="bar"),
+        ),
+    ]
+
+    # Call the function
+    attrs = infer_exposure_geom_attrs("buildings", settings=settings)
+
+    # Assert the output, nothing is taken from the settings
+    assert attrs == {"vulnerability": DEFAULT}
 
 
 def test_exposure_geoms_setup(
