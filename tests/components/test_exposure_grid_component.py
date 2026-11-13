@@ -208,7 +208,7 @@ def test_exposure_grid_component_create(
 
     # Call the method
     component.create(
-        exposure_fnames="industrial_content",
+        exposure_fname="industrial_content",
     )
 
     # Assert the output

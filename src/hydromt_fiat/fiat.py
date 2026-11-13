@@ -54,6 +54,8 @@ class FIATModel(Model):
         Name of the configurations file, by default 'settings.toml'.
     type : str, optional
         Set the type of the FIAT model, either 'geom' or 'grid'. By default None.
+    risk : bool, optional
+        Whether the model is in risk mode or not. By default False.
     mode : {'r','r+','w'}, optional
         read/append/write mode, by default "w".
     data_libs : list[Path | str] | Path | str, optional
@@ -72,6 +74,7 @@ class FIATModel(Model):
         root: Path | str | None = None,
         config_fname: Path | str = f"{SETTINGS}.toml",
         type: str | None = None,
+        risk: bool = False,
         *,
         mode: str = "r",
         data_libs: list[Path | str] | Path | str | None = None,
@@ -121,6 +124,7 @@ class FIATModel(Model):
         # Finish initialization
         if type is not None:
             self.set_type(type)
+        self.set_risk(risk)
 
     ## Private methods
     def _assert_model_type(self, type: str, error: bool = True):
@@ -162,6 +166,11 @@ the method requires '{type}'"
     def output_grid(self) -> OutputGridComponent:
         """Access the output grid component."""
         return self.components[f"{OUTPUT}_{GRID}"]
+
+    @property
+    def risk(self) -> bool:
+        """Return the risk mode."""
+        return self.config.data.risk
 
     @property
     def type(self) -> str | None:
@@ -342,6 +351,25 @@ the method requires '{type}'"
             )
         # Set the region in the region component
         self.components[REGION].set(geom, replace=replace)
+
+    @hydromt_step
+    def set_risk(self, risk: bool) -> None:
+        """Set the mode of the model.
+
+        This defines whether the model is in risk mode (True) or in event mode (False).
+
+        When setting to a value different from what it already was, the hazard data
+        will be cleared.
+
+        Parameters
+        ----------
+        risk : bool
+            Whether to set the model to risk mode or not.
+        """
+        logger.info(f"Set model risk mode to {risk}")
+        if risk != self.risk:
+            self.hazard.clear()
+        self.config.data.risk = risk
 
     @hydromt_step
     def set_type(

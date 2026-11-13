@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from hydromt_fiat.gis.raster import merge_rasters, rasterize
+from hydromt_fiat.gis.raster import rasterize
 from hydromt_fiat.gis.raster_utils import check_spatial
 from hydromt_fiat.settings.exposure import ExposureGrid
 from hydromt_fiat.utils import (
@@ -86,8 +86,9 @@ def infer_exposure_grid_attrs(
 
 
 def exposure_grid_default_setup(
-    exposure_data: dict[str, xr.DataArray],
+    exposure_data: xr.DataArray,
     vulnerability: pd.DataFrame,
+    name: str,
     grid_like: xr.Dataset | None = None,
     exposure_link: pd.DataFrame | None = None,
 ) -> tuple[xr.Dataset, dict[str, Any]]:
@@ -95,8 +96,8 @@ def exposure_grid_default_setup(
 
     Parameters
     ----------
-    exposure_data : dict[str, xr.DataArray]
-        Dictionary containing name of exposure file and associated data
+    exposure_data : xr.DataArray
+        The exposure data.
     vulnerability : pd.DataFrame
         A Table containing valid vulnerability curve id's an their
         presumed link to the exposure.
@@ -110,11 +111,10 @@ def exposure_grid_default_setup(
 
     Returns
     -------
-    tuple[xr.Dataset, dict[str, Any]]
+    tuple[xr.DataArray, dict[str, Any]]
         Transformed and unified exposure grid and it's data attributes.
     """
-    exposure_dataarrays = []
-    ds_attrs = {}
+    attrs = {}
 
     # Log the fact that there is not linking table
     if exposure_link is None:
@@ -123,7 +123,7 @@ def exposure_grid_default_setup(
 defaulting to the name of the exposure layer"
         )
         # Construct a dummy dataframe from the names
-        entries = list(exposure_data.keys())
+        entries = [name]
         exposure_link = pd.DataFrame(
             data={
                 EXPOSURE__TYPE: entries,
@@ -147,39 +147,34 @@ defaulting to the name of the exposure layer"
             sub.notna() & ~(sub == ""), headers + "_" + sub.astype(str)
         )
 
-    # Loop through the the supplied data arrays
-    for da_name, da in exposure_data.items():
-        if da_name not in exposure_link[EXPOSURE__TYPE].values:
-            link_name = da_name
-        else:
-            link_name = exposure_link.loc[
-                exposure_link[EXPOSURE__TYPE] == da_name, OBJECT__TYPE
-            ].values[0]
+    # Get the link name
+    if name not in exposure_link[EXPOSURE__TYPE].values:
+        link_name = name
+    else:
+        link_name = exposure_link.loc[
+            exposure_link[EXPOSURE__TYPE] == name, OBJECT__TYPE
+        ].values[0]
 
-        # Check if in vulnerability curves link table
-        link = vulnerability[headers == link_name]
-        if link.empty:
-            logger.warning(f"Couldn't link '{da_name}' to vulnerability, skipping...")
-            continue
+    # Check if in vulnerability curves link table
+    link = vulnerability[headers == link_name]
+    if link.empty:
+        raise AttributeError(f"Couldn't link '{name}' to vulnerability, skipping...")
 
-        # Get the vulnerability curve ID
-        fn_curve = link[CURVE].values[0]
+    # Get the vulnerability curve ID
+    fn_curve = link[CURVE].values[0]
+    # Process the arrays, .e.g make gdal compliant
+    attrs = {FN__CURVE: fn_curve, TYPE: DEFAULT}
+    exposure_data.attrs.update(attrs)  # Legacy
+    # Set the name of the exposure data
+    exposure_data.name = name
+    # Mask the data to -9999, seems like a good default value
+    exposure_data = exposure_data.raster.mask_nodata(-9999)
 
-        # Process the arrays, .e.g make gdal compliant
-        attrs = {FN__CURVE: fn_curve, TYPE: DEFAULT}
-        ds_attrs[da_name] = attrs
-        da.name = da_name
-        da.attrs.update(attrs)  # Legacy
-        # Mask the data to -9999, seems like a good default value
-        da = da.raster.mask_nodata(-9999)
-        exposure_dataarrays.append(da)
+    # Reproject if a grid_like is defined
+    if grid_like is not None:
+        exposure_data = exposure_data.raster.reproject_like(ds_like=grid_like)
 
-    if len(exposure_dataarrays) == 0:
-        return xr.Dataset(), {}
-
-    # Merge the data and return
-    ds = merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
-    return ds, ds_attrs
+    return exposure_data, attrs
 
 
 def exposure_grid_categorized_setup(
@@ -242,8 +237,11 @@ def exposure_grid_categorized_setup(
         },
     )
 
-    # Return the merged data (symbolic, but can still reproject)
-    return merge_rasters(dataarrays=[exposure_data], grid_like=grid_like)
+    # Reproject if a grid_like is defined
+    if grid_like is not None:
+        exposure_data = exposure_data.raster.reproject_like(ds_like=grid_like)
+
+    return exposure_data
 
 
 def exposure_grid_category_values(

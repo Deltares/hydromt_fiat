@@ -190,9 +190,10 @@ class ExposureGridComponent(GridComponent):
     @hydromt_step
     def create(
         self,
-        exposure_fnames: Path | str | list[Path | str],
+        exposure_fname: Path | str,
         exposure_link_fname: Path | str | None = None,
         *,
+        name: str = "default",
         vulnerability_name: str = "default",
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
@@ -202,8 +203,8 @@ class ExposureGridComponent(GridComponent):
 
         Parameters
         ----------
-        exposure_fnames : Path | str | list[Path | str]
-            Name of or path to exposure file(s).
+        exposure_fname : Path | str
+            Path to the exposure data or name of entry in the data catalog.
         exposure_link_fname : Path | str, optional
             Table containing the names of the exposure files and corresponding
             vulnerability curves. By default None.
@@ -241,39 +242,28 @@ class ExposureGridComponent(GridComponent):
                 exposure_link_fname, **(read_link_kwargs or {})
             )
 
-        # Sort the input out as iterator
-        exposure_fnames = (
-            [exposure_fnames]
-            if not isinstance(exposure_fnames, list)
-            else exposure_fnames
-        )
-
-        # Read exposure data files from data catalog
-        exposure_data = {}
+        # Read exposure data file from data catalog
         kwargs = {"buffer": 1}
         kwargs.update(read_kwargs or {})
-        # Loop over the entries
-        for fname in exposure_fnames:
-            name = Path(fname).stem
-            da = self.model.data_catalog.get_rasterdataset(
-                fname,
-                geom=self.model.region,
-                **kwargs,
-            )
-            exposure_data[name] = da
+        # Get the data from the catalog
+        exposure_data = self.model.data_catalog.get_rasterdataset(
+            exposure_fname,
+            geom=self.model.region,
+            **kwargs,
+        )
 
         # Execute the workflow function
         exposure_grid, exposure_attrs = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
             vulnerability=vulnerability,
+            name=name,
             grid_like=self.like,
             exposure_link=exposure_link,
         )
 
         # Set the dataset
         self.set(exposure_grid, expand=expand)
-        for name, attrs in exposure_attrs.items():
-            self.set_attrs(name, {**attrs, VULNERABILITY: vulnerability_name})
+        self.set_attrs(name, {**exposure_attrs, VULNERABILITY: vulnerability_name})
 
     @hydromt_step
     def create_categorized(
@@ -298,7 +288,7 @@ class ExposureGridComponent(GridComponent):
             vulnerability data.
         name : str | None, optional
             The name of the variable that the data will have in the dataset.
-            If not provided the name is inferred from the stem of `expousre_fname`.
+            If not provided the name is inferred from the stem of `exposure_fname`.
             By default None.
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets

@@ -15,7 +15,6 @@ from hydromt_fiat.utils import (
     DAMAGE,
     EXPOSURE,
     FN,
-    GEOM,
     MAX,
     OBJECT__TYPE,
 )
@@ -265,12 +264,10 @@ def test_exposure_geom_component_create(
         exposure_link_fname="buildings_link",
     )
 
+    # Assert the state
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) != 0
-
-    # Assert entries in the config
-    assert component.model.config.data.type == GEOM
 
 
 def test_exposure_geom_component_create_redo(
