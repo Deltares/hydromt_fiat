@@ -227,7 +227,7 @@ def exposure_grid_categorized_setup(
     # Get the unique numbers
     unique = dar.unique(exposure_data.data).compute()
     unique.sort()
-    unique = unique[1:]
+    unique = unique[unique != 0]
 
     # Inform the user that certain types are not available, both ways
     disc = np.setdiff1d(unique, curves).tolist()
