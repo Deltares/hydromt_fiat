@@ -1,0 +1,72 @@
+
+NSI:
+  path: "https://nsi.sec.usace.army.mil/nsiapi/structures?fmt=fc"
+  data_type: GeoDataFrame
+  driver: vector
+  crs: 4326
+  driver_kwargs:
+    translation_fn: "attribute_linking/NSI_attributes_to_FIAT.json"
+  meta:
+    category: exposure
+
+default_vulnerability_curves:
+  path: damage_functions/flooding/Hazus_IWR_curves.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    unit: feet
+    category: vulnerability
+    source: HAZUS SQL database, USACE-IWR and FEMA expert elicitation curves. The source of these curves is the Draft Report Nonresidential Flood Depth-Damage Functions Derived from Expert Elicitation, April 2009, Revised 2013. FEMA Contract Number HSFEHQ-06-D-0162. Task Order HSFEHQ-08-J-0014. Not for distribution, but data shared by USACE.
+
+jrc_vulnerability_curves:
+  path: damage_functions/flooding/JRC_damage_functions.xlsx
+  data_type: DataFrame
+  driver: xlsx
+  meta:
+    unit: meters
+    category: vulnerability
+
+hazus_max_potential_damages:
+  path: max_potential_damages/damage_values_fema_hazus-inventory-technical-manual-4.2.3.xlsx
+  data_type: DataFrame
+  driver: xlsx
+  meta:
+    unit: feet
+    category: vulnerability
+
+social_vulnerability:
+  path: social_vulnerability/census_vulnerability_data_codebook.xlsx
+  data_type: DataFrame
+  driver: xlsx
+  meta:
+    category: social_vulnerability
+
+us_states_counties:
+  path: social_vulnerability/us_states_counties.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    category: social_vulnerability
+
+default_hazus_iwr_linking:
+  path: vulnerability_linking/default_hazus_iwr_curve_linking.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    category: vulnerability
+
+default_road_max_potential_damages:
+  path: max_potential_damages/us_road_damage.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    unit: feet
+    category: exposure
+    source: Bouwer, Laurens & Haasnoot, Marjolijn & Wagenaar, Dennis & Roscoe, Kathryn. (2018). Assessment of alternative flood mitigation strategies for the C-7 Basin in Miami, Florida.
+
+hazus_iwr_occupancy_classes:
+  path: vulnerability_linking/hazus_iwr_occupancy_classes.csv
+  data_type: DataFrame
+  driver: csv
+  meta:
+    category: vulnerability

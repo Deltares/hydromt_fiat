@@ -1,0 +1,26 @@
+name: hydromt-fiat
+
+channels:
+  - conda-forge
+
+dependencies:
+  - click
+  - black
+  - dask
+  - gdal>=3.1
+  - geopandas
+  - hydromt=0.8.0
+  - hydromt_sfincs
+  - numpy
+  - osmnx
+  - pandas
+  - pip
+  - pygeos>=0.8
+  - python=3.10
+  - pydantic=1.10.9
+  - pytest
+  - requests
+  - xarray
+  - pip:
+    - us
+    - census

@@ -1,0 +1,39 @@
+
+jrc_vulnerability_curves:
+    path: damage_functions/flooding/JRC_damage_functions.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: JRC depth-damage functions for flooding, processed into a handy format for HydroMT-FIAT.
+      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+      paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+      paper_doi: https://dx.doi.org/10.2760/16510
+
+jrc_vulnerability_curves_linking:
+    path: vulnerability_linking/JRC_damage_functions_linking.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: Default linking table for the JRC damage functions (e.g., the residential damage function links to residential buildings).
+
+jrc_damage_values:
+    path: max_potential_damages/JRC_base_damage_values.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description: Base damage values from the JRC publicated Excel from the tab "MaxDamage-Data", processed into a handy format for HydroMT-FIAT.
+      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688
+      paper_ref: Huizinga, J., De Moel, H. and Szewczyk, W., Global flood depth-damage functions - Methodology and the database with guidelines, EUR 28552 EN, Publications Office of the European Union, Luxembourg, 2017, ISBN 978-92-79-67781-6, doi:10.2760/16510, JRC105688.
+      paper_doi: https://dx.doi.org/10.2760/16510
+
+jrc_osm_mapping:
+    path: damage_functions/flooding/JRC_OSM_mapping.csv
+    data_type: DataFrame
+    driver: csv
+    meta:
+      category: vulnerability
+      description:  Default linking table for the JRC damage functions and OSM keys (landuse, tags, amenity) (e.g., OSM_key = retail responds to JRC_key = commercial).
+      source_url: https://publications.jrc.ec.europa.eu/repository/handle/JRC105688, https://taginfo.openstreetmap.org/keys/building#values, https://dashboard.ohsome.org/

@@ -1,8 +1,6 @@
-"""hydroMT plugin for fiat models."""
+"""HydroMT plugin for FIAT models."""
 
-from os.path import dirname, join, abspath
+from .fiat import FiatModel
+from .version import __version__
 
-
-__version__ = "0.1.0"
-
-DATADIR = join(dirname(abspath(__file__)), "data")
+__all__ = ["FiatModel", "__version__"]

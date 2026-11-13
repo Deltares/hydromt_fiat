@@ -1,28 +1,65 @@
 [build-system]
-requires = ["flit_core >=3.2.0,<3.3"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hydromt_fiat"
+# TODO description = "Hydrological model for flood impact assessment and adaptation planning"
 authors = [
-    {name = "Laurens Leunge", email = "laurens.leunge@deltares.nl"},
     {name = "Dirk Eilander", email = "dirk.eilander@deltares.nl"},
+	{name = "Frederique de Groen", email = "frederique.degroen@deltares.nl"},
+	{name = "Mario Fuentes Monjaraz", email = "mario.fuentesmonjaraz@deltares.nl"},
+	{name = "Luis Rodriguez Galvez", email = "luis.rodriguez@deltares.nl"},
+	{name = "Lieke Meijer", email = "lieke.meijer@deltares.nl"},
+    {name = "Sarah Rautenbach", email = "sarah.rautenbach@deltares.nl"},
 ]
+requires-python = ">=3.8"
 dependencies = [
-    "hydromt",
+    "hydromt<1.0",
+    "geopandas",
+    "geopy",
+    "numpy",
+    "openpyxl",
+    "pandas",
+    "pyogrio",
+    "tomli-w",
+    "tomli",
+    "xarray",
+    "pydantic",
+    "osmnx>=2, <3",
+    "census",
+    "us",
+    "xarray-spatial",
+    "tqdm",
+    "pycountry-convert",
+    "pyarrow",
+    "dask",
+    "pint"
 ]
-requires-python = ">=3.8" # fix tests to support older versions
 readme = "README.rst"
+license = {text = "GPL-3.0"}
 classifiers = [
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Hydrology",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Topic :: Scientific/Engineering :: Information Analysis",
     "Programming Language :: Python :: 3",
 ]
-dynamic = ['version', 'description']
+dynamic = ["version"]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.dynamic]
+version = { attr = "hydromt_fiat.version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["hydromt_fiat*"]
+
+[tool.setuptools.package-data]
+"hydromt_fiat" = ["data/**"]
 
 [project.optional-dependencies]
 test = [
@@ -34,7 +71,7 @@ test = [
 doc = [
 	"sphinx",
 	"sphinx_rtd_theme",
-	"black",
+	"ruff==0.6.8",
 ]
 
 [project.urls]

@@ -1,0 +1,33 @@
+name: hydromt-fiat-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+  - pip
+  - pip:
+    - census
+    - us
+    - xarray-spatial
+    - pycountry-convert
+  - click
+  - black
+  - gdal>=3.1
+  - geopandas
+  - geopy
+  - hydromt
+  - hydromt_sfincs
+  - numpy
+  - osmnx
+  - openpyxl
+  - pandas
+  - pydantic
+  - pyogrio
+  - pytest # tests
+  - python=3.10
+  - requests
+  - xarray
+  - tomli-w
+  - tomli
+  - ipykernel # examples
+  - tqdm

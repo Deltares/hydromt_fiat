@@ -1,0 +1,12 @@
+{
+    "object_id": "fd_id",
+    "object_name": "fd_id",
+    "primary_object_type": "st_damcat",
+    "secondary_object_type": "occtype",
+    "max_damage_structure": "val_struct",
+    "max_damage_content": "val_cont",
+    "ground_flht": "found_ht",
+    "ground_elevtn": "ground_elv",
+    "geometry": "geometry",
+    "aggregation_label:Census Blockgroup": "cbfips"
+}

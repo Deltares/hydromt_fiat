@@ -1,0 +1,43 @@
+env:
+  PACKAGE_NAME: "hydromt_fiat"
+  PYTHON_VERSION: "3.10"
+
+name: Test
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          channels: conda-forge
+
+      - name: Create environment
+        shell: bash -el {0}
+        run: |
+          conda create -n test python=${{ env.PYTHON_VERSION }}
+
+      - name: Install GDAL
+        shell: bash -l {0}
+        run: conda install -n test -c conda-forge gdal
+
+      - name: Install dependencies and build tools
+        shell: bash -l {0}
+        run: |
+          conda run -n test python -m pip install --upgrade pip
+          conda run -n test python -m pip install .[test]
+
+      - name: Test package
+        shell: bash -l {0}
+        run: |
+          conda run -n test pytest tests
