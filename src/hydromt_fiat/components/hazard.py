@@ -221,7 +221,7 @@ class HazardComponent(GridComponent):
         # Quick check on the model region
         if self.model.region is None and region:
             raise MissingRegionError(
-                "Region component is missing for setting up hazard data"
+                "Model region is missing for setting up hazard data"
             )
 
         # Read the data

@@ -52,6 +52,7 @@ def test_build_model_geom(
     # Add an hazard layer
     model.hazard.create(
         "flood_event",
+        name="flood_event",
     )
 
     # Setup the exposure geometry data
@@ -135,12 +136,19 @@ def test_build_model_grid(
     # Add an hazard layer
     model.hazard.create(
         "flood_event",
+        name="flood_event",
     )
 
     # Setup the exposure grid data
     model.exposure_grid.create(
-        exposure_fnames=["commercial_structure", "commercial_content"],
+        exposure_fname="commercial_structure",
         exposure_link_fname="exposure_grid_link",
+        name="commercial_structure",
+    )
+    model.exposure_grid.create(
+        exposure_fname="commercial_content",
+        exposure_link_fname="exposure_grid_link",
+        name="commercial_content",
     )
 
     # Assert the state

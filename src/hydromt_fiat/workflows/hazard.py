@@ -106,7 +106,7 @@ def hazard_setup(
 
     # Reproject to gridlike
     if grid_like is not None:
-        hazard_data = hazard_data.raster.reproject_like(ds_like=grid_like)
+        hazard_data = hazard_data.raster.reproject_like(other=grid_like)
 
     # Return the dataset
     return hazard_data, attrs

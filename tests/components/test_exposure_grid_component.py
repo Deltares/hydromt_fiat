@@ -19,7 +19,6 @@ from hydromt_fiat.utils import (
     DEFAULT,
     EXPOSURE,
     FN__CURVE,
-    GRID,
     INDEX,
     VALUE,
     VALUES,
@@ -209,6 +208,7 @@ def test_exposure_grid_component_create(
     # Call the method
     component.create(
         exposure_fname="industrial_content",
+        name="industrial_content",
     )
 
     # Assert the output
@@ -224,9 +224,6 @@ def test_exposure_grid_component_create(
     assert component.data_attrs["industrial_content"].type == DEFAULT
     assert component.data_attrs["industrial_content"].fn_curve == "in2"
 
-    # Assert entries in the config
-    assert component.model.config.data.type == GRID
-
 
 def test_exposure_grid_component_create_multi(
     model_exposure_setup: FIATModel,
@@ -236,8 +233,15 @@ def test_exposure_grid_component_create_multi(
 
     # Call the method
     component.create(
-        exposure_fnames=["industrial_content", "industrial_structure"],
+        exposure_fname="industrial_content",
         exposure_link_fname="exposure_grid_link",
+        name="industrial_content",
+        expand=False,
+    )
+    component.create(
+        exposure_fname="industrial_structure",
+        exposure_link_fname="exposure_grid_link",
+        name="industrial_structure",
         expand=False,
     )
 
@@ -273,8 +277,9 @@ def test_exposure_grid_component_create_name(
 
     # Call the method
     component.create(
-        exposure_fnames="industrial_content",
+        exposure_fname="industrial_content",
         vulnerability_name="custom",
+        name="industrial_content",
     )
 
     # Assert the output
@@ -300,7 +305,7 @@ def test_exposure_grid_component_create_errors(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
         component.create(
-            exposure_fnames="industrial_content",
+            exposure_fname="industrial_content",
             exposure_link_fname="",
         )
 
@@ -317,7 +322,7 @@ def test_exposure_grid_component_create_name_errors(
         match="'custom' does not have any identifiers",
     ):
         component.create(
-            exposure_fnames="industrial_content",
+            exposure_fname="industrial_content",
             vulnerability_name="custom",
         )
 

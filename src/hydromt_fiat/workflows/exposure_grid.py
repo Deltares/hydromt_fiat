@@ -172,7 +172,7 @@ defaulting to the name of the exposure layer"
 
     # Reproject if a grid_like is defined
     if grid_like is not None:
-        exposure_data = exposure_data.raster.reproject_like(ds_like=grid_like)
+        exposure_data = exposure_data.raster.reproject_like(other=grid_like)
 
     return exposure_data, attrs
 
@@ -239,7 +239,7 @@ def exposure_grid_categorized_setup(
 
     # Reproject if a grid_like is defined
     if grid_like is not None:
-        exposure_data = exposure_data.raster.reproject_like(ds_like=grid_like)
+        exposure_data = exposure_data.raster.reproject_like(other=grid_like)
 
     return exposure_data
 
@@ -401,15 +401,12 @@ def exposure_grid_from_geometries(
     da.name = VALUE
 
     # Call the method to setup the data
-    ds, ds_attrs = exposure_grid_default_setup(
-        exposure_data={VALUE: da},
+    da, attrs = exposure_grid_default_setup(
+        exposure_data=da,
         vulnerability=vulnerability,
         exposure_link=pd.DataFrame({EXPOSURE__TYPE: [VALUE], OBJECT__TYPE: [curve]}),
+        name=VALUE,
     )
 
-    # Quick check on the data
-    if VALUE not in ds.data_vars:
-        raise RuntimeError(f"Could not resolve vulnerability curve: {curve}")
-
     # Return the array
-    return ds[VALUE], ds_attrs[VALUE]
+    return da, attrs
