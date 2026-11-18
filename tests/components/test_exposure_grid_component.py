@@ -208,7 +208,7 @@ def test_exposure_grid_component_create(
     # Call the method
     component.create(
         exposure_fname="industrial_content",
-        name="industrial_content",
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -234,14 +234,14 @@ def test_exposure_grid_component_create_multi(
     # Call the method
     component.create(
         exposure_fname="industrial_content",
+        vulnerability_name=DEFAULT,
         exposure_link_fname="exposure_grid_link",
-        name="industrial_content",
         expand=False,
     )
     component.create(
         exposure_fname="industrial_structure",
+        vulnerability_name=DEFAULT,
         exposure_link_fname="exposure_grid_link",
-        name="industrial_structure",
         expand=False,
     )
 
@@ -279,7 +279,6 @@ def test_exposure_grid_component_create_name(
     component.create(
         exposure_fname="industrial_content",
         vulnerability_name="custom",
-        name="industrial_content",
     )
 
     # Assert the output
@@ -306,6 +305,7 @@ def test_exposure_grid_component_create_errors(
     ):
         component.create(
             exposure_fname="industrial_content",
+            vulnerability_name=DEFAULT,
             exposure_link_fname="",
         )
 
@@ -336,6 +336,7 @@ def test_exposure_grid_component_create_categorized(
     # Call the method
     component.create_categorized(
         exposure_fname="categories",
+        vulnerability_name=DEFAULT,
         name="buildings",
     )
 
@@ -399,6 +400,7 @@ def test_exposure_grid_component_create_categorized_errors(
     ):
         component.create_categorized(
             exposure_fname="",
+            vulnerability_name=DEFAULT,
         )
 
 
@@ -432,6 +434,7 @@ def test_exposure_grid_component_create_categorized_values(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table_fname="category_values",
         index_name=VALUE,
     )
@@ -527,6 +530,7 @@ def test_exposure_grid_component_create_categorized_values_name_prefix(
     # Call the method with a name prefix
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table_fname="category_values",
         index_name=VALUE,
         name_prefix="foo",
@@ -554,6 +558,7 @@ def test_exposure_grid_component_create_categorized_values_table(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table={1: 200, 2: 300, 3: 400, 4: 100},
         index_name=INDEX,
     )
@@ -577,6 +582,7 @@ def test_exposure_grid_component_create_categorized_values_no_table(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -602,6 +608,7 @@ def test_exposure_grid_component_create_from_geom(
     component.create_grid(res=10)
     component.create_from_geom(
         exposure_fname=exposure_vector,
+        vulnerability_name=DEFAULT,
         column="max_damage_structure",
         curve="commercial_structure",
         name="commercial_structure",
@@ -670,6 +677,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     ):
         component.create_from_geom(
             exposure_fname="",
+            vulnerability_name="",
             column="",
             curve="",
         )
@@ -681,6 +689,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     ):
         component.create_from_geom(
             exposure_fname="",
+            vulnerability_name="",
             column="",
             curve="",
         )

@@ -7,7 +7,7 @@ import xarray as xr
 
 from hydromt_fiat.settings.hazard import Hazard
 from hydromt_fiat.utils import (
-    DEFAULT,
+    DATA,
     RP,
     TYPE,
     WATER__DEPTH,
@@ -56,11 +56,11 @@ def infer_hazard_attrs(
 def hazard_setup(
     hazard_data: xr.DataArray,
     hazard_type: str,
+    unit: str,
     *,
-    name: str = DEFAULT,
+    name: str = DATA,
     grid_like: xr.Dataset | None = None,
     return_period: float | int | None = None,
-    unit: str = "m",
 ) -> tuple[xr.Dataset, dict[str, Any]]:
     """Read and transform hazard data.
 
@@ -70,6 +70,8 @@ def hazard_setup(
         The hazard data.
     hazard_type : str
         Type of hazard.
+    unit : str, optional
+        The unit which the hazard data is in, e.g. 'm'.
     name : str, optional
         The name of the hazard data being set up.
     grid_like : xr.Dataset | None
@@ -77,8 +79,6 @@ def hazard_setup(
         By default None.
     return_period : float | int, optional
         The return period of the data when , by default None.
-    unit : str, optional
-        The unit which the hazard data is in, by default 'm'.
 
     Returns
     -------

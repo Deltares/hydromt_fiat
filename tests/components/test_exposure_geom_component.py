@@ -13,6 +13,7 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.settings.exposure import ExposureGeometry, ExposureGeometryVariable
 from hydromt_fiat.utils import (
     DAMAGE,
+    DEFAULT,
     EXPOSURE,
     FN,
     MAX,
@@ -333,6 +334,7 @@ def test_exposure_geom_component_create_link(
     component.create_link(
         exposure_name="foo",
         impact_type=DAMAGE,
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -357,6 +359,7 @@ def test_exposure_geom_component_create_link_multi(
     component.create_link(
         exposure_name="foo",
         impact_type=[DAMAGE, "spooky"],  # Doesnt do much, but still
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -395,6 +398,7 @@ def test_exposure_geom_component_create_link_name(
     # Call the method
     component.create_link(
         exposure_name="foo",
+        impact_type=DAMAGE,
         vulnerability_name="custom",
     )
 
@@ -420,6 +424,7 @@ def test_exposure_geom_component_create_link_name_errors(
     ):
         component.create_link(
             exposure_name="foo",
+            impact_type=DAMAGE,
             vulnerability_name="custom",
         )
 
@@ -440,6 +445,7 @@ def test_exposure_geom_component_create_max(
     component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
+        vulnerability_name=DEFAULT,
         exposure_cost_table_fname="jrc_damage",
         country="World",
     )
@@ -468,6 +474,7 @@ def test_exposure_geom_component_create_max_from_dict(
     component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
+        vulnerability_name=DEFAULT,
         exposure_cost_table=exposure_cost_dict,
         country="World",
     )
@@ -496,6 +503,7 @@ def test_exposure_geom_component_create_max_link(
     component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
+        vulnerability_name=DEFAULT,
         exposure_cost_table_fname="jrc_damage",
         exposure_cost_link_fname=exposure_cost_link_path,
         country="World",
@@ -535,8 +543,8 @@ def test_exposure_geom_component_create_max_name(
     component.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
-        exposure_cost_table_fname="jrc_damage",
         vulnerability_name="custom",
+        exposure_cost_table_fname="jrc_damage",
         country="World",
     )
 
@@ -562,6 +570,7 @@ def test_exposure_geom_component_create_max_errors(
         component.create_max_value(
             exposure_name="buildings",
             impact_type="damage",
+            vulnerability_name=DEFAULT,
         )
 
 

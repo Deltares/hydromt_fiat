@@ -15,7 +15,7 @@ from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
 from hydromt_fiat.utils import (
-    DEFAULT,
+    DATA,
     HAZARD,
     RP,
     TYPE,
@@ -171,11 +171,11 @@ class HazardComponent(GridComponent):
     def create(
         self,
         hazard_fname: Path | str,
-        hazard_type: str = "water_depth",
+        hazard_type: str,
+        unit: str,
         *,
-        name: str = DEFAULT,
+        name: str = DATA,
         return_period: float | int | None = None,
-        unit: str = "m",
         expand: bool = True,
         region: bool = True,
         read_kwargs: dict[str, Any] | None = None,
@@ -187,15 +187,15 @@ class HazardComponent(GridComponent):
         hazard_fname : Path | str
             Path to the hazard file or name of the data catalog entry.
         hazard_type : str, optional
-            Type of hazard, by default "water_depth".
+            Type of hazard, e.g. 'water_depth'.
+        unit : str, optional
+            The unit which the hazard data is in, e.g. 'm' (meters).
         name : str, optional
-            The name the hazard layer will have in the data, by default 'default'.
+            The name the hazard layer will have in the data, by default 'data'.
         return_period : float | int, optional
             List of return periods. Length of list should match the number hazard
             files. This entry is required when the model is in risk model
             (`FIATModel.risk`). By default None.
-        unit : str, optional
-            The unit which the hazard data is in, by default 'm' (meters).
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -257,10 +257,10 @@ class HazardComponent(GridComponent):
     def create_fixed(
         self,
         hazard_name: str,
+        hazard_type: str,
         name: str,
         value: float | int,
         *,
-        hazard_type: str = "water_depth",
         return_period: float | int | None = None,
     ) -> None:
         """Create a fixed value hazard layer.
@@ -271,12 +271,12 @@ class HazardComponent(GridComponent):
         ----------
         hazard_name : str
             The name of the hazard layer containing the finite values.
+        hazard_type : str, optional
+            The type of hazard, e.g. "water_depth".
         name : str
             The name of the hazard layer to be created.
         value : float | int
             The fixed value to be set in the new layer.
-        hazard_type : str, optional
-            The type of hazard, by default "water_depth".
         return_period : float | int | None, optional
             The return period of the data, needed when the model is set run risk
             calculations. By default None.
@@ -297,10 +297,10 @@ class HazardComponent(GridComponent):
     @hydromt_step
     def create_settings_only(
         self,
+        hazard_type: str,
         name: str,
         value: float | int,
         *,
-        hazard_type: str = "water_depth",
         return_period: float | int | None = None,
     ) -> None:
         """Create a hazard layer in settings only.
@@ -309,12 +309,12 @@ class HazardComponent(GridComponent):
 
         Parameters
         ----------
+        hazard_type : str, optional
+            The type of hazard, e.g. "water_depth".
         name : str
             The name of the hazard layer.
         value : float | int
             The constant value of the layer.
-        hazard_type : str, optional
-            The type of hazard, by default "water_depth".
         return_period : float | int | None, optional
             The return period of the data, needed when the model is set run risk
             calculations. By default None.

@@ -303,15 +303,13 @@ use 'set_region' before this method"
         )
         # Set the data directly
         self.set(exposure_vector, name=name)
-        self.set_attrs(name, {VULNERABILITY: DEFAULT})
 
     @hydromt_step
     def create_link(
         self,
         exposure_name: str,
-        *,
-        impact_type: str | list[str] = "damage",
-        vulnerability_name: str = "default",
+        impact_type: str | list[str],
+        vulnerability_name: str,
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
 
@@ -331,11 +329,11 @@ use 'set_region' before this method"
         impact_type : str | list[str], optional
             The type of impact to link to the exposure data, which should be present
             in the vulnerability identifiers table. Can either be a single string or
-            a list of strings. By default 'damage'.
+            a list of strings.
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. By default 'default'.
+            data variables.
         """
         # Check for data
         self.model._assert_model_type(GEOM)
@@ -365,11 +363,11 @@ use 'set_region' before this method"
         self,
         exposure_name: str,
         impact_type: str,
+        vulnerability_name: str,
         *,
         exposure_cost_table_fname: Path | str | None = None,
         exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
         exposure_cost_link_fname: Path | str | None = None,
-        vulnerability_name: str = "default",
         per_unit: bool = True,
         read_table_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -390,6 +388,10 @@ use 'set_region' before this method"
             The name of the existing dataset.
         impact_type : str
             Type of impact corresponding with the vulnerability data, e.g. 'damage'.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
@@ -400,10 +402,6 @@ use 'set_region' before this method"
             A linking table to like the present object type with the identifiers
             defined in the cost table. If None, it is assumed the present object type
             matches the identifiers in the cost table. By default None.
-        vulnerability_name : str, optional
-            The name of the vulnerability dataset. The names of the available datasets
-            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. By default "default".
         per_unit : str, optional
             Whether or not the value provided in the cost table are per unit length or
             per unit area. Therefore, if True, the values are multiplied by either

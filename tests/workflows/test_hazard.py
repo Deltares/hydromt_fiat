@@ -14,6 +14,7 @@ def test_hazard_setup_event(hazard_event_data: xr.DataArray):
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
+        unit="m",
         name="flood_event",
     )
     assert isinstance(da, xr.DataArray)
@@ -30,6 +31,7 @@ def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
+        unit="m",
         return_period=50000,
         name="flood_event_highres",
     )
@@ -54,6 +56,7 @@ def test_hazard_setup_reproj(
         grid_like=hazard_event_data,
         hazard_data=hazard_data,
         hazard_type="flooding",
+        unit="m",
         name="event",
     )
 
@@ -69,6 +72,7 @@ def test_hazard_setup_unit_default(hazard_event_data: xr.DataArray):
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
+        unit="m",
         name="event",
     )
 
