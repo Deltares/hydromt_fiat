@@ -18,9 +18,9 @@ from hydromt_fiat.utils import (
 )
 
 
-def test_config_component_empty(mock_model: MagicMock):
+def test_config_component_empty(mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Assert that the internal data is None
     assert component._data is None
@@ -31,9 +31,9 @@ def test_config_component_empty(mock_model: MagicMock):
     assert component.data.hazard is None
 
 
-def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
+def test_config_component_props(tmp_path: Path, mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Assert it's properties
     assert component.dir == tmp_path
@@ -46,12 +46,9 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     assert component.output_dir == Path(tmp_path, "output", "foo")
 
 
-def test_config_component_clear(
-    mock_model: MagicMock,
-    config_dummy: dict,
-):
+def test_config_component_clear(mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Set data like a dummy
     component.data.output_dir = Path("foo")
@@ -82,12 +79,12 @@ def test_config_component_read(
     assert component._data is None
 
     # Read the data
-    component.read()
+    component.read("settings_geom.toml")
 
     # Assert the read data
     assert isinstance(component.data, GeomSettings)
     assert component.data.type == GEOM
-    assert component.data.exposure is None
+    assert component.data.exposure is not None
 
 
 def test_config_component_read_none(
@@ -120,11 +117,11 @@ def test_config_component_read_none(
 
 def test_config_component_write(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
     config_dummy: dict,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Set data like a dummy
     component._data = GeomSettings.model_validate(config_dummy)
@@ -142,10 +139,10 @@ def test_config_component_write(
 
 def test_config_component_write_sig(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Write to an alternative path
     component.write(filename="settings/tmp.toml")
@@ -158,11 +155,11 @@ def test_config_component_write_sig(
 def test_config_component_write_warnings(
     caplog: pytest.LogCaptureFixture,
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
 ):
     caplog.set_level(logging.WARNING)
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
 
     # Write the data
     component.write()
@@ -173,31 +170,19 @@ def test_config_component_write_warnings(
     assert Path(tmp_path, component._filename).is_file()
 
 
-def test_config_component_write_errors(
-    mock_model: MagicMock,
-):
-    # Setup the component
-    component = ConfigComponent(mock_model(None))
-
-    # Write the data with no model specific settings
-    with pytest.raises(
-        TypeError,
-        match="No model type defined, will not write settings",
-    ):
-        component.write()
-
-
 def test_config_component_update(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
     config_dummy: dict[str, Any],
 ):
     # Setup the component
-    component = ConfigComponent(mock_model("geom"))
+    component = ConfigComponent(mock_model_geom)
     # Assert current state
     assert component.data.threads == 1
     assert component.data.hazard is None
 
+    # Pop the model type entry
+    config_dummy.pop("type", None)
     # Call update method
     component.update(**config_dummy)
     # Assert the state after

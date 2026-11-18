@@ -71,6 +71,8 @@ class ModelProjection(BaseModel):
 class BaseSettings(BaseModel):
     """Configuration for the Fiat model."""
 
+    type: None = None
+
     # Model wide settings
     loglevel: str = Field(default="INFO", description="The logging level of FIAT.")
 

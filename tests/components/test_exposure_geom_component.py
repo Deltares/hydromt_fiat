@@ -302,7 +302,7 @@ def test_exposure_geom_component_create_errors(
     build_region_small: Path,
 ):
     # Setup the component
-    model._type = "geom"
+    model.set_type("geom")
     component = ExposureGeomsComponent(model=model)
 
     # Assert that no available region lead to an error
@@ -372,7 +372,7 @@ def test_exposure_geom_component_create_link_name(
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "geom"
+    model_with_region.set_type("geom")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -512,7 +512,7 @@ def test_exposure_geom_component_create_max_name(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "geom"
+    model_with_region.set_type("geom")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -613,7 +613,7 @@ def test_exposure_geom_component_update_cols(
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the component
-    model_with_region._type = "geom"
+    model_with_region.set_type("geom")
     component = ExposureGeomsComponent(model=model_with_region)
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="bag")

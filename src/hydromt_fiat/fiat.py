@@ -53,7 +53,7 @@ class FIATModel(Model):
     config_fname : Path | str, optional
         Name of the configurations file, by default 'settings.toml'.
     type : str, optional
-        Set the type of the FIAT model, either 'geom' or 'grid'. By default None.
+        Set the type of the FIAT model, either 'geom' or 'grid'. By default 'geom'.
     risk : bool, optional
         Whether the model is in risk mode or not. By default False.
     mode : {'r','r+','w'}, optional
@@ -73,9 +73,9 @@ class FIATModel(Model):
         self,
         root: Path | str | None = None,
         config_fname: Path | str = f"{SETTINGS}.toml",
-        type: str | None = None,
-        risk: bool = False,
         *,
+        type: str = "geom",
+        risk: bool = False,
         mode: str = "r",
         data_libs: list[Path | str] | Path | str | None = None,
         **catalog_keys,
@@ -88,8 +88,6 @@ class FIATModel(Model):
             data_libs=data_libs,
             **catalog_keys,
         )
-        ## It's own attributes
-        self._type: str | None = None
 
         ## Setup components
         self.add_component(
@@ -122,8 +120,7 @@ class FIATModel(Model):
         )
 
         # Finish initialization
-        if type is not None:
-            self.set_type(type)
+        self.set_type(type)
         self.set_risk(risk)
 
     ## Private methods
@@ -175,7 +172,7 @@ the method requires '{type}'"
     @property
     def type(self) -> str | None:
         """Return the model type."""
-        return self._type
+        return self.config.type
 
     @property
     def vulnerability(self) -> VulnerabilityComponent:
@@ -387,14 +384,12 @@ the method requires '{type}'"
             The type of model.
         """
         logger.info(f"Settings model type to: '{type}'")
-        # Set the type
-        self._type = type
         # Get the model settings minus type and exposure
         settings_dict = self.config.data.to_dict()
         settings_dict.pop(TYPE, None)
         settings_dict.pop(EXPOSURE, None)
         # Create and set new config settings pydantic basemodel
-        self.config._data = SETTINGS_DICT[self.type].model_validate(
+        self.config._data = SETTINGS_DICT[type].model_validate(
             settings_dict,
             context=self.config.context,
         )

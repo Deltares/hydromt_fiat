@@ -256,7 +256,7 @@ def test_output_geom_component_spatial_aggregate(
     vector_grid: gpd.GeoDataFrame,
 ):
     # Set up the component
-    model_with_region._type = "geom"
+    model_with_region.set_type("geom")
     component = OutputGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
@@ -289,7 +289,7 @@ def test_output_geom_component_spatial_square_aggregate(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Set up the component
-    model_with_region._type = "geom"
+    model_with_region.set_type("geom")
     component = OutputGeomsComponent(model=model_with_region)
 
     # Set data like a dummy
@@ -323,7 +323,7 @@ def test_output_geom_component_spatial_square_aggregate_no_clip(
     exposure_vector_clipped: gpd.GeoDataFrame,
 ):
     # Set up the component
-    model._type = "geom"
+    model.set_type("geom")
     component = OutputGeomsComponent(model=model)
 
     # Set data like a dummy

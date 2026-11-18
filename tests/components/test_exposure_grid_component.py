@@ -258,7 +258,7 @@ def test_exposure_grid_component_create_name(
     vulnerability_identifiers: xr.Dataset,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -292,7 +292,7 @@ def test_exposure_grid_component_create_errors(
     model: FIATModel,
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
@@ -352,7 +352,7 @@ def test_exposure_grid_component_create_categorized_name(
     vulnerability_identifiers: xr.Dataset,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -385,7 +385,7 @@ def test_exposure_grid_component_create_categorized_errors(
     mocker: MockerFixture, model: FIATModel
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
@@ -619,7 +619,7 @@ def test_exposure_grid_component_create_from_geom_name(
     exposure_vector: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -656,7 +656,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     model: FIATModel,
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
