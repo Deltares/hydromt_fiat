@@ -13,6 +13,7 @@ from pytest_mock import MockerFixture
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ConfigComponent
+from hydromt_fiat.components.config import SETTINGS_DICT
 
 
 ## Models and Mocked objects
@@ -24,7 +25,7 @@ def model_exposure_setup(
 ) -> Callable[[str], FIATModel]:
     def _factory(model_type: str) -> FIATModel:
         model = model_with_region
-        model._type = model_type
+        model.set_type(model_type)
         model.vulnerability.set(vulnerability_curves)
         model.vulnerability.set_id(vulnerability_identifiers)
         return model
@@ -62,12 +63,18 @@ def mock_model(mock_model_factory: Callable[[Path, str], FIATModel]) -> MagicMoc
 
 
 @pytest.fixture
+def mock_model_geom(mock_model: Callable[[str], FIATModel]) -> MagicMock:
+    return mock_model("geom")
+
+
+@pytest.fixture
 def mock_model_config(
     mock_model_factory: Callable[[Path, str], FIATModel],
 ) -> Callable[[str], FIATModel]:
     def _factory(model_type: str) -> MagicMock:
         model = mock_model_factory(model_type=model_type)
         config = ConfigComponent(model)
+        config._data = SETTINGS_DICT[model_type]()
         type(model).config = PropertyMock(side_effect=lambda: config)
         return model
 

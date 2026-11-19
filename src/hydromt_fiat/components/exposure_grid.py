@@ -190,10 +190,11 @@ class ExposureGridComponent(GridComponent):
     @hydromt_step
     def create(
         self,
-        exposure_fnames: Path | str | list[Path | str],
+        exposure_fname: Path | str,
+        vulnerability_name: str,
         exposure_link_fname: Path | str | None = None,
         *,
-        vulnerability_name: str = "default",
+        name: str | None = None,
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
         read_link_kwargs: dict[str, Any] | None = None,
@@ -202,15 +203,19 @@ class ExposureGridComponent(GridComponent):
 
         Parameters
         ----------
-        exposure_fnames : Path | str | list[Path | str]
-            Name of or path to exposure file(s).
-        exposure_link_fname : Path | str, optional
-            Table containing the names of the exposure files and corresponding
-            vulnerability curves. By default None.
+        exposure_fname : Path | str
+            Path to the exposure data or name of entry in the data catalog.
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
             data variables. By default "default".
+        exposure_link_fname : Path | str, optional
+            Table containing the names of the exposure files and corresponding
+            vulnerability curves. By default None.
+        name : str, optional
+            The name of the resulting exposure data in the exposure grid dataset.
+            If the name is not provided, it is set to the stem of `exposure_fname`.
+            By default None.
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -241,47 +246,38 @@ class ExposureGridComponent(GridComponent):
                 exposure_link_fname, **(read_link_kwargs or {})
             )
 
-        # Sort the input out as iterator
-        exposure_fnames = (
-            [exposure_fnames]
-            if not isinstance(exposure_fnames, list)
-            else exposure_fnames
-        )
-
-        # Read exposure data files from data catalog
-        exposure_data = {}
+        # Read exposure data file from data catalog
         kwargs = {"buffer": 1}
         kwargs.update(read_kwargs or {})
-        # Loop over the entries
-        for fname in exposure_fnames:
-            name = Path(fname).stem
-            da = self.model.data_catalog.get_rasterdataset(
-                fname,
-                geom=self.model.region,
-                **kwargs,
-            )
-            exposure_data[name] = da
+        # Get the data from the catalog
+        exposure_data = self.model.data_catalog.get_rasterdataset(
+            exposure_fname,
+            geom=self.model.region,
+            **kwargs,
+        )
 
+        # Set the name of the resulting data layer
+        name = name or Path(exposure_fname).stem
         # Execute the workflow function
         exposure_grid, exposure_attrs = workflows.exposure_grid_default_setup(
             exposure_data=exposure_data,
             vulnerability=vulnerability,
+            name=name,
             grid_like=self.like,
             exposure_link=exposure_link,
         )
 
         # Set the dataset
         self.set(exposure_grid, expand=expand)
-        for name, attrs in exposure_attrs.items():
-            self.set_attrs(name, {**attrs, VULNERABILITY: vulnerability_name})
+        self.set_attrs(name, {**exposure_attrs, VULNERABILITY: vulnerability_name})
 
     @hydromt_step
     def create_categorized(
         self,
         exposure_fname: Path | str,
+        vulnerability_name: str,
         *,
         name: str | None = None,
-        vulnerability_name: str = "default",
         expand: bool = True,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
@@ -296,14 +292,14 @@ class ExposureGridComponent(GridComponent):
             The name of (or path to) the exposure data to be setup. The data should
             consist of integer based categories that (idealy) match the entries in the
             vulnerability data.
-        name : str | None, optional
-            The name of the variable that the data will have in the dataset.
-            If not provided the name is inferred from the stem of `expousre_fname`.
-            By default None.
         vulnerability_name : str, optional
             The name of the vulnerability dataset. The names of the available datasets
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. By default "default".
+            data variables.
+        name : str | None, optional
+            The name of the variable that the data will have in the dataset.
+            If not provided the name is inferred from the stem of `exposure_fname`.
+            By default None.
         expand : bool, optional
             Whether to expand the exposure grid data to the bounding box of the model
             region. Nothing is done when the exposure data already covers the region.
@@ -346,13 +342,13 @@ class ExposureGridComponent(GridComponent):
     def create_categorized_values(
         self,
         exposure_name: str,
+        vulnerability_name: list[str] | str,
         *,
         exposure_table_fname: Path | str | None = None,
         exposure_table: dict[int, float | int] | None = None,
         columns: list[str] | str | None = None,
         name_prefix: str | None = None,
         index_name: str | None = None,
-        vulnerability_name: list[str] | str = "default",
         default: float | int = 100,
         unit: str = "m**2",
         read_kwargs: dict[str, Any] | None = None,
@@ -373,6 +369,10 @@ class ExposureGridComponent(GridComponent):
         exposure_name : str
             The name of the variable in the gridded exposure data to setup the
             values for.
+        vulnerability_name : list[str] | str, optional
+            The name of the vulnerability dataset(s). The names of the available
+            datasets are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables.
         exposure_table_fname : Path | str | None, optional
             Table containing the values of the categories corresponding with the values
             in the exposure data. Multiple columns are accepted and then added to the
@@ -393,11 +393,7 @@ class ExposureGridComponent(GridComponent):
         index_name : str, optional
             The name of the index column in the `exposure_table_fname` or
             `exposure_table` data. If not provided, `exposure_name` is used as the
-            name of the index column. By default None.
-        vulnerability_name : str, optional
-            The name of the vulnerability dataset. The names of the available datasets
-            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. By default "default".
+            name of the index column. By default None..
         default : float | int, optional
             The default value when the table is not provided or has missing values
             compared to the categorized exposure data, by default 100.
@@ -460,11 +456,11 @@ class ExposureGridComponent(GridComponent):
     def create_from_geom(
         self,
         exposure_fname: Path | str,
+        vulnerability_name: str,
         column: str,
         curve: str,
         *,
         name: str | None = None,
-        vulnerability_name: str = "default",
         method: str = "add",
         read_kwargs: dict[str, Any] | None = None,
         **select,
@@ -475,6 +471,10 @@ class ExposureGridComponent(GridComponent):
         ----------
         exposure_fname : Path | str
             Path to or entry in the data catalog of the exposure geometry dataset.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables.
         column : str
             The column from which the value will be burned in.
         curve : str
@@ -484,10 +484,6 @@ class ExposureGridComponent(GridComponent):
             The name of the variable that the data will have in the dataset.
             If not provided the name is inferred from the stem of `exposure_fname`.
             By default None.
-        vulnerability_name : str, optional
-            The name of the vulnerability dataset. The names of the available datasets
-            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
-            data variables. By default "default".
         method : str, optional
             The method of which to merge values when rasterizing values into the same
             cell, choose between 'add' and 'replace'. By default 'add'.

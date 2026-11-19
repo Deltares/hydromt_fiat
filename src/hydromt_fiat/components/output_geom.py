@@ -143,7 +143,7 @@ column will be removed"
         # Look at the in and outputs of the config file
         infiles = get_config_list_files(self.model.config.data.exposure) or []
         infiles = [
-            Path(self.model.config.output_dir, item.name).with_suffix(".gpkg")
+            Path(self.model.config.output_dir, item.name).with_suffix(".fgb")
             for item in infiles
         ]
         # Get the directly specified output files

@@ -179,7 +179,12 @@ def test_hazard_component_create(
     component = HazardComponent(model=model_with_region)
     # Test hazard event
     caplog.set_level(logging.INFO)
-    component.create(hazard_fnames="flood_event")
+    component.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
+    )
 
     assert "Processing water_depth hazard data" in caplog.text
     assert "flood_event" in component.data.data_vars
@@ -197,7 +202,20 @@ def test_hazard_component_create_multi(
     component = HazardComponent(model=model_with_region)
 
     # Test setting data to hazard grid with data
-    component.create(hazard_fnames=["flood_event", "flood_event_highres"], expand=False)
+    component.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
+        expand=False,
+    )
+    component.create(
+        hazard_fname="flood_event_highres",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event_highres",
+        expand=False,
+    )
 
     # Check if both ds are still there
     assert "flood_event" in component.data.data_vars
@@ -208,14 +226,17 @@ def test_hazard_component_create_multi(
 def test_hazard_component_create_risk(
     model: FIATModel,
 ):
-    # Setup the compoentn
+    model.set_risk(True)
+    # Setup the component
     component = HazardComponent(model=model)
 
     # Test hazard with return period
     component.create(
-        hazard_fnames=["flood_event_highres"],
-        risk=True,
-        return_periods=[50000],
+        hazard_fname="flood_event_highres",
+        hazard_type="water_depth",
+        unit="m",
+        return_period=50000,
+        name="flood_event_highres",
         region=False,
     )
 
@@ -230,26 +251,43 @@ def test_hazard_component_create_errors(model: FIATModel):
     # Setup the component
     component = HazardComponent(model=model)
 
+    # Set risk
+    model.config.data.risk = True
+
     # Assert the errors
     with pytest.raises(
-        ValueError, match="Cannot perform risk analysis without return periods"
-    ):
-        component.create(hazard_fnames="test.nc", risk=True)
-
-    with pytest.raises(
-        ValueError, match="Return periods do not match the number of hazard files"
+        ValueError, match="Cannot perform risk analysis without a return period"
     ):
         component.create(
-            hazard_fnames=["test1.nc", "test2.nc"],
-            risk=True,
-            return_periods=[1, 2, 3],
+            hazard_fname="test.nc",
+            hazard_type="water_depth",
+            unit="m",
         )
 
+    # Set risk
+    model.config.data.risk = False
+
+    # Provide a return period without settings the model to risk
+    with pytest.raises(
+        ValueError, match="Return period is set while the model is not set to risk mode"
+    ):
+        component.create(
+            hazard_fname="test.nc",
+            hazard_type="water_depth",
+            unit="m",
+            return_period=10,
+        )
+
+    # No region provided
     with pytest.raises(
         MissingRegionError,
-        match=("Region component is missing for setting up hazard data"),
+        match="Model region is missing for setting up hazard data",
     ):
-        component.create(hazard_fnames=["flood_event"])
+        component.create(
+            hazard_fname="flood_event",
+            hazard_type="water_depth",
+            unit="m",
+        )
 
 
 def test_hazard_component_create_fixed(
@@ -263,7 +301,12 @@ def test_hazard_component_create_fixed(
     component._data_attrs = {}
 
     # Call the method
-    component.create_fixed("flood_event", "flood_fixed", value=1)
+    component.create_fixed(
+        "flood_event",
+        "water_depth",
+        "flood_fixed",
+        value=1,
+    )
 
     # Assert the output, the fixed layer is added next to the original
     assert "flood_event" in component.data.data_vars
@@ -290,9 +333,9 @@ def test_hazard_component_create_fixed_risk(
     # Call the method with a return period and hazard type
     component.create_fixed(
         "flood_event",
-        "flood_fixed",
-        value=1,
         hazard_type="flooding",
+        name="flood_fixed",
+        value=1,
         return_period=100,
     )
 
@@ -316,7 +359,7 @@ def test_hazard_component_create_fixed_errors(
         RuntimeError,
         match="Choose from already present data variables",
     ):
-        component.create_fixed("foo", "flood_fixed", value=1)
+        component.create_fixed("foo", "water_depth", "flood_fixed", value=1)
 
 
 def test_hazard_component_create_settings_only(
@@ -326,7 +369,11 @@ def test_hazard_component_create_settings_only(
     component = HazardComponent(model=mock_model("geom"))
 
     # Call the method
-    component.create_settings_only("flood_const", value=0.5)
+    component.create_settings_only(
+        "water_depth",
+        "flood_const",
+        value=0.5,
+    )
 
     # Assert the output, there is only an entry in the attributes
     assert len(component.data.data_vars) == 0
@@ -344,9 +391,9 @@ def test_hazard_component_create_settings_only_risk(
 
     # Call the method with a return period and hazard type
     component.create_settings_only(
-        "flood_const",
-        value=0.5,
         hazard_type="flooding",
+        name="flood_const",
+        value=0.5,
         return_period=100,
     )
 

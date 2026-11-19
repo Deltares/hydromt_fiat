@@ -42,16 +42,20 @@ def test_build_model_geom(
 
     # Setup the vulnerability
     model.vulnerability.create(
-        "jrc_curves",
-        "jrc_curves_link",
+        vulnerability_fname="jrc_curves",
         unit="m",
-        continent="europe",
         method=FLOOD_LEVEL,
+        hazard_type="water_level",
+        vulnerability_link_fname="jrc_curves_link",
+        continent="europe",
     )
 
     # Add an hazard layer
     model.hazard.create(
-        "flood_event",
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
     )
 
     # Setup the exposure geometry data
@@ -64,10 +68,12 @@ def test_build_model_geom(
     model.exposure_geoms.create_link(
         exposure_name="buildings",
         impact_type=DAMAGE,
+        vulnerability_name="jrc_curves",
     )
     model.exposure_geoms.create_max_value(
         exposure_name="buildings",
         impact_type=DAMAGE,
+        vulnerability_name="jrc_curves",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
@@ -81,11 +87,11 @@ def test_build_model_geom(
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
     assert model.config.data.type == GEOM
-    assert len(model.vulnerability.data.curves.default) == 1001
-    assert "rs1" in model.vulnerability.data.curves.curve_default
+    assert len(model.vulnerability.data.curves.jrc_curves) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_jrc_curves
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
-    assert model.vulnerability.data_attrs["default"].method == FLOOD_LEVEL
+    assert model.vulnerability.data_attrs["jrc_curves"].method == FLOOD_LEVEL
     assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
@@ -125,35 +131,47 @@ def test_build_model_grid(
 
     # Setup the vulnerability
     model.vulnerability.create(
-        "jrc_curves",
-        "jrc_curves_link",
+        vulnerability_fname="jrc_curves",
         unit="m",
-        continent="europe",
         method=FLOOD_LEVEL,
+        hazard_type="water_level",
+        vulnerability_link_fname="jrc_curves_link",
+        continent="europe",
     )
 
     # Add an hazard layer
     model.hazard.create(
-        "flood_event",
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
     )
 
     # Setup the exposure grid data
     model.exposure_grid.create(
-        exposure_fnames=["commercial_structure", "commercial_content"],
+        exposure_fname="commercial_structure",
+        vulnerability_name="jrc_curves",
         exposure_link_fname="exposure_grid_link",
+        name="commercial_structure",
+    )
+    model.exposure_grid.create(
+        exposure_fname="commercial_content",
+        vulnerability_name="jrc_curves",
+        exposure_link_fname="exposure_grid_link",
+        name="commercial_content",
     )
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
     assert model.config.data.type == GRID
-    assert len(model.vulnerability.data.curves.default) == 1001
-    assert "rs1" in model.vulnerability.data.curves.curve_default
+    assert len(model.vulnerability.data.curves.jrc_curves) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_jrc_curves
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
     assert model.exposure_grid.data["commercial_content"].attrs[FN__CURVE] == "cm1"
-    assert model.vulnerability.data_attrs["default"].method == FLOOD_LEVEL
+    assert model.vulnerability.data_attrs["jrc_curves"].method == FLOOD_LEVEL
     assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
     assert model.exposure_grid.data_attrs["commercial_content"].fn_curve == "cm1"
 

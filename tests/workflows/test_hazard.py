@@ -3,47 +3,43 @@ import pytest
 import xarray as xr
 
 from hydromt_fiat.settings.hazard import Hazard
-from hydromt_fiat.utils import EVENT, RISK, RP, TYPE, WATER__DEPTH
+from hydromt_fiat.utils import RP, TYPE, WATER__DEPTH
 from hydromt_fiat.workflows import hazard_setup, infer_hazard_attrs
-
-
-def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
-    # test hazard risk
-    hazard_data = {"flood_event_highres": hazard_event_data_highres}
-    ds, attrs = hazard_setup(
-        grid_like=None,
-        hazard_data=hazard_data,
-        hazard_type="flooding",
-        return_periods=[50000],
-        risk=True,
-    )
-    assert isinstance(ds, xr.Dataset)
-    assert "flood_event_highres" in ds.data_vars
-    da = ds.flood_event_highres
-    assert ds.analysis == RISK
-    assert da.name == "flood_event_highres"
-    assert da.rp == 50000
-    # Assert the data attributes
-    assert attrs == {"flood_event_highres": {TYPE: "flooding", RP: 50000}}
 
 
 def test_hazard_setup_event(hazard_event_data: xr.DataArray):
     # Test hazard event
-    hazard_data = {"flood_event": hazard_event_data}
-    ds, attrs = hazard_setup(
+    hazard_data = hazard_event_data
+    da, attrs = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
-        risk=False,
+        unit="m",
+        name="flood_event",
     )
-    assert isinstance(ds, xr.Dataset)
-    assert "flood_event" in ds.data_vars
-    da = ds.flood_event
-    assert ds.analysis == EVENT
+    assert isinstance(da, xr.DataArray)
     assert da.name == "flood_event"
     assert "rp" not in da.attrs.keys()
     # Assert the data attributes
-    assert attrs == {"flood_event": {TYPE: "flooding"}}
+    assert attrs == {TYPE: "flooding"}
+
+
+def test_hazard_setup_risk(hazard_event_data_highres: xr.DataArray):
+    # test hazard risk
+    hazard_data = hazard_event_data_highres
+    da, attrs = hazard_setup(
+        grid_like=None,
+        hazard_data=hazard_data,
+        hazard_type="flooding",
+        unit="m",
+        return_period=50000,
+        name="flood_event_highres",
+    )
+    assert isinstance(da, xr.DataArray)
+    assert da.name == "flood_event_highres"
+    assert da.rp == 50000
+    # Assert the data attributes
+    assert attrs == {TYPE: "flooding", RP: 50000}
 
 
 def test_hazard_setup_reproj(
@@ -55,30 +51,33 @@ def test_hazard_setup_reproj(
     assert hazard_event_data_highres.shape == (94, 93)
 
     # Setup with a grid_like
-    hazard_data = {"event": hazard_event_data_highres}
-    ds, _ = hazard_setup(
+    hazard_data = hazard_event_data_highres
+    da, _ = hazard_setup(
         grid_like=hazard_event_data,
         hazard_data=hazard_data,
         hazard_type="flooding",
-        risk=False,
+        unit="m",
+        name="event",
     )
 
-    assert ds.event.name == "event"
+    assert da.name == "event"
     # More importantly, check the shape
-    assert ds.event.shape == (5, 4)  # Should be the same as the hazard event data
+    assert da.shape == (5, 4)  # Should be the same as the hazard event data
 
 
 def test_hazard_setup_unit_default(hazard_event_data: xr.DataArray):
     # Call the workflow function
-    hazard_data = {"event": hazard_event_data}
-    ds, _ = hazard_setup(
+    hazard_data = hazard_event_data
+    da, _ = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
+        unit="m",
+        name="event",
     )
 
     # Assert the avg level
-    avg_level = ds.event.mean().values
+    avg_level = da.mean().values
     assert np.isclose(avg_level, 1.7947)
 
 
@@ -86,17 +85,18 @@ def test_hazard_setup_unit_differ(
     caplog: pytest.LogCaptureFixture,
     hazard_event_data: xr.DataArray,
 ):
-    hazard_data = {"event": hazard_event_data}
+    hazard_data = hazard_event_data
     # Suppose it's in a different unit
-    ds, _ = hazard_setup(
+    da, _ = hazard_setup(
         grid_like=None,
         hazard_data=hazard_data,
         hazard_type="flooding",
         unit="ft",
+        name="event",
     )
 
     # Assert the avg level
-    avg_level_ft = ds.event.mean().values
+    avg_level_ft = da.mean().values
     assert (
         "Given unit (foot) does not match the standard/ default unit \
 (meter) for [length]"

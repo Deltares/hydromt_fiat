@@ -19,7 +19,6 @@ from hydromt_fiat.utils import (
     DEFAULT,
     EXPOSURE,
     FN__CURVE,
-    GRID,
     INDEX,
     VALUE,
     VALUES,
@@ -208,7 +207,8 @@ def test_exposure_grid_component_create(
 
     # Call the method
     component.create(
-        exposure_fnames="industrial_content",
+        exposure_fname="industrial_content",
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -224,9 +224,6 @@ def test_exposure_grid_component_create(
     assert component.data_attrs["industrial_content"].type == DEFAULT
     assert component.data_attrs["industrial_content"].fn_curve == "in2"
 
-    # Assert entries in the config
-    assert component.model.config.data.type == GRID
-
 
 def test_exposure_grid_component_create_multi(
     model_exposure_setup: FIATModel,
@@ -236,7 +233,14 @@ def test_exposure_grid_component_create_multi(
 
     # Call the method
     component.create(
-        exposure_fnames=["industrial_content", "industrial_structure"],
+        exposure_fname="industrial_content",
+        vulnerability_name=DEFAULT,
+        exposure_link_fname="exposure_grid_link",
+        expand=False,
+    )
+    component.create(
+        exposure_fname="industrial_structure",
+        vulnerability_name=DEFAULT,
         exposure_link_fname="exposure_grid_link",
         expand=False,
     )
@@ -254,7 +258,7 @@ def test_exposure_grid_component_create_name(
     vulnerability_identifiers: xr.Dataset,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -273,7 +277,7 @@ def test_exposure_grid_component_create_name(
 
     # Call the method
     component.create(
-        exposure_fnames="industrial_content",
+        exposure_fname="industrial_content",
         vulnerability_name="custom",
     )
 
@@ -287,7 +291,7 @@ def test_exposure_grid_component_create_errors(
     model: FIATModel,
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
@@ -300,7 +304,8 @@ def test_exposure_grid_component_create_errors(
         MissingRegionError, match="Region is required for setting up exposure grid"
     ):
         component.create(
-            exposure_fnames="industrial_content",
+            exposure_fname="industrial_content",
+            vulnerability_name=DEFAULT,
             exposure_link_fname="",
         )
 
@@ -317,7 +322,7 @@ def test_exposure_grid_component_create_name_errors(
         match="'custom' does not have any identifiers",
     ):
         component.create(
-            exposure_fnames="industrial_content",
+            exposure_fname="industrial_content",
             vulnerability_name="custom",
         )
 
@@ -331,6 +336,7 @@ def test_exposure_grid_component_create_categorized(
     # Call the method
     component.create_categorized(
         exposure_fname="categories",
+        vulnerability_name=DEFAULT,
         name="buildings",
     )
 
@@ -347,7 +353,7 @@ def test_exposure_grid_component_create_categorized_name(
     vulnerability_identifiers: xr.Dataset,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -380,7 +386,7 @@ def test_exposure_grid_component_create_categorized_errors(
     mocker: MockerFixture, model: FIATModel
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
@@ -394,6 +400,7 @@ def test_exposure_grid_component_create_categorized_errors(
     ):
         component.create_categorized(
             exposure_fname="",
+            vulnerability_name=DEFAULT,
         )
 
 
@@ -427,6 +434,7 @@ def test_exposure_grid_component_create_categorized_values(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table_fname="category_values",
         index_name=VALUE,
     )
@@ -522,6 +530,7 @@ def test_exposure_grid_component_create_categorized_values_name_prefix(
     # Call the method with a name prefix
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table_fname="category_values",
         index_name=VALUE,
         name_prefix="foo",
@@ -549,6 +558,7 @@ def test_exposure_grid_component_create_categorized_values_table(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
         exposure_table={1: 200, 2: 300, 3: 400, 4: 100},
         index_name=INDEX,
     )
@@ -572,6 +582,7 @@ def test_exposure_grid_component_create_categorized_values_no_table(
     # Call the method
     component.create_categorized_values(
         exposure_name="buildings",
+        vulnerability_name=DEFAULT,
     )
 
     # Assert the output
@@ -597,6 +608,7 @@ def test_exposure_grid_component_create_from_geom(
     component.create_grid(res=10)
     component.create_from_geom(
         exposure_fname=exposure_vector,
+        vulnerability_name=DEFAULT,
         column="max_damage_structure",
         curve="commercial_structure",
         name="commercial_structure",
@@ -614,7 +626,7 @@ def test_exposure_grid_component_create_from_geom_name(
     exposure_vector: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     model_with_region.vulnerability.set(
         vulnerability_curves.rename(
             {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
@@ -651,7 +663,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     model: FIATModel,
 ):
     # Setup the component
-    model._type = "grid"
+    model.set_type("grid")
     component = ExposureGridComponent(model=model)
 
     # Fake component
@@ -665,6 +677,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     ):
         component.create_from_geom(
             exposure_fname="",
+            vulnerability_name="",
             column="",
             curve="",
         )
@@ -676,6 +689,7 @@ def test_exposure_grid_component_create_from_geom_errors(
     ):
         component.create_from_geom(
             exposure_fname="",
+            vulnerability_name="",
             column="",
             curve="",
         )

@@ -134,7 +134,7 @@ def test_output_grid_component_spatial_aggregate(
     hazard: xr.Dataset,
 ):
     # Set up the component
-    model_with_region._type = "grid"
+    model_with_region.set_type("grid")
     component = OutputGridComponent(model=model_with_region)
     # Set data like a dummy
     component._data = hazard

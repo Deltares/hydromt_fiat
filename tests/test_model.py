@@ -45,7 +45,7 @@ def test_model_empty(tmp_path: Path):
 def test_model__assert_model_type(tmp_path: Path):
     # Setup an empty fiat model
     model = FIATModel(tmp_path)
-    model._type = GEOM
+    model.set_type(GEOM)
 
     # Assert it's fine to call
     flag = model._assert_model_type(GEOM)
@@ -56,8 +56,7 @@ def test_model__assert_model_type(tmp_path: Path):
 
 def test_model__assert_model_type_false(tmp_path: Path):
     # Setup an empty fiat model
-    model = FIATModel(tmp_path)
-    model._type = GRID
+    model = FIATModel(tmp_path, type=GRID)
 
     # Assert it's fine to call
     flag = model._assert_model_type(GEOM, error=False)
@@ -68,8 +67,7 @@ def test_model__assert_model_type_false(tmp_path: Path):
 
 def test_model__assert_model_type_errors(tmp_path: Path):
     # Setup an empty fiat model
-    model = FIATModel(tmp_path)
-    model._type = GRID
+    model = FIATModel(tmp_path, type=GRID)
 
     # Assert it errors
     with pytest.raises(
@@ -130,12 +128,11 @@ def test_model_clear(  # Dont like this too much, as it is a bit of an integrati
     vulnerability_curves: pd.DataFrame,
 ):
     # Setup the model
-    model = FIATModel(tmp_path, mode="w")
+    model = FIATModel(tmp_path, mode="w", type=GEOM)
 
     # Set data like a dummy
     model.components[REGION]._data = build_region_small
     model.config._data = GeomSettings()
-    model._type = GEOM
     model.exposure_geoms._data = {"foo": exposure_vector}
     model.hazard._data = hazard
     model.output_geoms._data = {"foo": exposure_vector}
