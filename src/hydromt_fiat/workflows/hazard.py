@@ -5,74 +5,108 @@ from typing import Any
 
 import xarray as xr
 
-from hydromt_fiat.utils import ANALYSIS, EVENT, RISK, RP, TYPE, standard_unit
-from hydromt_fiat.workflows.utils import _merge_dataarrays, _process_dataarray
+from hydromt_fiat.settings.hazard import Hazard
+from hydromt_fiat.utils import (
+    DATA,
+    RP,
+    TYPE,
+    WATER__DEPTH,
+    standard_unit,
+)
 
 __all__ = ["hazard_setup"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
+def infer_hazard_attrs(
+    data: xr.Dataset,
+    settings: Hazard | None = None,
+) -> dict[str, Any]:
+    """Infer hazard data (settings) attributes.
+
+    Parameters
+    ----------
+    data : xr.Dataset
+        The hazard data.
+    settings : Hazard | None, optional
+        The attributes currently present in the settings file, by default None.
+
+    Returns
+    -------
+    dict[str, Any]
+        The attributes.
+    """
+    attrs = {}
+    # First really set a default inferred guess
+    for var in data.data_vars:
+        # Update the attributes
+        attrs[var] = dict(type=WATER__DEPTH)
+    # If nothing to be done, return
+    if settings is None:
+        return attrs
+    for var in settings.variables:
+        # There is not data to support it, continue
+        if var.name not in data.data_vars:
+            continue
+        attrs[var.name] = var.model_dump(exclude_none=True)
+    return attrs
+
+
 def hazard_setup(
-    grid_like: xr.Dataset | None,
-    hazard_data: dict[str, xr.DataArray],
+    hazard_data: xr.DataArray,
     hazard_type: str,
+    unit: str,
     *,
-    return_periods: list[int] | None = None,
-    risk: bool = False,
-    unit: str = "m",
-) -> xr.Dataset:
+    name: str = DATA,
+    grid_like: xr.Dataset | None = None,
+    return_period: float | int | None = None,
+) -> tuple[xr.Dataset, dict[str, Any]]:
     """Read and transform hazard data.
 
     Parameters
     ----------
-    grid_like : xr.Dataset | None
-        Grid dataset that serves as an example dataset for transforming the input data.
-    hazard_data : dict[str, xr.DataArray]
-        The hazard data in a dictionary with the names of the datasets as keys.
+    hazard_data : xr.DataArray
+        The hazard data.
     hazard_type : str
         Type of hazard.
-    return_periods : list[int], optional
-        List of return periods, by default None.
-    risk : bool, optional
-        Designate hazard files for risk analysis, by default False.
     unit : str, optional
-        The unit which the hazard data is in, by default 'm'.
+        The unit which the hazard data is in, e.g. 'm'.
+    name : str, optional
+        The name of the hazard data being set up.
+    grid_like : xr.Dataset | None
+        Grid dataset that serves as an example dataset for transforming the input data.
+        By default None.
+    return_period : float | int, optional
+        The return period of the data when , by default None.
 
     Returns
     -------
-    xr.Dataset
-        Unified xarray dataset containing the hazard data.
+    tuple[xr.DataArray, dict[str, Any]]
+        Unified xarray dataarray containing the hazard data and its variable settings.
     """
     logger.info(f"Processing {hazard_type} hazard data")
-    hazard_dataarrays = []
-    for idx, (da_name, da) in enumerate(hazard_data.items()):
-        da = _process_dataarray(da=da, da_name=da_name)
+    attrs = {}
+    hazard_data.name = name
 
-        # Check for unit
-        conversion = standard_unit(unit)
-        da *= conversion.magnitude
+    # Check for unit
+    conversion = standard_unit(unit)
+    hazard_data *= conversion.magnitude
 
-        attrs: dict[str, Any] = {
-            "name": da_name,
-            TYPE: hazard_type,
-        }
-        if risk:
-            assert return_periods is not None
-            attrs[RP] = return_periods[idx]
+    attrs: dict[str, Any] = {
+        TYPE: hazard_type,
+    }
+    if return_period is not None:
+        attrs[RP] = return_period
 
-        # Set the event data arrays to the hazard grid component
-        da = da.assign_attrs(attrs)
-        hazard_dataarrays.append(da)
+    # Set the event data arrays to the hazard grid component
+    hazard_data = hazard_data.assign_attrs(attrs)
+    # Set the nodata value and mask to -9999, which seems a good default
+    hazard_data = hazard_data.raster.mask_nodata(-9999)
 
     # Reproject to gridlike
-    ds = _merge_dataarrays(grid_like=grid_like, dataarrays=hazard_dataarrays)
+    if grid_like is not None:
+        hazard_data = hazard_data.raster.reproject_like(other=grid_like)
 
-    attrs = {
-        ANALYSIS: EVENT,
-    }
-    if risk:
-        attrs[ANALYSIS] = RISK
-    ds = ds.assign_attrs(attrs)
-
-    return ds
+    # Return the dataset
+    return hazard_data, attrs

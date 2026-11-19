@@ -16,7 +16,7 @@ from hydromt_fiat.utils import REGION
 
 def test_region_component_empty(mock_model: MagicMock):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
 
     # assert that it is empty
     assert component.data is None
@@ -28,7 +28,7 @@ def test_region_component_clear(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
 
     # Set the data like a dummy
     component._data = build_region_small
@@ -121,7 +121,7 @@ def test_region_component_set(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
 
     # Add a geometry
     component.set(build_region)
@@ -145,7 +145,7 @@ def test_region_component_set_series(
     build_region: gpd.GeoDataFrame,
 ):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
     # Assert the current state
     assert component.region is None
 
@@ -161,7 +161,7 @@ def test_region_component_set_replace(
     build_region: gpd.GeoDataFrame,
 ):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
     component.set(build_region)
     assert isinstance(component.region.geometry[0], Polygon)
 
@@ -179,7 +179,7 @@ def test_region_component_set_union(
     build_region: gpd.GeoDataFrame,
 ):
     # Setup the component with the mock model
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
     component.set(build_region)
     assert isinstance(component.region.geometry[0], Polygon)
 
@@ -197,14 +197,16 @@ def test_region_component_read(
     mock_model: MagicMock,
     build_region: gpd.GeoDataFrame,
 ):
+    # Setup the model
+    model = mock_model("geom")
     # Setup the component
     mocker.patch.object(
-        type(mock_model.root),
+        type(model.root),
         "mode",
         new_callable=PropertyMock,
         return_value=ModelMode("r"),
     )
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=model)
     component.read()
     assert component.data is None
     assert component.region is None
@@ -225,7 +227,7 @@ def test_region_component_write_empty(
     caplog.set_level(logging.DEBUG)
 
     # Setup component and a region
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
 
     # Empty write
     component.write()
@@ -243,7 +245,7 @@ def test_region_component_write_default(
     build_region: gpd.GeoDataFrame,
 ):
     # Setup the component
-    component = RegionComponent(model=mock_model)
+    component = RegionComponent(model=mock_model("geom"))
 
     # Set something in the component
     component.set(build_region)
@@ -263,9 +265,11 @@ def test_region_component_write_crs(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Create new component
+    # Setup the model
+    model = mock_model("geom")
     # Adjust the model crs to test the write capabilities
-    type(mock_model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(28992))
-    component = RegionComponent(model=mock_model)
+    type(model).crs = PropertyMock(side_effect=lambda: CRS.from_epsg(28992))
+    component = RegionComponent(model=model)
 
     # Set the component with a geometry in a local projection
     component.set(build_region_small)

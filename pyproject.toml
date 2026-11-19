@@ -1,6 +1,6 @@
 ## Build system related stuff
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=84.2.1", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -36,8 +36,9 @@ readme = "README.rst"
 requires-python = ">=3.12"
 dependencies = [
     "affine",
+    "certifi>=2026.10.23",
     "geopandas",
-    "hydromt>=1.4.0",
+    "hydromt>=1.4.1",
     "minio",
     "numpy",
     "osmnx",
@@ -45,7 +46,9 @@ dependencies = [
     "pint",
     "pydantic",
     "pyproj",
+    "rasterio",
     "requests",
+    "scipy>=1.14",
     "shapely",
     "tomlkit",
     "xarray",
@@ -94,18 +97,18 @@ dev = [
 docs = [
     "nbsphinx",
 	"pydata-sphinx-theme",
-    "sphinx>=8.2.0",
+    "sphinx>=9.1.1",
     "sphinx_design",
 ]
 examples = [
     "cartopy",
     "jupyterlab",
-    "nbconvert==7.13.1",
+    "nbconvert==7.17.1",
     "notebook",
     "pandoc",
 ]
 test = [
-    "pytest>=2.7.3",
+    "pytest>=9.2.0",
     "pytest-cov",
     "pytest-mock",
     "responses",
@@ -304,11 +307,8 @@ python-magic = "*"
 [tool.pixi.feature.examples.dependencies]
 pandoc = "*"
 
-[tool.pixi.feature.test.dependencies]
-gdal = ">=3.9.1"
-
-[tool.pixi.feature.test.pypi-dependencies]
-delft_fiat = "*"
+# [tool.pixi.feature.test.pypi-dependencies]
+# delft_fiat = ">=1.0.0rc1"
 
 [tool.pixi.feature.wheel.dependencies]
 pip = "*"

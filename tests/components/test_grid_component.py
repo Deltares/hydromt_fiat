@@ -1,13 +1,18 @@
 import logging
+import re
 from unittest.mock import MagicMock
 
 import geopandas as gpd
 import numpy as np
 import pytest
 import xarray as xr
+from pydantic import ValidationError
 from pyproj.crs import CRS
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.components.grid import GridComponent
+from hydromt_fiat.errors import MissingRegionError
+from hydromt_fiat.settings.variables import Variable
 
 # Overwrite the abstractmethods to be able to initialize it
 GridComponent.__abstractmethods__ = set()
@@ -15,18 +20,56 @@ GridComponent.__abstractmethods__ = set()
 
 def test_grid_component_empty(mock_model: MagicMock):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Assert the state
     assert component._data is None
     assert isinstance(component.data, xr.Dataset)  # Initialized
+    assert component.data_attrs == {}
 
     # Assert the properties
     assert component._region_data is None
     assert component.bounds is None
     assert component.crs is None
+    assert component.like is None
     assert component.res is None
     assert component.transform is None
+
+
+def test_grid_component__assert_entry(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model)
+
+    # Set data like a dummy
+    component._data = xr.Dataset(data_vars={"foo": xr.DataArray()})
+
+    # Assert it's fine to call foo
+    component._assert_entry(name="foo")
+
+
+def test_grid_component__assert_entry_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model)
+    # Set data like a dummy
+    component._data = xr.Dataset(data_vars={"foo": xr.DataArray()})
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape("Choose from already present data variables: ['foo']"),
+    ):
+        component._assert_entry(name="baz", spatial=False)
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape("Choose from already present data variables: []"),
+    ):
+        component._assert_entry(name="baz", spatial=True)
 
 
 def test_grid_component_properties(
@@ -61,17 +104,20 @@ def test_grid_component_clear(
     hazard: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Set data like a dummy
     component._data = hazard
+    component.set_attrs("flood_event", {})
     # Assert the current state
     assert len(component.data.data_vars) == 1
+    assert len(component.data_attrs) == 1
 
     # Call the clear method
     component.clear()
     # Assert the state after
     assert len(component.data.data_vars) == 0
+    assert component.data_attrs == {}
 
 
 def test_grid_component_clip(
@@ -98,7 +144,7 @@ def test_grid_component_clip_no_data(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert the current state
     assert component._data is None
 
@@ -126,6 +172,76 @@ def test_grid_component_clip_inplace(
     # Assert that the output is None but the shape of the component data changed
     assert ds is None
     assert component.data.flood_event.shape == (5, 4)
+
+
+def test_grid_component_create_grid(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+    build_region: gpd.GeoDataFrame,
+):
+    model = mock_model("grid")
+    mocker.patch.object(model, "region", build_region.to_crs(28992))
+    # Set up the component
+    component = GridComponent(model=model)
+    # Assert current state
+    assert "y" not in component.data.dims
+
+    # Call the method
+    component.create_grid(res=10)
+
+    # Assert the output
+    assert "y" in component.data.dims
+    assert component.data.raster.shape == (338, 252)
+
+
+def test_grid_component_create_grid_like(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Create grid from raster blueprint
+    component.create_grid(ds_like=hazard)
+
+    # Assert the output
+    assert "y" in component.data.dims
+    assert component.data.raster.shape == (35, 27)
+
+
+def test_grid_component_create_grid_errors(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+    exposure_grid_clipped: xr.Dataset,
+):
+    model = mock_model("grid")
+    # Setup the component
+    component = GridComponent(model=model)
+
+    # Call with no input
+    with pytest.raises(
+        ValueError,
+        match="Provide either `res` or `ds_like`",
+    ):
+        component.create_grid()
+
+    mocker.patch.object(model, "region", None)
+    # With no region when setting res
+    with pytest.raises(
+        MissingRegionError,
+        match="Region is required for creating grid dimensions",
+    ):
+        component.create_grid(res=10)
+
+    # Set data like a dummy
+    component._data = exposure_grid_clipped
+
+    # Spatial dimensions are there
+    with pytest.raises(
+        RuntimeError,
+        match="GridComponent already contains spatial coordinates",
+    ):
+        component.create_grid(res=10)
 
 
 def test_grid_component_reproject(
@@ -208,7 +324,7 @@ def test_grid_component_set(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -216,14 +332,14 @@ def test_grid_component_set(
     component.set(exposure_grid_clipped)
 
     # Assert the state
-    assert len(component.data.data_vars) == 4
+    assert len(component.data.data_vars) == 7
     assert "commercial_content" in component.data.data_vars
 
     # Set data as a dataarray
     component.set(exposure_grid_clipped["commercial_content"], name="foo")
 
     # Assert the state
-    assert len(component.data.data_vars) == 5
+    assert len(component.data.data_vars) == 8
     assert "foo" in component.data.data_vars
 
 
@@ -234,7 +350,7 @@ def test_grid_component_set_replace(
 ):
     caplog.set_level(logging.WARNING)
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
     # Assert nothing in the component
     assert len(component.data.data_vars) == 0
 
@@ -246,7 +362,7 @@ def test_grid_component_set_replace(
     assert "Replacing grid map: 'commercial_content'" in caplog.text
 
     # Assert the state
-    assert len(component.data.data_vars) == 4  # not 8
+    assert len(component.data.data_vars) == 7  # not 14
     assert "commercial_content" in component.data.data_vars
 
 
@@ -255,7 +371,7 @@ def test_grid_component_set_errors(
     exposure_grid_clipped: xr.Dataset,
 ):
     # Set up the component
-    component = GridComponent(model=mock_model)
+    component = GridComponent(model=mock_model("grid"))
 
     # Dataarray without a name
     da = exposure_grid_clipped["commercial_content"]
@@ -272,3 +388,119 @@ def test_grid_component_set_errors(
         match="Wrong input data type: 'int'",
     ):
         component.set(2)
+
+
+def test_grid_component_set_attrs(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Assert nothing in the component
+    assert len(component.data_attrs) == 0
+
+    # Set the attributes of a data variable
+    component.set_attrs("foo", {})
+
+    # Assert the state, the name is added to the attributes
+    assert isinstance(component.data_attrs["foo"], Variable)
+    assert component.data_attrs["foo"].name == "foo"
+
+    # Set the attributes once more, this replaces the entry
+    previous = component.data_attrs["foo"]
+    component.set_attrs("foo", {})
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["foo"] is not previous
+
+
+def test_grid_component_set_attrs_update(
+    mock_model: MagicMock,
+):
+    # Set up the component with an existing entry
+    component = GridComponent(model=mock_model("grid"))
+    component.set_attrs("foo", {})
+    previous = component.data_attrs["foo"]
+
+    # Update the entry
+    component.set_attrs("foo", {}, update=True)
+
+    # Assert the state, the entry is updated in place
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["foo"] is previous
+    assert component.data_attrs["foo"].name == "foo"
+
+    # Update an entry that is not there yet
+    component.set_attrs("bar", {}, update=True)
+
+    # Assert the state, the entry is added
+    assert len(component.data_attrs) == 2
+    assert component.data_attrs["bar"].name == "bar"
+
+
+def test_grid_component_set_attrs_errors(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Unknown settings are not allowed
+    with pytest.raises(ValidationError):
+        component.set_attrs("foo", {"bar": 1})
+
+
+def test_grid_component_update_uniform(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+    original = component.data["buildings_structure"].values.copy()
+
+    # Call the method
+    component.update_uniform("buildings_structure", mult=2, add=10)
+
+    # Assert the output
+    np.testing.assert_array_equal(
+        component.data["buildings_structure"].values,
+        (original * 2) + 10,
+    )
+
+
+def test_grid_component_update_uniform_default(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+    original = component.data["buildings_structure"].values.copy()
+
+    # Call the method without any arguments
+    component.update_uniform("buildings_structure")
+
+    # Assert the values are left as is
+    np.testing.assert_array_equal(
+        component.data["buildings_structure"].values,
+        original,
+    )
+
+
+def test_grid_component_update_uniform_errors(
+    mock_model: MagicMock,
+    exposure_grid: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+    # Set data like a dummy
+    component._data = exposure_grid
+
+    # Data name not present
+    with pytest.raises(
+        RuntimeError,
+        match="Choose from already present data variables",
+    ):
+        component.update_uniform("foo", mult=2)

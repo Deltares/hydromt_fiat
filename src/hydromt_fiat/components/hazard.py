@@ -10,13 +10,16 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
-from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
-from hydromt_fiat.settings.hazard import Hazard, HazardSettings
+from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
 from hydromt_fiat.utils import (
+    DATA,
     HAZARD,
+    RP,
+    TYPE,
+    VALUE,
 )
 from hydromt_fiat.writers import write_grid
 
@@ -44,6 +47,8 @@ class HazardComponent(GridComponent):
         For add_data_from_* methods, the other region_component should be
         a reference to another grid component for correct reprojection, by default None.
     """
+
+    _variable = HazardVariable
 
     def __init__(
         self,
@@ -98,11 +103,20 @@ class HazardComponent(GridComponent):
         ds = read_grid(read_path=read_path, **kwargs)
         # Set the dataset
         self.set(ds)
+        # Infer the attributes
+        data_attrs = workflows.infer_hazard_attrs(
+            ds,
+            settings=self.model.config.data.hazard,
+        )
+        # Set the attrs
+        for name, attrs in data_attrs.items():
+            self.set_attrs(name, attrs)
 
     @hydromt_step
     def write(
         self,
         filename: Path | str | None = None,
+        compress: bool = True,
         gdal_compliant: bool = True,
         **kwargs,
     ) -> None:
@@ -113,6 +127,8 @@ class HazardComponent(GridComponent):
         filename : Path | str, optional
             Filename relative to model root. If None, the value is taken from
             the `_filename` attribute, by default None.
+        compress : bool, optional
+            Whether or not to compress the data, by default True.
         gdal_compliant : bool, optional
             If True, write grid data in a way that is compatible with GDAL,
             by default True.
@@ -133,32 +149,33 @@ class HazardComponent(GridComponent):
         filename = filename or self._filename
         write_path = Path(self.root.path, filename)
 
+        # Update the config
+        self.model.config.data.hazard = Hazard(
+            file=write_path,
+            settings=HazardSettings(crs=crs_representation(self.data.raster.crs)),
+            variables=list(self.data_attrs.values()),
+        )
         # Write it in a gdal compliant manner by default
         logger.info("Writing hazard data")
         write_grid(
             data=self.data,
             write_path=write_path,
+            compress=compress,
             gdal_compliant=gdal_compliant,
             overwrite=self.root.mode.is_override_mode(),
             **kwargs,
-        )
-
-        # Update the config
-        self.model.config.data.hazard = Hazard(
-            file=write_path,
-            settings=HazardSettings(crs=crs_representation(self.data.raster.crs)),
         )
 
     # Setup methods
     @hydromt_step
     def create(
         self,
-        hazard_fnames: list[Path | str] | Path | str,
-        hazard_type: str = "water_depth",
+        hazard_fname: Path | str,
+        hazard_type: str,
+        unit: str,
         *,
-        return_periods: list[int] | None = None,
-        risk: bool = False,
-        unit: str = "m",
+        name: str = DATA,
+        return_period: float | int | None = None,
         expand: bool = True,
         region: bool = True,
         read_kwargs: dict[str, Any] | None = None,
@@ -167,18 +184,18 @@ class HazardComponent(GridComponent):
 
         Parameters
         ----------
-        hazard_fnames : list[Path | str] | Path | str
-            Path(s) to the hazard file(s) or name(s) of the data catalog entries.
+        hazard_fname : Path | str
+            Path to the hazard file or name of the data catalog entry.
         hazard_type : str, optional
-            Type of hazard, by default "water_depth".
-        return_periods : list[int] | None, optional
-            List of return periods. Length of list should match the number hazard
-            files, by default None.
-        risk : bool, optional
-            Whether the hazard files are part of a risk analysis,
-            by default False.
+            Type of hazard, e.g. 'water_depth'.
         unit : str, optional
-            The unit which the hazard data is in, by default 'm' (meters).
+            The unit which the hazard data is in, e.g. 'm' (meters).
+        name : str, optional
+            The name the hazard layer will have in the data, by default 'data'.
+        return_period : float | int, optional
+            List of return periods. Length of list should match the number hazard
+            files. This entry is required when the model is in risk model
+            (`FIATModel.risk`). By default None.
         expand : bool, optional
             Whether to expand the hazard data to the bounding box of the model region.
             Nothing is done when the hazard data already covers the region.
@@ -195,20 +212,16 @@ class HazardComponent(GridComponent):
             None
         """
         logger.info("Setting up hazard raster data")
-        if not isinstance(hazard_fnames, list):
-            hazard_fnames = [hazard_fnames]
-        if risk and return_periods is None:
-            raise ValueError("Cannot perform risk analysis without return periods")
-        if (
-            risk
-            and return_periods is not None
-            and len(return_periods) != len(hazard_fnames)
-        ):
-            raise ValueError("Return periods do not match the number of hazard files")
-
+        if self.model.risk and return_period is None:
+            raise ValueError("Cannot perform risk analysis without a return period")
+        elif not self.model.risk and return_period is not None:
+            raise ValueError(
+                "Return period is set while the model is not set to risk mode",
+            )
+        # Quick check on the model region
         if self.model.region is None and region:
             raise MissingRegionError(
-                "Region component is missing for setting up hazard data"
+                "Model region is missing for setting up hazard data"
             )
 
         # Read the data
@@ -216,36 +229,98 @@ class HazardComponent(GridComponent):
         kwargs = {"buffer": 1}
         kwargs.update(read_kwargs or {})
         # Loop over the entries
-        for entry in hazard_fnames:
-            da = self.model.data_catalog.get_rasterdataset(
-                entry,
-                geom=self.model.region,
-                **kwargs,
-            )
-            hazard_data[Path(entry).stem] = da
-
-        # Check if there is already data set to this grid component.
-        grid_like = self.data if self.data.sizes != {} else None
+        hazard_data = self.model.data_catalog.get_rasterdataset(
+            hazard_fname,
+            geom=self.model.region,
+            **kwargs,
+        )
 
         # Parse hazard files to an xarray dataset
-        ds = workflows.hazard_setup(
-            grid_like=grid_like,
+        hazard_grid, hazard_attrs = workflows.hazard_setup(
             hazard_data=hazard_data,
             hazard_type=hazard_type,
-            return_periods=return_periods,
-            risk=risk,
+            name=name,
+            grid_like=self.like,
+            return_period=return_period,
             unit=unit,
         )
 
-        # Expand if necessary
-        if self.model.region is not None and ds.raster.crs is not None and expand:
-            ds = expand_raster_to_bounds(
-                ds=ds,
-                bbox=self.model.region.to_crs(da.raster.crs).total_bounds,
-            )
-
         # Set the data to the hazard grid component
-        self.set(ds)
+        self.set(hazard_grid, expand=expand)
+        self.set_attrs(name, hazard_attrs)
 
-        # Set the config entries
-        self.model.config.data.model.risk = risk
+        # Set the region if not present and defined by the hazard setup
+        if not region and self.model.region is None:
+            self.model.set_region(self._region_data)
+
+    @hydromt_step
+    def create_fixed(
+        self,
+        hazard_name: str,
+        hazard_type: str,
+        name: str,
+        value: float | int,
+        *,
+        return_period: float | int | None = None,
+    ) -> None:
+        """Create a fixed value hazard layer.
+
+        This layer will be based on where there are finite values in another layer.
+
+        Parameters
+        ----------
+        hazard_name : str
+            The name of the hazard layer containing the finite values.
+        hazard_type : str, optional
+            The type of hazard, e.g. "water_depth".
+        name : str
+            The name of the hazard layer to be created.
+        value : float | int
+            The fixed value to be set in the new layer.
+        return_period : float | int | None, optional
+            The return period of the data, needed when the model is set run risk
+            calculations. By default None.
+        """
+        # Assert the existence
+        self._assert_entry(hazard_name, spatial=True)
+
+        # Mask the data
+        hazard_data = workflows.grid_fixed_from_finite(
+            self.data[hazard_name],
+            value=value,
+        )
+
+        # Set the data
+        self.set(hazard_data, name=name)
+        self.set_attrs(name, attrs={RP: return_period, TYPE: hazard_type})
+
+    @hydromt_step
+    def create_settings_only(
+        self,
+        hazard_type: str,
+        name: str,
+        value: float | int,
+        *,
+        return_period: float | int | None = None,
+    ) -> None:
+        """Create a hazard layer in settings only.
+
+        This only exists in the settings, there must be no layer in the dataset.
+
+        Parameters
+        ----------
+        hazard_type : str, optional
+            The type of hazard, e.g. "water_depth".
+        name : str
+            The name of the hazard layer.
+        value : float | int
+            The constant value of the layer.
+        return_period : float | int | None, optional
+            The return period of the data, needed when the model is set run risk
+            calculations. By default None.
+        """
+        # Directly set in the attributes.
+        self.set_attrs(
+            name=name,
+            attrs={RP: return_period, TYPE: hazard_type, VALUE: value},
+        )

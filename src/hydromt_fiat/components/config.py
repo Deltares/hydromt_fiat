@@ -7,15 +7,28 @@ from hydromt.model import Model
 from hydromt.model.components import ModelComponent
 from hydromt.model.steps import hydromt_step
 
-from hydromt_fiat.readers import read_config
-from hydromt_fiat.settings import DEFAULT_SETTINGS, Settings
+from hydromt_fiat.settings import (
+    DEFAULT_GEOM_SETTINGS,
+    DEFAULT_GRID_SETTINGS,
+    DEFAULT_SETTINGS,
+    BaseSettings,
+    GeomSettings,
+    GridSettings,
+    load_settings,
+)
 from hydromt_fiat.settings.file import FileContext
-from hydromt_fiat.utils import SETTINGS
+from hydromt_fiat.utils import GEOM, GRID, SETTINGS
 from hydromt_fiat.writers import write_config
 
 __all__ = ["ConfigComponent"]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
+
+SETTINGS_DICT: dict[str | None, BaseSettings] = {
+    None: BaseSettings,
+    GEOM: GeomSettings,
+    GRID: GridSettings,
+}
 
 
 class ConfigComponent(ModelComponent):
@@ -41,7 +54,7 @@ class ConfigComponent(ModelComponent):
         *,
         filename: Path | str = f"{SETTINGS}.toml",
     ):
-        self._data: Settings | None = None
+        self._data: BaseSettings | GeomSettings | GridSettings | None = None
         self._filename: Path | str = filename
         super().__init__(
             model,
@@ -54,7 +67,7 @@ class ConfigComponent(ModelComponent):
     ) -> None:
         """Initialize the model config."""
         if self._data is None:
-            self._data = Settings()
+            self._data = BaseSettings()
             if not skip_read and self.root.is_reading_mode():
                 self.read()
 
@@ -65,11 +78,11 @@ class ConfigComponent(ModelComponent):
         return FileContext(config_dir=self.dir, output_dir=self.output_dir)
 
     @property
-    def data(self) -> Settings:
+    def data(self) -> BaseSettings | GeomSettings | GridSettings:
         """Model config values."""
         if self._data is None:
             self._initialize()
-        assert isinstance(self._data, Settings)
+        assert isinstance(self._data, BaseSettings)
         return self._data
 
     @property
@@ -97,12 +110,17 @@ class ConfigComponent(ModelComponent):
 
         The value is based on `ConfigComponent.dir`.
         """
-        return self.dir / self.data.output.path
+        return self.dir / self.data.output_dir
 
     @output_dir.setter
     def output_dir(self, value: Path | str):
         """Set the output directory."""
-        self.data.output.path = Path(value)
+        self.data.output_dir = Path(value)
+
+    @property
+    def type(self) -> str | None:
+        """Return the model type based on the settings type."""
+        return self.data.type
 
     ## I/O methods
     @hydromt_step
@@ -134,8 +152,7 @@ class ConfigComponent(ModelComponent):
 
         # Read the data (config)
         logger.info("Reading model configuration")
-        data = read_config(read_path=read_path)
-        self._data = Settings.model_validate(data, context=self.context)
+        self._data = load_settings(filename=read_path)
 
     @hydromt_step
     def write(
@@ -166,7 +183,11 @@ class ConfigComponent(ModelComponent):
 
         # Dump to a file
         logger.info("Writing model configuration")
-        if self.data == DEFAULT_SETTINGS:
+        if (
+            self.data == DEFAULT_SETTINGS
+            or self.data == DEFAULT_GEOM_SETTINGS
+            or self.data == DEFAULT_GRID_SETTINGS
+        ):
             logger.warning(
                 "No alterations were made to the default settings, writing default",
             )
@@ -176,8 +197,7 @@ class ConfigComponent(ModelComponent):
     @hydromt_step
     def clear(self) -> None:
         """Clear the config data."""
-        self._data = None
-        self._initialize(skip_read=True)
+        self._data = SETTINGS_DICT[self.type]()
 
     @hydromt_step
     def update(self, **settings) -> None:
@@ -186,9 +206,9 @@ class ConfigComponent(ModelComponent):
         Parameters
         ----------
         settings : dict[str, Any]
-            Settigns to up update the configuration with.
+            Settings to up update the configuration with.
         """
-        self._data = Settings.model_validate(
-            {**self.data.to_dict(), **settings},
+        self._data = self.data.model_validate(
+            {**self.data.to_dict(context=self.context), **settings},
             context=self.context,
         )

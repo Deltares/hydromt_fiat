@@ -7,8 +7,9 @@ from pydantic import (
 )
 
 from hydromt_fiat.settings.file import InputFileModel
+from hydromt_fiat.settings.variables import Variable
 
-__all__ = ["Hazard"]
+__all__ = ["Hazard", "HazardVariable"]
 
 
 class HazardSettings(BaseModel):
@@ -22,6 +23,25 @@ class HazardSettings(BaseModel):
     )
 
 
+class HazardVariable(Variable):
+    """Settings for a variable (band) of the hazard dataset."""
+
+    rp: float | None = Field(
+        default=None,
+        description="The return period of the hazard band (required for risk).",
+    )
+
+    type: str = Field(
+        default=...,
+        description="The hazard type, e.g. 'water_depth' or 'duration'.",
+    )
+
+    value: float | None = Field(
+        default=None,
+        description="Constant value of a uniform layer that is not in the file.",
+    )
+
+
 class Hazard(InputFileModel):
     """Hazard settings for the FIAT model."""
 
@@ -30,12 +50,13 @@ class Hazard(InputFileModel):
         description="Resampling method when reprojecting.",
     )
 
-    rp: list[float] | None = Field(
-        default=None,
-        description="Return periods for the hazard values.",
-    )
-
     settings: HazardSettings | None = Field(
         default=None,
         description="Settings for reading the hazard data.",
+    )
+
+    variables: list[HazardVariable] = Field(
+        default=...,
+        min_length=1,
+        description="Settings per hazard variable (band).",
     )

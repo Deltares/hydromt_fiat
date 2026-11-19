@@ -2,6 +2,7 @@
 
 import logging
 from abc import abstractmethod
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
@@ -9,7 +10,10 @@ import shapely.geometry as sg
 from hydromt.model import Model
 from hydromt.model.components import SpatialModelComponent
 from hydromt.model.steps import hydromt_step
+from pydantic import BaseModel
 from pyproj.crs import CRS
+
+from hydromt_fiat.utils import NAME
 
 __all__ = ["GeomsComponent"]
 
@@ -20,6 +24,7 @@ class GeomsComponent(SpatialModelComponent):
     """Base class for FIAT geometry based components."""
 
     _build = True
+    _variable = BaseModel
 
     def __init__(
         self,
@@ -28,6 +33,7 @@ class GeomsComponent(SpatialModelComponent):
         region_component: str | None = None,
     ):
         self._data: dict[str, gpd.GeoDataFrame] | None = None
+        self._data_attrs: dict[str, BaseModel] | None = None
         super().__init__(
             model=model,
             region_component=region_component,
@@ -39,9 +45,14 @@ class GeomsComponent(SpatialModelComponent):
         if name not in self.data or not isinstance(
             self.data[name], (gpd.GeoDataFrame, gpd.GeoSeries)
         ):
+            keys = [
+                item
+                for item in self.data.keys()
+                if isinstance(self.data[item], (gpd.GeoDataFrame, gpd.GeoSeries))
+            ]
             raise RuntimeError(
-                f"Chose from already present geometries: {list(self.data.keys())} \
-i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input"
+                f"Choose from already present geometries: {keys} \
+i.e. a GeoDataFrame or run the appropriate `create` method with '{name}' as input"
             )
 
     def _initialize(
@@ -49,6 +60,8 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
         skip_read: bool = False,
     ) -> None:
         """Initialize geoms data structure (dict)."""
+        if self._data_attrs is None:
+            self._data_attrs = {}
         if self._data is None:
             self._data = {}
             if self.root.is_reading_mode() and not skip_read:
@@ -82,6 +95,14 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
         assert self._data is not None
         return self._data
 
+    @property
+    def data_attrs(self) -> dict[str, BaseModel]:
+        """Return the data variables/ settings."""
+        if self._data_attrs is None:
+            self._initialize()
+        assert self._data_attrs is not None
+        return self._data_attrs
+
     ## I/O methods
     @abstractmethod
     def read(self):
@@ -98,6 +119,7 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
     def clear(self) -> None:
         """Clear the geometry data."""
         self._data = None
+        self._data_attrs = None
         self._initialize(skip_read=True)
 
     @hydromt_step
@@ -189,6 +211,7 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
         self,
         data: gpd.GeoDataFrame,
         name: str,
+        replace: bool = True,
     ) -> None:
         """Set data in the geoms component.
 
@@ -198,10 +221,12 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
             New geometry data to add.
         name : str
             Geometry name.
+        replace : bool, optional
+            Whether the data is meant to replace or not. By default True.
         """
         self._initialize()
         assert self._data is not None
-        if name in self._data and id(self._data.get(name)) != id(data):
+        if name in self._data and replace:
             logger.warning(f"Replacing geometry data: {name}")
 
         if "fid" in data.columns:
@@ -209,7 +234,38 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with '{name}' as input
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            data.drop("fid", axis=1, inplace=True)
+            data = data.drop("fid", axis=1)
 
         # Set the data
         self._data[name] = data
+
+    @hydromt_step
+    def set_attrs(
+        self,
+        name: str,
+        attrs: dict[str, Any],
+        update: bool = False,
+    ) -> None:
+        """Set the variable settings for a dataset entry.
+
+        Parameters
+        ----------
+        name : str
+            Name of the dataset entry.
+        content : dict
+            The content of the variable settings, i.e. the settings themselves.
+        update : bool, optional
+            Whether to update the data or not. If update is set to False, the
+            attributes entry is completely replaced. By default False.
+        """
+        self._initialize()
+        assert self._data_attrs is not None
+
+        # Add name to the content
+        attrs[NAME] = name
+
+        # Set the data
+        if not update or name not in self.data_attrs:
+            self.data_attrs[name] = self._variable.model_validate(attrs)
+            return
+        self.data_attrs[name].update(**attrs)

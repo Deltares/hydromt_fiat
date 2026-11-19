@@ -7,7 +7,7 @@ from typing import Any, cast
 import geopandas as gpd
 import pandas as pd
 import xarray as xr
-from hydromt.readers import open_nc, read_toml
+from hydromt.readers import open_nc, open_raster, read_toml
 
 from hydromt_fiat.gis.raster_utils import force_ns
 from hydromt_fiat.utils import OBJECT__ID
@@ -94,6 +94,7 @@ def read_geoms(
 
 def read_grid(
     read_path: Path | str,
+    mask: bool = False,
     **kwargs,
 ) -> xr.Dataset:
     """Read a FIAT related raster file.
@@ -102,6 +103,8 @@ def read_grid(
     ----------
     read_path : Path | str
         The path to the file.
+    mask : bool, optional
+        Whether to mask the nodata values as NaN or not. By default False.
     **kwargs : dict
         Additional keyword arguments to be passed to the `open_dataset` function
         from xarray.
@@ -111,10 +114,31 @@ def read_grid(
     xr.Dataset
         The gridded data in a north south orientation.
     """
-    logger.info(f"Reading grid file at {Path(read_path).as_posix()}")
-    ds = open_nc(
-        read_path,
-        **kwargs,
-    )
+    read_path = Path(read_path)
+    logger.info(f"Reading grid file at {read_path.as_posix()}")
+    _ = kwargs.pop("mask_and_scale", None)
+    # Read according to the extension
+    ext = read_path.suffix
+    match ext:
+        case ".nc":
+            ds = open_nc(
+                read_path,
+                mask_and_scale=mask,
+                **kwargs,
+            )
+        case ".zarr":
+            ds = xr.open_zarr(
+                read_path,
+                mask_and_scale=False,
+                **kwargs,
+            )
+        case ".tif":
+            ds = open_raster(
+                read_path,
+                **kwargs,
+            )
+        case _:
+            raise ValueError(f"Cannot read file with extension: '{ext}'")
+    # Force north south orientation
     ds = force_ns(ds)
     return ds

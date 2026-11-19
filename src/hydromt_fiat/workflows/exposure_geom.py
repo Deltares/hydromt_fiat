@@ -1,15 +1,19 @@
 """Exposure geometry workflows."""
 
 import logging
+from typing import Any
 
 import geopandas as gpd
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
+from hydromt_fiat.settings.exposure import ExposureGeometry
 from hydromt_fiat.utils import (
     CURVE,
+    DEFAULT,
     FN,
+    GEOMETRY,
     IMPACT__SUBTYPE,
     IMPACT__TYPE,
     OBJECT__ID,
@@ -21,6 +25,7 @@ __all__ = [
     "exposure_geoms_add_columns",
     "exposure_geoms_setup",
     "exposure_geoms_link_vulnerability",
+    "infer_exposure_geom_attrs",
 ]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
@@ -39,12 +44,45 @@ def _guess_object_type_columns(
     return col
 
 
+def infer_exposure_geom_attrs(
+    name: str,
+    settings: list[ExposureGeometry] | None = None,
+) -> dict[str, Any]:
+    """Infer exposure geometry data (settings) attributes.
+
+    Parameters
+    ----------
+    name : str
+        The exposure geometry name.
+    settings : list[ExposureGeometry] | None, optional
+        The attributes currently present in the settings file, by default None.
+
+    Returns
+    -------
+    dict[str, Any]
+        The attributes.
+    """
+    attrs = dict(vulnerability=DEFAULT)
+    # Get the corresponding settings entry
+    if settings is None:
+        return attrs
+    entry = [item.variables for item in settings if item.file.stem == name]
+    # If nothing to be done, return
+    if not entry:
+        return attrs
+    # Otherwise set from settings
+    attrs = entry[0].model_dump(exclude_none=True)
+    return attrs
+
+
 def exposure_geoms_setup(
     exposure_data: gpd.GeoDataFrame,
     exposure_link: pd.DataFrame | None = None,
     *,
     exposure_object_type_column: str | None = None,
     exposure_object_type_fill: str | None = None,
+    strip: bool = False,
+    keep: list[str] | None = None,
 ) -> gpd.GeoDataFrame:
     """Prep the raw exposure data for later fuctions/ methods.
 
@@ -99,7 +137,13 @@ defaulting to exposure data object type"
         raise KeyError(
             f"{exposure_object_type_column} not found in the provided linking data"
         )
-    logger.info(f"Column containing the object type: {exposure_object_type_column}")
+    logger.info(f"Column containing the object type: '{exposure_object_type_column}'")
+    # Strip everything away when wanted, except for the object type column
+    # And optional provided columns
+    if strip:
+        exposure_data = exposure_data[
+            [exposure_object_type_column, GEOMETRY] + (keep or [])
+        ]
     # Make sure that there are no duplicated in the linking
     exposure_link = exposure_link.drop_duplicates(
         exposure_object_type_column,
@@ -123,32 +167,32 @@ defaulting to exposure data object type"
     # Store the length of the data
     data_or_size = len(exposure_data)
 
-    # Pre-compute which source values won't survive the inner merge so we can
-    # name them in the warning if any get dropped.
-    mapped_keys = set(exposure_link[exposure_object_type_column].dropna())
-    missing_counts = (
-        exposure_data[exposure_object_type_column]
-        .loc[lambda s: ~s.isin(mapped_keys)]
-        .value_counts(dropna=False)
-    )
-
     # Link the data into a new column
     exposure_data = pd.merge(
         exposure_data,
         exposure_link,
         on=exposure_object_type_column,
-        how="inner",
+        how="left",
+        indicator=True,
         validate="many_to_many",
     )
+    # Missing
+    missing_data = exposure_data[exposure_data["_merge"] != "both"]
+    # Remaining exposure data
+    exposure_data = exposure_data[exposure_data["_merge"] == "both"]
+    exposure_data = exposure_data.drop(columns="_merge")
+    # Remaining size
     data_m_size = len(exposure_data)
 
     # Log a warning when certain features could not be merged
     if data_m_size != data_or_size:
-        breakdown = ", ".join(f"{name!r}: {n}" for name, n in missing_counts.items())
+        missing_counts = missing_data[exposure_object_type_column].value_counts(
+            dropna=False
+        )
+        breakdown = ", ".join(f"{name!r} [{n}]" for name, n in missing_counts.items())
         logger.warning(
             f"{data_or_size - data_m_size} features could not be internally linked, "
-            f"these were removed. Unmapped values in "
-            f"'{exposure_object_type_column}': {breakdown}"
+            f"these were removed. The unmapped types were: {breakdown}"
         )
 
     # Return the data
@@ -200,10 +244,9 @@ def exposure_geoms_link_vulnerability(
     header_list = headers.unique().tolist()
     for header in header_list:
         link = vulnerability[headers == header][[OBJECT__TYPE, CURVE]]
-        link.rename(
+        link = link.rename(
             {OBJECT__TYPE: OBJECT__TYPE, CURVE: f"{FN}_{header}"},
             axis=1,
-            inplace=True,
         )
         # And merge the data
         exposure_data = exposure_data.merge(
@@ -213,10 +256,9 @@ def exposure_geoms_link_vulnerability(
         )
 
     # Remove the features that don't have any linking to the vulnerability
-    exposure_data.dropna(
+    exposure_data = exposure_data.dropna(
         subset=[f"{FN}_{item}" for item in header_list],
         how="all",
-        inplace=True,
     )
 
     # Check the length after vulerability merging
@@ -229,7 +271,7 @@ vulnerability data, these were removed"
 
     # Reset the index as default for object_id
     if OBJECT__ID not in exposure_data.columns:
-        exposure_data.reset_index(names=OBJECT__ID, inplace=True)
+        exposure_data = exposure_data.reset_index(names=OBJECT__ID)
 
     return exposure_data
 

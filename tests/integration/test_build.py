@@ -9,14 +9,14 @@ from hydromt_fiat.utils import (
     EXPOSURE,
     FLOOD_LEVEL,
     FN,
-    FN_CURVE,
+    FN__CURVE,
     GEOM,
     GRID,
     HAZARD,
     MAX,
     REGION,
     SETTINGS,
-    VULNERABILITY,
+    WATER__DEPTH,
 )
 
 
@@ -36,20 +36,26 @@ def test_build_model_geom(
     )
 
     # Add model type and region
-    model.set_config(modeltype=GEOM, method=FLOOD_LEVEL)
+    model.set_config(modeltype=GEOM)
     model.set_region(build_region_small)
+    model.set_type(GEOM)
 
     # Setup the vulnerability
     model.vulnerability.create(
-        "jrc_curves",
-        "jrc_curves_link",
+        vulnerability_fname="jrc_curves",
         unit="m",
+        method=FLOOD_LEVEL,
+        hazard_type="water_level",
+        vulnerability_link_fname="jrc_curves_link",
         continent="europe",
     )
 
     # Add an hazard layer
     model.hazard.create(
-        "flood_event",
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
     )
 
     # Setup the exposure geometry data
@@ -62,10 +68,12 @@ def test_build_model_geom(
     model.exposure_geoms.create_link(
         exposure_name="buildings",
         impact_type=DAMAGE,
+        vulnerability_name="jrc_curves",
     )
-    model.exposure_geoms.create_max_damage(
+    model.exposure_geoms.create_max_value(
         exposure_name="buildings",
         impact_type=DAMAGE,
+        vulnerability_name="jrc_curves",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
     )
@@ -78,11 +86,13 @@ def test_build_model_geom(
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.data.model.type == GEOM
-    assert len(model.vulnerability.data.curves) == 1001
-    assert "rs1" in model.vulnerability.data.curves.columns
+    assert model.config.data.type == GEOM
+    assert len(model.vulnerability.data.curves.jrc_curves) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_jrc_curves
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
+    assert model.vulnerability.data_attrs["jrc_curves"].method == FLOOD_LEVEL
+    assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
     assert "buildings" in model.exposure_geoms.data  # Kind of obvious
     assert len(model.exposure_geoms.data["buildings"]) == 12
     assert f"{FN}_{DAMAGE}_structure" in model.exposure_geoms.data["buildings"].columns
@@ -94,7 +104,7 @@ def test_build_model_geom(
     # Assert the written output (paths)
     assert Path(tmp_path, f"{REGION}.geojson").is_file()
     assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, EXPOSURE, "buildings.fgb").is_file()
 
@@ -115,38 +125,55 @@ def test_build_model_grid(
     )
 
     # Add model type and region
-    model.set_config(modeltype=GRID, method=FLOOD_LEVEL)
+    model.set_config(modeltype=GRID)
     model.set_region(build_region_small)
+    model.set_type(GRID)
 
     # Setup the vulnerability
     model.vulnerability.create(
-        "jrc_curves",
-        "jrc_curves_link",
+        vulnerability_fname="jrc_curves",
         unit="m",
+        method=FLOOD_LEVEL,
+        hazard_type="water_level",
+        vulnerability_link_fname="jrc_curves_link",
         continent="europe",
     )
 
     # Add an hazard layer
     model.hazard.create(
-        "flood_event",
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
     )
 
     # Setup the exposure grid data
     model.exposure_grid.create(
-        exposure_fnames=["commercial_structure", "commercial_content"],
+        exposure_fname="commercial_structure",
+        vulnerability_name="jrc_curves",
         exposure_link_fname="exposure_grid_link",
+        name="commercial_structure",
+    )
+    model.exposure_grid.create(
+        exposure_fname="commercial_content",
+        vulnerability_name="jrc_curves",
+        exposure_link_fname="exposure_grid_link",
+        name="commercial_content",
     )
 
     # Assert the state
     assert model.region is not None  # Can't build otherwise but still
-    assert model.config.data.model.type == GRID
-    assert len(model.vulnerability.data.curves) == 1001
-    assert "rs1" in model.vulnerability.data.curves.columns
+    assert model.config.data.type == GRID
+    assert len(model.vulnerability.data.curves.jrc_curves) == 1001
+    assert "rs1" in model.vulnerability.data.curves.curve_jrc_curves
     assert "flood_event" in model.hazard.data.data_vars
     assert model.hazard.data["flood_event"].shape == (7, 6)
     assert len(model.exposure_grid.data.data_vars) == 2
     assert "commercial_content" in model.exposure_grid.data.data_vars
-    assert model.exposure_grid.data["commercial_content"].attrs[FN_CURVE] == "cm1"
+    assert model.exposure_grid.data["commercial_content"].attrs[FN__CURVE] == "cm1"
+    assert model.vulnerability.data_attrs["jrc_curves"].method == FLOOD_LEVEL
+    assert model.hazard.data_attrs["flood_event"].type == WATER__DEPTH
+    assert model.exposure_grid.data_attrs["commercial_content"].fn_curve == "cm1"
 
     # Write the model
     model.write()
@@ -154,6 +181,10 @@ def test_build_model_grid(
     # Assert the written output (paths)
     assert Path(tmp_path, f"{REGION}.geojson").is_file()
     assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
-    assert Path(tmp_path, VULNERABILITY, f"{CURVES}.csv").is_file()
+    assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
     assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
+    # Assert the variables in the settings
+    assert len(model.config.data.vulnerability.variables) == 1
+    assert len(model.config.data.hazard.variables) == 1
+    assert len(model.config.data.exposure.variables) == 2

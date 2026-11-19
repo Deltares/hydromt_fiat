@@ -10,7 +10,7 @@ from hydromt.readers import read_toml
 from pytest_mock import MockerFixture
 
 from hydromt_fiat.components import ConfigComponent
-from hydromt_fiat.settings import Settings
+from hydromt_fiat.settings import BaseSettings, GeomSettings
 from hydromt_fiat.utils import (
     GEOM,
     OUTPUT,
@@ -18,22 +18,22 @@ from hydromt_fiat.utils import (
 )
 
 
-def test_config_component_empty(mock_model: MagicMock):
+def test_config_component_empty(mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
 
     # Assert that the internal data is None
     assert component._data is None
 
     # When asking for data property, it should return a dict
-    assert isinstance(component.data, Settings)
-    assert isinstance(component._data, Settings)  # Same for internal
+    assert isinstance(component.data, BaseSettings)
+    assert isinstance(component._data, BaseSettings)  # Same for internal
     assert component.data.hazard is None
 
 
-def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
+def test_config_component_props(tmp_path: Path, mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
 
     # Assert it's properties
     assert component.dir == tmp_path
@@ -46,62 +46,63 @@ def test_config_component_props(tmp_path: Path, mock_model: MagicMock):
     assert component.output_dir == Path(tmp_path, "output", "foo")
 
 
-def test_config_component_clear(
-    mock_model: MagicMock,
-    config_dummy: dict,
-):
+def test_config_component_clear(mock_model_geom: MagicMock):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
 
     # Set data like a dummy
-    component.data.output.path = Path("foo")
+    component.data.output_dir = Path("foo")
     # Assert the current state
-    assert component.data.output.path == Path("foo")
+    assert component.data.output_dir == Path("foo")
 
     # Call the clear method
     component.clear()
     # Assert the state after
-    assert component.data.output.path == Path(OUTPUT)
+    assert component.data.output_dir == Path(OUTPUT)
 
 
 def test_config_component_read(
     mock_model: MagicMock,
     model_data_clipped_path: Path,
 ):
+    # Setup the model
+    model = mock_model("geom")
     # Set it to read mode
-    type(mock_model).root = PropertyMock(
+    type(model).root = PropertyMock(
         side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
     )
 
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(model)
 
     # Assert its data currently none
     assert component._data is None
 
     # Read the data
-    component.read()
+    component.read("settings_geom.toml")
 
     # Assert the read data
-    assert isinstance(component.data, Settings)
-    assert component.data.model.type == GEOM
-    assert component.data.exposure.geom
+    assert isinstance(component.data, GeomSettings)
+    assert component.data.type == GEOM
+    assert component.data.exposure is not None
 
 
 def test_config_component_read_none(
     mocker: MockerFixture,
     mock_model: MagicMock,
 ):
+    # Setup the model
+    model = mock_model("geom")
     # Set it to read mode
     mocker.patch.object(
-        type(mock_model.root),
+        type(model.root),
         "mode",
         new_callable=PropertyMock,
         return_value=ModelMode("r"),
     )
 
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(model)
 
     # Assert its data currently none
     assert component._data is None
@@ -110,21 +111,20 @@ def test_config_component_read_none(
     component.read()
 
     # Assert the read data
-    assert isinstance(component.data, Settings)
+    assert isinstance(component.data, BaseSettings)
     assert component.data.hazard is None
-    assert component.data.exposure.geom is None
 
 
 def test_config_component_write(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
     config_dummy: dict,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
 
     # Set data like a dummy
-    component._data = Settings.model_validate(config_dummy)
+    component._data = GeomSettings.model_validate(config_dummy)
 
     # Write the data
     component.write()
@@ -139,12 +139,10 @@ def test_config_component_write(
 
 def test_config_component_write_sig(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
-    # Set data like a dummy
-    component._data = Settings()
+    component = ConfigComponent(mock_model_geom)
 
     # Write to an alternative path
     component.write(filename="settings/tmp.toml")
@@ -157,11 +155,11 @@ def test_config_component_write_sig(
 def test_config_component_write_warnings(
     caplog: pytest.LogCaptureFixture,
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
 ):
     caplog.set_level(logging.WARNING)
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
 
     # Write the data
     component.write()
@@ -174,17 +172,19 @@ def test_config_component_write_warnings(
 
 def test_config_component_update(
     tmp_path: Path,
-    mock_model: MagicMock,
+    mock_model_geom: MagicMock,
     config_dummy: dict[str, Any],
 ):
     # Setup the component
-    component = ConfigComponent(mock_model)
+    component = ConfigComponent(mock_model_geom)
     # Assert current state
-    assert component.data.model.threads == 1
+    assert component.data.threads == 1
     assert component.data.hazard is None
 
+    # Pop the model type entry
+    config_dummy.pop("type", None)
     # Call update method
     component.update(**config_dummy)
     # Assert the state after
-    assert component.data.model.threads == 4
+    assert component.data.threads == 4
     assert component.data.hazard.file == Path(tmp_path, "foo.nc")

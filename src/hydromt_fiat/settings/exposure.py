@@ -7,9 +7,12 @@ from pydantic import (
     field_validator,
 )
 
+from hydromt_fiat.settings.base import BaseModelF
 from hydromt_fiat.settings.file import InputFileModel
+from hydromt_fiat.settings.variables import Variable
+from hydromt_fiat.utils import IMPACT__TYPE
 
-__all__ = ["Exposure", "ExposureGeometry", "ExposureGrid"]
+__all__ = ["ExposureGeometry", "ExposureGrid", "ExposureGridVariable"]
 
 
 class ExposureGeometrySettings(BaseModel):
@@ -23,8 +26,8 @@ class ExposureGeometrySettings(BaseModel):
     )
 
 
-class ExposureGeometry(InputFileModel):
-    """Exposure geometry settings for the FIAT model."""
+class ExposureGeometryVariable(BaseModelF):
+    """Exposure geometry file variables."""
 
     area_method: str = Field(
         default="centroid",
@@ -37,15 +40,39 @@ based on the exposure geometry.",
         description="The impact types to be run for this exposure data.",
     )
 
-    settings: ExposureGeometrySettings | None = Field(
-        default=None,
-        description="Settings for reading the exposure geometry data.",
+    vulnerability: str = Field(
+        default=...,
+        description="The vulnerability dataset (variable) to use from the \
+vulnerability netcdf dataset.",
     )
 
     zonal_method: str = Field(
         default="mean",
         description="The zonal statistics method. Only really applicable \
 if `area_method` is set to 'area'.",
+    )
+
+    # Validator(s)
+    @field_validator(IMPACT__TYPE, mode="before")
+    @classmethod
+    def ensure_impact_type_list(cls, value: str | list[str]):
+        """Ensure impact type list typing."""
+        if not isinstance(value, list):
+            value = [value]
+        return value
+
+
+class ExposureGeometry(InputFileModel):
+    """Exposure geometry settings for the FIAT model."""
+
+    settings: ExposureGeometrySettings | None = Field(
+        default=None,
+        description="Settings for reading the exposure geometry data.",
+    )
+
+    variables: ExposureGeometryVariable = Field(
+        default=...,
+        description="Settings per exposure file.",
     )
 
 
@@ -57,6 +84,36 @@ class ExposureGridSettings(BaseModel):
     crs: str | None = Field(
         default=None,
         description="Spatial reference system of the file.",
+    )
+
+
+class ExposureGridVariable(Variable):
+    """Settings for a variable (layer) of the exposure grid dataset."""
+
+    fn_curve: str | int | None = Field(
+        default=None,
+        description="The curve id looked up in the linked vulnerability dataset(s).",
+    )
+
+    type: str = Field(
+        default=...,
+        description="The exposure type: 'default' or 'categorized' for a layer, \
+'values' for a category-value variable.",
+    )
+
+    value: float | None = Field(
+        default=None,
+        description="Constant value of a uniform layer that is not in the file.",
+    )
+
+    values: list[str] | None = Field(
+        default=None,
+        description="The category-value variables of a categorized layer.",
+    )
+
+    vulnerability: str | list[str] | None = Field(
+        default=None,
+        description="The vulnerability dataset(s) linked to this variable.",
     )
 
 
@@ -73,29 +130,8 @@ class ExposureGrid(InputFileModel):
         description="Settings for reading the exposure grid data.",
     )
 
-
-class Exposure(BaseModel):
-    """Exposure settings for the FIAT model."""
-
-    geom: list[ExposureGeometry] | None = Field(
-        default=None,
-        description="Exposure geometry settings for the FIAT model.",
+    variables: list[ExposureGridVariable] = Field(
+        default=...,
+        min_length=1,
+        description="Settings per exposure variable (layer).",
     )
-
-    grid: ExposureGrid | None = Field(
-        default=None,
-        description="Exposure grid settings for the FIAT model.",
-    )
-
-    @field_validator("geom", mode="before")
-    @classmethod
-    def ensure_list(cls, value):
-        """Ensure list typing."""
-        if not isinstance(value, list):
-            value = [value]
-        return value
-
-    @property
-    def is_empty(self) -> bool:
-        """Return whether this entry is empty."""
-        return all(value is None for value in self.__dict__.values())

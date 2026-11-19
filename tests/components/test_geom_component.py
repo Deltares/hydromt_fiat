@@ -5,9 +5,12 @@ from unittest.mock import MagicMock
 import geopandas as gpd
 import numpy as np
 import pytest
+from pydantic import ValidationError
 from pyproj.crs import CRS
+from pytest_mock import MockerFixture
 
 from hydromt_fiat.components.geom import GeomsComponent
+from hydromt_fiat.settings.variables import Variable
 
 # Overwrite the abstractmethods to be able to initialize it
 GeomsComponent.__abstractmethods__ = set()
@@ -17,12 +20,23 @@ def test_geom_component_empty(
     mock_model: MagicMock,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Assert the current state
     assert component._data is None
     assert isinstance(component.data, dict)  # After initializing
     assert len(component.data) == 0
+
+
+def test_geom_component_data_attrs(
+    mock_model: MagicMock,
+):
+    # Set up the component
+    component = GeomsComponent(model=mock_model("geom"))
+
+    # Assert the current state
+    assert component._data_attrs is None
+    assert component.data_attrs == {}  # After initializing
 
 
 def test_geom_component__assert_entry(
@@ -50,8 +64,8 @@ def test_geom_component__assert_entry_errors(
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'baz' as input"
         ),
     ):
         component._assert_entry(name="baz")
@@ -60,29 +74,34 @@ i.e. a GeoDataFrame or run the appropriate `setup` method with 'baz' as input"
     with pytest.raises(
         RuntimeError,
         match=re.escape(
-            "Chose from already present geometries: ['foo', 'bar'] \
-i.e. a GeoDataFrame or run the appropriate `setup` method with 'bar' as input"
+            "Choose from already present geometries: ['foo'] \
+i.e. a GeoDataFrame or run the appropriate `create` method with 'bar' as input"
         ),
     ):
         component._assert_entry(name="bar")
 
 
 def test_geom_component_clear(
+    mocker: MockerFixture,
     mock_model: MagicMock,
     exposure_vector: gpd.GeoDataFrame,
 ):
-    # Set up the component
-    component = GeomsComponent(model=mock_model)
+    # Set up the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
+    component = GeomsComponent(model=mock_model("geom"))
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector}
+    component.set_attrs("foo", {})
     # Assert the current state, i.e. amount of rows
     assert len(component.data) == 1
+    assert len(component.data_attrs) == 1
 
     # Call the clear method
     component.clear()
     # Assert the state after
     assert len(component.data) == 0
+    assert component.data_attrs == {}
 
 
 def test_geom_component_clip(
@@ -135,7 +154,7 @@ def test_geom_component_clip_no_data(
     build_region_small: gpd.GeoDataFrame,
 ):
     # Set up the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     # Assert the current state
     assert component._data is None
 
@@ -238,7 +257,7 @@ def test_geom_component_set(
 ):
     caplog.set_level(logging.INFO)
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert len(component.data) == 0  # No data yet
 
     # Add a geometry dataset
@@ -249,7 +268,7 @@ def test_geom_component_set(
     assert "ds1" in component.data
 
     # Overwrite with the same dataset, should produce no warning
-    component.set(data=build_region, name="ds1")
+    component.set(data=build_region, name="ds1", replace=False)
     assert "Replacing geometry data: ds1" not in caplog.text
 
     # Overwrite, but with a copy, should produce a warning
@@ -263,7 +282,7 @@ def test_geom_component_region(
     mock_model: MagicMock,
 ):
     # Setup the component
-    component = GeomsComponent(model=mock_model)
+    component = GeomsComponent(model=mock_model("geom"))
     assert component.region is None
 
     # Set a second dataset
@@ -286,3 +305,49 @@ def test_geom_component_region(
         [4.355, 51.966, 4.408, 52.045],
         decimal=3,
     )
+
+
+def test_geom_component_set_attrs(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+):
+    # Setup the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
+    component = GeomsComponent(model=mock_model("geom"))
+    assert len(component.data_attrs) == 0  # No attributes yet
+
+    # Set the attributes of a dataset
+    component.set_attrs("ds1", {})
+
+    # Assert the state, the name is added to the attributes
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"].name == "ds1"
+
+    # Set the attributes once more, this replaces the entry
+    previous = component.data_attrs["ds1"]
+    component.set_attrs("ds1", {})
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"] is not previous
+
+    # Update the entry, this keeps the same entry
+    previous = component.data_attrs["ds1"]
+    component.set_attrs("ds1", {}, update=True)
+
+    # Assert the state
+    assert len(component.data_attrs) == 1
+    assert component.data_attrs["ds1"] is previous
+
+
+def test_geom_component_set_attrs_errors(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+):
+    # Setup the component, with a concrete variable settings class
+    mocker.patch.object(GeomsComponent, "_variable", Variable)
+    component = GeomsComponent(model=mock_model("geom"))
+
+    # Unknown settings are not allowed
+    with pytest.raises(ValidationError):
+        component.set_attrs("ds1", {"bar": 1})
