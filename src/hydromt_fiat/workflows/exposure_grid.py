@@ -1,6 +1,7 @@
 """Exposure workflows."""
 
 import logging
+from typing import Any
 
 import dask.array as dar
 import geopandas as gpd
@@ -8,7 +9,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from hydromt_fiat.gis.raster import merge_rasters, rasterize
+from hydromt_fiat.gis.raster import rasterize
+from hydromt_fiat.gis.raster_utils import check_spatial
+from hydromt_fiat.settings.exposure import ExposureGrid
 from hydromt_fiat.utils import (
     CATEGORIES,
     CATEGORIZED,
@@ -21,6 +24,7 @@ from hydromt_fiat.utils import (
     OBJECT__TYPE,
     TYPE,
     VALUE,
+    VALUES,
     standard_unit,
 )
 
@@ -29,23 +33,71 @@ __all__ = [
     "exposure_grid_category_values",
     "exposure_grid_default_setup",
     "exposure_grid_from_geometries",
+    "infer_exposure_grid_attrs",
 ]
 
 logger = logging.getLogger(f"hydromt.{__name__}")
 
 
+def infer_exposure_grid_attrs(
+    data: xr.Dataset,
+    settings: ExposureGrid | None = None,
+) -> dict[str, Any]:
+    """Infer exposure grid data (settings) attributes.
+
+    Parameters
+    ----------
+    data : xr.Dataset
+        The exposure grid data.
+    settings : ExposureGrid | None, optional
+        The attributes currently present in the settings file, by default None.
+
+    Returns
+    -------
+    dict[str, Any]
+        The attributes.
+    """
+    attrs = {}
+    # First really set a default inferred guess
+    for var in data.data_vars:
+        type = DEFAULT
+        if not check_spatial(data[var]):
+            type = VALUES
+        elif f"{var}_cat" in data.dims:
+            type = CATEGORIZED
+        fn_curve = None
+        if type == DEFAULT:
+            fn_curve = DEFAULT
+        vulnerability = None
+        if type != CATEGORIZED:
+            vulnerability = DEFAULT
+        # Update the attributes
+        attrs[var] = dict(type=type, fn_curve=fn_curve, vulnerability=vulnerability)
+
+    # If nothing to be done, return
+    if settings is None:
+        return attrs
+    for var in settings.variables:
+        # There is not data to support it, continue
+        if var.name not in data.data_vars and var.value is None:
+            continue
+        attrs[var.name] = var.model_dump(exclude_none=True)
+    return attrs
+
+
 def exposure_grid_default_setup(
-    exposure_data: dict[str, xr.DataArray],
+    exposure_data: xr.DataArray,
     vulnerability: pd.DataFrame,
+    name: str,
     grid_like: xr.Dataset | None = None,
     exposure_link: pd.DataFrame | None = None,
-) -> xr.Dataset:
+) -> tuple[xr.Dataset, dict[str, Any]]:
     """Process and transform exposure grid data.
 
     Parameters
     ----------
-    exposure_data : dict[str, xr.DataArray]
-        Dictionary containing name of exposure file and associated data
+    exposure_data : xr.DataArray
+        The exposure data.
     vulnerability : pd.DataFrame
         A Table containing valid vulnerability curve id's an their
         presumed link to the exposure.
@@ -59,10 +111,10 @@ def exposure_grid_default_setup(
 
     Returns
     -------
-    xr.Dataset
-        Transformed and unified exposure grid.
+    tuple[xr.DataArray, dict[str, Any]]
+        Transformed and unified exposure grid and it's data attributes.
     """
-    exposure_dataarrays = []
+    attrs = {}
 
     # Log the fact that there is not linking table
     if exposure_link is None:
@@ -71,7 +123,7 @@ def exposure_grid_default_setup(
 defaulting to the name of the exposure layer"
         )
         # Construct a dummy dataframe from the names
-        entries = list(exposure_data.keys())
+        entries = [name]
         exposure_link = pd.DataFrame(
             data={
                 EXPOSURE__TYPE: entries,
@@ -95,39 +147,34 @@ defaulting to the name of the exposure layer"
             sub.notna() & ~(sub == ""), headers + "_" + sub.astype(str)
         )
 
-    # Loop through the the supplied data arrays
-    for da_name, da in exposure_data.items():
-        if da_name not in exposure_link[EXPOSURE__TYPE].values:
-            link_name = da_name
-        else:
-            link_name = exposure_link.loc[
-                exposure_link[EXPOSURE__TYPE] == da_name, OBJECT__TYPE
-            ].values[0]
+    # Get the link name
+    if name not in exposure_link[EXPOSURE__TYPE].values:
+        link_name = name
+    else:
+        link_name = exposure_link.loc[
+            exposure_link[EXPOSURE__TYPE] == name, OBJECT__TYPE
+        ].values[0]
 
-        # Check if in vulnerability curves link table
-        link = vulnerability[headers == link_name]
-        if link.empty:
-            logger.warning(f"Couldn't link '{da_name}' to vulnerability, skipping...")
-            continue
+    # Check if in vulnerability curves link table
+    link = vulnerability[headers == link_name]
+    if link.empty:
+        raise AttributeError(f"Couldn't link '{name}' to vulnerability, skipping...")
 
-        # Get the vulnerability curve ID
-        fn_curve = link[CURVE].values[0]
+    # Get the vulnerability curve ID
+    fn_curve = link[CURVE].values[0]
+    # Process the arrays, .e.g make gdal compliant
+    attrs = {FN__CURVE: fn_curve, TYPE: DEFAULT}
+    exposure_data.attrs.update(attrs)  # Legacy
+    # Set the name of the exposure data
+    exposure_data.name = name
+    # Mask the data to -9999, seems like a good default value
+    exposure_data = exposure_data.raster.mask_nodata(-9999)
 
-        # Process the arrays, .e.g make gdal compliant
-        da.attrs.update(
-            {
-                FN__CURVE: fn_curve,
-                TYPE: DEFAULT,
-            },
-        )
-        # Mask the data to -9999, seems like a good default value
-        da = da.raster.mask_nodata(-9999)
-        exposure_dataarrays.append(da)
+    # Reproject if a grid_like is defined
+    if grid_like is not None:
+        exposure_data = exposure_data.raster.reproject_like(other=grid_like)
 
-    if len(exposure_dataarrays) == 0:
-        return xr.Dataset()
-
-    return merge_rasters(dataarrays=exposure_dataarrays, grid_like=grid_like)
+    return exposure_data, attrs
 
 
 def exposure_grid_categorized_setup(
@@ -175,7 +222,7 @@ def exposure_grid_categorized_setup(
     # Get the unique numbers
     unique = dar.unique(exposure_data.data).compute()
     unique.sort()
-    unique = unique[1:]
+    unique = unique[unique != 0]
 
     # Inform the user that certain types are not available, both ways
     disc = np.setdiff1d(unique, curves).tolist()
@@ -190,14 +237,18 @@ def exposure_grid_categorized_setup(
         },
     )
 
-    # Return the merged data (symbolic, but can still reproject)
-    return merge_rasters(dataarrays=[exposure_data], grid_like=grid_like)
+    # Reproject if a grid_like is defined
+    if grid_like is not None:
+        exposure_data = exposure_data.raster.reproject_like(other=grid_like)
+
+    return exposure_data
 
 
 def exposure_grid_category_values(
     exposure_data: xr.DataArray,
     table: pd.DataFrame | None = None,
     columns: list[str] | str | None = None,
+    name_prefix: str | None = None,
     index_name: str = INDEX,
     default: float | int = 100,
     unit: str = "m**2",
@@ -214,6 +265,11 @@ def exposure_grid_category_values(
     columns : list[str] | str, optional
         List of columns to select from the provided table. If not provided, all columns
         from the provided table are used. By Default None.
+    name_prefix : str, optional
+        Extra naming for the resulting data variables in order to be able to use
+        datasets with same columns headers. If not provided, the resulting name of the
+        data variable will be the name of the exposure data plus the column name.
+        By default None.
     index_name : str, optional
         The name of the index column in the table data, if the table data is provided.
         By default 'index'.
@@ -248,6 +304,9 @@ def exposure_grid_category_values(
         coords={coord_name: range(table_size)},
     )
     ds[coord_name] = ds[coord_name].astype(exposure_data.dtype)
+    # Set the name
+    if name_prefix is not None:
+        name += f"_{name_prefix}"
 
     # If no table provided set a default variables
     if table is None:
@@ -262,8 +321,8 @@ def exposure_grid_category_values(
         return ds
 
     # Otherwise move through the table
-    table.drop_duplicates(subset=index_name, inplace=True)
-    table.set_index(index_name, inplace=True)
+    table = table.drop_duplicates(subset=index_name)
+    table = table.set_index(index_name)
     table = table[table.index < table_size]
     # Set a warning for those values falling that do not have a value associated with it
     disc = np.setdiff1d(cat, table.index).tolist()
@@ -306,8 +365,6 @@ def exposure_grid_from_geometries(
     vulnerability: pd.DataFrame,
     ds_like: xr.DataArray | xr.Dataset,
     *,
-    mult: float | int = 1,
-    add: float | int = 0,
     method: str = "add",
 ) -> xr.DataArray:
     """Create exposure grid data from geometry data.
@@ -326,10 +383,6 @@ def exposure_grid_from_geometries(
         exposure data.
     ds_like : xr.DataArray | xr.Dataset
         The raster definition.
-    mult : float | int, optional
-        The multiplication factor put on top of the burned in values, by default 1.
-    add : float | int, optional
-        The value added on top of the burned in value, by default 0.
     method : str, optional
         The method of which to merge values when rasterizing values into the same
         cell, choose between 'add' and 'replace'. By default 'add'.
@@ -346,19 +399,14 @@ def exposure_grid_from_geometries(
         method=method,
     )
     da.name = VALUE
-    # Update values
-    da = (da * mult) + add
 
     # Call the method to setup the data
-    ds = exposure_grid_default_setup(
-        exposure_data={VALUE: da},
+    da, attrs = exposure_grid_default_setup(
+        exposure_data=da,
         vulnerability=vulnerability,
         exposure_link=pd.DataFrame({EXPOSURE__TYPE: [VALUE], OBJECT__TYPE: [curve]}),
+        name=VALUE,
     )
 
-    # Quick check on the data
-    if VALUE not in ds.data_vars:
-        raise RuntimeError(f"Could not resolve vulnerability curve: {curve}")
-
     # Return the array
-    return ds[VALUE]
+    return da, attrs

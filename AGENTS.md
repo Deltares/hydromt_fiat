@@ -64,7 +64,7 @@ Components on `FIATModel` (attribute -> class -> data type):
 | `exposure_geoms` | `ExposureGeomsComponent` | dict of named `GeoDataFrame`s (`.fgb`) |
 | `exposure_grid` | `ExposureGridComponent` | `xr.Dataset` |
 | `hazard` | `HazardComponent` | `xr.Dataset` (`hazard.nc`) |
-| `vulnerability` | `VulnerabilityComponent` | `VulnerabilityData(curves, identifiers)` DataFrames (`vulnerability/curves.csv`) |
+| `vulnerability` | `VulnerabilityComponent` | `VulnerabilityData(curves, identifiers)` `xr.Dataset` (`curves.nc`) |
 | `output_geoms`, `output_grid` | `OutputGeomsComponent`, `OutputGridComponent` | FIAT results; `_build = False`, read via `model.read_output()` |
 
 Model type matters: geom-only components return early (`_assert_model_type(GEOM, error=False)`)
@@ -114,7 +114,7 @@ model.write()
 | Exposure (geom) | Vector `.fgb` (FlatGeobuf); key columns such as `object_id`, `object_type`, `fn_damage_*`, `max_damage_*`, `ref`, `method`, `elevation` | `exposure/{name}.fgb` |
 | Exposure (grid) | NetCDF via xarray | `exposure/spatial.nc` |
 | Hazard | NetCDF `xr.Dataset` (events or return periods) | `hazard.nc` |
-| Vulnerability | CSV curves table + identifiers (link) table | `vulnerability/curves.csv` |
+| Vulnerability | | NetCDF via xarray + identifiers (link) table | `curves.nc` |
 | Region | GeoJSON | `region.geojson` |
 | Settings | TOML (`tomlkit`), validated by pydantic | `settings.toml` |
 | OSM data | Custom `OSMDriver` (osmnx) | `drivers/osm_driver.py` |

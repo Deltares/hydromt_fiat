@@ -19,14 +19,18 @@ from hydromt_fiat.readers import read_geoms
 from hydromt_fiat.settings.exposure import (
     ExposureGeometry,
     ExposureGeometrySettings,
+    ExposureGeometryVariable,
 )
 from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     COST__TYPE,
+    DEFAULT,
     EXPOSURE,
     GEOM,
+    IMPACT__TYPE,
     OBJECT__TYPE,
     VALUE,
+    VULNERABILITY,
 )
 from hydromt_fiat.writers import write_geoms
 
@@ -50,6 +54,8 @@ class ExposureGeomsComponent(GeomsComponent):
         region. If None, the region will be set to the union of all geometries in
         the data dictionary. By default None.
     """
+
+    _variable = ExposureGeometryVariable
 
     def __init__(
         self,
@@ -105,11 +111,20 @@ class ExposureGeomsComponent(GeomsComponent):
         for read_path in files:
             if not read_path.is_file():
                 continue
-            logger.info(f"Reading '{read_path.stem}' exposure geometry")
+            name = read_path.stem
+            logger.info(f"Reading '{name}' exposure geometry")
             # Read the data
             data = read_geoms(read_path=read_path, **kwargs)
             # Set the data
-            self.set(data=data, name=read_path.stem)
+            self.set(data=data, name=name)
+            # Infer attibutes and set those
+            self.set_attrs(
+                name,
+                workflows.infer_exposure_geom_attrs(
+                    name,
+                    self.model.config.data.exposure,
+                ),
+            )
 
     @hydromt_step
     def write(
@@ -162,11 +177,8 @@ class ExposureGeomsComponent(GeomsComponent):
                 continue
 
             # Create the outgoing file path
-            write_path = Path(
-                self.root.path,
-                filename.format(name=name),
-            )
-            entry = ExposureGeometry(file=write_path)
+            write_path = Path(self.root.path, filename.format(name=name))
+            entry = ExposureGeometry(file=write_path, variables=self.data_attrs[name])
             # Due to header overloading, this is not solved properly in
             # the config component
             if gdf.crs is not None:
@@ -295,8 +307,8 @@ class ExposureGeomsComponent(GeomsComponent):
     def create_link(
         self,
         exposure_name: str,
-        *,
-        impact_type: str | list[str] = "damage",
+        impact_type: str | list[str],
+        vulnerability_name: str,
     ) -> None:
         """Link the exposure geometry data to the vulnerability data.
 
@@ -316,7 +328,11 @@ class ExposureGeomsComponent(GeomsComponent):
         impact_type : str | list[str], optional
             The type of impact to link to the exposure data, which should be present
             in the vulnerability identifiers table. Can either be a single string or
-            a list of strings. By default 'damage'.
+            a list of strings.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables.
         """
         # Check for data
         self.model._assert_model_type(GEOM)
@@ -324,26 +340,30 @@ class ExposureGeomsComponent(GeomsComponent):
         exposure_data = self.data[exposure_name]
 
         # Check for vulnerability
-        vulnerability = self.model.vulnerability.data
-        if any(item.empty for item in vulnerability):
-            # TODO Replace with custom error class
-            raise RuntimeError("Run `vulnerability.setup` before this method")
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
 
         # Call the workflow function to link the data
         exposure_vector = workflows.exposure_geoms_link_vulnerability(
             exposure_data=exposure_data,
-            vulnerability=vulnerability.identifiers,
+            vulnerability=vulnerability,
             impact_type=impact_type,
         )
 
         # Set the data in the component
-        self.set(exposure_vector, name=exposure_name)
+        self.set(exposure_vector, name=exposure_name, replace=False)
+        self.set_attrs(
+            exposure_name,
+            {IMPACT__TYPE: impact_type, VULNERABILITY: vulnerability_name},
+            update=True,
+        )
 
     @hydromt_step
     def create_max_value(
         self,
         exposure_name: str,
         impact_type: str,
+        vulnerability_name: str,
+        *,
         exposure_cost_table_fname: Path | str | None = None,
         exposure_cost_table: dict[str, Any] | pd.DataFrame | None = None,
         exposure_cost_link_fname: Path | str | None = None,
@@ -367,13 +387,24 @@ class ExposureGeomsComponent(GeomsComponent):
             The name of the existing dataset.
         impact_type : str
             Type of impact corresponding with the vulnerability data, e.g. 'damage'.
+        vulnerability_name : str, optional
+            The name of the vulnerability dataset. The names of the available datasets
+            are found in the :py:meth:`~VulnerabilityComponent.data.curves`
+            data variables.
         exposure_cost_table_fname : Path | str
             The name of/ path to the mapping of the costs per subtype of the
             exposure type, e.g. 'residential_structure' or 'residential_content'.
+        exposure_cost_table : dict[str, Any] | pd.DataFrame, optional
+            The same type of data provided via `exposure_cost_table_fname`, but
+            directly set via a dictionary or a Pandas DataFrame. By default None.
         exposure_cost_link_fname : Path | str, optional
             A linking table to like the present object type with the identifiers
             defined in the cost table. If None, it is assumed the present object type
             matches the identifiers in the cost table. By default None.
+        per_unit : str, optional
+            Whether or not the value provided in the cost table are per unit length or
+            per unit area. Therefore, if True, the values are multiplied by either
+            the length or area of the features. By default True.
         read_table_kwargs : dict, optional
             Optional keyword arguments for reading the `exposure_cost_table_fname` data.
             These arguments are passed to the HydroMT
@@ -391,6 +422,12 @@ class ExposureGeomsComponent(GeomsComponent):
         logger.info(f"Setting up maximum value for {exposure_name}")
         # Some checks on the input
         self._assert_entry(exposure_name)
+
+        # First get the vulnerability data
+        vulnerability = self.model.vulnerability.get_identifiers(
+            vulnerability_name or DEFAULT
+        )
+
         # Get the exposure costs table from the data catalog
         if exposure_cost_table_fname is not None:
             exposure_cost_table = (
@@ -411,6 +448,7 @@ Either provide a filename or a dictionary/ DataFrame."
             index_name=COST__TYPE,
             **select,
         )
+
         # Get the exposure cost link is not None
         exposure_cost_link = None
         if exposure_cost_link_fname is not None:
@@ -424,13 +462,13 @@ Either provide a filename or a dictionary/ DataFrame."
             self.data[exposure_name],
             exposure_cost_table=exposure_cost_table,
             impact_type=impact_type,
-            vulnerability=self.model.vulnerability.data.identifiers,
+            vulnerability=vulnerability,
             exposure_cost_link=exposure_cost_link,
             per_unit=per_unit,
         )
 
         # Set the data back, its a bit symbolic as the dataframe is mutable...
-        self.set(exposure_vector, exposure_name)
+        self.set(exposure_vector, exposure_name, replace=False)
 
     def create_max_value_direct(
         self,
@@ -473,7 +511,7 @@ Either provide a filename or a dictionary/ DataFrame."
 
         # Set the data back,
         # Again... its a bit symbolic as the dataframe is mutable...
-        self.set(exposure_vector, exposure_name)
+        self.set(exposure_vector, exposure_name, replace=False)
 
     @hydromt_step
     def update_column(
@@ -510,4 +548,4 @@ Either provide a filename or a dictionary/ DataFrame."
         )
 
         # Symbolically set back the data
-        self.set(exposure_vector, name=exposure_name)
+        self.set(exposure_vector, name=exposure_name, replace=False)

@@ -74,7 +74,10 @@ def test__relpath_other(tmp_path: Path):
 def test_get_config_list_files():
     # Call the function
     paths = get_config_list_files(
-        [ExposureGeometry(file="tmp.txt"), ExposureGeometry(file="foo.txt")]
+        [
+            ExposureGeometry(file="tmp.txt", variables={"vulnerability": "a"}),
+            ExposureGeometry(file="foo.txt", variables={"vulnerability": "a"}),
+        ]
     )
     # Assert the output
     assert len(paths) == 2

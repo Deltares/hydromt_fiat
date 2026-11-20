@@ -97,11 +97,11 @@ def aggregate_geom_spatially(
     # Overlay with the fiat output
     output_data = output_data.overlay(aggregation_areas, how="intersection")
     output_data = output_data.dissolve(by=column, aggfunc=method)
-    output_data.drop(GEOMETRY, axis=1, inplace=True)
+    output_data = output_data.drop(GEOMETRY, axis=1)
 
     # Merge back
     aggregation_areas = aggregation_areas.merge(output_data, on=column, how="left")
-    aggregation_areas.drop([column], axis=1, inplace=True)
+    aggregation_areas = aggregation_areas.drop([column], axis=1)
 
     # Check if one wants a areal mean (spatial average), if not return directly
     if not areal_mean:

@@ -10,6 +10,7 @@ from hydromt.model.steps import hydromt_step
 from hydromt_fiat.settings import (
     DEFAULT_GEOM_SETTINGS,
     DEFAULT_GRID_SETTINGS,
+    DEFAULT_SETTINGS,
     BaseSettings,
     GeomSettings,
     GridSettings,
@@ -53,7 +54,7 @@ class ConfigComponent(ModelComponent):
         *,
         filename: Path | str = f"{SETTINGS}.toml",
     ):
-        self._data: GeomSettings | GridSettings | None = None
+        self._data: BaseSettings | GeomSettings | GridSettings | None = None
         self._filename: Path | str = filename
         super().__init__(
             model,
@@ -66,7 +67,7 @@ class ConfigComponent(ModelComponent):
     ) -> None:
         """Initialize the model config."""
         if self._data is None:
-            self._data = SETTINGS_DICT[self.model.type]()
+            self._data = BaseSettings()
             if not skip_read and self.root.is_reading_mode():
                 self.read()
 
@@ -77,7 +78,7 @@ class ConfigComponent(ModelComponent):
         return FileContext(config_dir=self.dir, output_dir=self.output_dir)
 
     @property
-    def data(self) -> GeomSettings | GridSettings:
+    def data(self) -> BaseSettings | GeomSettings | GridSettings:
         """Model config values."""
         if self._data is None:
             self._initialize()
@@ -116,6 +117,11 @@ class ConfigComponent(ModelComponent):
         """Set the output directory."""
         self.data.output_dir = Path(value)
 
+    @property
+    def type(self) -> str | None:
+        """Return the model type based on the settings type."""
+        return self.data.type
+
     ## I/O methods
     @hydromt_step
     def read(
@@ -147,7 +153,6 @@ class ConfigComponent(ModelComponent):
         # Read the data (config)
         logger.info("Reading model configuration")
         self._data = load_settings(filename=read_path)
-        self.model._type = self.data.type
 
     @hydromt_step
     def write(
@@ -165,10 +170,6 @@ class ConfigComponent(ModelComponent):
         """
         self.root._assert_write_mode()
 
-        # Check for the type, should be geomsettings or gridsettings
-        if not isinstance(self.data, (GeomSettings, GridSettings)):
-            raise TypeError("No model type defined, will not write settings")
-
         # Path from signature or internal default
         # Hierarchy is 1) signature, 2) default
         p = filename or self._filename
@@ -182,7 +183,11 @@ class ConfigComponent(ModelComponent):
 
         # Dump to a file
         logger.info("Writing model configuration")
-        if self.data == DEFAULT_GEOM_SETTINGS or self.data == DEFAULT_GRID_SETTINGS:
+        if (
+            self.data == DEFAULT_SETTINGS
+            or self.data == DEFAULT_GEOM_SETTINGS
+            or self.data == DEFAULT_GRID_SETTINGS
+        ):
             logger.warning(
                 "No alterations were made to the default settings, writing default",
             )
@@ -192,8 +197,7 @@ class ConfigComponent(ModelComponent):
     @hydromt_step
     def clear(self) -> None:
         """Clear the config data."""
-        self._data = None
-        self._initialize(skip_read=True)
+        self._data = SETTINGS_DICT[self.type]()
 
     @hydromt_step
     def update(self, **settings) -> None:
@@ -202,7 +206,7 @@ class ConfigComponent(ModelComponent):
         Parameters
         ----------
         settings : dict[str, Any]
-            Settigns to up update the configuration with.
+            Settings to up update the configuration with.
         """
         self._data = self.data.model_validate(
             {**self.data.to_dict(context=self.context), **settings},

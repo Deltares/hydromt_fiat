@@ -89,7 +89,7 @@ method with '{name}' as input"
                 f"'fid' column encountered in {name}, \
 column will be removed"
             )
-            data.drop("fid", axis=1, inplace=True)
+            data = data.drop("fid", axis=1)
 
         # Set the data
         self._processed_data[name] = data
@@ -143,7 +143,7 @@ column will be removed"
         # Look at the in and outputs of the config file
         infiles = get_config_list_files(self.model.config.data.exposure) or []
         infiles = [
-            Path(self.model.config.output_dir, item.name).with_suffix(".gpkg")
+            Path(self.model.config.output_dir, item.name).with_suffix(".fgb")
             for item in infiles
         ]
         # Get the directly specified output files

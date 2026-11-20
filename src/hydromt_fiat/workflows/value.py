@@ -83,6 +83,10 @@ def max_value(
     exposure_cost_link : pd.DataFrame, optional
         A linking table to connect the exposure data to the exposure cost data.
         By default None.
+    per_unit : str, optional
+        Whether or not the value provided in the cost table are per unit length or per
+        unit area. Therefore, if True, the values are multiplied by either the length
+        or area of the features. By default True.
     **select : dict, optional
         Keyword arguments to select data from the cost table.
         The key corresponds to the column and the value to value in that column.
@@ -147,7 +151,7 @@ def max_value(
     )[COST__TYPE]
 
     # Drop the data that cannnot be linked
-    exposure_data.dropna(subset=COST__TYPE, inplace=True)
+    exposure_data = exposure_data.dropna(subset=COST__TYPE)
 
     # Get the area, make sure its a projected crs
     size = pd.Series(np.ones(exposure_data.shape[0]))
@@ -167,7 +171,7 @@ def max_value(
         data = exposure_data[COST__TYPE][mask] + st
         # Get the costs per object
         costs_per = data.to_frame().merge(exposure_cost_table, on=COST__TYPE)
-        costs_per.drop(COST__TYPE, axis=1, inplace=True)
+        costs_per = costs_per.drop(COST__TYPE, axis=1)
         costs_per = costs_per.squeeze()
         # Multiply by the size of the object
         costs_per *= size[mask].values
