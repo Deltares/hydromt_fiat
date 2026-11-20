@@ -246,7 +246,6 @@ test-system = { cmd = "pytest -m system --verbose" }
 
 ## Dependencies
 [tool.pixi.dependencies]
-flatbuffers = "==24.12.23"
 numba = "*"
 pip = "*"
 uv = "*"
@@ -260,8 +259,11 @@ python-magic = "*"
 [tool.pixi.feature.examples.dependencies]
 pandoc = "*"
 
-# [tool.pixi.feature.test.pypi-dependencies]
-# delft_fiat = ">=1.0.0rc1"
+[tool.pixi.feature.delft-fiat-stable.pypi-dependencies]
+delft-fiat = ">=1.0.0rc1"
+
+[tool.pixi.feature.delft-fiat-dev.pypi-dependencies]
+delft-fiat = { git = "https://github.com/Deltares/Delft-FIAT.git" }
 
 [tool.pixi.feature.wheel.dependencies]
 pip = "*"
@@ -279,10 +281,13 @@ python = "3.12.*"
 
 ## Define the environments
 [tool.pixi.environments]
-default = { features = ["py314", "dev", "docs", "examples", "test"] }
+default = { features = ["py314", "dev", "docs", "examples", "test", "delft-fiat-stable"] }
 docs = { features = ["py313", "docs", "examples"] }
 slim = { features = [] }
-test-py314 = { features = ["py314", "test"] }
-test-py313 = { features = ["py313", "test"] }
-test-py312 = { features = ["py312", "test"] }
+test-stable-py314 = { features = ["py314", "test", "delft-fiat-stable"] }
+test-stable-py313 = { features = ["py313", "test", "delft-fiat-stable"] }
+test-stable-py312 = { features = ["py312", "test", "delft-fiat-stable"] }
+test-dev-py314 = { features = ["py314", "test", "delft-fiat-dev"] }
+test-dev-py313 = { features = ["py313", "test", "delft-fiat-dev"] }
+test-dev-py312 = { features = ["py312", "test", "delft-fiat-dev"] }
 wheel = { features = ["py313", "test", "wheel"], no-default-feature=true }
