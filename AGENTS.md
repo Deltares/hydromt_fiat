@@ -140,7 +140,7 @@ Use **pixi** (see `pyproject.toml` `[tool.pixi.*]`); do not use pip/conda/venv d
 | All tests | `pixi run test` |
 | Last failed only | `pixi run test-lf` |
 | Integration / system tests | `pixi run test-integration` / `pixi run test-system` |
-| Specific env / Python | `pixi run -e test-py312 test` (`test-py312`, `-py313`, `-py314`) |
+| Specific env / Python | `pixi run -e test-stable-py312 test` (`test-stable-py312`, `-py313`, `-py314`) |
 | Lint + format (pre-commit: ruff, ruff-format, whitespace, nbstripout) | `pixi run lint` |
 | Type check | `pixi run mypy` |
 | Docs (warnings are errors) | `pixi run docs-html` |

@@ -53,12 +53,12 @@ jobs:
       - name: Generate dummy docs
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          pixi run -e docs docs-dummy
+          pixi run --locked -e docs docs-dummy
 
       - name: Generate docs
         if: ${{ github.event_name != 'pull_request' && !github.event.act }}
         run: |
-          pixi run -e docs docs-html
+          pixi run --locked -e docs docs-html
           echo "DOC_VERSION=$(pixi run --locked -e docs python -c 'from hydromt_fiat import __version__ as v; print("dev" if "dev" in v else "v"+v.replace(".dev",""))')" >> $GITHUB_ENV
 
       # - name: Upload to GitHub Pages
