@@ -26,3 +26,7 @@ Changed
 Removed
 -------
 - The model wide ``method`` setting, the method is set per vulnerability dataset.
+
+Fixed
+-----
+- ``VulnerabilityComponent.read`` no longer keeps the vulnerability files open.
