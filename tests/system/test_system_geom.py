@@ -1,30 +1,13 @@
 from pathlib import Path
 
 import pytest
-from packaging.version import Version
 
 from hydromt_fiat import FIATModel
-from hydromt_fiat.utils import FLOOD_LEVEL, GEOM
-
-try:
-    import fiat  # noqa: F401
-
-    HAS_FIAT = True
-
-except ImportError:
-    HAS_FIAT = False
-
-if HAS_FIAT:
-    from fiat import GeomModel, __version__
-    from fiat.settings import load_settings
-else:
-    __version__ = "NOT INSTALLED"
+from hydromt_fiat.utils import FLOOD_DEPTH, GEOM
+from tests.system import SKIP_IF_FIAT_INCOMPATIBLE, GeomModel, load_settings
 
 
-@pytest.mark.skipif(
-    not HAS_FIAT or Version(__version__) < Version("1.0.0.dev0"),
-    reason=f"At least Delft-FIAT version 1.0.0 is required (got {__version__}).",
-)
+@SKIP_IF_FIAT_INCOMPATIBLE
 @pytest.mark.system
 def test_system_geom_model(
     tmp_path: Path,
@@ -42,19 +25,25 @@ def test_system_geom_model(
     )
 
     # Add model type and region
-    model.set_config(method=FLOOD_LEVEL)
+    model.set_config(method=FLOOD_DEPTH)
     model.set_region(build_region_small)
 
     # Setup the vulnerability
     model.vulnerability.create(
-        "jrc_curves",
-        "jrc_curves_link",
+        hazard_type="water_depth",
+        vulnerability_fname="jrc_curves",
+        vulnerability_link_fname="jrc_curves_link",
         unit="m",
         continent="europe",
+        method=FLOOD_DEPTH,
     )
 
     # Add an hazard layer
-    model.hazard.create("flood_event", hazard_type="water_level")
+    model.hazard.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+    )
 
     # Setup the exposure geometry data
     model.exposure_geoms.create(
@@ -65,12 +54,14 @@ def test_system_geom_model(
     model.exposure_geoms.create_link(
         exposure_name="buildings",
         impact_type="damage",
+        vulnerability_name="jrc_curves",
     )
     model.exposure_geoms.create_max_value(
         exposure_name="buildings",
         impact_type="damage",
         exposure_cost_table_fname="jrc_damage",
         country="Netherlands",  # Select the correct row from the data
+        vulnerability_name="jrc_curves",
     )
     # Needed for flood calculations
     model.exposure_geoms.update_column(
