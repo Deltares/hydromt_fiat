@@ -103,7 +103,7 @@ docs = [
 examples = [
     "cartopy",
     "jupyterlab",
-    "nbconvert==7.17.1",
+    "nbconvert==7.17.2",
     "notebook",
     "pandoc",
 ]
