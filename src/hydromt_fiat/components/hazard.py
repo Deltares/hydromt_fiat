@@ -15,7 +15,6 @@ from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
 from hydromt_fiat.utils import (
-    DATA,
     HAZARD,
     RP,
     TYPE,
@@ -174,7 +173,7 @@ class HazardComponent(GridComponent):
         hazard_type: str,
         unit: str,
         *,
-        name: str = DATA,
+        name: str | None = None,
         return_period: float | int | None = None,
         expand: bool = True,
         region: bool = True,
@@ -191,7 +190,8 @@ class HazardComponent(GridComponent):
         unit : str, optional
             The unit which the hazard data is in, e.g. 'm' (meters).
         name : str, optional
-            The name the hazard layer will have in the data, by default 'data'.
+            The name the hazard layer will have in the data. If not provided, the name
+            is derived from the stem of `hazard_fname`. By default None.
         return_period : float | int, optional
             List of return periods. Length of list should match the number hazard
             files. This entry is required when the model is in risk model

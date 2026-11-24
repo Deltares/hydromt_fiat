@@ -27,6 +27,7 @@ from .vulnerability import (
     infer_vulnerability_attrs,
     merge_vulnerability_data,
     process_vulnerability_link,
+    vulnerability_from_collection,
     vulnerability_nd_from_1d,
     vulnerability_setup,
 )
@@ -55,6 +56,7 @@ __all__ = [
     "prep_data_for_aggregation",
     "process_table",
     "process_vulnerability_link",
+    "vulnerability_from_collection",
     "vulnerability_nd_from_1d",
     "vulnerability_setup",
 ]
