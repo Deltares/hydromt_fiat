@@ -363,9 +363,11 @@ the method requires '{type}'"
         risk : bool
             Whether to set the model to risk mode or not.
         """
+        if self.risk == risk:
+            logger.info(f"Keeping risk mode at {risk}")
+            return
         logger.info(f"Set model risk mode to {risk}")
-        if risk != self.risk:
-            self.hazard.clear()
+        self.hazard.clear()
         self.config.data.risk = risk
 
     @hydromt_step
@@ -383,6 +385,8 @@ the method requires '{type}'"
         type : Literal[&quot;geom&quot;, &quot;grid&quot;]
             The type of model.
         """
+        if self.type == type:
+            return
         logger.info(f"Settings model type to: '{type}'")
         # Get the model settings minus type and exposure
         settings_dict = self.config.data.to_dict()
