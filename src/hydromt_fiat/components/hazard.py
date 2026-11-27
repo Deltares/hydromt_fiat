@@ -204,7 +204,12 @@ class HazardComponent(GridComponent):
             Nothing is done when the hazard data already covers the region.
             By default True.
         region : bool, optional
-            Whether or not to use the model region. By default True.
+            Whether or not to use the model region. If set to False, a model region is
+            created based on the hazard data bounding box or based on the no nodata
+            values if `fancy` is set to True. By default True.
+        fancy : bool, optional
+            Whether to create a region based on the no nodata values of the hazard data.
+            By default False.
         read_kwargs : dict, optional
             Optional keyword arguments for reading the `hazard_fnames` data. These
             arguments are passed to the HydroMT
