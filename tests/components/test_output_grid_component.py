@@ -1,10 +1,9 @@
 import logging
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 import xarray as xr
-from hydromt.model import ModelRoot
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import OutputGridComponent
@@ -62,14 +61,10 @@ def test_output_grid_component__set_warnings(
 
 
 def test_output_grid_component_read_none(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("grid")
     # Set up the component
     component = OutputGridComponent(model=model)
 
@@ -84,14 +79,10 @@ def test_output_grid_component_read_none(
 
 
 def test_output_grid_component_read_not_found(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("grid")
     # Set up the component
     component = OutputGridComponent(model=model)
 
@@ -106,14 +97,11 @@ def test_output_grid_component_read_not_found(
 
 
 def test_output_grid_component_read_sig(
-    mock_model_config: MagicMock,
+    mock_model_read: MagicMock,
     model_data_clipped_path: Path,
 ):
     # Setup the model
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("grid")
     # Set up the component
     component = OutputGridComponent(model=model)
 

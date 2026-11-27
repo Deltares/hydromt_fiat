@@ -67,7 +67,7 @@ class ExposureGridComponent(GridComponent):
         self,
         model: Model,
         *,
-        filename: str = f"{EXPOSURE}/spatial.nc",
+        filename: str = f"{EXPOSURE}/exposure.nc",
         region_component: str | None = None,
     ):
         self._filename = filename
@@ -242,12 +242,7 @@ class ExposureGridComponent(GridComponent):
         logger.info("Creating gridded exposure")
 
         # Check for the vulnerability
-        if isinstance(vulnerability_name, str):
-            vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
-        else:
-            vulnerability = self.model.vulnerability.get_shared_identifiers(
-                vulnerability_name
-            )
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
 
         # Region check
         if self.model.region is None:

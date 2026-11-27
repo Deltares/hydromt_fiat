@@ -120,7 +120,7 @@ class FIATModel(Model):
         )
 
         # Finish initialization
-        self.set_type(type)
+        self.set_type(self.type or type)
         self.set_risk(risk)
 
     ## Private methods

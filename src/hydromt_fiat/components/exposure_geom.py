@@ -24,7 +24,6 @@ from hydromt_fiat.settings.exposure import (
 from hydromt_fiat.settings.utils import get_config_list_files
 from hydromt_fiat.utils import (
     COST__TYPE,
-    DEFAULT,
     EXPOSURE,
     GEOM,
     IMPACT__TYPE,
@@ -425,9 +424,7 @@ use 'set_region' before this method"
         self._assert_entry(exposure_name)
 
         # First get the vulnerability data
-        vulnerability = self.model.vulnerability.get_identifiers(
-            vulnerability_name or DEFAULT
-        )
+        vulnerability = self.model.vulnerability.get_identifiers(vulnerability_name)
 
         # Get the exposure costs table from the data catalog
         if exposure_cost_table_fname is not None:

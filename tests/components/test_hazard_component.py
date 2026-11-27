@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 from unittest.mock import MagicMock, PropertyMock
 
+import numpy as np
 import pytest
 import xarray as xr
-from hydromt.model import ModelRoot
 from hydromt.model.mode import ModelMode
 from pytest_mock import MockerFixture
 
@@ -27,19 +27,16 @@ def test_hazard_component_empty(
 
     # Assert some very basic stuff
     assert component._filename == f"{HAZARD}.nc"
+    assert component._name == HAZARD
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
 
 
 def test_hazard_component_read(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Setup the component
     component = HazardComponent(model=model)
     # Assert current state
@@ -57,15 +54,10 @@ def test_hazard_component_read(
 
 
 def test_hazard_component_read_settings(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model with the settings file
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
-    model.config.read("settings_geom.toml")
+    model = mock_model_read("geom", settings="settings_geom.toml")
     # Set a different type in the settings
     model.config.data.hazard.variables[0].type = "duration"
     # Setup the component
@@ -79,14 +71,10 @@ def test_hazard_component_read_settings(
 
 
 def test_hazard_component_read_sig(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Setup the component
     component = HazardComponent(model=model)
 
@@ -245,6 +233,78 @@ def test_hazard_component_create_risk(
     assert model.config.data.risk
     # Assert the attributes
     assert component.data_attrs["flood_event_highres"].rp == 50000
+
+
+def test_hazard_component_create_region(
+    model: FIATModel,
+):
+    # Setup the component, the model has no region
+    component = HazardComponent(model=model)
+    assert model.region is None
+
+    # Call the method without the model region
+    component.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
+        region=False,
+    )
+
+    # Assert the region is set from the hazard data
+    assert model.region is not None
+    assert model.region.crs == component.crs
+    assert component.data.raster.shape == (51, 33)
+    np.testing.assert_array_almost_equal(
+        model.region.total_bounds,
+        component.bounds,
+    )
+
+
+def test_hazard_component_create_region_present(
+    model_with_region: FIATModel,
+):
+    # Setup the component, the model has a region
+    component = HazardComponent(model=model_with_region)
+    region = model_with_region.region.copy()
+
+    # Call the method
+    component.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
+        fancy=True,
+    )
+
+    # Assert the region and data are untouched by the fancy option
+    assert model_with_region.region.equals(region)
+    assert component.data.raster.shape == (7, 6)
+
+
+def test_hazard_component_create_fancy(
+    model: FIATModel,
+):
+    # Setup the component, the model has no region
+    component = HazardComponent(model=model)
+
+    # Call the method, vectorizing the data for the region
+    component.create(
+        hazard_fname="flood_event",
+        hazard_type="water_depth",
+        unit="m",
+        name="flood_event",
+        region=False,
+        fancy=True,
+    )
+
+    # Assert the region is set and the data is clipped on it
+    assert model.region is not None
+    assert model.region.crs == component.crs
+    assert "flood_event" in component.data.data_vars
+    assert component.data.raster.shape == (46, 33)
+    # The region is smaller than the bounds of the original data
+    assert model.region.area.sum() < 3300 * 5100
 
 
 def test_hazard_component_create_errors(model: FIATModel):

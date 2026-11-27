@@ -183,7 +183,7 @@ def test_build_model_grid(
     assert Path(tmp_path, f"{SETTINGS}.toml").is_file()
     assert Path(tmp_path, f"{CURVES}.nc").is_file()
     assert Path(tmp_path, f"{HAZARD}.nc").is_file()
-    assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
+    assert Path(tmp_path, EXPOSURE, "exposure.nc").is_file()
     # Assert the variables in the settings
     assert len(model.config.data.vulnerability.variables) == 1
     assert len(model.config.data.hazard.variables) == 1

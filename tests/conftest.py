@@ -2,6 +2,7 @@ import math
 import re
 from functools import wraps
 from pathlib import Path
+from typing import Callable
 
 import geopandas as gpd
 import pandas as pd
@@ -382,6 +383,15 @@ def exposure_cost_link() -> pd.DataFrame:
         }
     )
     return df
+
+
+@pytest.fixture
+def rename_vulnerability() -> Callable[[xr.Dataset, str], xr.Dataset]:
+    # Rename the default vulnerability (curves or identifiers) dataset to another name
+    def _factory(ds: xr.Dataset, name: str) -> xr.Dataset:
+        return ds.rename({k: k.replace("default", name) for k in ds.variables})
+
+    return _factory
 
 
 @pytest.fixture
