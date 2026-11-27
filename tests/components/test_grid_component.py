@@ -13,6 +13,7 @@ from pytest_mock import MockerFixture
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.settings.variables import Variable
+from hydromt_fiat.utils import GRID
 
 # Overwrite the abstractmethods to be able to initialize it
 GridComponent.__abstractmethods__ = set()
@@ -26,6 +27,7 @@ def test_grid_component_empty(mock_model: MagicMock):
     assert component._data is None
     assert isinstance(component.data, xr.Dataset)  # Initialized
     assert component.data_attrs == {}
+    assert component._name == GRID
 
     # Assert the properties
     assert component._region_data is None
@@ -317,6 +319,123 @@ def test_grid_component_reproject_nothing(
     # Assert the state/ output
     assert ds is None
     assert id_before == id(component.data)
+
+
+def test_grid_component_reproject_like(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Set data like a dummy
+    component._data = hazard
+    # Setup the dataset to reproject to
+    like = hazard.raster.reproject(dst_crs=4326)
+
+    # Reproject the data
+    ds = component.reproject_like(like)
+
+    # Assert the output
+    assert not component.data.equals(ds)
+    assert component.crs.to_epsg() == 28992
+    assert ds.raster.crs.to_epsg() == 4326
+    assert ds.flood_event.shape == like.flood_event.shape
+    np.testing.assert_array_almost_equal(ds.longitude.values, like.longitude.values)
+
+
+def test_grid_component_reproject_like_inplace(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    component = GridComponent(model=mock_model("grid"))
+
+    # Set data like a dummy
+    component._data = hazard
+    # Setup the dataset to reproject to
+    like = hazard.raster.reproject(dst_crs=4326)
+
+    # Reproject inplace
+    ds = component.reproject_like(like.flood_event, inplace=True)
+
+    # Assert the output/ state
+    assert ds is None
+    assert component.crs.to_epsg() == 4326
+    assert component.data.flood_event.shape == like.flood_event.shape
+
+
+def test_grid_component_reproject_like_component(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    model = mock_model("grid")
+    component = GridComponent(model=model)
+    # Set data like a dummy
+    component._data = hazard
+    # Set up the component to reproject to
+    other = GridComponent(model=model)
+    other._data = hazard.raster.reproject(dst_crs=4326)
+    model.components = {"other": other}
+
+    # Reproject the data to the other component
+    ds = component.reproject_like("other")
+
+    # Assert the output
+    assert ds.raster.crs.to_epsg() == 4326
+    assert ds.flood_event.shape == other.data.flood_event.shape
+
+
+def test_grid_component_reproject_like_nothing(
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    model = mock_model("grid")
+    component = GridComponent(model=model)
+
+    # Set data like a dummy
+    component._data = hazard
+    model.components = {component._name: component}
+    id_before = id(component.data)  # To check later
+
+    # Reproject to the component itself
+    ds = component.reproject_like(component._name)
+    # Assert the state/ output
+    assert ds is None
+    assert id_before == id(component.data)
+
+    # Same yields true when the data crs is None
+    component._data = component._data.drop_vars("spatial_ref")
+    id_before = id(component.data)  # To check later
+
+    # Reproject with a dataset
+    ds = component.reproject_like(hazard.raster.reproject(dst_crs=4326))
+    # Assert the state/ output
+    assert ds is None
+    assert id_before == id(component.data)
+
+
+def test_grid_component_reproject_like_errors(
+    mocker: MockerFixture,
+    mock_model: MagicMock,
+    hazard: xr.Dataset,
+):
+    # Set up the component
+    model = mock_model("grid")
+    component = GridComponent(model=model)
+    # Set data like a dummy
+    component._data = hazard
+    model.components = {"foo": mocker.Mock()}
+
+    # Component is not present
+    with pytest.raises(ValueError, match="bar is not a grid based component"):
+        component.reproject_like("bar")
+
+    # Component is present, but not a grid based one
+    with pytest.raises(ValueError, match="foo is not a grid based component"):
+        component.reproject_like("foo")
 
 
 def test_grid_component_set(

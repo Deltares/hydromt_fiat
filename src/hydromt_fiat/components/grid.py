@@ -16,8 +16,9 @@ from pyproj.crs import CRS
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.raster import expand_raster_to_bounds
 from hydromt_fiat.gis.raster_utils import check_spatial, force_ns
+from hydromt_fiat.gis.utils import crs_representation
 from hydromt_fiat.settings.variables import Variable
-from hydromt_fiat.utils import NAME
+from hydromt_fiat.utils import GRID, NAME
 
 __all__ = ["GridComponent"]
 
@@ -28,6 +29,7 @@ class GridComponent(SpatialModelComponent):
     """Base class for FIAT grid based components."""
 
     _build = True
+    _name = GRID
     _variable = Variable
 
     def __init__(
@@ -71,6 +73,33 @@ class GridComponent(SpatialModelComponent):
             self._data = xr.Dataset()
             if self.root.is_reading_mode() and not skip_read:
                 self.read()
+
+    def _reproject(self, method: str, inplace: bool, **kwargs) -> xr.Dataset | None:
+        """Reproject data."""
+        # Check the spatial component
+        if not check_spatial(self.data):
+            return None
+        # Check for the internal crs
+        if self.crs is None:
+            return None
+
+        # Reproject the data
+        data = []
+        attrs = self.data.attrs
+        for var in self.data.data_vars:
+            if not check_spatial(self.data[var]):
+                data.append(self.data[var])
+                continue
+            da = getattr(self.data[var].raster, method)(**kwargs)
+            data.append(da)
+        # Merge the data back together
+        data = xr.merge(data, compat="no_conflicts")
+        data.attrs = attrs
+        # If inplace, just set the data and return nothing
+        if inplace:
+            self._data = data
+            return None
+        return data
 
     ## Properties
     @property
@@ -269,13 +298,7 @@ only resolution set"
         xr.Dataset | None
             Return a dataset if the inplace is False.
         """
-        # Check the spatial component
-        if not check_spatial(self.data):
-            return None
-
-        # Check for the crs's
-        if self.crs is None:
-            return None
+        # CRS type ensurance
         if not isinstance(crs, CRS):
             crs = CRS.from_user_input(crs)
 
@@ -283,23 +306,62 @@ only resolution set"
         if crs == self.crs:
             return None
 
-        logger.info(f"Reproject data in {self.__class__.__name__}")
-        # Reproject the data
-        data = []
-        attrs = self.data.attrs
-        for var in self.data.data_vars:
-            if not check_spatial(self.data[var]):
-                data.append(self.data[var])
-                continue
-            data.append(self.data[var].raster.reproject(dst_crs=crs))
-        # Merge the data back together
-        data = xr.merge(data, compat="no_conflicts")
-        data.attrs = attrs
-        # If inplace, just set the data and return nothing
-        if inplace:
-            self._data = data
-            return None
-        return data
+        logger.info(
+            f"Reprojecting data in {self.__class__.__name__} "
+            f"to {crs_representation(crs)}"
+        )
+        # Call the internal reproject method
+        return self._reproject(method="reproject", inplace=inplace, dst_crs=crs)
+
+    @hydromt_step
+    def reproject_like(
+        self,
+        ds_like: str | xr.Dataset | xr.DataArray,
+        inplace: bool = False,
+    ) -> xr.Dataset | None:
+        """Reproject the gridded data according to another dataset.
+
+        Parameters
+        ----------
+        ds_like : str | xr.Dataset | xr.DataArray
+            The dataset from which the grid definition is taken to reproject the data
+            from the component to.
+        inplace : bool, optional
+            Whether to do the reprojection in place or return a new xr.Dataset,
+            by default False.
+
+        Returns
+        -------
+        xr.Dataset | None
+            Return a dataset if the inplace is False.
+        """
+        name = "user provided dataset"
+        # If it's not a string try to directly reproject
+        if not isinstance(ds_like, str):
+            logger.info(f"Reprojecting data in {self.__class__.__name__} to {name}")
+            # Call the internal reproject method
+            return self._reproject(
+                method="reproject_like",
+                inplace=inplace,
+                other=ds_like,
+            )
+
+        # Check whether the component to reproject to is a valid one
+        if ds_like not in self.model.components or not isinstance(
+            self.model.components[ds_like], GridComponent
+        ):
+            raise ValueError(f"{ds_like} is not a grid based component")
+        # Check if the component to reproject to is the current component
+        if ds_like == self._name:
+            return
+
+        # Update the name and get the definition of the components grid
+        name = f"{ds_like} component"
+        ds_like = self.model.components[ds_like].like
+
+        logger.info(f"Reprojecting data in {self.__class__.__name__} to {name}")
+        # Call the internal reproject method
+        return self._reproject(method="reproject_like", inplace=inplace, other=ds_like)
 
     def set(
         self,

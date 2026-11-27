@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 from hydromt.model import Model
 from hydromt.model.steps import hydromt_step
 
@@ -22,8 +23,11 @@ from hydromt_fiat.settings.exposure import (
 from hydromt_fiat.utils import (
     CATEGORIZED,
     EXPOSURE,
+    EXPOSURE__GRID,
     EXPOSURE__GRID__TYPE,
+    EXPOSURE__TYPE,
     GRID,
+    OBJECT__TYPE,
     TYPE,
     VALUE,
     VALUES,
@@ -56,13 +60,14 @@ class ExposureGridComponent(GridComponent):
         a reference to another grid component for correct reprojection, by default None.
     """
 
+    _name = EXPOSURE__GRID
     _variable = ExposureGridVariable
 
     def __init__(
         self,
         model: Model,
         *,
-        filename: str = f"{EXPOSURE}/spatial.nc",
+        filename: str = f"{EXPOSURE}/exposure.nc",
         region_component: str | None = None,
     ):
         self._filename = filename
@@ -191,8 +196,9 @@ class ExposureGridComponent(GridComponent):
     def create(
         self,
         exposure_fname: Path | str,
-        vulnerability_name: str,
+        vulnerability_name: list[str] | str,
         exposure_link_fname: Path | str | None = None,
+        exposure_link: dict[str, Any] | pd.DataFrame | None = None,
         *,
         name: str | None = None,
         expand: bool = True,
@@ -210,8 +216,11 @@ class ExposureGridComponent(GridComponent):
             are found in the :py:meth:`~VulnerabilityComponent.data.curves`
             data variables. By default "default".
         exposure_link_fname : Path | str, optional
-            Table containing the names of the exposure files and corresponding
+            Table containing the names of the exposure file and corresponding
             vulnerability curves. By default None.
+        exposure_link : dict[str, Any] | pd.DataFrame, optional
+            The same type of data provided via `exposure_link_fname`, but
+            directly set via a dictionary or a Pandas DataFrame. By default None.
         name : str, optional
             The name of the resulting exposure data in the exposure grid dataset.
             If the name is not provided, it is set to the stem of `exposure_fname`.
@@ -240,10 +249,16 @@ class ExposureGridComponent(GridComponent):
             raise MissingRegionError("Region is required for setting up exposure grid")
 
         # Read linking table
-        exposure_link = None
         if exposure_link_fname is not None:
-            exposure_link = self.model.data_catalog.get_dataframe(
+            exposure_link = exposure_link or self.model.data_catalog.get_dataframe(
                 exposure_link_fname, **(read_link_kwargs or {})
+            )
+        # Process the exposure link data
+        if exposure_link is not None:
+            exposure_link = workflows.process_table(
+                table=exposure_link,
+                column_name=OBJECT__TYPE,
+                index_name=EXPOSURE__TYPE,
             )
 
         # Read exposure data file from data catalog

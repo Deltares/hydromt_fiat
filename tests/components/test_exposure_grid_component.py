@@ -1,12 +1,13 @@
 import logging
 from pathlib import Path
+from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
-from hydromt.model import ModelRoot
 from hydromt.model.mode import ModelMode
 from pytest_mock import MockerFixture
 
@@ -16,10 +17,16 @@ from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.settings.exposure import ExposureGridVariable
 from hydromt_fiat.utils import (
     CATEGORIZED,
+    CURVE,
+    DAMAGE,
     DEFAULT,
     EXPOSURE,
+    EXPOSURE__GRID,
+    EXPOSURE__TYPE,
     FN__CURVE,
+    IMPACT__TYPE,
     INDEX,
+    OBJECT__TYPE,
     VALUE,
     VALUES,
     VULNERABILITY,
@@ -34,21 +41,17 @@ def test_exposure_grid_component_empty(
     component = ExposureGridComponent(model=mock_model("grid"))
 
     # Assert some basics
-    assert component._filename == f"{EXPOSURE}/spatial.nc"
+    assert component._filename == f"{EXPOSURE}/exposure.nc"
+    assert component._name == EXPOSURE__GRID
     assert len(component.data) == 0
     assert isinstance(component.data, xr.Dataset)
 
 
 def test_exposure_grid_component_read(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
-    model.config.read("settings_grid.toml")
+    model = mock_model_read("grid", settings="settings_grid.toml")
     # Setup the component
     component = ExposureGridComponent(model=model)
 
@@ -67,14 +70,10 @@ def test_exposure_grid_component_read(
 
 
 def test_exposure_grid_component_read_sig(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("grid")
     # Setup the component
     component = ExposureGridComponent(model=model)
 
@@ -130,12 +129,12 @@ def test_exposure_grid_component_write(
     component.write()
 
     # Assert the output
-    assert Path(tmp_path, EXPOSURE, "spatial.nc").is_file()
+    assert Path(tmp_path, EXPOSURE, "exposure.nc").is_file()
     # Assert the config
     assert component.model.config.data.exposure.file == Path(
         tmp_path,
         EXPOSURE,
-        "spatial.nc",
+        "exposure.nc",
     )
     variables = component.model.config.data.exposure.variables
     assert len(variables) == len(exposure_grid_clipped.data_vars)
@@ -253,27 +252,12 @@ def test_exposure_grid_component_create_multi(
 
 
 def test_exposure_grid_component_create_name(
-    model_with_region: FIATModel,
-    vulnerability_curves: xr.Dataset,
-    vulnerability_identifiers: xr.Dataset,
+    model_exposure_setup: Callable[[str, str], FIATModel],
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region.set_type("grid")
-    model_with_region.vulnerability.set(
-        vulnerability_curves.rename(
-            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
-        )
-    )
-    model_with_region.vulnerability.set_id(
-        vulnerability_identifiers.rename(
-            {
-                k: k.replace("default", "custom")
-                for k in vulnerability_identifiers.variables
-            }
-        )
-    )
+    model = model_exposure_setup("grid", name="custom")
     # Setup the component
-    component = ExposureGridComponent(model=model_with_region)
+    component = ExposureGridComponent(model=model)
 
     # Call the method
     component.create(
@@ -284,6 +268,83 @@ def test_exposure_grid_component_create_name(
     # Assert the output
     assert "industrial_content" in component.data.data_vars
     assert component.data.industrial_content.attrs.get(FN__CURVE) == "in2"
+
+
+def test_exposure_grid_component_create_exposure_link(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+
+    # Call the method with a link directly provided as a dictionary, linking the
+    # content to the structure curve
+    component.create(
+        exposure_fname="industrial_content",
+        vulnerability_name=DEFAULT,
+        exposure_link={"industrial_content": "industrial_structure"},
+    )
+
+    # Assert the output, the link is used instead of the layer name
+    assert component.data.industrial_content.attrs.get(FN__CURVE) == "in1"
+    assert component.data_attrs["industrial_content"].fn_curve == "in1"
+
+
+def test_exposure_grid_component_create_exposure_link_table(
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component
+    component = ExposureGridComponent(model=model_exposure_setup("grid"))
+
+    # Call the method with a link directly provided as a table
+    component.create(
+        exposure_fname="industrial_content",
+        vulnerability_name=DEFAULT,
+        exposure_link=pd.DataFrame(
+            {
+                EXPOSURE__TYPE: ["industrial_content"],
+                OBJECT__TYPE: ["industrial_structure"],
+            }
+        ),
+    )
+
+    # Assert the output
+    assert component.data.industrial_content.attrs.get(FN__CURVE) == "in1"
+
+
+def test_exposure_grid_component_create_vulnerability_list(
+    mocker: MockerFixture,
+    model_exposure_setup: FIATModel,
+):
+    # Setup the component, with the shared identifiers (the curves themselves)
+    model = model_exposure_setup("grid")
+    mocked = mocker.patch.object(
+        model.vulnerability,
+        "get_identifiers",
+        return_value=pd.DataFrame(
+            {
+                OBJECT__TYPE: ["in1", "in2"],
+                CURVE: ["in1", "in2"],
+                IMPACT__TYPE: [DAMAGE, DAMAGE],
+            }
+        ),
+    )
+    component = ExposureGridComponent(model=model)
+
+    # Call the method with multiple vulnerability datasets, link the exposure to a
+    # curve directly
+    component.create(
+        exposure_fname="industrial_content",
+        vulnerability_name=[DEFAULT, "foo"],
+        exposure_link={"industrial_content": "in2"},
+    )
+
+    # Assert the output
+    mocked.assert_called_once_with([DEFAULT, "foo"])
+    assert component.data.industrial_content.attrs.get(FN__CURVE) == "in2"
+    assert component.data_attrs["industrial_content"].vulnerability == [
+        DEFAULT,
+        "foo",
+    ]
 
 
 def test_exposure_grid_component_create_errors(
@@ -348,27 +409,12 @@ def test_exposure_grid_component_create_categorized(
 
 
 def test_exposure_grid_component_create_categorized_name(
-    model_with_region: FIATModel,
-    vulnerability_curves: xr.Dataset,
-    vulnerability_identifiers: xr.Dataset,
+    model_exposure_setup: Callable[[str, str], FIATModel],
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region.set_type("grid")
-    model_with_region.vulnerability.set(
-        vulnerability_curves.rename(
-            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
-        )
-    )
-    model_with_region.vulnerability.set_id(
-        vulnerability_identifiers.rename(
-            {
-                k: k.replace("default", "custom")
-                for k in vulnerability_identifiers.variables
-            }
-        )
-    )
+    model = model_exposure_setup("grid", name="custom")
     # Setup the component
-    component = ExposureGridComponent(model=model_with_region)
+    component = ExposureGridComponent(model=model)
 
     # Call the method
     component.create_categorized(
@@ -620,28 +666,13 @@ def test_exposure_grid_component_create_from_geom(
 
 
 def test_exposure_grid_component_create_from_geom_name(
-    model_with_region: FIATModel,
-    vulnerability_curves: xr.Dataset,
-    vulnerability_identifiers: xr.Dataset,
+    model_exposure_setup: Callable[[str, str], FIATModel],
     exposure_vector: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region.set_type("grid")
-    model_with_region.vulnerability.set(
-        vulnerability_curves.rename(
-            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
-        )
-    )
-    model_with_region.vulnerability.set_id(
-        vulnerability_identifiers.rename(
-            {
-                k: k.replace("default", "custom")
-                for k in vulnerability_identifiers.variables
-            }
-        )
-    )
+    model = model_exposure_setup("grid", name="custom")
     # Setup the component
-    component = ExposureGridComponent(model=model_with_region)
+    component = ExposureGridComponent(model=model)
 
     # Call the method
     component.create_grid(res=10)

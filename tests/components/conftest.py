@@ -4,8 +4,10 @@ from types import MethodType
 from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
+import geopandas as gpd
 import pandas as pd
 import pytest
+import xarray as xr
 from hydromt import DataCatalog
 from hydromt.model import ModelRoot
 from pyproj.crs import CRS
@@ -14,20 +16,23 @@ from pytest_mock import MockerFixture
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import ConfigComponent
 from hydromt_fiat.components.config import SETTINGS_DICT
+from hydromt_fiat.utils import DEFAULT
 
 
 ## Models and Mocked objects
 @pytest.fixture
 def model_exposure_setup(
     model_with_region: FIATModel,
-    vulnerability_curves: pd.DataFrame,
-    vulnerability_identifiers: pd.DataFrame,
-) -> Callable[[str], FIATModel]:
-    def _factory(model_type: str) -> FIATModel:
+    rename_vulnerability: Callable[[xr.Dataset, str], xr.Dataset],
+    vulnerability_curves: xr.Dataset,
+    vulnerability_identifiers: xr.Dataset,
+) -> Callable[[str, str], FIATModel]:
+    def _factory(model_type: str, name: str = DEFAULT) -> FIATModel:
         model = model_with_region
         model.set_type(model_type)
-        model.vulnerability.set(vulnerability_curves)
-        model.vulnerability.set_id(vulnerability_identifiers)
+        model.vulnerability.set(rename_vulnerability(vulnerability_curves, name))
+        ids = rename_vulnerability(vulnerability_identifiers, name)
+        model.vulnerability.set_id(ids)
         return model
 
     return _factory
@@ -81,7 +86,49 @@ def mock_model_config(
     return _factory
 
 
+@pytest.fixture
+def mock_model_read(
+    mock_model_config: Callable[[str], MagicMock],
+    model_data_clipped_path: Path,
+) -> Callable[[str, str | None, Path | None], MagicMock]:
+    def _factory(
+        model_type: str,
+        settings: str | None = None,
+        root: Path | None = None,
+    ) -> MagicMock:
+        model = mock_model_config(model_type)
+        type(model).root = PropertyMock(
+            side_effect=lambda: ModelRoot(root or model_data_clipped_path, mode="r"),
+        )
+        if settings is not None:
+            model.config.read(settings)
+        return model
+
+    return _factory
+
+
 ## Extra data paths
+@pytest.fixture
+def output_geom_path(
+    tmp_path: Path,
+    model_data_clipped_path: Path,
+    exposure_vector_clipped: gpd.GeoDataFrame,
+) -> Callable[[list[str], bool], Path]:
+    def _factory(names: list[str], settings: bool = True) -> Path:
+        if settings:
+            shutil.copy2(
+                Path(model_data_clipped_path, "settings_geom.toml"),
+                Path(tmp_path, "settings_geom.toml"),
+            )
+        # Write the output geometries in the default output directory
+        Path(tmp_path, "output").mkdir()
+        for name in names:
+            exposure_vector_clipped.to_file(Path(tmp_path, "output", f"{name}.fgb"))
+        return tmp_path
+
+    return _factory
+
+
 @pytest.fixture
 def exposure_cost_link_path(
     tmp_path: Path,

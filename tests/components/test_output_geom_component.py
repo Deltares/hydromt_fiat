@@ -1,15 +1,17 @@
 import logging
 import re
 from pathlib import Path
-from unittest.mock import MagicMock, PropertyMock
+from typing import Callable
+from unittest.mock import MagicMock
 
 import geopandas as gpd
 import numpy as np
 import pytest
-from hydromt.model import ModelRoot
 
 from hydromt_fiat import FIATModel
 from hydromt_fiat.components import OutputGeomsComponent
+from hydromt_fiat.settings.exposure import ExposureGeometry
+from hydromt_fiat.settings.file import OutputFileModel
 
 
 def test_output_geom_component_empty(mock_model: MagicMock):
@@ -118,14 +120,10 @@ def test_output_geom_component__set_fid(
 
 
 def test_output_geom_component_read_none(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Set up the component
     component = OutputGeomsComponent(model=model)
 
@@ -140,14 +138,10 @@ def test_output_geom_component_read_none(
 
 
 def test_output_geom_component_read_not_found(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Set up the component
     component = OutputGeomsComponent(model=model)
 
@@ -161,15 +155,105 @@ def test_output_geom_component_read_not_found(
     assert len(component.data) == 0
 
 
+def test_output_geom_component_read_grid_model(
+    mock_model_read: MagicMock,
+):
+    # Setup the model, which is a grid model
+    model = mock_model_read("grid")
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read (nothing) as the model type does not match
+    component.read(filename="exposure/buildings.fgb")
+
+    # Assert the state after
+    assert component._data is None
+
+
+def test_output_geom_component_read_settings(
+    mock_model_read: MagicMock,
+    output_geom_path: Callable[[list[str]], Path],
+):
+    # Setup the model, with the output next to the settings
+    root = output_geom_path(["buildings"])
+    model = mock_model_read("geom", settings="settings_geom.toml", root=root)
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read the data, the output names are derived from the exposure settings
+    component.read()
+
+    # Assert the state after
+    assert len(component.data) == 1
+    assert "buildings" in component.data
+    assert len(component.data["buildings"]) == 12
+
+
+def test_output_geom_component_read_settings_output(
+    mock_model_read: MagicMock,
+    output_geom_path: Callable[[list[str]], Path],
+):
+    # Setup the model, with the output explicitly set in the settings
+    root = output_geom_path(["foo", "buildings_alt"])
+    model = mock_model_read("geom", settings="settings_geom.toml", root=root)
+    model.config.data.exposure.append(
+        ExposureGeometry(
+            file="exposure/buildings_alt.fgb",
+            variables={"vulnerability": "default"},
+        )
+    )
+    model.config.data.output = [OutputFileModel(file=Path(root, "output", "foo.fgb"))]
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read the data
+    component.read()
+
+    # Assert the state after, the output of the second exposure entry is not defined,
+    # so its name is taken from the exposure settings
+    assert set(component.data) == {"foo", "buildings_alt"}
+
+
+def test_output_geom_component_read_settings_output_only(
+    mock_model_read: MagicMock,
+    output_geom_path: Callable[[list[str], bool], Path],
+):
+    # Setup the model, with output settings but without exposure settings
+    root = output_geom_path(["foo"], settings=False)
+    model = mock_model_read("geom", root=root)
+    model.config.data.output = [OutputFileModel(file=Path(root, "output", "foo.fgb"))]
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read the data
+    component.read()
+
+    # Assert the state after
+    assert set(component.data) == {"foo"}
+
+
+def test_output_geom_component_read_settings_not_found(
+    mock_model_read: MagicMock,
+    output_geom_path: Callable[[list[str]], Path],
+):
+    # Setup the model, there are no output files
+    root = output_geom_path([])
+    model = mock_model_read("geom", settings="settings_geom.toml", root=root)
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read (nothing) as the output defined by the settings does not exist
+    component.read()
+
+    # Assert the state after
+    assert len(component.data) == 0
+
+
 def test_output_geom_component_read_sig(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Setup the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Set up the component
     component = OutputGeomsComponent(model=model)
 
@@ -183,6 +267,21 @@ def test_output_geom_component_read_sig(
     assert len(component.data) == 1
     assert "buildings" in component.data
     assert len(component.data["buildings"]) == 12
+
+
+def test_output_geom_component_read_sig_wildcard(
+    mock_model_read: MagicMock,
+):
+    # Setup the model
+    model = mock_model_read("geom")
+    # Set up the component
+    component = OutputGeomsComponent(model=model)
+
+    # Read the data using a wildcard in the signature
+    component.read(filename="exposure/*.fgb")
+
+    # Assert the state after
+    assert set(component.data) == {"buildings", "buildings_alt"}
 
 
 def test_output_geom_component_write(

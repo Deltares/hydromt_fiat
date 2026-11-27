@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
+from typing import Callable
 from unittest.mock import MagicMock, PropertyMock
 
 import geopandas as gpd
 import pytest
-import xarray as xr
 from hydromt.model import ModelRoot
 
 from hydromt_fiat import FIATModel
@@ -32,15 +32,10 @@ def test_exposure_geom_component_empty(mock_model: MagicMock):
 
 
 def test_exposure_geom_component_read(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Set the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
-    model.config.read("settings_geom.toml")
+    model = mock_model_read("geom", settings="settings_geom.toml")
     # Setup the component
     component = ExposureGeomsComponent(model=model)
 
@@ -57,15 +52,10 @@ def test_exposure_geom_component_read(
 
 
 def test_exposure_geom_component_read_none(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Set the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
-    model.config.read("settings_geom.toml")
+    model = mock_model_read("geom", settings="settings_geom.toml")
     # Setup the component
     component = ExposureGeomsComponent(model=model)
     # Set the config to point to nonsense path
@@ -85,15 +75,11 @@ def test_exposure_geom_component_read_none(
 
 def test_exposure_geom_component_read_skip(
     caplog: pytest.LogCaptureFixture,
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Set the model
     caplog.set_level(logging.DEBUG)
-    model = mock_model_config("grid")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("grid")
     # Setup the component
     component = ExposureGeomsComponent(model=model)
 
@@ -105,14 +91,10 @@ def test_exposure_geom_component_read_skip(
 
 
 def test_exposure_geom_component_read_sig(
-    mock_model_config: MagicMock,
-    model_data_clipped_path: Path,
+    mock_model_read: MagicMock,
 ):
     # Set the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(model_data_clipped_path, mode="r"),
-    )
+    model = mock_model_read("geom")
     # Setup the component
     component = ExposureGeomsComponent(model=model)
 
@@ -128,14 +110,11 @@ def test_exposure_geom_component_read_sig(
 
 def test_exposure_geom_component_read_csv(
     tmp_path: Path,
-    mock_model_config: MagicMock,
+    mock_model_read: MagicMock,
     exposure_vector_clipped_split_path: Path,
 ):
     # Set the model
-    model = mock_model_config("geom")
-    type(model).root = PropertyMock(
-        side_effect=lambda: ModelRoot(tmp_path, mode="r"),
-    )
+    model = mock_model_read("geom", root=tmp_path)
     # Setup the component
     component = ExposureGeomsComponent(model=model)
 
@@ -369,28 +348,13 @@ def test_exposure_geom_component_create_link_multi(
 
 
 def test_exposure_geom_component_create_link_name(
-    model_with_region: FIATModel,
-    vulnerability_curves: xr.Dataset,
-    vulnerability_identifiers: xr.Dataset,
+    model_exposure_setup: Callable[[str, str], FIATModel],
     exposure_vector_clipped_for_link: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region.set_type("geom")
-    model_with_region.vulnerability.set(
-        vulnerability_curves.rename(
-            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
-        )
-    )
-    model_with_region.vulnerability.set_id(
-        vulnerability_identifiers.rename(
-            {
-                k: k.replace("default", "custom")
-                for k in vulnerability_identifiers.variables
-            }
-        )
-    )
+    model = model_exposure_setup("geom", name="custom")
     # Setup the component
-    component = ExposureGeomsComponent(model=model_with_region)
+    component = ExposureGeomsComponent(model=model)
 
     # Set data like a dummy
     component._data = {"foo": exposure_vector_clipped_for_link}
@@ -514,28 +478,13 @@ def test_exposure_geom_component_create_max_link(
 
 
 def test_exposure_geom_component_create_max_name(
-    model_with_region: FIATModel,
-    vulnerability_curves: xr.Dataset,
-    vulnerability_identifiers: xr.Dataset,
+    model_exposure_setup: Callable[[str, str], FIATModel],
     exposure_vector_clipped_for_damamge: gpd.GeoDataFrame,
 ):
     # Setup the model with only a vulnerability dataset with a custom name
-    model_with_region.set_type("geom")
-    model_with_region.vulnerability.set(
-        vulnerability_curves.rename(
-            {k: k.replace("default", "custom") for k in vulnerability_curves.variables}
-        )
-    )
-    model_with_region.vulnerability.set_id(
-        vulnerability_identifiers.rename(
-            {
-                k: k.replace("default", "custom")
-                for k in vulnerability_identifiers.variables
-            }
-        )
-    )
+    model = model_exposure_setup("geom", name="custom")
     # Setup the component
-    component = ExposureGeomsComponent(model=model_with_region)
+    component = ExposureGeomsComponent(model=model)
     # Added the exposure to the data to expand upon
     component.set(exposure_vector_clipped_for_damamge, name="buildings")
 
