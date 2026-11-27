@@ -61,7 +61,7 @@ def hazard_setup(
     name: str = DATA,
     grid_like: xr.Dataset | None = None,
     return_period: float | int | None = None,
-) -> tuple[xr.Dataset, dict[str, Any]]:
+) -> tuple[xr.DataArray, dict[str, Any]]:
     """Read and transform hazard data.
 
     Parameters

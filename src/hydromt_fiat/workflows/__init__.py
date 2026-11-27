@@ -29,6 +29,7 @@ from .vulnerability import (
     process_vulnerability_link,
     vulnerability_nd_from_1d,
     vulnerability_setup,
+    vulnerability_shared_curves,
 )
 
 __all__ = [
@@ -57,4 +58,5 @@ __all__ = [
     "process_vulnerability_link",
     "vulnerability_nd_from_1d",
     "vulnerability_setup",
+    "vulnerability_shared_curves",
 ]

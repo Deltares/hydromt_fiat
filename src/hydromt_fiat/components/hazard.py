@@ -11,6 +11,7 @@ from hydromt_fiat import workflows
 from hydromt_fiat.components.grid import GridComponent
 from hydromt_fiat.errors import MissingRegionError
 from hydromt_fiat.gis.utils import crs_representation
+from hydromt_fiat.gis.vector import vectorize
 from hydromt_fiat.readers import read_grid
 from hydromt_fiat.settings import get_file_from_settings_component
 from hydromt_fiat.settings.hazard import Hazard, HazardSettings, HazardVariable
@@ -48,6 +49,7 @@ class HazardComponent(GridComponent):
         a reference to another grid component for correct reprojection, by default None.
     """
 
+    _name = HAZARD
     _variable = HazardVariable
 
     def __init__(
@@ -178,6 +180,7 @@ class HazardComponent(GridComponent):
         return_period: float | int | None = None,
         expand: bool = True,
         region: bool = True,
+        fancy: bool = False,
         read_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Create hazard maps from data sources.
@@ -250,8 +253,16 @@ class HazardComponent(GridComponent):
         self.set_attrs(name, hazard_attrs)
 
         # Set the region if not present and defined by the hazard setup
-        if not region and self.model.region is None:
-            self.model.set_region(self._region_data)
+        if self.model.region is not None:
+            return
+
+        # If no region, set it from the hazard data
+        region_data = self._region_data if not fancy else vectorize(hazard_grid)
+        self.model.set_region(region_data)
+
+        # Clip the data if fancy
+        if fancy:
+            self.clip(region_data, inplace=True)
 
     @hydromt_step
     def create_fixed(
